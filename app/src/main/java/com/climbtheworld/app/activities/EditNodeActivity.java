@@ -9,19 +9,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
-import android.widget.AdapterView;
 import android.widget.PopupMenu;
-import android.widget.ScrollView;
 import android.widget.Spinner;
-
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.augmentedreality.ArCoreFeatures;
@@ -41,8 +32,6 @@ import com.climbtheworld.app.map.model.MapBounds;
 import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.map.widget.MapLibreMapWidget;
 import com.climbtheworld.app.sensors.location.DeviceLocationManager;
-import com.climbtheworld.app.sensors.location.ILocationListener;
-import com.climbtheworld.app.sensors.orientation.IOrientationListener;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.sensors.pressure.Barometer;
 import com.climbtheworld.app.storage.DataManager;
@@ -53,10 +42,13 @@ import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
 import com.climbtheworld.app.storage.edit.FormChanges;
 import com.climbtheworld.app.storage.edit.OsmEditStore;
+import com.climbtheworld.app.storage.upload.OsmElements;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.constants.Constants;
+import com.climbtheworld.app.utils.views.EdgeToEdge;
 import com.climbtheworld.app.utils.views.EditorMapSizer;
+import com.climbtheworld.app.utils.views.SpinnerUtils;
 import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -74,7 +66,7 @@ import java.util.Map;
 
 import needle.UiRelatedTask;
 
-public class EditNodeActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, ITagsEvents {
+public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 	private GeoNode editNode;
 	/** The node before the form changed it: as loaded, or as the advanced editor left it. */
 	private JSONObject originalJson;
@@ -86,8 +78,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 	 * mapped without one, such as most route tops, still save as they are.
 	 */
 	private boolean nameRequired;
-	private GeoNode.NodeTypes[] nodeTypes;
-	private MapLibreMapWidget mapWidget;
+	private OsmEntity.EntityClimbingType[] nodeTypes;
 	private ArPlacement arPlacement;
 	private DeviceLocationManager deviceLocationManager;
 	// Steadies the GPS altitude the A.R. placement goes by, as in the A.R. view.
@@ -98,7 +89,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 	private GeneralTags genericTags;
 	private ITags routeTags;
 
-	private final Map<GeoNode.NodeTypes, List<ITags>> nodeTypesTags = new HashMap<>();
+	private final Map<OsmEntity.EntityClimbingType, List<ITags>> nodeTypesTags = new HashMap<>();
 	private final List<ITags> allTagsHandlers = new ArrayList<>();
 
 	private Intent intent;
@@ -115,12 +106,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 		MapLibre.getInstance(this);
 		setContentView(R.layout.activity_edit_node);
 
-		ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-			Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars()
-					| WindowInsetsCompat.Type.displayCutout() | WindowInsetsCompat.Type.ime());
-			v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-			return WindowInsetsCompat.CONSUMED;
-		});
+		EdgeToEdge.padForSystemBars(findViewById(R.id.main));
 
 		intent = getIntent();
 		editNodeID = intent.getLongExtra("poiID", 0);
@@ -150,26 +136,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 							editNode.elevationMeters), MAP_EDIT_ZOOM_LEVEL);
 				});
 		arPlacement.restore(savedInstanceState);
-		mapWidget.setOnTouchListener((view, motionEvent) -> {
-			int action = motionEvent.getAction();
-			ViewParent scrollParent = view.getParent();
-			while (scrollParent != null && !(scrollParent instanceof ScrollView)) {
-				scrollParent = scrollParent.getParent();
-			}
-
-			if (scrollParent != null) {
-				switch (action) {
-					case MotionEvent.ACTION_DOWN:
-					scrollParent.requestDisallowInterceptTouchEvent(true);
-						break;
-					case MotionEvent.ACTION_UP:
-					case MotionEvent.ACTION_CANCEL:
-						scrollParent.requestDisallowInterceptTouchEvent(false);
-						break;
-				}
-			}
-			return false;
-		});
+		mapWidget.setOnTouchListener(EditorMapSizer.holdScrollWhileTouched());
 
 		buildPopupMenu();
 
@@ -191,7 +158,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 									intent.getDoubleExtra("poiLat", Globals.virtualCamera.decimalLatitude),
 									intent.getDoubleExtra("poiLon", Globals.virtualCamera.decimalLongitude));
 							GeoNode tmpPoi = new GeoNode(newNode.jsonNodeInfo);
-							tmpPoi.setClimbingType(GeoNode.NodeTypes.route);
+							tmpPoi.setClimbingType(OsmEntity.EntityClimbingType.route);
 
 							return tmpPoi;
 						}
@@ -219,7 +186,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 							return;
 						}
 						editNode = result;
-						originalJson = copy(result.jsonNodeInfo);
+						originalJson = OsmElements.copy(result.jsonNodeInfo);
 						nameRequired = editNodeID == 0 || !result.getName().trim().isEmpty();
 						cragMembership = new ParentMembership(EditNodeActivity.this,
 								findViewById(R.id.containerCrags), ParentMembership.Kind.CRAG,
@@ -318,28 +285,28 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 		List<ITags> tags = new ArrayList<>();
 		tags.add(generalTags);
 		tags.add(routeTags);
-		nodeTypesTags.put(GeoNode.NodeTypes.route, tags);
+		nodeTypesTags.put(OsmEntity.EntityClimbingType.route, tags);
 
 		tags = new ArrayList<>();
 		tags.add(generalTags);
 		tags.add(cragTags);
-		nodeTypesTags.put(GeoNode.NodeTypes.crag, tags);
+		nodeTypesTags.put(OsmEntity.EntityClimbingType.crag, tags);
 
 		tags = new ArrayList<>();
 		tags.add(generalTags);
 		tags.add(cragTags);
-		nodeTypesTags.put(GeoNode.NodeTypes.area, tags);
+		nodeTypesTags.put(OsmEntity.EntityClimbingType.area, tags);
 
 		tags = new ArrayList<>();
 		tags.add(generalTags);
 		tags.add(artificialTags);
 		tags.add(contactInfoTags);
-		nodeTypesTags.put(GeoNode.NodeTypes.artificial, tags);
+		nodeTypesTags.put(OsmEntity.EntityClimbingType.artificial, tags);
 
 		tags = new ArrayList<>();
 		tags.add(generalTags);
 		tags.add(otherTags);
-		nodeTypesTags.put(GeoNode.NodeTypes.unknown, tags);
+		nodeTypesTags.put(OsmEntity.EntityClimbingType.others, tags);
 	}
 
 	private void buildUi() {
@@ -352,36 +319,28 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 		allTagsHandlers.clear();
 		buildNodeFragments();
 
-		nodeTypes = GeoNode.NodeTypes.nodeEditorValues(editNode.getNodeType());
+		nodeTypes = OsmEntity.EntityClimbingType.nodeEditorValues(editNode.getNodeType());
 		dropdownType.setOnItemSelectedListener(null);
 		dropdownType.setAdapter(new SpinnerMarkerArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, nodeTypes, editNode));
 		dropdownType.setSelection(Arrays.asList(nodeTypes).indexOf(editNode.getNodeType()));
 		showSections();
-		cragMembership.setCanAdd(editNode.getNodeType() == GeoNode.NodeTypes.route);
+		cragMembership.setCanAdd(editNode.getNodeType() == OsmEntity.EntityClimbingType.route);
 
 		// With the sections showing and before any change.
-		GeoNode untouched = new GeoNode(copy(originalJson));
+		GeoNode untouched = new GeoNode(OsmElements.copy(originalJson));
 		synchronizeNode(untouched);
 		untouchedJson = untouched.jsonNodeInfo;
 
-		dropdownType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-			@Override
-			public void onItemSelected(AdapterView<?> adapterView, View view, int pos, long id) {
-				// The spinner also reports the selection it starts with.
-				if (nodeTypes[pos] != editNode.getNodeType()) {
-					switchNodeType(nodeTypes[pos]);
-					updateMapMarker();
-				}
+		dropdownType.setOnItemSelectedListener(SpinnerUtils.onItemSelected(pos -> {
+			// The spinner also reports the selection it starts with.
+			if (nodeTypes[pos] != editNode.getNodeType()) {
+				switchNodeType(nodeTypes[pos]);
+				updateMapMarker();
 			}
-
-			@Override
-			public void onNothingSelected(AdapterView<?> adapterView) {
-
-			}
-		});
+		}));
 	}
 
-	private void switchNodeType(GeoNode.NodeTypes type) {
+	private void switchNodeType(OsmEntity.EntityClimbingType type) {
 		for (ITags tags : sectionsOf(editNode)) {
 			tags.hideTags();
 		}
@@ -389,7 +348,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 		editNode.setClimbingType(type);
 
 		showSections();
-		cragMembership.setCanAdd(type == GeoNode.NodeTypes.route);
+		cragMembership.setCanAdd(type == OsmEntity.EntityClimbingType.route);
 	}
 
 	private void showSections() {
@@ -441,14 +400,6 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 			return null;
 		}
 		return FormChanges.resolve(originalJson, untouchedJson, editNode.jsonNodeInfo);
-	}
-
-	private static JSONObject copy(JSONObject json) {
-		try {
-			return new JSONObject(json.toString());
-		} catch (JSONException e) {
-			throw new IllegalStateException(e);
-		}
 	}
 
 	public void onClick(View v) {
@@ -558,15 +509,13 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
 	@Override
 	public void updateOrientation(OrientationManager.OrientationEvent event) {
-		mapWidget.onOrientationChange(event.getAdjusted(), event);
+		super.updateOrientation(event);
 		arPlacement.onOrientation(event);
 	}
 
 	@Override
 	public void updatePosition(double pDecLatitude, double pDecLongitude, double pMetersAltitude, double accuracy) {
-		Globals.virtualCamera.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
-
-		mapWidget.onLocationChange(new MapCoordinate(pDecLatitude, pDecLongitude, pMetersAltitude));
+		super.updatePosition(pDecLatitude, pDecLongitude, pMetersAltitude, accuracy);
 		arPlacement.onLocation(pDecLatitude, pDecLongitude, barometer.anchor(pMetersAltitude),
 				accuracy);
 	}
@@ -574,16 +523,12 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 	@Override
 	protected void onStart() {
 		super.onStart();
-		mapWidget.onStart();
 		arPlacement.onStart();
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
-		Globals.onResume(this);
-
-		mapWidget.onResume();
 		arPlacement.onResume();
 
 		deviceLocationManager.requestUpdates(this);
@@ -596,38 +541,30 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 		deviceLocationManager.stopUpdates();
 		orientationManager.stopUpdates();
 		barometer.stop();
-		Globals.onPause(this);
-
 		arPlacement.onPause();
-		mapWidget.onPause();
-
 		super.onPause();
 	}
 
 	@Override
 	protected void onStop() {
 		arPlacement.onStop();
-		mapWidget.onStop();
 		super.onStop();
 	}
 
 	@Override
 	public void onLowMemory() {
 		super.onLowMemory();
-		mapWidget.onLowMemory();
 		arPlacement.onLowMemory();
 	}
 
 	@Override
 	protected void onDestroy() {
 		arPlacement.onDestroy();
-		mapWidget.onDestroy();
 		super.onDestroy();
 	}
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
-		mapWidget.onSaveInstanceState(outState);
 		arPlacement.onSaveInstanceState(outState);
 		super.onSaveInstanceState(outState);
 	}
@@ -653,7 +590,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 				e.printStackTrace();
 				return;
 			}
-			editNode = new GeoNode(copy(originalJson));
+			editNode = new GeoNode(OsmElements.copy(originalJson));
 			buildUi();
 			updateMapMarker();
 		}

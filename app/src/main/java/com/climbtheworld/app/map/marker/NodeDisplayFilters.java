@@ -1,15 +1,37 @@
 package com.climbtheworld.app.map.marker;
 
+import android.graphics.drawable.LayerDrawable;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
+
+import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.utils.Globals;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.Collections;
 import java.util.Set;
 
 public class NodeDisplayFilters {
+	/** Shows on the activity's filter button whether any filter is on. */
+	public static void showFilterState(AppCompatActivity activity, Configs configs) {
+		LayerDrawable icon = (LayerDrawable) ResourcesCompat.getDrawable(activity.getResources(),
+				R.drawable.ic_filter_checkable, null);
+		if (icon == null) {
+			return;
+		}
+		// The layers share ConstantState with every other use of the same drawables (e.g.
+		// ic_done); mutate so the alpha change stays local to this FAB icon.
+		icon.mutate();
+		icon.findDrawableByLayerId(R.id.icon_notification).setAlpha(hasFilters(configs) ? 255 : 0);
+		((FloatingActionButton) activity.findViewById(R.id.filterButton)).setImageDrawable(icon);
+	}
+
 	private static final int styleCount = GeoNode.ClimbingStyle.values().length;
 
 	public static boolean matchFilters(Configs configs, GeoNode poi) {
@@ -33,7 +55,7 @@ public class NodeDisplayFilters {
 		boolean minGradeFilter = configs.getInt(Configs.ConfigKey.filterMinGrade) != -1;
 		boolean maxGradeFilter = configs.getInt(Configs.ConfigKey.filterMaxGrade) != -1;
 		boolean stylesFilter = configs.getClimbingStyles().size() != GeoNode.ClimbingStyle.values().length;
-		boolean typesFilter = configs.getNodeTypes().size() != GeoNode.NodeTypes.selectableValues().length;
+		boolean typesFilter = configs.getNodeTypes().size() != OsmEntity.EntityClimbingType.features().length;
 
 		return stringFilter || minGradeFilter || maxGradeFilter || stylesFilter || typesFilter;
 	}
@@ -71,7 +93,7 @@ public class NodeDisplayFilters {
 	}
 
 	private static boolean matchTypeFilter(Configs configs, GeoNode poi) {
-		Set<GeoNode.NodeTypes> types = configs.getNodeTypes();
+		Set<OsmEntity.EntityClimbingType> types = configs.getNodeTypes();
 
 		return types.contains(poi.getNodeType());
 	}

@@ -1,6 +1,8 @@
 package com.climbtheworld.app.utils.views;
 
 import android.content.Context;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Spinner;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -9,12 +11,28 @@ import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 
+import java.util.function.IntConsumer;
+
 public class SpinnerUtils {
 	private static final int NO_UNKNOWN_INDEX_OFFSET = 0;
 	private static final int WITH_UNKNOWN_INDEX_OFFSET = 1;
 
 	private SpinnerUtils() {
 		//hide
+	}
+
+	/** A listener for the position picked, as nothing is done when nothing is selected. */
+	public static AdapterView.OnItemSelectedListener onItemSelected(IntConsumer onPosition) {
+		return new AdapterView.OnItemSelectedListener() {
+			@Override
+			public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
+				onPosition.accept(position);
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> adapterView) {
+			}
+		};
 	}
 
 	public static GradeSystem getGradeSystem(Context context) {

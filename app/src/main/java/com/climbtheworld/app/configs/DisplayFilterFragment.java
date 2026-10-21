@@ -1,9 +1,5 @@
 package com.climbtheworld.app.configs;
 
-import android.os.Handler;
-import android.os.Looper;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -18,16 +14,16 @@ import androidx.appcompat.widget.SwitchCompat;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.map.DisplayableGeoNode;
-import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.utils.constants.UIConstants;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
-import com.climbtheworld.app.utils.views.Sorters;
 import com.climbtheworld.app.utils.views.SpinnerUtils;
+import com.climbtheworld.app.utils.views.StyleSwitches;
+import com.climbtheworld.app.utils.views.TextWatchers;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
@@ -53,23 +49,8 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 
 		if (testFilter != null) {
 			testFilter.setText(configs.getString(Configs.ConfigKey.filterString));
-			testFilter.addTextChangedListener(new TextWatcher() {
-				final Handler handler = new Handler(Looper.getMainLooper() /*UI thread*/);
-				Runnable workRunnable;
-
-				@Override
-				public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-				}
-
-				@Override
-				public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-				}
-
-				@Override
-				public void afterTextChanged(Editable editable) {
-					configs.setString(Configs.ConfigKey.filterString, editable.toString().toLowerCase());
-				}
-			});
+			testFilter.addTextChangedListener(TextWatchers.afterTextChanged(editable ->
+					configs.setString(Configs.ConfigKey.filterString, editable.toString().toLowerCase())));
 		}
 
 		updateGradeSystemText();
@@ -112,47 +93,21 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 	}
 
 	private void loadStyles() {
-		Set<GeoNode.ClimbingStyle> checked = configs.getClimbingStyles();
-
-		ViewGroup container = findViewById(R.id.containerClimbingStyles);
-
-		for (GeoNode.ClimbingStyle styleName : Sorters.sortStyles(parent, GeoNode.ClimbingStyle.values())) {
-			View customSwitch = ListViewItemBuilder.getPaddedBuilder(parent)
-					.setTitle(parent.getString(styleName.getNameId()))
-					.setDescription(parent.getString(styleName.getDescriptionId()))
-					.setSwitchChecked(checked.contains(styleName))
-					.setIcon(MarkerUtils.getStyleIcon(parent, Collections.singletonList(styleName)))
-					.changeElementId(R.id.switchTypeEnabled, styleName.getNameId())
-					.setSwitchEvent(new CompoundButton.OnCheckedChangeListener() {
-						@Override
-						public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-							saveStyles();
-						}
-					})
-					.build();
-
-			container.addView(customSwitch);
-		}
+		StyleSwitches.add(parent, findViewById(R.id.containerClimbingStyles),
+				configs.getClimbingStyles(), (buttonView, isChecked) -> saveStyles());
 	}
 
 	private void saveStyles() {
-		Set<GeoNode.ClimbingStyle> styles = new TreeSet<>();
-		for (GeoNode.ClimbingStyle style : GeoNode.ClimbingStyle.values()) {
-			SwitchCompat styleCheckBox = findViewById(style.getNameId());
-			if (styleCheckBox != null && styleCheckBox.isChecked()) {
-				styles.add(style);
-			}
-		}
-
-		configs.setClimbingStyles(styles);
+		configs.setClimbingStyles(new TreeSet<>(
+				StyleSwitches.checked(findViewById(R.id.containerClimbingStyles))));
 	}
 
 	private void loadNodeTypes() {
-		Set<GeoNode.NodeTypes> checked = configs.getNodeTypes();
+		Set<OsmEntity.EntityClimbingType> checked = configs.getNodeTypes();
 
 		ViewGroup container = findViewById(R.id.containerClimbingTypes);
 
-		for (GeoNode.NodeTypes typeName : GeoNode.NodeTypes.selectableValues()) {
+		for (OsmEntity.EntityClimbingType typeName : OsmEntity.EntityClimbingType.features()) {
 			GeoNode poi = new GeoNode(0, 0, 0);
 			poi.setClimbingType(typeName);
 
@@ -176,8 +131,8 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 	}
 
 	private void saveTypes() {
-		Set<GeoNode.NodeTypes> styles = new TreeSet<>();
-		for (GeoNode.NodeTypes style : GeoNode.NodeTypes.selectableValues()) {
+		Set<OsmEntity.EntityClimbingType> styles = new TreeSet<>();
+		for (OsmEntity.EntityClimbingType style : OsmEntity.EntityClimbingType.features()) {
 			SwitchCompat styleCheckBox = findViewById(style.getNameId());
 			if (styleCheckBox != null && styleCheckBox.isChecked()) {
 				styles.add(style);
@@ -212,7 +167,7 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 	}
 
 	public void reset() {
-		configs.setNodeTypes(new HashSet<>(Arrays.asList((GeoNode.NodeTypes[]) Configs.ConfigKey.filterNodeTypes.defaultVal)));
+		configs.setNodeTypes(new HashSet<>(Arrays.asList((OsmEntity.EntityClimbingType[]) Configs.ConfigKey.filterNodeTypes.defaultVal)));
 		configs.setClimbingStyles(new HashSet<>(Arrays.asList((GeoNode.ClimbingStyle[]) Configs.ConfigKey.filterStyles.defaultVal)));
 		configs.setInt(Configs.ConfigKey.filterMinGrade, (int) Configs.ConfigKey.filterMinGrade.defaultVal);
 		configs.setInt(Configs.ConfigKey.filterMaxGrade, (int) Configs.ConfigKey.filterMaxGrade.defaultVal);

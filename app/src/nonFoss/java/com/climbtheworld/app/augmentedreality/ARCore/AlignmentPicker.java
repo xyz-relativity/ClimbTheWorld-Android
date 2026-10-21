@@ -13,6 +13,7 @@ import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
 import com.climbtheworld.app.utils.GeoUtils;
 import com.climbtheworld.app.utils.Vector4d;
@@ -69,7 +70,7 @@ class AlignmentPicker {
 		List<GeoNode> routes = new ArrayList<>();
 		for (DisplayableGeoNode poi : found.values()) {
 			GeoNode node = poi.getGeoNode();
-			if (node.osmID != excludedId && node.getNodeType() == GeoNode.NodeTypes.route) {
+			if (node.osmID != excludedId && node.getNodeType() == OsmEntity.EntityClimbingType.route) {
 				routes.add(node);
 			}
 		}

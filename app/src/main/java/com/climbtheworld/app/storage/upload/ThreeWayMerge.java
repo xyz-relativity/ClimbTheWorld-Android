@@ -8,7 +8,6 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.TreeSet;
@@ -62,16 +61,16 @@ public final class ThreeWayMerge {
 					server.optJSONObject(ClimbingTags.KEY_TAGS), conflicts));
 
 			if (local.has(ClimbingTags.KEY_LAT)) {
-				JSONObject position = pick(only(base, ClimbingTags.KEY_LAT, ClimbingTags.KEY_LON),
-						only(local, ClimbingTags.KEY_LAT, ClimbingTags.KEY_LON),
-						only(server, ClimbingTags.KEY_LAT, ClimbingTags.KEY_LON), POSITION, conflicts);
+				JSONObject position = pick(OsmElements.only(base, ClimbingTags.KEY_LAT, ClimbingTags.KEY_LON),
+						OsmElements.only(local, ClimbingTags.KEY_LAT, ClimbingTags.KEY_LON),
+						OsmElements.only(server, ClimbingTags.KEY_LAT, ClimbingTags.KEY_LON), POSITION, conflicts);
 				merged.put(ClimbingTags.KEY_LAT, position.opt(ClimbingTags.KEY_LAT));
 				merged.put(ClimbingTags.KEY_LON, position.opt(ClimbingTags.KEY_LON));
 			}
 			for (String listKey : new String[]{ClimbingTags.KEY_MEMBERS, ClimbingTags.KEY_NODES}) {
 				if (local.has(listKey)) {
-					merged.put(listKey, pick(only(base, listKey), only(local, listKey),
-							only(server, listKey), MEMBERS, conflicts).opt(listKey));
+					merged.put(listKey, pick(OsmElements.only(base, listKey), OsmElements.only(local, listKey),
+							OsmElements.only(server, listKey), MEMBERS, conflicts).opt(listKey));
 				}
 			}
 		} catch (JSONException e) {
@@ -95,15 +94,15 @@ public final class ThreeWayMerge {
 		local = local == null ? new JSONObject() : local;
 		server = server == null ? new JSONObject() : server;
 		TreeSet<String> keys = new TreeSet<>();
-		addKeys(keys, base);
-		addKeys(keys, local);
-		addKeys(keys, server);
+		keys.addAll(OsmElements.keys(base));
+		keys.addAll(OsmElements.keys(local));
+		keys.addAll(OsmElements.keys(server));
 
 		JSONObject result = new JSONObject();
 		for (String key : keys) {
-			String baseValue = value(base, key);
-			String localValue = value(local, key);
-			String serverValue = value(server, key);
+			String baseValue = OsmElements.value(base, key);
+			String localValue = OsmElements.value(local, key);
+			String serverValue = OsmElements.value(server, key);
 			String chosen;
 			if (Objects.equals(localValue, baseValue)) {
 				chosen = serverValue;
@@ -130,26 +129,5 @@ public final class ThreeWayMerge {
 			conflicts.add(conflict);
 		}
 		return local;
-	}
-
-	private static JSONObject only(JSONObject element, String... keys) throws JSONException {
-		JSONObject result = new JSONObject();
-		for (String key : keys) {
-			if (element.has(key)) {
-				result.put(key, element.get(key));
-			}
-		}
-		return result;
-	}
-
-	private static void addKeys(TreeSet<String> keys, JSONObject tags) {
-		Iterator<String> iterator = tags.keys();
-		while (iterator.hasNext()) {
-			keys.add(iterator.next());
-		}
-	}
-
-	private static String value(JSONObject tags, String key) {
-		return tags.has(key) ? tags.optString(key) : null;
 	}
 }

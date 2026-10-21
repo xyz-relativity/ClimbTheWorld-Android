@@ -2,7 +2,6 @@ package com.climbtheworld.app.walkietalkie.transport.wifi.aware;
 
 import android.annotation.SuppressLint;
 import android.net.wifi.aware.DiscoverySession;
-import android.net.wifi.aware.DiscoverySessionCallback;
 import android.net.wifi.aware.PeerHandle;
 import android.net.wifi.aware.SubscribeConfig;
 import android.net.wifi.aware.SubscribeDiscoverySession;
@@ -41,7 +40,8 @@ public class Subscriber {
 			}
 		});
 
-		manager.getAwareSession().subscribe(config, new DiscoverySessionCallback() {
+		manager.getAwareSession().subscribe(config, new MessageSessionCallback(TAG,
+				"Subscriber " + manager.getInstaceUUID()) {
 			@Override
 			public void onSubscribeStarted(@NonNull SubscribeDiscoverySession session) {
 				super.onSubscribeStarted(session);
@@ -85,36 +85,12 @@ public class Subscriber {
 			}
 
 			@Override
-			public void onMessageSendSucceeded(int messageId) {
-				super.onMessageSendSucceeded(messageId);
-				ReliableMessageSender<PeerHandle, TransportMessage.Command> sender = messageSender;
-				if (sender != null) {
-					sender.onSendSucceeded(messageId);
-				}
+			protected ReliableMessageSender<PeerHandle, TransportMessage.Command> messageSender() {
+				return messageSender;
 			}
 
 			@Override
-			public void onMessageSendFailed(int messageId) {
-				super.onMessageSendFailed(messageId);
-				ReliableMessageSender<PeerHandle, TransportMessage.Command> sender = messageSender;
-				if (sender != null) {
-					sender.onSendFailed(messageId);
-				}
-			}
-
-			@Override
-			public void onMessageReceived(PeerHandle peerHandle, byte[] message) {
-				super.onMessageReceived(peerHandle, message);
-
-				Log.d(TAG, "Subscriber " + manager.getInstaceUUID().toString() +
-						" message received: " +
-						new String(message));
-
-				TransportMessage transportMessage = TransportMessage.fromData(message);
-				if (transportMessage == null) {
-					Log.w(TAG, "Ignoring malformed message.");
-					return;
-				}
+			protected void onMessage(PeerHandle peerHandle, TransportMessage transportMessage) {
 				switch (transportMessage.command) {
 					case READY:
 						manager.onNetworkReady(peerHandle);

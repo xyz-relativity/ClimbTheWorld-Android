@@ -5,6 +5,7 @@ import androidx.room.Index;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
 @Entity(primaryKeys = {"osmType", "osmID"}, indices = {
 		@Index(value = "decimalLatitude"),
 		@Index(value = "decimalLongitude")
@@ -31,10 +32,14 @@ public class OsmNode extends OsmEntity {
 		this.decimalLongitude = pDecimalLongitude;
 		this.decimalLatitude = pDecimalLatitude;
 		this.elevationMeters = pMetersAltitude;
+		putLocation(jsonNodeInfo, decimalLatitude, decimalLongitude);
+	}
 
+	/** Writes the position into the element, as its lat and lon. */
+	static void putLocation(JSONObject jsonNodeInfo, double latitude, double longitude) {
 		try {
-			jsonNodeInfo.put(ClimbingTags.KEY_LAT, this.decimalLatitude);
-			jsonNodeInfo.put(ClimbingTags.KEY_LON, this.decimalLongitude);
+			jsonNodeInfo.put(ClimbingTags.KEY_LAT, latitude);
+			jsonNodeInfo.put(ClimbingTags.KEY_LON, longitude);
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}

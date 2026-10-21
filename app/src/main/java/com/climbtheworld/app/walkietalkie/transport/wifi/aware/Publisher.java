@@ -1,7 +1,6 @@
 package com.climbtheworld.app.walkietalkie.transport.wifi.aware;
 
 import android.annotation.SuppressLint;
-import android.net.wifi.aware.DiscoverySessionCallback;
 import android.net.wifi.aware.PeerHandle;
 import android.net.wifi.aware.PublishConfig;
 import android.net.wifi.aware.PublishDiscoverySession;
@@ -11,7 +10,6 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.climbtheworld.app.walkietalkie.transport.ObservableHashMap;
-
 
 public class Publisher {
 	private static final String TAG = Publisher.class.getSimpleName();
@@ -43,7 +41,8 @@ public class Publisher {
 			}
 		});
 
-		manager.getAwareSession().publish(config, new DiscoverySessionCallback() {
+		manager.getAwareSession().publish(config, new MessageSessionCallback(TAG,
+				"Publish " + manager.getInstaceUUID()) {
 			@Override
 			public void onPublishStarted(@NonNull PublishDiscoverySession session) {
 				super.onPublishStarted(session);
@@ -72,35 +71,12 @@ public class Publisher {
 			}
 
 			@Override
-			public void onMessageSendSucceeded(int messageId) {
-				super.onMessageSendSucceeded(messageId);
-				ReliableMessageSender<PeerHandle, TransportMessage.Command> sender = messageSender;
-				if (sender != null) {
-					sender.onSendSucceeded(messageId);
-				}
+			protected ReliableMessageSender<PeerHandle, TransportMessage.Command> messageSender() {
+				return messageSender;
 			}
 
 			@Override
-			public void onMessageSendFailed(int messageId) {
-				super.onMessageSendFailed(messageId);
-				ReliableMessageSender<PeerHandle, TransportMessage.Command> sender = messageSender;
-				if (sender != null) {
-					sender.onSendFailed(messageId);
-				}
-			}
-
-			@Override
-			public void onMessageReceived(PeerHandle peerHandle, byte[] message) {
-				super.onMessageReceived(peerHandle, message);
-
-				Log.d(TAG, "Publish " + manager.getInstaceUUID() + " message received: " +
-						new String(message));
-
-				TransportMessage transportMessage = TransportMessage.fromData(message);
-				if (transportMessage == null) {
-					Log.w(TAG, "Ignoring malformed message.");
-					return;
-				}
+			protected void onMessage(PeerHandle peerHandle, TransportMessage transportMessage) {
 				switch (transportMessage.command) {
 					case INSTANCE:
 						PubSubID subscriber = transportMessage.toPubSubID(0);

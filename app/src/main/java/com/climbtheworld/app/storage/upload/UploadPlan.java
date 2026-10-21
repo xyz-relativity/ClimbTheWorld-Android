@@ -3,7 +3,6 @@ package com.climbtheworld.app.storage.upload;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.edit.RelationMembers;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayDeque;
@@ -154,12 +153,8 @@ public final class UploadPlan {
 		if (element == null || !RELATION.equals(element.optString(ClimbingTags.KEY_TYPE))) {
 			return result;
 		}
-		JSONArray members = element.optJSONArray(ClimbingTags.KEY_MEMBERS);
-		for (int index = 0; members != null && index < members.length(); index++) {
-			JSONObject member = members.optJSONObject(index);
-			if (member != null) {
-				result.add(RelationMembers.key(member));
-			}
+		for (JSONObject member : RelationMembers.of(element)) {
+			result.add(RelationMembers.key(member));
 		}
 		return result;
 	}

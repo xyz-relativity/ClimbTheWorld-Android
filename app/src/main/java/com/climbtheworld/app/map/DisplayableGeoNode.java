@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.ColorUtils;
 
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
 
 public class DisplayableGeoNode {
@@ -58,7 +59,7 @@ public class DisplayableGeoNode {
 	 * Pin colour for area and crag POIs: their hull colour, as opaque as the default pin, so the
 	 * pin matches its hull.
 	 */
-	public static int getHullPinColor(GeoNode.NodeTypes type) {
+	public static int getHullPinColor(OsmEntity.EntityClimbingType type) {
 		switch (type) {
 			case area:
 				return toPinColor(AREA_HULL_COLOR);

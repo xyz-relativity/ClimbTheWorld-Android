@@ -6,7 +6,6 @@ import android.graphics.Color;
 import androidx.core.graphics.ColorUtils;
 
 import com.climbtheworld.app.map.DisplayableGeoNode;
-
 import com.climbtheworld.app.map.model.MapBounds;
 import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.map.model.MapZoomLevels;
@@ -166,8 +165,12 @@ public final class ClimbingGeometryBuilder {
 	}
 
 	public String buildHullLabelGeoJson(List<GeometrySpec> geometries, double zoom) {
+		return featureCollection(buildHullLabelFeatures(geometries, zoom));
+	}
+
+	/** The GeoJSON collection of the features, themselves GeoJSON. */
+	public static String featureCollection(List<String> features) {
 		StringBuilder result = new StringBuilder("{\"type\":\"FeatureCollection\",\"features\":[");
-		List<String> features = buildHullLabelFeatures(geometries, zoom);
 		for (int index = 0; index < features.size(); index++) {
 			if (index > 0) {
 				result.append(',');
@@ -329,6 +332,13 @@ public final class ClimbingGeometryBuilder {
 		result.append('"');
 	}
 
+	/** The line of a feature mapped as a way, in the colour; see {@link #toRouteWay} for route. */
+	private GeometrySpec wayLine(OsmCollectionEntity collection, List<MapCoordinate> coordinates,
+	                             int color, RouteWay route) {
+		return new GeometrySpec(geometryKey(collection), coordinates, false, 0, color,
+				wayMinZoom(collection), 0, null, null, 0, 0, collection, route);
+	}
+
 	private static int toGhost(int color) {
 		return ColorUtils.setAlphaComponent(color,
 				Color.alpha(color) * DisplayableGeoNode.POI_ICON_ALPHA_HIDDEN / 255);
@@ -367,17 +377,14 @@ public final class ClimbingGeometryBuilder {
 			case route:
 				if (collection.osmType == OsmEntity.EntityOsmType.way) {
 					// In the colour of its grade, as in the AR view.
-					result.add(new GeometrySpec(geometryKey(collection), coordinates, false, 0,
-							route != null ? ColorUtils.setAlphaComponent(route.color,
-									DisplayableGeoNode.LINE_ALPHA) : WAY_COLOR,
-							wayMinZoom(collection), 0, null, null, 0, 0, collection, route));
+					result.add(wayLine(collection, coordinates, route != null
+							? ColorUtils.setAlphaComponent(route.color, DisplayableGeoNode.LINE_ALPHA)
+							: WAY_COLOR, route));
 				}
 				break;
 			case crag:
 				if (collection.osmType == OsmEntity.EntityOsmType.way) {
-					result.add(new GeometrySpec(geometryKey(collection), coordinates, false, 0,
-							WAY_COLOR, wayMinZoom(collection), 0, null, null, 0, 0, collection,
-							null));
+					result.add(wayLine(collection, coordinates, WAY_COLOR, null));
 				} else {
 					addHullPolygon(result, collection, coordinates, CRAG_FILL_COLOR,
 							HULL_OUTLINE_COLOR, CRAG_PADDING_DEGREES, MapZoomLevels.CRAG_MIN, 0,
@@ -386,9 +393,7 @@ public final class ClimbingGeometryBuilder {
 				break;
 			case artificial:
 				if (collection.osmType == OsmEntity.EntityOsmType.way) {
-					result.add(new GeometrySpec(geometryKey(collection), coordinates, false, 0,
-							WAY_COLOR, wayMinZoom(collection), 0, null, null, 0, 0, collection,
-							null));
+					result.add(wayLine(collection, coordinates, WAY_COLOR, null));
 				} else {
 					addHullPolygon(result, collection, coordinates, YELLOW_FILL_COLOR,
 							HULL_OUTLINE_COLOR, OTHER_PADDING_DEGREES, MapZoomLevels.AREA_MIN, 0, 0, -1);

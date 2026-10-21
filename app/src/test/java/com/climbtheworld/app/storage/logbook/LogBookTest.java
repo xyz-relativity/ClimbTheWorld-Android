@@ -97,7 +97,7 @@ public class LogBookTest {
 				route(42L, "New name", 45.5));
 
 		assertEquals("New name", loaded.name);
-		assertEquals(GeoNode.NodeTypes.route.name(), loaded.nodeType);
+		assertEquals(OsmEntity.EntityClimbingType.route.name(), loaded.nodeType);
 		assertEquals(updatedAt, loaded.updatedAt);
 		LogBookEntry stored = database.logBookDao().find(OsmEntity.EntityOsmType.node, 42L);
 		assertEquals("New name", stored.name);
@@ -120,7 +120,7 @@ public class LogBookTest {
 
 		assertEquals(42L, element.osmID);
 		assertEquals("Été indien", element.getName());
-		assertEquals(GeoNode.NodeTypes.route, element.getNodeType());
+		assertEquals(OsmEntity.EntityClimbingType.route, element.getNodeType());
 		assertEquals(45.5, element.decimalLatitude, 0);
 		assertEquals(24, element.decimalLongitude, 0);
 		assertFalse("rebuilding from the snapshot must not change it",

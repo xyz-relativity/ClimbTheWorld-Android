@@ -10,6 +10,7 @@ import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
+import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
 import com.climbtheworld.app.utils.Globals;
 
@@ -113,7 +114,7 @@ public class RouteWayTest {
 		OsmNode end = node(2, 46.2260824, -73.7403542, new JSONObject());
 		RouteWay route = RouteWay.fromWay(way(routeWayTags(), bottom, end), nodes);
 		assertEquals(end.osmID, route.top.getID());
-		assertEquals(GeoNode.NodeTypes.route, route.top.getNodeType());
+		assertEquals(OsmEntity.EntityClimbingType.route, route.top.getNodeType());
 		assertTrue(route.top.isRouteTop());
 	}
 

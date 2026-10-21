@@ -12,14 +12,12 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.views.EdgeToEdge;
 import com.climbtheworld.app.utils.views.GradeViewUtils;
 
 import java.util.HashSet;
@@ -88,12 +86,7 @@ public class UnitConverterGradesAdvancedActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_unit_converter_grades_advanced);
 
-		ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.localTab), (v, insets) -> {
-			Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars()
-					| WindowInsetsCompat.Type.displayCutout() | WindowInsetsCompat.Type.ime());
-			v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-			return WindowInsetsCompat.CONSUMED;
-		});
+		EdgeToEdge.padForSystemBars(findViewById(R.id.localTab));
 
 		inflater = getLayoutInflater();
 

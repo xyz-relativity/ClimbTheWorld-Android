@@ -3,8 +3,6 @@ package com.climbtheworld.app.map.editor;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -34,6 +32,7 @@ import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
+import com.climbtheworld.app.utils.views.TextWatchers;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -47,6 +46,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import needle.UiRelatedTask;
@@ -326,17 +326,9 @@ public class ParentMembership {
 		updated.changed = true;
 		render();
 		// Members added in the parent's editor are looked up for the route numbers.
-		Constants.DB_EXECUTOR.execute(new UiRelatedTask<Map<String, OsmEntity>>() {
-			@Override
-			protected Map<String, OsmEntity> doWork() {
-				return store.loadMembers(relation.getMembers());
-			}
-
-			@Override
-			protected void thenDoUiRelatedWork(Map<String, OsmEntity> members) {
-				updated.members = members;
-				render();
-			}
+		loadMembers(relation, members -> {
+			updated.members = members;
+			render();
 		});
 	}
 
@@ -526,20 +518,7 @@ public class ParentMembership {
 			filterContainer = content.findViewById(R.id.filterContainer);
 			filter = content.findViewById(R.id.editFind);
 			filter.setHint(kind.find);
-			filter.addTextChangedListener(new TextWatcher() {
-				@Override
-				public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-				}
-
-				@Override
-				public void onTextChanged(CharSequence s, int start, int before, int count) {
-				}
-
-				@Override
-				public void afterTextChanged(Editable s) {
-					search();
-				}
-			});
+			filter.addTextChangedListener(TextWatchers.afterTextChanged(s -> search()));
 		}
 
 		void show() {
@@ -604,6 +583,15 @@ public class ParentMembership {
 		// Joins the parent as changed earlier in the edit, keeping those changes.
 		OsmCollectionEntity relation = editedParents.containsKey(listed.osmID)
 				? editedParents.get(listed.osmID) : listed;
+		loadMembers(relation, members -> {
+			// Taken out and added back in the same edit, it is still listed in the stored one.
+			leftParents.removeIf(left -> left.osmID == relation.osmID);
+			join(new Membership(relation, members, true));
+		});
+	}
+
+	/** Loads the relation's members off the UI thread and hands them to then on it. */
+	private void loadMembers(OsmCollectionEntity relation, Consumer<Map<String, OsmEntity>> then) {
 		Constants.DB_EXECUTOR.execute(new UiRelatedTask<Map<String, OsmEntity>>() {
 			@Override
 			protected Map<String, OsmEntity> doWork() {
@@ -612,9 +600,7 @@ public class ParentMembership {
 
 			@Override
 			protected void thenDoUiRelatedWork(Map<String, OsmEntity> members) {
-				// Taken out and added back in the same edit, it is still listed in the stored one.
-				leftParents.removeIf(left -> left.osmID == relation.osmID);
-				join(new Membership(relation, members, true));
+				then.accept(members);
 			}
 		});
 	}
@@ -694,7 +680,7 @@ public class ParentMembership {
 		}
 		if (isEditedElement(member)) {
 			GeoNode element = editedElement.get();
-			return element.getNodeType() == GeoNode.NodeTypes.route && !element.isRouteTop();
+			return element.getNodeType() == OsmEntity.EntityClimbingType.route && !element.isRouteTop();
 		}
 		OsmEntity entity = membership.members.get(RelationMembers.key(member));
 		return entity != null && ClimbingRouteCounter.takesRouteNumber(entity);

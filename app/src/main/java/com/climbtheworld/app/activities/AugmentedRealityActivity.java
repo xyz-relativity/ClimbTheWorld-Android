@@ -2,7 +2,6 @@ package com.climbtheworld.app.activities;
 
 import android.Manifest;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
@@ -18,8 +17,10 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.ColorRes;
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.StringRes;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.camera.core.Camera;
 import androidx.camera.core.CameraSelector;
@@ -27,10 +28,6 @@ import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.content.ContextCompat;
-import androidx.core.content.res.ResourcesCompat;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
@@ -48,17 +45,17 @@ import com.climbtheworld.app.map.marker.NodeDisplayFilters;
 import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.map.widget.MapLibreMapWidget;
 import com.climbtheworld.app.sensors.location.DeviceLocationManager;
-import com.climbtheworld.app.sensors.location.ILocationListener;
-import com.climbtheworld.app.sensors.orientation.IOrientationListener;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.sensors.pressure.Barometer;
-import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector2d;
 import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.constants.Constants;
-import com.climbtheworld.app.utils.views.dialogs.AugmentedRealitySettingsDialogue;
+import com.climbtheworld.app.utils.views.EdgeToEdge;
+import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 import com.climbtheworld.app.utils.views.dialogs.FilterDialogue;
+import com.climbtheworld.app.utils.views.dialogs.SettingsDialogue;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -69,8 +66,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class AugmentedRealityActivity extends AppCompatActivity
-		implements ILocationListener, ConfigFragment.OnConfigChangeListener, IOrientationListener {
+public class AugmentedRealityActivity extends MapWidgetActivity
+		implements ConfigFragment.OnConfigChangeListener {
 
 	private static final String TAG = AugmentedRealityActivity.class.getSimpleName();
 	private static final int LOCATION_UPDATE_INTERVAL = 250;
@@ -97,7 +94,6 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	private FloatingActionButton horizonModeButton;
 	private Toast hudToast;
 	private Vector2d horizonSize = new Vector2d(1, 3);
-	private MapLibreMapWidget mapWidget;
 	private CountDownTimer gpsUpdateAnimationTimer;
 	private long lastFrame;
 	private Configs configs;
@@ -112,12 +108,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 		MapLibre.getInstance(this);
 		setContentView(R.layout.activity_augmented_reality);
 
-		ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-			Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars()
-					| WindowInsetsCompat.Type.displayCutout() | WindowInsetsCompat.Type.ime());
-			v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-			return WindowInsetsCompat.CONSUMED;
-		});
+		EdgeToEdge.padForSystemBars(findViewById(R.id.main));
 
 		findViewById(R.id.compassLayout).setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -327,74 +318,46 @@ public class AugmentedRealityActivity extends AppCompatActivity
 
 	private void showWarning() {
 		if (configs.getBoolean(Configs.ConfigKey.showExperimentalAR)) {
-			Drawable icon = AppCompatResources.getDrawable(this, android.R.drawable.ic_dialog_info)
-					.mutate();
-			icon.setTint(ContextCompat.getColor(this, android.R.color.holo_green_light));
-
-			AlertDialog experimentalDialog = new AlertDialog.Builder(AugmentedRealityActivity.this)
-					.setCancelable(true)
-					.setIcon(icon)
-					.setTitle(getResources().getString(R.string.experimental_view))
-					.setMessage(Html.fromHtml(
-							getResources().getString(R.string.experimental_view_message)))
-					.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							dialog.dismiss();
-						}
-					})
-					.setNeutralButton(R.string.dont_show_again,
-							new DialogInterface.OnClickListener() {
-								@Override
-								public void onClick(DialogInterface dialog, int which) {
-									configs.setBoolean(Configs.ConfigKey.showExperimentalAR,
-											false);
-								}
-							}).create();
-			experimentalDialog.setIcon(icon);
-			experimentalDialog.show();
-			((TextView) experimentalDialog.findViewById(android.R.id.message)).setMovementMethod(
-					LinkMovementMethod.getInstance());
-			startupDialogs.add(experimentalDialog);
+			showStartupNotice(android.R.drawable.ic_dialog_info, android.R.color.holo_green_light,
+					R.string.experimental_view, R.string.experimental_view_message,
+					Configs.ConfigKey.showExperimentalAR);
 		}
 
 		if (configs.getBoolean(Configs.ConfigKey.showARWarning)) {
-			Drawable icon = AppCompatResources.getDrawable(this,
-							android.R.drawable.ic_dialog_alert)
-					.mutate();
-			icon.setTint(ContextCompat.getColor(this, android.R.color.holo_orange_light));
-
-			AlertDialog warningDialog = new AlertDialog.Builder(AugmentedRealityActivity.this)
-					.setCancelable(true)
-					.setIcon(icon)
-					.setTitle(getResources().getString(R.string.ar_warning))
-					.setMessage(
-							Html.fromHtml(getResources().getString(R.string.ar_warning_message)))
-					.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							dialog.dismiss();
-						}
-					})
-					.setNeutralButton(R.string.dont_show_again,
-							new DialogInterface.OnClickListener() {
-								@Override
-								public void onClick(DialogInterface dialog, int which) {
-									configs.setBoolean(Configs.ConfigKey.showARWarning, false);
-								}
-							}).create();
-			warningDialog.setIcon(icon);
-			warningDialog.show();
-			((TextView) warningDialog.findViewById(android.R.id.message)).setMovementMethod(
-					LinkMovementMethod.getInstance());
-			startupDialogs.add(warningDialog);
+			showStartupNotice(android.R.drawable.ic_dialog_alert, android.R.color.holo_orange_light,
+					R.string.ar_warning, R.string.ar_warning_message,
+					Configs.ConfigKey.showARWarning);
 		}
+	}
+
+	/**
+	 * Shows a notice about the view, with its links tappable, which "don't show again" turns off
+	 * through its setting.
+	 */
+	private void showStartupNotice(@DrawableRes int iconId, @ColorRes int tintId,
+	                               @StringRes int titleId, @StringRes int messageId,
+	                               Configs.ConfigKey shownSetting) {
+		Drawable icon = DialogBuilder.tintedIcon(this, iconId, tintId);
+
+		AlertDialog dialog = new AlertDialog.Builder(this)
+				.setCancelable(true)
+				.setIcon(icon)
+				.setTitle(getResources().getString(titleId))
+				.setMessage(Html.fromHtml(getResources().getString(messageId)))
+				.setPositiveButton(android.R.string.ok, (shown, which) -> shown.dismiss())
+				.setNeutralButton(R.string.dont_show_again,
+						(shown, which) -> configs.setBoolean(shownSetting, false))
+				.create();
+		dialog.setIcon(icon);
+		dialog.show();
+		((TextView) dialog.findViewById(android.R.id.message)).setMovementMethod(
+				LinkMovementMethod.getInstance());
+		startupDialogs.add(dialog);
 	}
 
 	@Override
 	public void onDestroy() {
 		arCore.onDestroy();
-		mapWidget.onDestroy();
 		for (AlertDialog startupDialog : startupDialogs) {
 			startupDialog.dismiss();
 		}
@@ -408,7 +371,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 		if (id == R.id.filterButton) {
 			FilterDialogue.showFilterDialog(this, this);
 		} else if (id == R.id.arSettingsButton) {
-			AugmentedRealitySettingsDialogue.showConfigDialog(this, this::onArSettingsChange);
+			SettingsDialogue.showAugmentedReality(this, this::onArSettingsChange);
 		} else if (id == R.id.horizonModeButton) {
 			// Each mode comes without elevation first, then with it.
 			boolean elevation = !scene.usesElevation();
@@ -436,18 +399,8 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	}
 
 	@Override
-	protected void onStart() {
-		super.onStart();
-		mapWidget.onStart();
-	}
-
-	@Override
 	protected void onResume() {
 		super.onResume();
-		Globals.onResume(this);
-
-		mapWidget.onResume();
-
 		deviceLocationManager.requestUpdates(this);
 		orientationManager.requestUpdates(this);
 		barometer.start();
@@ -469,28 +422,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 		if (gpsUpdateAnimationTimer != null) {
 			gpsUpdateAnimationTimer.cancel();
 		}
-		mapWidget.onPause();
-
-		Globals.onPause(this);
 		super.onPause();
-	}
-
-	@Override
-	protected void onStop() {
-		mapWidget.onStop();
-		super.onStop();
-	}
-
-	@Override
-	public void onLowMemory() {
-		super.onLowMemory();
-		mapWidget.onLowMemory();
-	}
-
-	@Override
-	protected void onSaveInstanceState(Bundle outState) {
-		mapWidget.onSaveInstanceState(outState);
-		super.onSaveInstanceState(outState);
 	}
 
 	@Override
@@ -528,7 +460,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	 * near them only.
 	 */
 	private void updateNearestRoute() {
-		arCore.setNearestRouteMeters(scene.getNearestDistance(GeoNode.NodeTypes.route));
+		arCore.setNearestRouteMeters(scene.getNearestDistance(OsmEntity.EntityClimbingType.route));
 	}
 
 	/**
@@ -685,18 +617,6 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	}
 
 	private void updateFilterIcon() {
-		LayerDrawable icon = (LayerDrawable) ResourcesCompat.getDrawable(this.getResources(),
-				R.drawable.ic_filter_checkable, null);
-		if (icon == null) {
-			return;
-		}
-		// The layers share ConstantState with every other use of the same drawables (e.g.
-		// ic_done);
-		// mutate so the alpha change stays local to this FAB icon.
-		icon.mutate();
-
-		icon.findDrawableByLayerId(R.id.icon_notification)
-				.setAlpha(NodeDisplayFilters.hasFilters(configs) ? 255 : 0);
-		((FloatingActionButton) findViewById(R.id.filterButton)).setImageDrawable(icon);
+		NodeDisplayFilters.showFilterState(this, configs);
 	}
 }

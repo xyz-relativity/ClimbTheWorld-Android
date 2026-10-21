@@ -1,10 +1,7 @@
 package com.climbtheworld.app.map.editor;
 
-import android.graphics.drawable.Drawable;
-import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
@@ -16,8 +13,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.DisplayableGeoNode;
-import com.climbtheworld.app.map.marker.MarkerUtils;
-import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.map.widget.climbing.ClimbingRouteCounter;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
@@ -25,7 +20,7 @@ import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
 import com.climbtheworld.app.storage.edit.RelationMembers;
-import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.views.MemberIconCard;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -38,7 +33,6 @@ import java.util.Map;
  * in place.
  */
 public class RelationMemberList {
-	private static final int MEMBER_LABEL_MIN_WIDTH = Globals.convertDpToPixel(80).intValue();
 
 	public interface OnMembersChangedListener {
 		void onMembersChanged();
@@ -206,37 +200,11 @@ public class RelationMemberList {
 		if (!downloaded) {
 			pin = new DisplayableGeoNode(new GeoNode(new JSONObject()));
 		}
-		GeoNode poi = pin.getGeoNode();
-
-		Drawable icon = new PoiMarkerDrawable(parent, pin, PoiMarkerDrawable.PinShape.slim)
-				.getDrawable();
-		int iconWidth = Math.max(icon.getIntrinsicWidth() * 2, 1);
-		ImageView image = card.findViewById(R.id.memberIconImage);
-		image.setImageDrawable(icon);
-		image.getLayoutParams().width = iconWidth;
-		// All as tall as the tallest pin, which the image puts at the bottom, so that the tips and
-		// the names line up along the row whatever the pin.
-		image.getLayoutParams().height = MarkerUtils.getTallestPinHeight(parent) * 2;
-		card.findViewById(R.id.memberIconLabel).getLayoutParams().width =
-				Math.max(iconWidth, MEMBER_LABEL_MIN_WIDTH);
-
-		String name = downloaded ? poi.getName() : parent.getString(R.string.member_not_downloaded);
-		TextView nameView = card.findViewById(R.id.memberIconName);
-		nameView.setText(name);
-		TextView numberView = card.findViewById(R.id.memberIconNumber);
-		int routeNumber = routeNumbers()[index];
-		if (routeNumber > 0) {
-			numberView.setText(routeNumber + ".");
-			numberView.setVisibility(View.VISIBLE);
-			nameView.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
-			name = routeNumber + ". " + name;
-		} else {
-			numberView.setVisibility(View.GONE);
-			nameView.setGravity(Gravity.CENTER);
-		}
+		String name = downloaded ? pin.getGeoNode().getName()
+				: parent.getString(R.string.member_not_downloaded);
+		MemberIconCard.show(parent, card, pin, name, routeNumbers()[index]);
 		card.setBackgroundResource(keyAt(index).equals(highlightedKey)
 				? R.drawable.bg_route_member_icon_selected : R.drawable.bg_route_member_icon);
-		card.setContentDescription(name);
 	}
 
 	private final class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberHolder> {

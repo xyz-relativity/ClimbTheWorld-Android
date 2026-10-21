@@ -1,6 +1,7 @@
 package com.climbtheworld.app.storage.edit;
 
 import com.climbtheworld.app.storage.database.ClimbingTags;
+import com.climbtheworld.app.storage.database.OsmEntity;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -16,6 +17,58 @@ import java.util.List;
  */
 public final class RelationMembers {
 	private RelationMembers() {
+	}
+
+	/** The members of the element that are objects, in order; none for an element without. */
+	public static List<JSONObject> of(JSONObject element) {
+		return list(element.optJSONArray(ClimbingTags.KEY_MEMBERS));
+	}
+
+	/** The members of the array that are objects, in order; none for null. */
+	public static List<JSONObject> list(JSONArray members) {
+		List<JSONObject> result = new ArrayList<>();
+		for (int index = 0; members != null && index < members.length(); index++) {
+			JSONObject member = members.optJSONObject(index);
+			if (member != null) {
+				result.add(member);
+			}
+		}
+		return result;
+	}
+
+	public static long ref(JSONObject member) {
+		return member.optLong(ClimbingTags.KEY_REF);
+	}
+
+	/** @return the member's type, or null for one that is no node, way or relation */
+	public static OsmEntity.EntityOsmType osmType(JSONObject member) {
+		try {
+			return OsmEntity.EntityOsmType.valueOf(member.optString(ClimbingTags.KEY_TYPE));
+		} catch (IllegalArgumentException unknownType) {
+			return null;
+		}
+	}
+
+	/** The ids of the members that are nodes, in order. */
+	public static List<Long> nodeRefs(List<JSONObject> members) {
+		List<Long> result = new ArrayList<>();
+		for (JSONObject member : members) {
+			if (osmType(member) == OsmEntity.EntityOsmType.node) {
+				result.add(ref(member));
+			}
+		}
+		return result;
+	}
+
+	/** The ids of the members that are ways or relations, in order. */
+	public static List<Long> collectionRefs(List<JSONObject> members) {
+		List<Long> result = new ArrayList<>();
+		for (JSONObject member : members) {
+			if (osmType(member) != OsmEntity.EntityOsmType.node) {
+				result.add(ref(member));
+			}
+		}
+		return result;
 	}
 
 	public static JSONObject member(String type, long ref, String role) {
@@ -40,7 +93,7 @@ public final class RelationMembers {
 
 	/** @return the position of the member's first occurrence, or -1. */
 	public static int indexOf(JSONArray members, String type, long ref) {
-		for (int index = 0; index < members.length(); index++) {
+		for (int index = 0; members != null && index < members.length(); index++) {
 			if (isMember(members.optJSONObject(index), type, ref)) {
 				return index;
 			}
@@ -108,14 +161,8 @@ public final class RelationMembers {
 	/** The members' ids in order, whatever their type. */
 	public static List<Long> refs(JSONArray members) {
 		List<Long> result = new ArrayList<>();
-		if (members == null) {
-			return result;
-		}
-		for (int index = 0; index < members.length(); index++) {
-			JSONObject member = members.optJSONObject(index);
-			if (member != null) {
-				result.add(member.optLong(ClimbingTags.KEY_REF));
-			}
+		for (JSONObject member : list(members)) {
+			result.add(ref(member));
 		}
 		return result;
 	}

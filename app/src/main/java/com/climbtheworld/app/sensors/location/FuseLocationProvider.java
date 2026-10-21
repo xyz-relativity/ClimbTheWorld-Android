@@ -36,9 +36,13 @@ public class FuseLocationProvider implements LocationListener {
 				.getSystemService(Context.LOCATION_SERVICE);
 	}
 
+	private boolean hasLocationPermission() {
+		return ActivityCompat.checkSelfPermission(parent.get(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+				|| ActivityCompat.checkSelfPermission(parent.get(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+	}
+
 	private void initLocation() {
-		if (ActivityCompat.checkSelfPermission(parent.get(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-				&& ActivityCompat.checkSelfPermission(parent.get(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+		if (!hasLocationPermission()) {
 			return;
 		}
 		lastLocation = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
@@ -53,8 +57,7 @@ public class FuseLocationProvider implements LocationListener {
 
 	public void requestUpdates(LocationEvent eventListener) {
 		this.eventListener = eventListener;
-		if (ActivityCompat.checkSelfPermission(parent.get(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-				&& ActivityCompat.checkSelfPermission(parent.get(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+		if (!hasLocationPermission()) {
 			return;
 		}
 

@@ -5,9 +5,6 @@ import android.widget.CompoundButton;
 import android.widget.Spinner;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.augmentedreality.ArCoreFeatures;
@@ -18,6 +15,7 @@ import com.climbtheworld.app.configs.DisplayFilterFragment;
 import com.climbtheworld.app.configs.IntercomFragment;
 import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.views.EdgeToEdge;
 
 public class SettingsActivity extends AppCompatActivity
 		implements CompoundButton.OnCheckedChangeListener {
@@ -29,12 +27,7 @@ public class SettingsActivity extends AppCompatActivity
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_settings);
 
-		ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-			Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars()
-					| WindowInsetsCompat.Type.displayCutout() | WindowInsetsCompat.Type.ime());
-			v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-			return WindowInsetsCompat.CONSUMED;
-		});
+		EdgeToEdge.padForSystemBars(findViewById(R.id.main));
 
 		configs = Configs.instance(this);
 		uiSetup();

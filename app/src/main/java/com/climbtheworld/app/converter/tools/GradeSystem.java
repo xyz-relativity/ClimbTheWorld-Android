@@ -210,18 +210,20 @@ public enum GradeSystem {
 
 		@Override
 		public View getDropDownView(int position, View convertView, @NonNull ViewGroup parent) {
-			return ListViewItemBuilder.getPaddedBuilder(context, convertView, false)
-					.setTitle(context.getString(Objects.requireNonNull(getItem(position)).localeName))
-					.setDescription(context.getString(getItem(position).shortName) + ": " + getItem(position).buildExample())
-					.build();
+			return row(ListViewItemBuilder.getPaddedBuilder(context, convertView, false), position);
 		}
 
 		@NonNull
 		@Override
 		public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-			return ListViewItemBuilder.getNonPaddedBuilder(context, convertView, false)
-					.setTitle(context.getString(Objects.requireNonNull(getItem(position)).localeName))
-					.setDescription(context.getString(getItem(position).shortName) + ": " + getItem(position).buildExample())
+			return row(ListViewItemBuilder.getNonPaddedBuilder(context, convertView, false), position);
+		}
+
+		/** The system's name over its short name and an example of its grades. */
+		private View row(ListViewItemBuilder builder, int position) {
+			GradeSystem system = Objects.requireNonNull(getItem(position));
+			return builder.setTitle(context.getString(system.localeName))
+					.setDescription(context.getString(system.shortName) + ": " + system.buildExample())
 					.build();
 		}
 	}

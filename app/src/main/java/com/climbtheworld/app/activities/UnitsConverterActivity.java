@@ -1,37 +1,26 @@
 package com.climbtheworld.app.activities;
 
-import android.content.Context;
 import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.GradeConverter;
-import com.climbtheworld.app.converter.LengthConverter;
-import com.climbtheworld.app.converter.TemperatureConverter;
-import com.climbtheworld.app.converter.WeightConverter;
+import com.climbtheworld.app.converter.UnitSystemConverter;
+import com.climbtheworld.app.converter.tools.LengthSystem;
+import com.climbtheworld.app.converter.tools.TemperatureSystem;
+import com.climbtheworld.app.converter.tools.WeightSystem;
+import com.climbtheworld.app.utils.views.EdgeToEdge;
 import com.climbtheworld.app.utils.views.IPagerViewFragment;
+import com.climbtheworld.app.utils.views.PagerViewAdapter;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.navigation.NavigationBarView;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class UnitsConverterActivity extends AppCompatActivity {
-	private LayoutInflater inflater;
-	private ViewPager viewPager;
-
-	private BottomNavigationView navigation;
 	private final List<IPagerViewFragment> views = new ArrayList<>();
 
 	@Override
@@ -39,87 +28,21 @@ public class UnitsConverterActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_units_converter);
 
-		ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-			Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars()
-					| WindowInsetsCompat.Type.displayCutout() | WindowInsetsCompat.Type.ime());
-			v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-			return WindowInsetsCompat.CONSUMED;
-		});
-
-		inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
-		navigation = findViewById(R.id.convertersNavigationBar);
-		navigation.setItemIconTintList(null);
-		navigation.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
-			@Override
-			public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-				int id = menuItem.getItemId();
-				if (id == R.id.converter_navigation_climbing_grades) {
-					viewPager.setCurrentItem(0, true);
-					return true;
-				} else if (id == R.id.converter_navigation_length_units) {
-					viewPager.setCurrentItem(1, true);
-					return true;
-				} else if (id == R.id.converter_navigation_weight_units) {
-					viewPager.setCurrentItem(2, true);
-					return true;
-				} else if (id == R.id.converter_navigation_temperature_units) {
-					viewPager.setCurrentItem(3, true);
-					return true;
-				}
-				return false;
-			}
-		});
+		EdgeToEdge.padForSystemBars(findViewById(R.id.main));
 
 		views.add(new GradeConverter(this, R.layout.fragment_units_converter_discrete_values));
-		views.add(new LengthConverter(this, R.layout.fragment_units_converter_continuous_values));
-		views.add(new WeightConverter(this, R.layout.fragment_units_converter_continuous_values));
-		views.add(new TemperatureConverter(this, R.layout.fragment_units_converter_continuous_values));
+		views.add(new UnitSystemConverter<>(this, R.layout.fragment_units_converter_continuous_values,
+				LengthSystem.class, Configs.ConfigKey.converterLengthSystem));
+		views.add(new UnitSystemConverter<>(this, R.layout.fragment_units_converter_continuous_values,
+				WeightSystem.class, Configs.ConfigKey.converterWeightSystem));
+		views.add(new UnitSystemConverter<>(this, R.layout.fragment_units_converter_continuous_values,
+				TemperatureSystem.class, Configs.ConfigKey.converterTemperatureSystem));
 
-		viewPager = findViewById(R.id.converterContainerPager);
-		viewPager.setAdapter(new PagerAdapter() {
-			@Override
-			public int getCount() {
-				return views.size();
-			}
+		ViewPager viewPager = findViewById(R.id.converterContainerPager);
+		viewPager.setAdapter(new PagerViewAdapter(getLayoutInflater(), views));
 
-			@NonNull
-			@Override
-			public Object instantiateItem(@NonNull ViewGroup collection, int position) {
-				IPagerViewFragment fragment = views.get(position);
-				ViewGroup layout = (ViewGroup) inflater.inflate(fragment.getViewId(), collection, false);
-				collection.addView(layout);
-				fragment.onCreate(layout);
-				return layout;
-			}
-
-			@Override
-			public void destroyItem(@NonNull ViewGroup collection, int position, @NonNull Object view) {
-				collection.removeView((View) view);
-			}
-
-			@Override
-			public boolean isViewFromObject(@NonNull View view, @NonNull Object object) {
-				return view == object;
-			}
-		});
-
-		viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-			@Override
-			public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
-			}
-
-			@Override
-			public void onPageSelected(int position) {
-				navigation.getMenu().getItem(position).setChecked(true);
-				views.get(position).onViewSelected();
-			}
-
-			@Override
-			public void onPageScrollStateChanged(int state) {
-
-			}
-		});
+		BottomNavigationView navigation = findViewById(R.id.convertersNavigationBar);
+		navigation.setItemIconTintList(null);
+		PagerViewAdapter.linkNavigation(navigation, viewPager, views);
 	}
 }

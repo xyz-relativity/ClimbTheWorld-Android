@@ -102,7 +102,7 @@ public class GeoNodeArtificialKindTest {
 			throws JSONException {
 		GeoNode node = new GeoNode(new JSONObject("{\"type\":\"" + elementType
 				+ "\",\"id\":1,\"lat\":45.1,\"lon\":-73.2,\"tags\":" + tags + "}"));
-		assertEquals(GeoNode.NodeTypes.artificial, node.getNodeType());
+		assertEquals(OsmEntity.EntityClimbingType.artificial, node.getNodeType());
 		return node.getArtificialKind();
 	}
 }

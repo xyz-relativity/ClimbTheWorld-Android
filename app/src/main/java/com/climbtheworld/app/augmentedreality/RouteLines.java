@@ -26,8 +26,7 @@ public class RouteLines {
 	private List<RouteLine> routes = Collections.emptyList();
 	private final Set<Long> topIds = new HashSet<>();
 	private boolean changed;
-	private double originLatitude = Double.NaN;
-	private double originLongitude = Double.NaN;
+	private final LayoutOrigin origin = new LayoutOrigin();
 	private int terrainVersion;
 	private long builtAtMillis;
 
@@ -66,9 +65,7 @@ public class RouteLines {
 	public void update(double latitude, double longitude,
 	                   TerrainWireframe.ElevationSource ground, BottomElevation bottoms,
 	                   int terrainVersion, long nowMillis) {
-		boolean moved = Double.isNaN(originLatitude)
-				|| Math.hypot(getEastOfOrigin(longitude), getNorthOfOrigin(latitude))
-				> ClimbingHulls.REBUILD_DISTANCE_METERS;
+		boolean moved = origin.needsLayout(latitude, longitude);
 		boolean terrainChanged = terrainVersion != this.terrainVersion
 				&& nowMillis - builtAtMillis >= ClimbingHulls.TERRAIN_REBUILD_DELAY_MS;
 		if (!changed && !moved && !terrainChanged) {
@@ -76,13 +73,12 @@ public class RouteLines {
 		}
 
 		changed = false;
-		originLatitude = latitude;
-		originLongitude = longitude;
+		origin.moveTo(latitude, longitude);
 		this.terrainVersion = terrainVersion;
 		builtAtMillis = nowMillis;
 		for (RouteLine route : routes) {
-			double distance = Math.hypot(getEastOfOrigin(route.bottom.decimalLongitude),
-					getNorthOfOrigin(route.bottom.decimalLatitude));
+			double distance = Math.hypot(origin.eastOf(route.bottom.decimalLongitude),
+					origin.northOf(route.bottom.decimalLatitude));
 			route.build(latitude, longitude, ground, bottoms.getElevation(route.bottom, distance));
 		}
 	}
@@ -98,18 +94,8 @@ public class RouteLines {
 		return topIds.contains(nodeId);
 	}
 
-	/**
-	 * @return how far east of where the routes were laid out from the position is, in meters
-	 */
-	double getEastOfOrigin(double longitude) {
-		return (longitude - originLongitude) * ClimbingHull.METERS_PER_DEGREE
-				* Math.cos(Math.toRadians(originLatitude));
-	}
-
-	/**
-	 * @return how far north of where the routes were laid out from the position is, in meters
-	 */
-	double getNorthOfOrigin(double latitude) {
-		return (latitude - originLatitude) * ClimbingHull.METERS_PER_DEGREE;
+	/** Where the routes were laid out from, as of the last {@link #update} */
+	LayoutOrigin getOrigin() {
+		return origin;
 	}
 }

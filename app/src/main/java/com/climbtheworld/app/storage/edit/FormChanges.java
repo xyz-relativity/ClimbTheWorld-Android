@@ -1,12 +1,12 @@
 package com.climbtheworld.app.storage.edit;
 
 import com.climbtheworld.app.storage.database.ClimbingTags;
+import com.climbtheworld.app.storage.upload.OsmElements;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
@@ -37,9 +37,12 @@ public final class FormChanges {
 	 * @return a copy of original with the user's changes
 	 */
 	public static JSONObject resolve(JSONObject original, JSONObject untouched, JSONObject edited) {
-		JSONObject result = copy(original);
+		JSONObject result = OsmElements.copy(original);
 		try {
-			result.put(ClimbingTags.KEY_TAGS, resolveTags(tags(original), tags(untouched), tags(edited)));
+			result.put(ClimbingTags.KEY_TAGS, resolveTags(
+					OsmElements.tagMap(OsmElements.tags(original)),
+					OsmElements.tagMap(OsmElements.tags(untouched)),
+					OsmElements.tagMap(OsmElements.tags(edited))));
 			if (moved(untouched, edited)) {
 				result.put(ClimbingTags.KEY_LAT, edited.optDouble(ClimbingTags.KEY_LAT));
 				result.put(ClimbingTags.KEY_LON, edited.optDouble(ClimbingTags.KEY_LON));
@@ -113,28 +116,5 @@ public final class FormChanges {
 				- edited.optDouble(ClimbingTags.KEY_LAT, 0)) > COORDINATE_TOLERANCE
 				|| Math.abs(untouched.optDouble(ClimbingTags.KEY_LON, 0)
 				- edited.optDouble(ClimbingTags.KEY_LON, 0)) > COORDINATE_TOLERANCE;
-	}
-
-	/** Values as text, as they are uploaded. */
-	private static Map<String, String> tags(JSONObject element) {
-		Map<String, String> result = new HashMap<>();
-		JSONObject tags = element.optJSONObject(ClimbingTags.KEY_TAGS);
-		if (tags == null) {
-			return result;
-		}
-		Iterator<String> keys = tags.keys();
-		while (keys.hasNext()) {
-			String key = keys.next();
-			result.put(key, tags.optString(key));
-		}
-		return result;
-	}
-
-	private static JSONObject copy(JSONObject json) {
-		try {
-			return new JSONObject(json.toString());
-		} catch (JSONException e) {
-			throw new IllegalStateException(e);
-		}
 	}
 }

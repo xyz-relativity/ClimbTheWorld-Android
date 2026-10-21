@@ -9,8 +9,8 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
+import com.climbtheworld.app.storage.edit.RelationMembers;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -81,12 +81,9 @@ public final class RouteRelation {
 		startInfo.put(ClimbingTags.KEY_TAGS, new JSONObject(tags.toString()));
 
 		Set<Long> pitchIds = new HashSet<>();
-		JSONArray members = relation.jsonNodeInfo.optJSONArray(ClimbingTags.KEY_MEMBERS);
-		for (int index = 0; members != null && index < members.length(); index++) {
-			JSONObject member = members.optJSONObject(index);
-			if (member != null && OsmEntity.EntityOsmType.way.name().equals(
-					member.optString(ClimbingTags.KEY_TYPE))) {
-				pitchIds.add(member.optLong(ClimbingTags.KEY_REF));
+		for (JSONObject member : RelationMembers.of(relation.jsonNodeInfo)) {
+			if (RelationMembers.osmType(member) == OsmEntity.EntityOsmType.way) {
+				pitchIds.add(RelationMembers.ref(member));
 			}
 		}
 		return new RouteRelation(route, new Start(startInfo, route),

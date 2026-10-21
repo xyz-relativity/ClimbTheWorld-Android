@@ -2,8 +2,6 @@ package com.climbtheworld.app.utils.views.dialogs;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -30,6 +28,7 @@ import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.FilteredListAdapter;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 import com.climbtheworld.app.utils.views.Sorters;
+import com.climbtheworld.app.utils.views.TextWatchers;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -124,20 +123,7 @@ public class ClusterDialogBuilder {
 		};
 
 		EditText filter = result.findViewById(R.id.editFind);
-		filter.addTextChangedListener(new TextWatcher() {
-			@Override
-			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-			}
-
-			@Override
-			public void onTextChanged(CharSequence s, int start, int before, int count) {
-			}
-
-			@Override
-			public void afterTextChanged(Editable s) {
-				adapter.applyFilter(s.toString());
-			}
-		});
+		filter.addTextChangedListener(TextWatchers.afterTextChanged(s -> adapter.applyFilter(s.toString())));
 
 		((ListView) result.findViewById(R.id.listGroupItems)).setAdapter(adapter);
 		return result;

@@ -1,6 +1,7 @@
 package com.climbtheworld.app.augmentedreality;
 
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.utils.GeoUtils;
 
 import org.locationtech.jts.algorithm.Distance;
@@ -35,7 +36,7 @@ public class ClimbingHull {
 	static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory();
 
 	public final String key;
-	public final GeoNode.NodeTypes type;
+	public final OsmEntity.EntityClimbingType type;
 	// The relation as a POI, in the middle of the hull.
 	public final GeoNode pin;
 	// The hull, as a closed ring.
@@ -53,7 +54,7 @@ public class ClimbingHull {
 	 * @param longitudes the hull, as a closed ring
 	 * @param nodeIds    the nodes of the relation and of the relations in it
 	 */
-	public ClimbingHull(String key, GeoNode.NodeTypes type, GeoNode pin, double[] latitudes,
+	public ClimbingHull(String key, OsmEntity.EntityClimbingType type, GeoNode pin, double[] latitudes,
 	                    double[] longitudes, long[] nodeIds) {
 		this.key = key;
 		this.type = type;

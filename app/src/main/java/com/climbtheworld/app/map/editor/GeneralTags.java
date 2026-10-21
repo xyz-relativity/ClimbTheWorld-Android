@@ -1,7 +1,5 @@
 package com.climbtheworld.app.map.editor;
 
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -13,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.utils.views.TextWatchers;
 
 import java.math.BigDecimal;
 import java.util.Locale;
@@ -41,73 +40,32 @@ public class GeneralTags extends Tags implements ITags {
 
 		updateLocation();
 
-		editLatitude.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-			@Override
-			public void onFocusChange(View view, boolean b) {
-				if (!b) {
-					try {
-						writeLocation(editPoi);
-					} catch (NumberFormatException e) {
-						Toast.makeText(parent, R.string.coordinates_parse_failed, Toast.LENGTH_LONG).show();
-						return;
-					}
+		View.OnFocusChangeListener writeLocationOnLeave = (view, hasFocus) -> {
+			if (!hasFocus) {
+				try {
+					writeLocation(editPoi);
+				} catch (NumberFormatException e) {
+					Toast.makeText(parent, R.string.coordinates_parse_failed, Toast.LENGTH_LONG).show();
 				}
 			}
-		});
-		editLongitude.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-			@Override
-			public void onFocusChange(View view, boolean b) {
-				if (!b) {
-					try {
-						writeLocation(editPoi);
-					} catch (NumberFormatException e) {
-						Toast.makeText(parent, R.string.coordinates_parse_failed, Toast.LENGTH_LONG).show();
-					}
-				}
-			}
-		});
+		};
+		editLatitude.setOnFocusChangeListener(writeLocationOnLeave);
+		editLongitude.setOnFocusChangeListener(writeLocationOnLeave);
 
 		editTopoName.setText(editNode.getName());
-		editTopoName.addTextChangedListener(new TextWatcher() {
-			@Override
-			public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-			}
-
-			@Override
-			public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-				saveToNode(editNode);
-				refreshEditor();
-			}
-
-			@Override
-			public void afterTextChanged(Editable editable) {
-
-			}
-		});
+		editTopoName.addTextChangedListener(TextWatchers.afterTextChanged(editable -> {
+			saveToNode(editNode);
+			refreshEditor();
+		}));
 
 		// Empty for an element without an ele tag, so that 0 can mean sea level.
 		editElevation.setText(editNode.getTags().has(ClimbingTags.KEY_ELEVATION)
 				? BigDecimal.valueOf(editNode.elevationMeters).stripTrailingZeros().toPlainString() : "");
-		editDescription.addTextChangedListener(new TextWatcher() {
-			TextView description = parent.findViewById(R.id.description);
-
-			@Override
-			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-			}
-
-			@Override
-			public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-			}
-
-			@Override
-			public void afterTextChanged(Editable s) {
-				description.setText(parent.getString(R.string.description_num_characters, editDescription.getText().length()));
-				editDescription.setHint(parent.getString(R.string.description_num_characters, editDescription.getText().length()));
-			}
-		});
+		TextView description = parent.findViewById(R.id.description);
+		editDescription.addTextChangedListener(TextWatchers.afterTextChanged(s -> {
+			description.setText(parent.getString(R.string.description_num_characters, editDescription.getText().length()));
+			editDescription.setHint(parent.getString(R.string.description_num_characters, editDescription.getText().length()));
+		}));
 		editDescription.setText(editNode.getKey(ClimbingTags.KEY_DESCRIPTION));
 		editWebsite.setText(editNode.getWebsite());
 	}

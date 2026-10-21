@@ -233,27 +233,24 @@ public class PubSubManager {
 
 	public void onSubscriberPublisherChanged(PeerHandle peerHandle, PubSubID uuid,
 	                                         ObservableHashMap.MapEvent event) {
-		Log.d(TAG, "Publisher " + uuid.callsign + " has " + event + ": " + uuid.uuid);
-		if (destroyed) {
-			return;
-		}
-
-		if (event == ObservableHashMap.MapEvent.REMOVED) {
-			applyRegistryChange(peerRegistry.lose(peerHandle));
-			return;
-		}
-
-		PeerRegistry.Change<PeerHandle> change =
-				peerRegistry.register(PeerRegistry.Role.SUBSCRIBE, peerHandle, uuid);
-		applyRegistryChange(change);
-		peerConnectionStates.markDiscovered(peerHandle);
-		triggerUiUpdate(uuid, change.newPeer ? ObservableHashMap.MapEvent.ADDED :
-				ObservableHashMap.MapEvent.UPDATED);
+		onPeerChanged("Publisher", PeerRegistry.Role.SUBSCRIBE, peerHandle, uuid, event, false);
 	}
 
 	public void onPublisherSubscriberChanged(PeerHandle peerHandle, PubSubID uuid,
 	                                         ObservableHashMap.MapEvent event) {
-		Log.d(TAG, "Subscriber " + uuid.callsign + " has " + event + ": " + uuid.uuid);
+		onPeerChanged("Subscriber", PeerRegistry.Role.PUBLISH, peerHandle, uuid, event, true);
+	}
+
+	/**
+	 * A peer found, changed or lost by this side's session of the role.
+	 *
+	 * @param opensNetwork whether this side opens the data path to a peer found, as the publisher
+	 *                     does
+	 */
+	private void onPeerChanged(String peerKind, PeerRegistry.Role role, PeerHandle peerHandle,
+	                           PubSubID uuid, ObservableHashMap.MapEvent event,
+	                           boolean opensNetwork) {
+		Log.d(TAG, peerKind + " " + uuid.callsign + " has " + event + ": " + uuid.uuid);
 		if (destroyed) {
 			return;
 		}
@@ -263,11 +260,12 @@ public class PubSubManager {
 			return;
 		}
 
-		PeerRegistry.Change<PeerHandle> change =
-				peerRegistry.register(PeerRegistry.Role.PUBLISH, peerHandle, uuid);
+		PeerRegistry.Change<PeerHandle> change = peerRegistry.register(role, peerHandle, uuid);
 		applyRegistryChange(change);
 		peerConnectionStates.markDiscovered(peerHandle);
-		initiateNetworkStack(peerHandle, publisher.getDiscoverySession(), true);
+		if (opensNetwork) {
+			initiateNetworkStack(peerHandle, publisher.getDiscoverySession(), true);
+		}
 		triggerUiUpdate(uuid, change.newPeer ? ObservableHashMap.MapEvent.ADDED :
 				ObservableHashMap.MapEvent.UPDATED);
 	}

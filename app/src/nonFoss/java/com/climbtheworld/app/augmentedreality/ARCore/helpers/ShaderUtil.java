@@ -22,11 +22,20 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
 
 /**
  * Shader helper functions.
  */
 public class ShaderUtil {
+	/** A buffer of size floats, in the order GL reads them. */
+	public static FloatBuffer floatBuffer(int size) {
+		return ByteBuffer.allocateDirect(size * Float.BYTES).order(ByteOrder.nativeOrder())
+				.asFloatBuffer();
+	}
+
 	/**
 	 * Converts a raw text file, saved as a resource, into an OpenGL ES shader.
 	 *

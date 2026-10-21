@@ -9,9 +9,9 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
+import com.climbtheworld.app.storage.edit.RelationMembers;
 import com.climbtheworld.app.storage.logbook.LogBookFilter;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -332,49 +332,30 @@ public final class ClimbingRouteCounter {
 	 */
 	public Map<Long, Integer> numberRoutes(OsmCollectionEntity crag) {
 		Map<Long, Integer> result = new HashMap<>();
-		JSONArray members = crag.jsonNodeInfo.optJSONArray(ClimbingTags.KEY_MEMBERS);
+		List<JSONObject> members = RelationMembers.of(crag.jsonNodeInfo);
 		if (crag.osmType != OsmEntity.EntityOsmType.relation
 				|| crag.entityClimbingType != OsmEntity.EntityClimbingType.crag
-				|| members == null) {
+				|| members.isEmpty()) {
 			return result;
 		}
 
-		List<Long> nodeIds = new ArrayList<>();
-		List<Long> collectionIds = new ArrayList<>();
-		for (int index = 0; index < members.length(); index++) {
-			JSONObject member = members.optJSONObject(index);
-			if (member == null) {
-				continue;
-			}
-			if (OsmEntity.EntityOsmType.node.name().equals(member.optString(ClimbingTags.KEY_TYPE))) {
-				nodeIds.add(member.optLong(ClimbingTags.KEY_REF));
-			} else {
-				collectionIds.add(member.optLong(ClimbingTags.KEY_REF));
-			}
-		}
-		Map<Long, OsmNode> nodes = source.loadNodes(nodeIds);
+		Map<Long, OsmNode> nodes = source.loadNodes(RelationMembers.nodeRefs(members));
+		List<Long> collectionIds = RelationMembers.collectionRefs(members);
 		Map<String, OsmCollectionEntity> collections = collectionIds.isEmpty()
 				? Collections.emptyMap() : source.loadCollections(collectionIds);
 
 		int number = 0;
-		for (int index = 0; index < members.length(); index++) {
-			JSONObject member = members.optJSONObject(index);
-			if (member == null) {
-				continue;
-			}
-			long memberId = member.optLong(ClimbingTags.KEY_REF);
-			String memberType = member.optString(ClimbingTags.KEY_TYPE);
-			if (OsmEntity.EntityOsmType.node.name().equals(memberType)) {
+		for (JSONObject member : members) {
+			long memberId = RelationMembers.ref(member);
+			OsmEntity.EntityOsmType memberOsmType = RelationMembers.osmType(member);
+			if (memberOsmType == OsmEntity.EntityOsmType.node) {
 				OsmNode node = nodes.get(memberId);
 				if (node != null && takesRouteNumber(node)) {
 					result.put(memberId, ++number);
 				}
 				continue;
 			}
-			OsmEntity.EntityOsmType memberOsmType;
-			try {
-				memberOsmType = OsmEntity.EntityOsmType.valueOf(memberType);
-			} catch (IllegalArgumentException ignored) {
+			if (memberOsmType == null) {
 				continue;
 			}
 			OsmCollectionEntity collection = collections.get(
@@ -402,41 +383,21 @@ public final class ClimbingRouteCounter {
 
 	private void addContainedRouteCollections(OsmCollectionEntity parent, Set<String> visited,
 	                                          Accumulator accumulator, Set<Long> routePartNodes) {
-		JSONArray members = parent.jsonNodeInfo.optJSONArray(ClimbingTags.KEY_MEMBERS);
-		if (members == null) {
-			return;
-		}
-
-		List<Long> collectionIds = new ArrayList<>();
-		for (int index = 0; index < members.length(); index++) {
-			JSONObject member = members.optJSONObject(index);
-			if (member != null && !OsmEntity.EntityOsmType.node.name()
-					.equals(member.optString(ClimbingTags.KEY_TYPE))) {
-				collectionIds.add(member.optLong(ClimbingTags.KEY_REF));
-			}
-		}
+		List<JSONObject> members = RelationMembers.of(parent.jsonNodeInfo);
+		List<Long> collectionIds = RelationMembers.collectionRefs(members);
 		if (collectionIds.isEmpty()) {
 			return;
 		}
 
 		Map<String, OsmCollectionEntity> collections = source.loadCollections(collectionIds);
-		for (int index = 0; index < members.length(); index++) {
-			JSONObject member = members.optJSONObject(index);
-			if (member == null) {
-				continue;
-			}
+		for (JSONObject member : members) {
 			String memberType = member.optString(ClimbingTags.KEY_TYPE);
-			if (OsmEntity.EntityOsmType.node.name().equals(memberType)) {
+			OsmEntity.EntityOsmType memberOsmType = RelationMembers.osmType(member);
+			if (memberOsmType == OsmEntity.EntityOsmType.node) {
 				continue;
 			}
-			long memberId = member.optLong(ClimbingTags.KEY_REF);
-			if (!visited.add(entityKey(memberType, memberId))) {
-				continue;
-			}
-			OsmEntity.EntityOsmType memberOsmType;
-			try {
-				memberOsmType = OsmEntity.EntityOsmType.valueOf(memberType);
-			} catch (IllegalArgumentException ignored) {
+			long memberId = RelationMembers.ref(member);
+			if (!visited.add(entityKey(memberType, memberId)) || memberOsmType == null) {
 				continue;
 			}
 			OsmCollectionEntity collection = collections.get(

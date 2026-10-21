@@ -1,6 +1,6 @@
 package com.climbtheworld.app.augmentedreality;
 
-import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.database.OsmEntity;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
@@ -28,8 +28,7 @@ public class ClimbingHulls {
 	private final Set<Long> hiddenNodes = new HashSet<>();
 	private Map<String, ClimbingHull> hulls = new HashMap<>();
 	private boolean changed;
-	private double originLatitude = Double.NaN;
-	private double originLongitude = Double.NaN;
+	private final LayoutOrigin origin = new LayoutOrigin();
 	private double range;
 	private boolean withElevation;
 	private int terrainVersion;
@@ -67,9 +66,7 @@ public class ClimbingHulls {
 	                   TerrainWireframe.ElevationSource elevations, int terrainVersion,
 	                   long nowMillis) {
 		boolean withElevation = elevations != null;
-		boolean moved = Double.isNaN(originLatitude)
-				|| Math.hypot(getEastOfOrigin(longitude), getNorthOfOrigin(latitude))
-				> REBUILD_DISTANCE_METERS;
+		boolean moved = origin.needsLayout(latitude, longitude);
 		boolean terrainChanged = withElevation && terrainVersion != this.terrainVersion
 				&& nowMillis - builtAtMillis >= TERRAIN_REBUILD_DELAY_MS;
 		if (!changed && !moved && !terrainChanged && range == this.range
@@ -78,8 +75,7 @@ public class ClimbingHulls {
 		}
 
 		changed = false;
-		originLatitude = latitude;
-		originLongitude = longitude;
+		origin.moveTo(latitude, longitude);
 		this.range = range;
 		this.withElevation = withElevation;
 		this.terrainVersion = terrainVersion;
@@ -99,8 +95,8 @@ public class ClimbingHulls {
 			}
 		}
 		// As on the map, crags are drawn over the areas holding them.
-		drawn.sort((first, second) -> Boolean.compare(first.type == GeoNode.NodeTypes.crag,
-				second.type == GeoNode.NodeTypes.crag));
+		drawn.sort((first, second) -> Boolean.compare(first.type == OsmEntity.EntityClimbingType.crag,
+				second.type == OsmEntity.EntityClimbingType.crag));
 	}
 
 	/**
@@ -118,18 +114,8 @@ public class ClimbingHulls {
 		return hiddenNodes.contains(nodeId);
 	}
 
-	/**
-	 * @return how far east of where the hulls were laid out from the position is, in meters
-	 */
-	double getEastOfOrigin(double longitude) {
-		return (longitude - originLongitude) * ClimbingHull.METERS_PER_DEGREE
-				* Math.cos(Math.toRadians(originLatitude));
-	}
-
-	/**
-	 * @return how far north of where the hulls were laid out from the position is, in meters
-	 */
-	double getNorthOfOrigin(double latitude) {
-		return (latitude - originLatitude) * ClimbingHull.METERS_PER_DEGREE;
+	/** Where the hulls were laid out from, as of the last {@link #update} */
+	LayoutOrigin getOrigin() {
+		return origin;
 	}
 }

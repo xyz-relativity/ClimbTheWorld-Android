@@ -26,17 +26,17 @@ public class GeoNodeEditTest {
 		GeoNode node = new GeoNode(json);
 
 		assertTrue(OsmContent.sameContent(before, node.jsonNodeInfo));
-		assertEquals(GeoNode.NodeTypes.route, node.getNodeType());
+		assertEquals(OsmEntity.EntityClimbingType.route, node.getNodeType());
 		assertEquals(1234, node.elevationMeters, 0);
 	}
 
 	@Test
 	public void climbingAmongOtherSportsMakesAFacility() throws JSONException {
-		assertEquals(GeoNode.NodeTypes.artificial, GeoNode.NodeTypes.fromElement(
+		assertEquals(OsmEntity.EntityClimbingType.artificial, OsmEntity.EntityClimbingType.ofPin(
 				node("{\"sport\":\"hiking;climbing\",\"leisure\":\"pitch\"}")));
 		assertEquals(OsmEntity.EntityClimbingType.artificial, OsmEntity.EntityClimbingType.fromElement(
 				node("{\"sport\":\"climbing; hiking\",\"leisure\":\"sports_centre\"}")));
-		assertEquals(GeoNode.NodeTypes.unknown, GeoNode.NodeTypes.fromElement(
+		assertEquals(OsmEntity.EntityClimbingType.others, OsmEntity.EntityClimbingType.ofPin(
 				node("{\"sport\":\"ice_climbing\",\"leisure\":\"pitch\"}")));
 	}
 
@@ -46,9 +46,9 @@ public class GeoNodeEditTest {
 		JSONObject cliff = new JSONObject("{\"type\":\"way\",\"id\":1,\"nodes\":[1,2],"
 				+ "\"tags\":{\"sport\":\"climbing\",\"natural\":\"cliff\"}}");
 
-		assertEquals(GeoNode.NodeTypes.crag, GeoNode.NodeTypes.fromElement(crag));
+		assertEquals(OsmEntity.EntityClimbingType.crag, OsmEntity.EntityClimbingType.ofPin(crag));
 		assertEquals(OsmEntity.EntityClimbingType.crag, OsmEntity.EntityClimbingType.fromElement(crag));
-		assertEquals(GeoNode.NodeTypes.unknown, GeoNode.NodeTypes.fromElement(cliff));
+		assertEquals(OsmEntity.EntityClimbingType.others, OsmEntity.EntityClimbingType.ofPin(cliff));
 		assertEquals(OsmEntity.EntityClimbingType.others,
 				OsmEntity.EntityClimbingType.fromElement(cliff));
 		assertEquals(OsmEntity.EntityClimbingType.NAN,
@@ -57,26 +57,26 @@ public class GeoNodeEditTest {
 
 	@Test
 	public void nodeEditorOffersCragAndAreaOnlyToNodesThatAreOne() {
-		GeoNode.NodeTypes route = GeoNode.NodeTypes.route;
-		GeoNode.NodeTypes artificial = GeoNode.NodeTypes.artificial;
+		OsmEntity.EntityClimbingType route = OsmEntity.EntityClimbingType.route;
+		OsmEntity.EntityClimbingType artificial = OsmEntity.EntityClimbingType.artificial;
 
-		assertArrayEquals(new GeoNode.NodeTypes[]{route, artificial},
-				GeoNode.NodeTypes.nodeEditorValues(route));
-		assertArrayEquals(new GeoNode.NodeTypes[]{route, artificial},
-				GeoNode.NodeTypes.nodeEditorValues(artificial));
-		assertArrayEquals(new GeoNode.NodeTypes[]{route, GeoNode.NodeTypes.crag, artificial},
-				GeoNode.NodeTypes.nodeEditorValues(GeoNode.NodeTypes.crag));
-		assertArrayEquals(new GeoNode.NodeTypes[]{route, GeoNode.NodeTypes.area, artificial},
-				GeoNode.NodeTypes.nodeEditorValues(GeoNode.NodeTypes.area));
-		assertArrayEquals(new GeoNode.NodeTypes[]{route, artificial, GeoNode.NodeTypes.unknown},
-				GeoNode.NodeTypes.nodeEditorValues(GeoNode.NodeTypes.unknown));
+		assertArrayEquals(new OsmEntity.EntityClimbingType[]{route, artificial},
+				OsmEntity.EntityClimbingType.nodeEditorValues(route));
+		assertArrayEquals(new OsmEntity.EntityClimbingType[]{route, artificial},
+				OsmEntity.EntityClimbingType.nodeEditorValues(artificial));
+		assertArrayEquals(new OsmEntity.EntityClimbingType[]{route, OsmEntity.EntityClimbingType.crag, artificial},
+				OsmEntity.EntityClimbingType.nodeEditorValues(OsmEntity.EntityClimbingType.crag));
+		assertArrayEquals(new OsmEntity.EntityClimbingType[]{route, OsmEntity.EntityClimbingType.area, artificial},
+				OsmEntity.EntityClimbingType.nodeEditorValues(OsmEntity.EntityClimbingType.area));
+		assertArrayEquals(new OsmEntity.EntityClimbingType[]{route, artificial, OsmEntity.EntityClimbingType.others},
+				OsmEntity.EntityClimbingType.nodeEditorValues(OsmEntity.EntityClimbingType.others));
 	}
 
 	@Test
 	public void keepingTheTypeChangesNoTag() throws JSONException {
 		GeoNode node = new GeoNode(node("{\"sport\":\"climbing\",\"climbing\":\"route\"}"));
 
-		node.setClimbingType(GeoNode.NodeTypes.route);
+		node.setClimbingType(OsmEntity.EntityClimbingType.route);
 
 		assertEquals("route", node.getKey(ClimbingTags.KEY_CLIMBING));
 	}
@@ -86,7 +86,7 @@ public class GeoNodeEditTest {
 		GeoNode node = new GeoNode(node("{\"sport\":\"climbing;hiking\",\"climbing\":\"route_bottom\","
 				+ "\"leisure\":\"nature_reserve\"}"));
 
-		node.setClimbingType(GeoNode.NodeTypes.crag);
+		node.setClimbingType(OsmEntity.EntityClimbingType.crag);
 
 		assertEquals("climbing;hiking", node.getKey(ClimbingTags.KEY_SPORT));
 		assertEquals("crag", node.getKey(ClimbingTags.KEY_CLIMBING));
@@ -97,12 +97,12 @@ public class GeoNodeEditTest {
 	public void gymTypeComesAndGoesWithTheSportsCentre() throws JSONException {
 		GeoNode node = new GeoNode(node("{\"sport\":\"hiking\",\"climbing\":\"route_bottom\"}"));
 
-		node.setClimbingType(GeoNode.NodeTypes.artificial);
+		node.setClimbingType(OsmEntity.EntityClimbingType.artificial);
 		assertEquals("climbing", node.getKey(ClimbingTags.KEY_SPORT));
 		assertEquals("sports_centre", node.getKey(ClimbingTags.KEY_LEISURE));
 		assertFalse(node.getTags().has(ClimbingTags.KEY_CLIMBING));
 
-		node.setClimbingType(GeoNode.NodeTypes.route);
+		node.setClimbingType(OsmEntity.EntityClimbingType.route);
 		assertFalse(node.getTags().has(ClimbingTags.KEY_LEISURE));
 		assertEquals("route_bottom", node.getKey(ClimbingTags.KEY_CLIMBING));
 	}
@@ -116,7 +116,7 @@ public class GeoNodeEditTest {
 
 		assertEquals(OsmEntity.EntityClimbingType.crag,
 				OsmEntity.EntityClimbingType.fromElement(node(tags.toString())));
-		assertEquals(GeoNode.NodeTypes.crag, GeoNode.NodeTypes.fromElement(node(tags.toString())));
+		assertEquals(OsmEntity.EntityClimbingType.crag, OsmEntity.EntityClimbingType.ofPin(node(tags.toString())));
 	}
 
 	@Test
@@ -125,10 +125,10 @@ public class GeoNodeEditTest {
 				+ "\"climbing:grade:french\":\"6a\",\"ref\":\"12\"}";
 		String rock = "{\"sport\":\"climbing\",\"climbing\":\"boulder\",\"natural\":\"stone\"}";
 
-		assertEquals(GeoNode.NodeTypes.route, GeoNode.NodeTypes.fromElement(node(graded)));
+		assertEquals(OsmEntity.EntityClimbingType.route, OsmEntity.EntityClimbingType.ofPin(node(graded)));
 		assertEquals(OsmEntity.EntityClimbingType.route,
 				OsmEntity.EntityClimbingType.fromElement(node(graded)));
-		assertEquals(GeoNode.NodeTypes.unknown, GeoNode.NodeTypes.fromElement(node(rock)));
+		assertEquals(OsmEntity.EntityClimbingType.others, OsmEntity.EntityClimbingType.ofPin(node(rock)));
 		assertEquals(OsmEntity.EntityClimbingType.others,
 				OsmEntity.EntityClimbingType.fromElement(node(rock)));
 	}
@@ -138,7 +138,7 @@ public class GeoNodeEditTest {
 		GeoNode node = new GeoNode(node("{\"sport\":\"climbing\",\"climbing\":\"boulder\","
 				+ "\"climbing:grade:french\":\"6a\"}"));
 
-		node.setClimbingType(GeoNode.NodeTypes.route);
+		node.setClimbingType(OsmEntity.EntityClimbingType.route);
 		node.setLevelFromID(GradeSystem.uiaa.indexOf("7"), ClimbingTags.KEY_GRADE_TAG);
 
 		assertEquals("boulder", node.getKey(ClimbingTags.KEY_CLIMBING));
@@ -153,12 +153,12 @@ public class GeoNodeEditTest {
 				"{\"sport\":\"climbing\",\"leisure\":\"pitch\",\"man_made\":\"tower\",\"tower:type\":\"climbing\"}",
 				"{\"sport\":\"climbing\",\"man_made\":\"tower\",\"tower:type\":\"climbing\"}"};
 		for (String tags : facilities) {
-			assertEquals(tags, GeoNode.NodeTypes.artificial,
-					GeoNode.NodeTypes.fromElement(node(tags)));
+			assertEquals(tags, OsmEntity.EntityClimbingType.artificial,
+					OsmEntity.EntityClimbingType.ofPin(node(tags)));
 			assertEquals(tags, OsmEntity.EntityClimbingType.artificial,
 					OsmEntity.EntityClimbingType.fromElement(node(tags)));
 		}
-		assertEquals(GeoNode.NodeTypes.unknown, GeoNode.NodeTypes.fromElement(
+		assertEquals(OsmEntity.EntityClimbingType.others, OsmEntity.EntityClimbingType.ofPin(
 				node("{\"sport\":\"soccer\",\"leisure\":\"pitch\"}")));
 	}
 
@@ -167,7 +167,7 @@ public class GeoNodeEditTest {
 		GeoNode node = new GeoNode(node("{\"sport\":\"climbing\",\"leisure\":\"pitch\","
 				+ "\"man_made\":\"tower\",\"tower:type\":\"climbing\"}"));
 
-		node.setClimbingType(GeoNode.NodeTypes.route);
+		node.setClimbingType(OsmEntity.EntityClimbingType.route);
 
 		assertFalse(node.getTags().has(ClimbingTags.KEY_LEISURE));
 		assertEquals("route_bottom", node.getKey(ClimbingTags.KEY_CLIMBING));

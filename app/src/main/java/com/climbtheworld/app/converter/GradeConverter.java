@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.Spinner;
@@ -18,6 +17,7 @@ import com.climbtheworld.app.activities.UnitConverterGradesAdvancedActivity;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.utils.views.GradeArrayAdapter;
+import com.climbtheworld.app.utils.views.SpinnerUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -166,20 +166,12 @@ public class GradeConverter extends ConverterFragment {
 		if (selectLocation < dropdownSystem.getAdapter().getCount()) {
 			dropdownSystem.setSelection(selectLocation, false);
 		}
-		dropdownSystem.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-			@Override
-			public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-				configs.setString(Configs.ConfigKey.converterGradeSystem, GradeSystem.printableValues()[i].getMainKey());
-				((TextView) findViewById(R.id.gradingSelectLabel)).setText(parent.getResources().getString(R.string.grade_system,
-						parent.getResources().getString(GradeSystem.printableValues()[i].shortName)));
-				buildGradeDropdown(GradeSystem.printableValues()[i]);
-			}
-
-			@Override
-			public void onNothingSelected(AdapterView<?> adapterView) {
-
-			}
-		});
+		dropdownSystem.setOnItemSelectedListener(SpinnerUtils.onItemSelected(i -> {
+			configs.setString(Configs.ConfigKey.converterGradeSystem, GradeSystem.printableValues()[i].getMainKey());
+			((TextView) findViewById(R.id.gradingSelectLabel)).setText(parent.getResources().getString(R.string.grade_system,
+					parent.getResources().getString(GradeSystem.printableValues()[i].shortName)));
+			buildGradeDropdown(GradeSystem.printableValues()[i]);
+		}));
 
 		buildGradeDropdown(GradeSystem.printableValues()[dropdownSystem.getSelectedItemPosition()]);
 
@@ -199,22 +191,14 @@ public class GradeConverter extends ConverterFragment {
 		Spinner dropdownGrade = findViewById(R.id.gradeSelectSpinner);
 		dropdownGrade.setAdapter(new GradeArrayAdapter(parent, system, false));
 		dropdownGrade.setSelection(Math.max(system.positionOf(configs.getInt(Configs.ConfigKey.converterGradeValue)), 0));
-		dropdownGrade.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-			@Override
-			public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-				// Switching systems selects the grade shown for the kept one, which may start on an
-				// easier row: keeping the row lets switching back show the grade picked before.
-				if (system.positionOf(configs.getInt(Configs.ConfigKey.converterGradeValue)) != i) {
-					configs.setInt(Configs.ConfigKey.converterGradeValue, system.indexAt(i));
-				}
-				listAdapter.notifyDataSetChanged();
+		dropdownGrade.setOnItemSelectedListener(SpinnerUtils.onItemSelected(i -> {
+			// Switching systems selects the grade shown for the kept one, which may start on an
+			// easier row: keeping the row lets switching back show the grade picked before.
+			if (system.positionOf(configs.getInt(Configs.ConfigKey.converterGradeValue)) != i) {
+				configs.setInt(Configs.ConfigKey.converterGradeValue, system.indexAt(i));
 			}
-
-			@Override
-			public void onNothingSelected(AdapterView<?> adapterView) {
-
-			}
-		});
+			listAdapter.notifyDataSetChanged();
+		}));
 	}
 
 	@Override

@@ -1,9 +1,6 @@
 package com.climbtheworld.app.tutorial;
 
-import android.text.Html;
-import android.text.method.LinkMovementMethod;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -21,9 +18,7 @@ public class DownloadRegionFragment extends TutorialFragment {
 
 	@Override
 	public void onCreate(ViewGroup view) {
-		((TextView) view.findViewById(R.id.fragmentText))
-				.setText(Html.fromHtml(parent.get().getResources().getString(R.string.tutorial_region_download_message)));
-		((TextView) view.findViewById(R.id.fragmentText)).setMovementMethod(LinkMovementMethod.getInstance());
+		setMessage(view, getString(R.string.tutorial_region_download_message));
 
 		downloadView = new RemotePagerFragment(parent.get(), R.layout.fragment_data_manager_remote_data, DataFragment.initCountryMap(parent.get()));
 		downloadView.onCreate(view);

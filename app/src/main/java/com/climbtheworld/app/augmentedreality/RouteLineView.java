@@ -69,12 +69,9 @@ public class RouteLineView extends View {
 			return;
 		}
 
-		projection.setCamera(camera.degAzimuth, -camera.degPitch,
-				AugmentedRealityUtils.focalLength(camera.angleOfViewDeg.x, viewSize.x),
-				AugmentedRealityUtils.focalLength(camera.angleOfViewDeg.y, viewSize.y),
-				getWidth() / 2.0, getHeight() / 2.0);
-		double observerEast = routeLines.getEastOfOrigin(camera.decimalLongitude);
-		double observerNorth = routeLines.getNorthOfOrigin(camera.decimalLatitude);
+		projection.setCamera(camera, viewSize, getWidth(), getHeight());
+		double observerEast = routeLines.getOrigin().eastOf(camera.decimalLongitude);
+		double observerNorth = routeLines.getOrigin().northOf(camera.decimalLatitude);
 
 		for (RouteLine route : shown) {
 			ClimbingHull.GroundLine line = route.getLine();

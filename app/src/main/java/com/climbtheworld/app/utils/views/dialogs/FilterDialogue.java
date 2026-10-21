@@ -3,8 +3,6 @@ package com.climbtheworld.app.utils.views.dialogs;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ScrollView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -13,15 +11,6 @@ import com.climbtheworld.app.configs.ConfigFragment;
 import com.climbtheworld.app.configs.DisplayFilterFragment;
 
 public class FilterDialogue {
-	private static View buildFilterDialog(final AppCompatActivity activity,
-	                                      final ViewGroup container) {
-		ScrollView wrapper = new ScrollView(activity);
-		wrapper.addView(activity.getLayoutInflater().inflate(R.layout.fragment_dialog_filter, container, false));
-		wrapper.setVerticalScrollBarEnabled(true);
-		wrapper.setHorizontalScrollBarEnabled(false);
-		return wrapper;
-	}
-
 	public static void showFilterDialog(final AppCompatActivity activity, ConfigFragment.OnConfigChangeListener listener) {
 		final AlertDialog alertDialog = DialogBuilder.getNewDialog(activity);
 		alertDialog.setCancelable(true);
@@ -30,7 +19,8 @@ public class FilterDialogue {
 
 		alertDialog.setIcon(R.drawable.ic_filter);
 
-		View view = buildFilterDialog(activity, alertDialog.getListView());
+		View view = DialogueUtils.scrollingView(activity, R.layout.fragment_dialog_filter,
+				alertDialog.getListView());
 
 		final DisplayFilterFragment filter = new DisplayFilterFragment(activity, view);
 		filter.addListener(listener);

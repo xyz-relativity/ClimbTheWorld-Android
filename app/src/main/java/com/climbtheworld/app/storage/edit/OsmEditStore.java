@@ -315,16 +315,10 @@ public class OsmEditStore {
 	public Map<String, OsmEntity> loadMembers(JSONArray members) {
 		Map<String, OsmEntity> result = new HashMap<>();
 		List<Long> nodeIds = new ArrayList<>();
-		for (int index = 0; index < members.length(); index++) {
-			JSONObject member = members.optJSONObject(index);
-			if (member == null) {
-				continue;
-			}
-			long ref = member.optLong(ClimbingTags.KEY_REF);
-			EntityOsmType memberType;
-			try {
-				memberType = EntityOsmType.valueOf(member.optString(ClimbingTags.KEY_TYPE));
-			} catch (IllegalArgumentException e) {
+		for (JSONObject member : RelationMembers.list(members)) {
+			long ref = RelationMembers.ref(member);
+			EntityOsmType memberType = RelationMembers.osmType(member);
+			if (memberType == null) {
 				continue;
 			}
 			if (memberType == EntityOsmType.node) {
@@ -547,7 +541,7 @@ public class OsmEditStore {
 			return null;
 		}
 		if (stored.localUpdateState == EntityState.clean) {
-			return copy(stored.jsonNodeInfo);
+			return OsmElements.copy(stored.jsonNodeInfo);
 		}
 		return stored.baseJson;
 	}
@@ -616,17 +610,10 @@ public class OsmEditStore {
 		}
 
 		List<Long> result = new ArrayList<>();
-		JSONArray members = collection.jsonNodeInfo.optJSONArray(ClimbingTags.KEY_MEMBERS);
-		for (int index = 0; members != null && index < members.length(); index++) {
-			JSONObject member = members.optJSONObject(index);
-			if (member == null) {
-				continue;
-			}
-			long ref = member.optLong(ClimbingTags.KEY_REF, 0);
-			EntityOsmType memberType;
-			try {
-				memberType = EntityOsmType.valueOf(member.optString(ClimbingTags.KEY_TYPE));
-			} catch (IllegalArgumentException e) {
+		for (JSONObject member : RelationMembers.of(collection.jsonNodeInfo)) {
+			long ref = RelationMembers.ref(member);
+			EntityOsmType memberType = RelationMembers.osmType(member);
+			if (memberType == null) {
 				continue;
 			}
 			if (memberType == EntityOsmType.node) {
@@ -743,7 +730,7 @@ public class OsmEditStore {
 	}
 
 	private static OsmEntity fromJson(JSONObject json) {
-		JSONObject restored = copy(json);
+		JSONObject restored = OsmElements.copy(json);
 		if (EntityOsmType.node.name().equals(restored.optString(ClimbingTags.KEY_TYPE))) {
 			return new OsmNode(restored);
 		}
@@ -760,14 +747,6 @@ public class OsmEditStore {
 			throw new IllegalStateException(e);
 		}
 		return json;
-	}
-
-	private static JSONObject copy(JSONObject json) {
-		try {
-			return new JSONObject(json.toString());
-		} catch (JSONException e) {
-			throw new IllegalStateException(e);
-		}
 	}
 
 	private CountryBoxes countryBoxes() {

@@ -10,17 +10,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.utils.constants.UIConstants;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 
 import org.jetbrains.annotations.NotNull;
 
-public class SpinnerMarkerArrayAdapter extends ArrayAdapter<GeoNode.NodeTypes> {
+public class SpinnerMarkerArrayAdapter extends ArrayAdapter<OsmEntity.EntityClimbingType> {
 
 	AppCompatActivity context;
 	GeoNode editPoi;
 
-	public SpinnerMarkerArrayAdapter(AppCompatActivity context, int resource, GeoNode.NodeTypes[] objects, GeoNode poi) {
+	public SpinnerMarkerArrayAdapter(AppCompatActivity context, int resource, OsmEntity.EntityClimbingType[] objects, GeoNode poi) {
 		super(context, resource, objects);
 		this.context = context;
 		this.editPoi = poi;

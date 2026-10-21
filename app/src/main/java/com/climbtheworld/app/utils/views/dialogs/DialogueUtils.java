@@ -10,12 +10,15 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.LayoutRes;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
@@ -101,7 +104,6 @@ public class DialogueUtils {
 				//registering popup with OnMenuItemClickListener
 				popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
 					public boolean onMenuItemClick(MenuItem item) {
-						ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
 						String urlFormat;
 						Intent intent;
 
@@ -142,10 +144,7 @@ public class DialogueUtils {
 							urlFormat = String.format(Locale.getDefault(), "climbtheworld://map_view/location/%s",
 									new MapCoordinate(location.decimalLatitude, location.decimalLongitude,
 											location.elevationMeters).toDelimitedString());
-							clipboard.setPrimaryClip(ClipData.newPlainText(name, urlFormat));
-
-							Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
-									Toast.LENGTH_LONG).show();
+							copyLocation(activity, name, urlFormat);
 						} else if (id == R.id.openStreetMapUrlLocation) {
 							urlFormat = String.format(Locale.getDefault(),
 									"https://www.openstreetmap.org/%s/%d#map=19/%f/%f",
@@ -153,10 +152,7 @@ public class DialogueUtils {
 									osmId,
 									location.decimalLatitude,
 									location.decimalLongitude);
-							clipboard.setPrimaryClip(ClipData.newPlainText(name, urlFormat));
-
-							Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
-									Toast.LENGTH_LONG).show();
+							copyLocation(activity, name, urlFormat);
 						} else if (id == R.id.googleMapsUrlLocation) {
 							//Docs: https://developers.google.com/maps/documentation/urls/guide#search-action
 							urlFormat = String.format(Locale.getDefault(), "https://www.google.com/maps/place/%f,%f/@%f,%f,19z/data=!5m1!1e4",
@@ -164,18 +160,13 @@ public class DialogueUtils {
 									location.decimalLongitude,
 									location.decimalLatitude,
 									location.decimalLongitude);
-							clipboard.setPrimaryClip(ClipData.newPlainText(name, urlFormat));
-
-							Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
-									Toast.LENGTH_LONG).show();
+							copyLocation(activity, name, urlFormat);
 						} else if (id == R.id.geoUrlLocation) {
 							urlFormat = String.format(Locale.getDefault(), "geo:%f,%f,%f",
 									location.decimalLatitude,
 									location.decimalLongitude,
 									location.elevationMeters);
-							clipboard.setPrimaryClip(ClipData.newPlainText(name, urlFormat));
-							Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
-									Toast.LENGTH_LONG).show();
+							copyLocation(activity, name, urlFormat);
 						}
 						return true;
 					}
@@ -183,6 +174,24 @@ public class DialogueUtils {
 				popup.show();
 			}
 		});
+	}
+
+	/** The layout inflated in a vertical scroll, for a dialog's content. */
+	static View scrollingView(AppCompatActivity activity, @LayoutRes int layout,
+	                          ViewGroup container) {
+		ScrollView wrapper = new ScrollView(activity);
+		wrapper.addView(activity.getLayoutInflater().inflate(layout, container, false));
+		wrapper.setVerticalScrollBarEnabled(true);
+		wrapper.setHorizontalScrollBarEnabled(false);
+		return wrapper;
+	}
+
+	/** Puts the link on the clipboard, under the location's name, and says so. */
+	private static void copyLocation(AppCompatActivity activity, String name, String link) {
+		ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
+		clipboard.setPrimaryClip(ClipData.newPlainText(name, link));
+		Toast.makeText(activity, activity.getResources().getString(R.string.location_copied),
+				Toast.LENGTH_LONG).show();
 	}
 
 	protected static void addOkButton(AppCompatActivity activity, AlertDialog alertDialog) {

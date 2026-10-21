@@ -13,10 +13,6 @@ import android.view.animation.RotateAnimation;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
@@ -35,6 +31,7 @@ import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.utils.GeoUtils;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector4d;
+import com.climbtheworld.app.utils.views.EdgeToEdge;
 import com.climbtheworld.app.utils.views.RotationGestureDetector;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -48,11 +45,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Locale;
 
-public class EnvironmentActivity extends AppCompatActivity implements IEnvironmentListener, IOrientationListener {
+public class EnvironmentActivity extends MapWidgetActivity implements IEnvironmentListener, IOrientationListener {
 
 	private DeviceLocationManager deviceLocationManager;
 	private OrientationManager orientationManager;
-	private MapLibreMapWidget mapWidget;
 
 	private static final int LOCATION_UPDATE_DELAY_MS = 500;
 	private static final String COORD_VALUE = "%.6f°";
@@ -91,12 +87,7 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 		MapLibre.getInstance(this);
 		setContentView(R.layout.activity_environment);
 
-		ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-			Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars()
-					| WindowInsetsCompat.Type.displayCutout() | WindowInsetsCompat.Type.ime());
-			v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-			return WindowInsetsCompat.CONSUMED;
-		});
+		EdgeToEdge.padForSystemBars(findViewById(R.id.main));
 
 		Ask.on(this)
 				.id(502) // in case you are invoking multiple time Ask from same activity or fragment
@@ -271,18 +262,8 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 	}
 
 	@Override
-	protected void onStart() {
-		super.onStart();
-		mapWidget.onStart();
-	}
-
-	@Override
 	protected void onResume() {
 		super.onResume();
-
-		Globals.onResume(this);
-		mapWidget.onResume();
-
 		deviceLocationManager.requestUpdates(this::updatePosition);
 		orientationManager.requestUpdates(this);
 		sensorManager.onResume();
@@ -293,35 +274,7 @@ public class EnvironmentActivity extends AppCompatActivity implements IEnvironme
 		deviceLocationManager.stopUpdates();
 		orientationManager.stopUpdates();
 		sensorManager.onPause();
-		mapWidget.onPause();
-
-		Globals.onPause(this);
-
 		super.onPause();
-	}
-
-	@Override
-	protected void onStop() {
-		mapWidget.onStop();
-		super.onStop();
-	}
-
-	@Override
-	public void onLowMemory() {
-		super.onLowMemory();
-		mapWidget.onLowMemory();
-	}
-
-	@Override
-	protected void onDestroy() {
-		mapWidget.onDestroy();
-		super.onDestroy();
-	}
-
-	@Override
-	protected void onSaveInstanceState(Bundle outState) {
-		mapWidget.onSaveInstanceState(outState);
-		super.onSaveInstanceState(outState);
 	}
 
 	public void updateOrientation(OrientationManager.OrientationEvent event) {

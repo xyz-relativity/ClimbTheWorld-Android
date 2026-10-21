@@ -1,13 +1,10 @@
 package com.climbtheworld.app.storage.edit;
 
 import com.climbtheworld.app.storage.database.ClimbingTags;
+import com.climbtheworld.app.storage.upload.OsmElements;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
 /** Compares two versions of an OSM element by what would be uploaded: tags, position, nodes and members. */
 public final class OsmContent {
@@ -29,20 +26,7 @@ public final class OsmContent {
 	}
 
 	static boolean sameTags(JSONObject first, JSONObject second) {
-		return tagMap(first).equals(tagMap(second));
-	}
-
-	private static Map<String, String> tagMap(JSONObject tags) {
-		Map<String, String> result = new HashMap<>();
-		if (tags == null) {
-			return result;
-		}
-		Iterator<String> keys = tags.keys();
-		while (keys.hasNext()) {
-			String key = keys.next();
-			result.put(key, tags.optString(key));
-		}
-		return result;
+		return OsmElements.tagMap(first).equals(OsmElements.tagMap(second));
 	}
 
 	private static boolean sameCoordinate(JSONObject first, JSONObject second, String key) {

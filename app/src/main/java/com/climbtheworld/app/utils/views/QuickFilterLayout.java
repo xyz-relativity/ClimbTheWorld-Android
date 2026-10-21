@@ -1,8 +1,6 @@
 package com.climbtheworld.app.utils.views;
 
 import android.content.Context;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.EditText;
@@ -35,19 +33,6 @@ public class QuickFilterLayout extends LinearLayout {
 		EditText text = findViewById(R.id.editFind);
 		View clear = findViewById(R.id.buttonClearFilter);
 		clear.setOnClickListener(view -> text.setText(""));
-		text.addTextChangedListener(new TextWatcher() {
-			@Override
-			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-			}
-
-			@Override
-			public void onTextChanged(CharSequence s, int start, int before, int count) {
-			}
-
-			@Override
-			public void afterTextChanged(Editable s) {
-				clear.setVisibility(s.length() > 0 ? VISIBLE : GONE);
-			}
-		});
+		text.addTextChangedListener(TextWatchers.afterTextChanged(s -> clear.setVisibility(s.length() > 0 ? VISIBLE : GONE)));
 	}
 }

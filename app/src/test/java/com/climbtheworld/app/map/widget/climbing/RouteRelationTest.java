@@ -6,8 +6,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
+import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
 
 import org.json.JSONArray;
@@ -41,7 +41,7 @@ public class RouteRelationTest {
 		// The start is the route_bottom, as the route.
 		assertEquals(10L, route.start.getID());
 		assertEquals("Flåklypa Grand Prix", route.start.getName());
-		assertEquals(GeoNode.NodeTypes.route, route.start.getNodeType());
+		assertEquals(OsmEntity.EntityClimbingType.route, route.start.getNodeType());
 		assertFalse(route.start.isRouteTop());
 		assertEquals(nodes.get(10L).decimalLatitude, route.start.decimalLatitude, 0);
 		// The top is the route_top, in the grade of the route.
@@ -54,7 +54,7 @@ public class RouteRelationTest {
 		assertSame(route.route, route.top.route);
 		assertEquals("relation", route.route.jsonNodeInfo.getString("type"));
 		assertEquals(21237508L, route.route.osmID);
-		assertEquals(GeoNode.NodeTypes.route, route.route.getNodeType());
+		assertEquals(OsmEntity.EntityClimbingType.route, route.route.getNodeType());
 		assertEquals(route.start.decimalLatitude, route.route.decimalLatitude, 0);
 		assertEquals(route.start.decimalLongitude, route.route.decimalLongitude, 0);
 

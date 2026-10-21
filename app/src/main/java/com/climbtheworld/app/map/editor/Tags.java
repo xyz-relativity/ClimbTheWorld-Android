@@ -2,21 +2,13 @@ package com.climbtheworld.app.map.editor;
 
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CompoundButton;
 
 import androidx.annotation.LayoutRes;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SwitchCompat;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.storage.database.GeoNode;
-import com.climbtheworld.app.utils.views.ListViewItemBuilder;
-import com.climbtheworld.app.utils.views.Sorters;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import com.climbtheworld.app.utils.views.StyleSwitches;
 
 public abstract class Tags {
 	private ViewGroup container;
@@ -33,40 +25,16 @@ public abstract class Tags {
 	}
 
 	void loadStyles(GeoNode poi) {
-		List<GeoNode.ClimbingStyle> checked = poi.getClimbingStyles();
-
-		ViewGroup stylesContainer = tagsView.findViewById(R.id.containerClimbingStyles);
-
-		for (GeoNode.ClimbingStyle styleName : Sorters.sortStyles(parent, GeoNode.ClimbingStyle.values())) {
-			View customSwitch = ListViewItemBuilder.getPaddedBuilder(parent)
-					.setTitle(parent.getString(styleName.getNameId()))
-					.setDescription(parent.getString(styleName.getDescriptionId()))
-					.setIcon(MarkerUtils.getStyleIcon(parent, Collections.singletonList(styleName)))
-					.setSwitchChecked(checked.contains(styleName))
-					.changeElementId(R.id.switchTypeEnabled, styleName.getNameId())
-					.setSwitchEvent(new CompoundButton.OnCheckedChangeListener() {
-						@Override
-						public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-							saveStyles(poi);
-							refreshEditor();
-						}
-					})
-					.build();
-
-			stylesContainer.addView(customSwitch);
-		}
+		StyleSwitches.add(parent, tagsView.findViewById(R.id.containerClimbingStyles),
+				poi.getClimbingStyles(), (compoundButton, b) -> {
+					saveStyles(poi);
+					refreshEditor();
+				});
 	}
 
 	void saveStyles(GeoNode poi) {
-		List<GeoNode.ClimbingStyle> styles = new ArrayList<>();
-		ViewGroup stylesContainer = tagsView.findViewById(R.id.containerClimbingStyles);
-		for (GeoNode.ClimbingStyle style : GeoNode.ClimbingStyle.values()) {
-			SwitchCompat styleCheckBox = stylesContainer.findViewById(style.getNameId());
-			if (styleCheckBox != null && styleCheckBox.isChecked()) {
-				styles.add(style);
-			}
-		}
-		poi.setClimbingStyles(styles);
+		poi.setClimbingStyles(
+				StyleSwitches.checked(tagsView.findViewById(R.id.containerClimbingStyles)));
 	}
 
 	/** Tells the editor a change shows on its map. */

@@ -5,8 +5,8 @@ import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
+import com.climbtheworld.app.storage.edit.RelationMembers;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayDeque;
@@ -63,12 +63,7 @@ final class ClimbingElementFilter {
 				}
 				continue;
 			}
-			JSONArray members = collection.jsonNodeInfo.optJSONArray(ClimbingTags.KEY_MEMBERS);
-			for (int index = 0; members != null && index < members.length(); index++) {
-				JSONObject member = members.optJSONObject(index);
-				if (member == null) {
-					continue;
-				}
+			for (JSONObject member : RelationMembers.of(collection.jsonNodeInfo)) {
 				String type = member.optString(ClimbingTags.KEY_TYPE);
 				long ref = member.optLong(ClimbingTags.KEY_REF);
 				addIfPresent(pending, OsmEntity.EntityOsmType.node.name().equals(type)

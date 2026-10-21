@@ -9,8 +9,6 @@ import com.google.ar.core.Coordinates2d;
 import com.google.ar.core.Frame;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 /**
@@ -24,19 +22,14 @@ class CameraBackground {
 	private static final int COORDS_PER_VERTEX = 2;
 	private static final int VERTEX_COUNT = QUAD_COORDS.length / COORDS_PER_VERTEX;
 
-	private final FloatBuffer quadCoords = floatBuffer(QUAD_COORDS.length).put(QUAD_COORDS);
+	private final FloatBuffer quadCoords = ShaderUtil.floatBuffer(QUAD_COORDS.length).put(QUAD_COORDS);
 	// Where each corner of the view is in the camera image, as ARCore crops and turns it.
-	private final FloatBuffer quadTexCoords = floatBuffer(QUAD_COORDS.length);
+	private final FloatBuffer quadTexCoords = ShaderUtil.floatBuffer(QUAD_COORDS.length);
 	private boolean created;
 	private int textureId;
 	private int program;
 	private int positionAttribute;
 	private int texCoordAttribute;
-
-	private static FloatBuffer floatBuffer(int size) {
-		return ByteBuffer.allocateDirect(size * Float.BYTES).order(ByteOrder.nativeOrder())
-				.asFloatBuffer();
-	}
 
 	/**
 	 * Makes the texture ARCore writes the camera image to, and the program drawing it. Again

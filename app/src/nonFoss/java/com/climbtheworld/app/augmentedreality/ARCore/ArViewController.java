@@ -2,7 +2,6 @@ package com.climbtheworld.app.augmentedreality.ARCore;
 
 import android.util.Log;
 import android.view.GestureDetector;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 
@@ -135,19 +134,7 @@ public class ArViewController implements ArViewTracking {
 			}
 		});
 		// A tap drops the route being aligned on there, see ArCoreSession.align.
-		GestureDetector taps = new GestureDetector(activity,
-				new GestureDetector.SimpleOnGestureListener() {
-					@Override
-					public boolean onDown(MotionEvent event) {
-						return true;
-					}
-
-					@Override
-					public boolean onSingleTapUp(MotionEvent event) {
-						arCore.tap(event.getX(), event.getY());
-						return true;
-					}
-				});
+		GestureDetector taps = arCore.tapDetector(activity);
 		surfaceView.setOnTouchListener((view, event) -> taps.onTouchEvent(event));
 		toolsButton.setOnClickListener(view -> {
 			toolsHidden = !toolsHidden;

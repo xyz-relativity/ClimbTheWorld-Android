@@ -7,19 +7,11 @@ import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.widget.PopupMenu;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.DisplayableGeoNode;
@@ -33,8 +25,6 @@ import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.map.widget.MapLibreMapWidget;
 import com.climbtheworld.app.map.widget.climbing.ClimbingRouteCounter;
 import com.climbtheworld.app.sensors.location.DeviceLocationManager;
-import com.climbtheworld.app.sensors.location.ILocationListener;
-import com.climbtheworld.app.sensors.orientation.IOrientationListener;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.ClimbingTags;
@@ -47,9 +37,11 @@ import com.climbtheworld.app.storage.database.OsmNode;
 import com.climbtheworld.app.storage.edit.FormChanges;
 import com.climbtheworld.app.storage.edit.OsmEditStore;
 import com.climbtheworld.app.storage.edit.RelationMembers;
+import com.climbtheworld.app.storage.upload.OsmElements;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.constants.Constants;
+import com.climbtheworld.app.utils.views.EdgeToEdge;
 import com.climbtheworld.app.utils.views.EditorMapSizer;
 import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -75,7 +67,7 @@ import needle.UiRelatedTask;
  * hands the relation back, a crag with the areas it joined or left, for that editor to save with
  * the member.
  */
-public class EditRelationActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
+public class EditRelationActivity extends MapWidgetActivity {
 	/** The stored relation to edit. */
 	public static final String EXTRA_RELATION_ID = "relationID";
 	/** The relation to edit as part of a member's edit; it comes back under the same key. */
@@ -95,7 +87,6 @@ public class EditRelationActivity extends AppCompatActivity implements IOrientat
 	private static final int REQUEST_ADVANCED_EDITOR = 0;
 	private static final int REQUEST_AREA_EDITOR = 1;
 
-	private MapLibreMapWidget mapWidget;
 	private DeviceLocationManager deviceLocationManager;
 	private OrientationManager orientationManager;
 	private ViewGroup containerTags;
@@ -159,12 +150,7 @@ public class EditRelationActivity extends AppCompatActivity implements IOrientat
 		MapLibre.getInstance(this);
 		setContentView(R.layout.activity_edit_relation);
 
-		ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-			Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars()
-					| WindowInsetsCompat.Type.displayCutout() | WindowInsetsCompat.Type.ime());
-			v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-			return WindowInsetsCompat.CONSUMED;
-		});
+		EdgeToEdge.padForSystemBars(findViewById(R.id.main));
 
 		store = new OsmEditStore(this);
 		containerTags = findViewById(R.id.containerTags);
@@ -183,24 +169,7 @@ public class EditRelationActivity extends AppCompatActivity implements IOrientat
 		});
 		mapWidget.setOnPoiClickListener(this::onPoiTapped);
 		mapWidget.setOnCollectionClickListener(this::onCollectionTapped);
-		mapWidget.setOnTouchListener((view, motionEvent) -> {
-			ViewParent scrollParent = view.getParent();
-			while (scrollParent != null && !(scrollParent instanceof ScrollView)) {
-				scrollParent = scrollParent.getParent();
-			}
-			if (scrollParent != null) {
-				switch (motionEvent.getAction()) {
-					case MotionEvent.ACTION_DOWN:
-						scrollParent.requestDisallowInterceptTouchEvent(true);
-						break;
-					case MotionEvent.ACTION_UP:
-					case MotionEvent.ACTION_CANCEL:
-						scrollParent.requestDisallowInterceptTouchEvent(false);
-						break;
-				}
-			}
-			return false;
-		});
+		mapWidget.setOnTouchListener(EditorMapSizer.holdScrollWhileTouched());
 
 		buildPopupMenu();
 
@@ -263,7 +232,7 @@ public class EditRelationActivity extends AppCompatActivity implements IOrientat
 
 	private void buildUi(Loaded loaded) {
 		relation = loaded.relation;
-		originalJson = copy(relation.jsonNodeInfo);
+		originalJson = OsmElements.copy(relation.jsonNodeInfo);
 		boolean area = isArea();
 		((TextView) findViewById(R.id.textRelationType)).setText(area ? R.string.area : R.string.crag);
 
@@ -287,14 +256,14 @@ public class EditRelationActivity extends AppCompatActivity implements IOrientat
 	private void buildTagSections() {
 		containerTags.removeAllViews();
 		tagSections.clear();
-		editNode = new GeoNode(copy(originalJson));
+		editNode = new GeoNode(OsmElements.copy(originalJson));
 
 		GeneralTags generalTags = new GeneralTags(editNode, this, containerTags);
 		generalTags.hideLocation();
 		tagSections.add(generalTags);
 		// The crag tags (grades, routes, lengths, styles) are for crag and area nodes, not relations.
-		if (editNode.getNodeType() != GeoNode.NodeTypes.crag
-				&& editNode.getNodeType() != GeoNode.NodeTypes.area) {
+		if (editNode.getNodeType() != OsmEntity.EntityClimbingType.crag
+				&& editNode.getNodeType() != OsmEntity.EntityClimbingType.area) {
 			tagSections.add(new OtherTags(editNode, this, containerTags));
 		}
 		for (ITags section : tagSections) {
@@ -302,7 +271,7 @@ public class EditRelationActivity extends AppCompatActivity implements IOrientat
 		}
 
 		// With the sections showing and before any change.
-		GeoNode untouched = new GeoNode(copy(originalJson));
+		GeoNode untouched = new GeoNode(OsmElements.copy(originalJson));
 		saveSections(untouched);
 		untouchedJson = untouched.jsonNodeInfo;
 	}
@@ -376,7 +345,7 @@ public class EditRelationActivity extends AppCompatActivity implements IOrientat
 			west = Math.min(west, place.decimalLongitude);
 			located = true;
 		}
-		GeoNode result = new GeoNode(copy(relation.jsonNodeInfo));
+		GeoNode result = new GeoNode(OsmElements.copy(relation.jsonNodeInfo));
 		if (located) {
 			result.updatePOILocation((north + south) / 2, (east + west) / 2, 0);
 		} else {
@@ -407,7 +376,7 @@ public class EditRelationActivity extends AppCompatActivity implements IOrientat
 			return;
 		}
 		GeoNode tapped = poi.getGeoNode();
-		GeoNode.NodeTypes wanted = isArea() ? GeoNode.NodeTypes.crag : GeoNode.NodeTypes.route;
+		OsmEntity.EntityClimbingType wanted = isArea() ? OsmEntity.EntityClimbingType.crag : OsmEntity.EntityClimbingType.route;
 		if (!EntityOsmType.node.name().equals(tapped.jsonNodeInfo.optString(ClimbingTags.KEY_TYPE,
 				EntityOsmType.node.name())) || tapped.getNodeType() != wanted) {
 			refuseTapped();
@@ -628,36 +597,9 @@ public class EditRelationActivity extends AppCompatActivity implements IOrientat
 		return new OsmCollectionEntity(json);
 	}
 
-	private static JSONObject copy(JSONObject json) {
-		try {
-			return new JSONObject(json.toString());
-		} catch (JSONException e) {
-			throw new IllegalStateException(e);
-		}
-	}
-
-	@Override
-	public void updateOrientation(OrientationManager.OrientationEvent event) {
-		mapWidget.onOrientationChange(event.getAdjusted(), event);
-	}
-
-	@Override
-	public void updatePosition(double pDecLatitude, double pDecLongitude, double pMetersAltitude, double accuracy) {
-		Globals.virtualCamera.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
-		mapWidget.onLocationChange(new MapCoordinate(pDecLatitude, pDecLongitude, pMetersAltitude));
-	}
-
-	@Override
-	protected void onStart() {
-		super.onStart();
-		mapWidget.onStart();
-	}
-
 	@Override
 	protected void onResume() {
 		super.onResume();
-		Globals.onResume(this);
-		mapWidget.onResume();
 		deviceLocationManager.requestUpdates(this);
 		orientationManager.requestUpdates(this);
 	}
@@ -666,33 +608,7 @@ public class EditRelationActivity extends AppCompatActivity implements IOrientat
 	protected void onPause() {
 		deviceLocationManager.stopUpdates();
 		orientationManager.stopUpdates();
-		Globals.onPause(this);
-		mapWidget.onPause();
 		super.onPause();
-	}
-
-	@Override
-	protected void onStop() {
-		mapWidget.onStop();
-		super.onStop();
-	}
-
-	@Override
-	public void onLowMemory() {
-		super.onLowMemory();
-		mapWidget.onLowMemory();
-	}
-
-	@Override
-	protected void onDestroy() {
-		mapWidget.onDestroy();
-		super.onDestroy();
-	}
-
-	@Override
-	protected void onSaveInstanceState(Bundle outState) {
-		mapWidget.onSaveInstanceState(outState);
-		super.onSaveInstanceState(outState);
 	}
 
 	@Override

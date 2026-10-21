@@ -11,6 +11,7 @@ import com.climbtheworld.app.converter.tools.LengthSystem;
 import com.climbtheworld.app.converter.tools.TemperatureSystem;
 import com.climbtheworld.app.converter.tools.WeightSystem;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.utils.constants.UIConstants;
 
 import java.lang.ref.WeakReference;
@@ -174,70 +175,53 @@ public class Configs {
 	}
 
 	public Set<GeoNode.ClimbingStyle> getClimbingStyles() {
-		if (!settings.contains(ConfigKey.filterStyles.storeKeyID)) {
-			return new TreeSet<>(
-					Arrays.asList((GeoNode.ClimbingStyle[]) ConfigKey.filterStyles.defaultVal));
-		}
-
-		String styles = settings.getString(ConfigKey.filterStyles.storeKeyID, null);
-
-		Set<GeoNode.ClimbingStyle> result = new TreeSet<>();
-		if (styles == null || styles.isEmpty()) {
-			return result;
-		}
-
-		for (String item : styles.split("#")) {
-			result.add(GeoNode.ClimbingStyle.valueOf(item));
-		}
-
-		return result;
+		return getEnumSet(ConfigKey.filterStyles, GeoNode.ClimbingStyle.class);
 	}
 
 	public void setClimbingStyles(Set<GeoNode.ClimbingStyle> styles) {
-		StringBuilder value = new StringBuilder();
-
-		for (GeoNode.ClimbingStyle item : styles) {
-			value.append(item.name()).append("#");
-		}
-
-		if (value.lastIndexOf("#") > 0) {
-			value.deleteCharAt(value.lastIndexOf("#"));
-		}
-
-		SharedPreferences.Editor editor = settings.edit();
-		editor.putString(ConfigKey.filterStyles.storeKeyID, value.toString());
-
-		editor.apply();
+		setEnumSet(ConfigKey.filterStyles, styles);
 	}
 
-	public Set<GeoNode.NodeTypes> getNodeTypes() {
-		if (!settings.contains(ConfigKey.filterNodeTypes.storeKeyID)) {
-			return new TreeSet<>(
-					Arrays.asList((GeoNode.NodeTypes[]) ConfigKey.filterNodeTypes.defaultVal));
+	public Set<OsmEntity.EntityClimbingType> getNodeTypes() {
+		return getEnumSet(ConfigKey.filterNodeTypes, OsmEntity.EntityClimbingType.class);
+	}
+
+	public void setNodeTypes(Set<OsmEntity.EntityClimbingType> types) {
+		setEnumSet(ConfigKey.filterNodeTypes, types);
+	}
+
+	/**
+	 * The values stored under the key, by their names, or the key's default array when nothing
+	 * is stored yet.
+	 */
+	@SuppressWarnings("unchecked")
+	private <T extends Enum<T>> Set<T> getEnumSet(ConfigKey key, Class<T> type) {
+		if (!settings.contains(key.storeKeyID)) {
+			return new TreeSet<>(Arrays.asList((T[]) key.defaultVal));
 		}
 
-		String styles = settings.getString(ConfigKey.filterNodeTypes.storeKeyID, null);
+		String stored = settings.getString(key.storeKeyID, null);
 
-		Set<GeoNode.NodeTypes> result = new TreeSet<>();
-		if (styles == null || styles.isEmpty()) {
+		Set<T> result = new TreeSet<>();
+		if (stored == null || stored.isEmpty()) {
 			return result;
 		}
 
-		for (String item : styles.split("#")) {
-			GeoNode.NodeTypes type = GeoNode.NodeTypes.valueOf(item);
-			// Settings stored before the unknown type stopped being selectable can still name it.
-			if (type != GeoNode.NodeTypes.unknown) {
-				result.add(type);
+		for (String item : stored.split("#")) {
+			try {
+				result.add(Enum.valueOf(type, item));
+			} catch (IllegalArgumentException removedValue) {
+				// Stored by an older version, like the "unknown" type that was a choice once.
 			}
 		}
 
 		return result;
 	}
 
-	public void setNodeTypes(Set<GeoNode.NodeTypes> styles) {
+	private void setEnumSet(ConfigKey key, Set<? extends Enum<?>> values) {
 		StringBuilder value = new StringBuilder();
 
-		for (GeoNode.NodeTypes item : styles) {
+		for (Enum<?> item : values) {
 			value.append(item.name()).append("#");
 		}
 
@@ -246,7 +230,7 @@ public class Configs {
 		}
 
 		SharedPreferences.Editor editor = settings.edit();
-		editor.putString(ConfigKey.filterNodeTypes.storeKeyID, value.toString());
+		editor.putString(key.storeKeyID, value.toString());
 
 		editor.apply();
 	}
@@ -314,7 +298,7 @@ public class Configs {
 		filterMaxGrade(R.string.max_grade, -1, "filterMaxGradeRow", -1),
 		filterStyles(R.string.climb_style, -1, "filterStyles", GeoNode.ClimbingStyle.values()),
 		filterNodeTypes(R.string.node_type, -1, "filterNodeTypes",
-				GeoNode.NodeTypes.selectableValues()),
+				OsmEntity.EntityClimbingType.features()),
 
 		// A new key, so the old modes keep telling the elevation they had, see isArElevation.
 		arHorizonMode(R.string.ar_horizon, R.string.ar_horizon_description, "arHorizonView",

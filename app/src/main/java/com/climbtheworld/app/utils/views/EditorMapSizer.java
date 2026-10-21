@@ -1,8 +1,11 @@
 package com.climbtheworld.app.utils.views;
 
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.view.ViewTreeObserver;
+import android.widget.ScrollView;
 
 public class EditorMapSizer {
 	/** How much of the form's visible height the map takes when the editor opens. */
@@ -10,6 +13,31 @@ public class EditorMapSizer {
 
 	private EditorMapSizer() {
 		//hide
+	}
+
+	/**
+	 * A touch listener keeping the form's scroll view from taking over a drag on the map, which
+	 * pans or rotates it instead.
+	 */
+	public static View.OnTouchListener holdScrollWhileTouched() {
+		return (view, motionEvent) -> {
+			ViewParent scrollParent = view.getParent();
+			while (scrollParent != null && !(scrollParent instanceof ScrollView)) {
+				scrollParent = scrollParent.getParent();
+			}
+			if (scrollParent != null) {
+				switch (motionEvent.getAction()) {
+					case MotionEvent.ACTION_DOWN:
+						scrollParent.requestDisallowInterceptTouchEvent(true);
+						break;
+					case MotionEvent.ACTION_UP:
+					case MotionEvent.ACTION_CANCEL:
+						scrollParent.requestDisallowInterceptTouchEvent(false);
+						break;
+				}
+			}
+			return false;
+		};
 	}
 
 	/**

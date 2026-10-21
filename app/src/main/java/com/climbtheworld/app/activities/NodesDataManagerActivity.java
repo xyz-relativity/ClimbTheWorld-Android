@@ -4,17 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import com.climbtheworld.app.R;
@@ -24,9 +15,10 @@ import com.climbtheworld.app.storage.views.LocalPagerFragment;
 import com.climbtheworld.app.storage.views.RemotePagerFragment;
 import com.climbtheworld.app.storage.views.UploadPagerFragment;
 import com.climbtheworld.app.utils.Globals;
+import com.climbtheworld.app.utils.views.EdgeToEdge;
 import com.climbtheworld.app.utils.views.IPagerViewFragment;
+import com.climbtheworld.app.utils.views.PagerViewAdapter;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.navigation.NavigationBarView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +27,6 @@ import java.util.Map;
 public class NodesDataManagerActivity extends AppCompatActivity {
 	private static final String TAB_ID_PARAMETER = "tabID";
 	private static final String DOWNLOAD_TAB_ID = "download";
-	private LayoutInflater inflater;
 	private ViewPager viewPager;
 
 	private BottomNavigationView navigation;
@@ -53,34 +44,7 @@ public class NodesDataManagerActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_nodes_data_manager);
 
-		ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-			Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars()
-					| WindowInsetsCompat.Type.displayCutout() | WindowInsetsCompat.Type.ime());
-			v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-			return WindowInsetsCompat.CONSUMED;
-		});
-
-		inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
-		navigation = findViewById(R.id.convertersNavigationBar);
-		navigation.setItemIconTintList(null);
-		navigation.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
-			@Override
-			public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-				int id = menuItem.getItemId();
-				if (id == R.id.navigation_download) {
-					viewPager.setCurrentItem(1, true);
-					return true;
-				} else if (id == R.id.navigation_upload) {
-					viewPager.setCurrentItem(2, true);
-					return true;
-				} else if (id == R.id.navigation_local) {
-					viewPager.setCurrentItem(0, true);
-					return true;
-				}
-				return false;
-			}
-		});
+		EdgeToEdge.padForSystemBars(findViewById(R.id.main));
 
 		Map<String, CountryViewState> countryMap = DataFragment.initCountryMap(this);
 
@@ -89,52 +53,11 @@ public class NodesDataManagerActivity extends AppCompatActivity {
 		views.add(new UploadPagerFragment(this, R.layout.fragment_data_manager_upload_data));
 
 		viewPager = findViewById(R.id.dataContainerPager);
-		viewPager.setAdapter(new PagerAdapter() {
-			@Override
-			public int getCount() {
-				return views.size();
-			}
+		viewPager.setAdapter(new PagerViewAdapter(getLayoutInflater(), views));
 
-			@NonNull
-			@Override
-			public Object instantiateItem(@NonNull ViewGroup collection, int position) {
-				IPagerViewFragment fragment = views.get(position);
-				ViewGroup layout = (ViewGroup) inflater.inflate(fragment.getViewId(), collection, false);
-				collection.addView(layout);
-				fragment.onCreate(layout);
-				return layout;
-			}
-
-			@Override
-			public void destroyItem(@NonNull ViewGroup collection, int position, @NonNull Object view) {
-				IPagerViewFragment fragment = views.get(position);
-				fragment.onDestroy(collection);
-				collection.removeView((View) view);
-			}
-
-			@Override
-			public boolean isViewFromObject(@NonNull View view, @NonNull Object object) {
-				return view == object;
-			}
-		});
-
-		viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-			@Override
-			public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
-			}
-
-			@Override
-			public void onPageSelected(int position) {
-				navigation.getMenu().getItem(position).setChecked(true);
-				views.get(position).onViewSelected();
-			}
-
-			@Override
-			public void onPageScrollStateChanged(int state) {
-
-			}
-		});
+		navigation = findViewById(R.id.convertersNavigationBar);
+		navigation.setItemIconTintList(null);
+		PagerViewAdapter.linkNavigation(navigation, viewPager, views);
 	}
 
 	@Override

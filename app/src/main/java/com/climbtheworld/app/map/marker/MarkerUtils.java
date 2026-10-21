@@ -18,6 +18,7 @@ import androidx.core.content.res.ResourcesCompat;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.utils.Globals;
 
 import java.util.EnumMap;
@@ -163,7 +164,7 @@ public class MarkerUtils {
 	public static Drawable getPoiIcon(AppCompatActivity parent, GeoNode poi,
 	                                  ColorStateList color) {
 		// Artificial kinds differ in shape and glyph even where they share a colour.
-		String kind = poi.getNodeType() == GeoNode.NodeTypes.artificial
+		String kind = poi.getNodeType() == OsmEntity.EntityClimbingType.artificial
 				? poi.getArtificialKind().name() : "";
 		final String cacheKey = "route" + "|" + poi.getNodeType().asString(parent) + "|" + kind
 				+ "|" + color;
@@ -182,7 +183,7 @@ public class MarkerUtils {
 							break;
 
 						case route:
-						case unknown:
+						case others:
 						default:
 							bitmap = createRouteBitmapWithTint(parent, color);
 							break;
@@ -264,7 +265,7 @@ public class MarkerUtils {
 
 	private static Bitmap createRouteBitmapWithTint(AppCompatActivity parent,
 	                                                ColorStateList color) {
-		return createBitmapWithPinTint(parent, GeoNode.NodeTypes.route.getIconId(), color);
+		return createBitmapWithPinTint(parent, OsmEntity.EntityClimbingType.route.getIconId(), color);
 	}
 
 	private static Bitmap createBitmapWithPinTint(AppCompatActivity parent, int layoutId,
@@ -281,7 +282,7 @@ public class MarkerUtils {
 	 */
 	private static Bitmap createArtificialBitmap(AppCompatActivity parent,
 	                                             GeoNode.ArtificialKind kind, ColorStateList color) {
-		View newViewElement = View.inflate(parent, GeoNode.NodeTypes.artificial.getIconId(), null);
+		View newViewElement = View.inflate(parent, OsmEntity.EntityClimbingType.artificial.getIconId(), null);
 		((ImageView) newViewElement.findViewById(R.id.imagePin)).setImageTintList(color);
 		((ImageView) newViewElement.findViewById(R.id.imagePinIcon))
 				.setImageResource(getArtificialGlyphId(kind));

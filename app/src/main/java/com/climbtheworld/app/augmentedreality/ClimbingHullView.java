@@ -11,7 +11,7 @@ import androidx.core.graphics.ColorUtils;
 
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.sensors.camera.VirtualCamera;
-import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.utils.Vector2d;
 
 /**
@@ -89,15 +89,12 @@ public class ClimbingHullView extends View {
 			return;
 		}
 
-		projection.setCamera(camera.degAzimuth, -camera.degPitch,
-				AugmentedRealityUtils.focalLength(camera.angleOfViewDeg.x, viewSize.x),
-				AugmentedRealityUtils.focalLength(camera.angleOfViewDeg.y, viewSize.y),
-				getWidth() / 2.0, getHeight() / 2.0);
-		double observerEast = hulls.getEastOfOrigin(camera.decimalLongitude);
-		double observerNorth = hulls.getNorthOfOrigin(camera.decimalLatitude);
+		projection.setCamera(camera, viewSize, getWidth(), getHeight());
+		double observerEast = hulls.getOrigin().eastOf(camera.decimalLongitude);
+		double observerNorth = hulls.getOrigin().northOf(camera.decimalLatitude);
 
 		for (ClimbingHull hull : hulls.getHulls()) {
-			boolean crag = hull.type == GeoNode.NodeTypes.crag;
+			boolean crag = hull.type == OsmEntity.EntityClimbingType.crag;
 			ClimbingHull.GroundLine fill = hull.getFill();
 			if (fill != null) {
 				int corners = projection.projectPolygon(fill, observerEast, observerNorth,

@@ -66,6 +66,7 @@ import com.climbtheworld.app.storage.TerrainElevation;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
+import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.utils.GeoUtils;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector2d;
@@ -306,7 +307,7 @@ public class MapLibreMapWidget {
 	static boolean isPoiVisibleAtZoom(GeoNode poi, double zoom) {
 		return zoom >= POI_RENDER_MIN_ZOOM_LEVEL
 				|| (zoom >= MapZoomLevels.AREA_MIN
-				&& poi.getNodeType() == GeoNode.NodeTypes.artificial);
+				&& poi.getNodeType() == OsmEntity.EntityClimbingType.artificial);
 	}
 
 	private static long markerId(GeoNode poi) {
@@ -1052,7 +1053,7 @@ public class MapLibreMapWidget {
 			}
 		}
 		pendingClusterPois = clusterPois;
-		return featureCollection(features);
+		return ClimbingGeometryBuilder.featureCollection(features);
 	}
 
 	private void renderClusters() {
@@ -1275,7 +1276,7 @@ public class MapLibreMapWidget {
 		if (source != null) {
 			List<String> features = new ArrayList<>(renderedHullLabelFeatures);
 			features.addAll(pendingPoiFeatures);
-			source.setGeoJson(featureCollection(features));
+			source.setGeoJson(ClimbingGeometryBuilder.featureCollection(features));
 			renderedPois.clear();
 			renderedPois.putAll(pendingRenderedPois);
 		}
@@ -1431,7 +1432,7 @@ public class MapLibreMapWidget {
 					viewConeRangeMeters);
 		}
 		appendObserverOffset(ring, 0, 0);
-		return featureCollection(Collections.singletonList(
+		return ClimbingGeometryBuilder.featureCollection(Collections.singletonList(
 				"{\"type\":\"Feature\",\"properties\":{},"
 						+ "\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[" + ring +
 						"]]}}"));
@@ -1443,7 +1444,7 @@ public class MapLibreMapWidget {
 			appendObserverOffset(ring, 360.0 * segment / VIEW_RANGE_CIRCLE_SEGMENTS,
 					viewConeRangeMeters);
 		}
-		return featureCollection(Collections.singletonList(
+		return ClimbingGeometryBuilder.featureCollection(Collections.singletonList(
 				"{\"type\":\"Feature\",\"properties\":{},"
 						+ "\"geometry\":{\"type\":\"LineString\",\"coordinates\":[" + ring +
 						"]}}"));
@@ -1483,17 +1484,6 @@ public class MapLibreMapWidget {
 					"},\"geometry\":{\"type\":\"Point\",\"coordinates\":["
 					+ coordinate.getLongitude() + "," + coordinate.getLatitude() + "]}}]}");
 		}
-	}
-
-	private String featureCollection(List<String> features) {
-		StringBuilder result = new StringBuilder("{\"type\":\"FeatureCollection\",\"features\":[");
-		for (int index = 0; index < features.size(); index++) {
-			if (index > 0) {
-				result.append(',');
-			}
-			result.append(features.get(index));
-		}
-		return result.append("]}").toString();
 	}
 
 	private Bitmap bitmapFromDrawable(int drawableId) {
@@ -1574,7 +1564,7 @@ public class MapLibreMapWidget {
 		editMarkerImageCount = editMarkerPois.size();
 		GeoJsonSource source = style.getSourceAs(EDIT_SOURCE_ID);
 		if (source != null) {
-			source.setGeoJson(featureCollection(features));
+			source.setGeoJson(ClimbingGeometryBuilder.featureCollection(features));
 		}
 	}
 

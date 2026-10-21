@@ -2,23 +2,15 @@ package com.climbtheworld.app.activities;
 
 import android.Manifest;
 import android.content.Intent;
-import android.graphics.drawable.LayerDrawable;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.ListPopupWindow;
 import android.widget.SearchView;
 
 import androidx.activity.OnBackPressedCallback;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.res.ResourcesCompat;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
@@ -27,24 +19,20 @@ import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.map.marker.NodeDisplayFilters;
-import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.map.model.MapBounds;
 import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.map.model.MapZoomLevels;
 import com.climbtheworld.app.map.widget.MapLibreMapWidget;
 import com.climbtheworld.app.sensors.location.DeviceLocationManager;
-import com.climbtheworld.app.sensors.location.ILocationListener;
-import com.climbtheworld.app.sensors.orientation.IOrientationListener;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
-import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.constants.Constants;
-import com.climbtheworld.app.utils.views.ListViewItemBuilder;
-import com.climbtheworld.app.utils.views.dialogs.DialogueUtils;
+import com.climbtheworld.app.utils.views.EdgeToEdge;
+import com.climbtheworld.app.utils.views.SearchResultsAdapter;
 import com.climbtheworld.app.utils.views.dialogs.FilterDialogue;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -55,8 +43,7 @@ import java.util.List;
 
 import needle.UiRelatedTask;
 
-public class MapActivity extends AppCompatActivity implements IOrientationListener, ILocationListener, ConfigFragment.OnConfigChangeListener {
-	private MapLibreMapWidget mapWidget;
+public class MapActivity extends MapWidgetActivity implements ConfigFragment.OnConfigChangeListener {
 	private OrientationManager orientationManager;
 	private DeviceLocationManager deviceLocationManager;
 
@@ -72,7 +59,7 @@ public class MapActivity extends AppCompatActivity implements IOrientationListen
 	private SearchView searchView;
 	private ListPopupWindow searchResultsPopup;
 	private OnBackPressedCallback searchResultsBackCallback;
-	private BaseAdapter searchResultsAdapter;
+	private SearchResultsAdapter searchResultsAdapter;
 	private final List<DisplayableGeoNode> searchResults = new ArrayList<>();
 
 	@Override
@@ -81,12 +68,7 @@ public class MapActivity extends AppCompatActivity implements IOrientationListen
 		MapLibre.getInstance(this);
 		setContentView(R.layout.activity_map);
 
-		ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.mapViewContainer), (v, insets) -> {
-			Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars()
-					| WindowInsetsCompat.Type.displayCutout() | WindowInsetsCompat.Type.ime());
-			v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-			return WindowInsetsCompat.CONSUMED;
-		});
+		EdgeToEdge.padForSystemBars(findViewById(R.id.mapViewContainer));
 
 		configs = Configs.instance(this);
 
@@ -132,34 +114,8 @@ public class MapActivity extends AppCompatActivity implements IOrientationListen
 		searchView = findViewById(R.id.searchView);
 		searchView.setQueryHint(getString(R.string.search));
 
-		searchResultsAdapter = new BaseAdapter() {
-			@Override
-			public int getCount() {
-				return searchResults.size();
-			}
-
-			@Override
-			public Object getItem(int i) {
-				return searchResults.get(i);
-			}
-
-			@Override
-			public long getItemId(int i) {
-				return i;
-			}
-
-			@Override
-			public View getView(int i, View view, ViewGroup viewGroup) {
-				final DisplayableGeoNode marker = searchResults.get(i);
-				view = ListViewItemBuilder.getPaddedBuilder(MapActivity.this, view, true)
-						.setTitle(marker.getGeoNode().getName())
-						.setDescription(DialogueUtils.buildDescription(MapActivity.this, marker.getGeoNode()))
-						.setIcon(new PoiMarkerDrawable(MapActivity.this, marker))
-						.build();
-				view.setOnClickListener(v -> onSearchResultSelected(marker.getGeoNode()));
-				return view;
-			}
-		};
+		searchResultsAdapter = new SearchResultsAdapter(this, searchResults,
+				this::onSearchResultSelected);
 
 		searchResultsPopup = new ListPopupWindow(this);
 		// Anchor to the search bar's container (the space between the FAB columns) so the list is
@@ -283,30 +239,8 @@ public class MapActivity extends AppCompatActivity implements IOrientationListen
 	}
 
 	@Override
-	public void updateOrientation(OrientationManager.OrientationEvent event) {
-		mapWidget.onOrientationChange(event.getAdjusted(), event);
-	}
-
-	@Override
-	public void updatePosition(double pDecLatitude, double pDecLongitude, double pMetersAltitude, double accuracy) {
-		Globals.virtualCamera.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
-
-		mapWidget.onLocationChange(new MapCoordinate(pDecLatitude, pDecLongitude, pMetersAltitude));
-	}
-
-	@Override
-	protected void onStart() {
-		super.onStart();
-		mapWidget.onStart();
-	}
-
-	@Override
 	protected void onResume() {
 		super.onResume();
-
-		Globals.onResume(this);
-		mapWidget.onResume();
-
 		deviceLocationManager.requestUpdates(this);
 		orientationManager.requestUpdates(this);
 	}
@@ -315,23 +249,7 @@ public class MapActivity extends AppCompatActivity implements IOrientationListen
 	protected void onPause() {
 		deviceLocationManager.stopUpdates();
 		orientationManager.stopUpdates();
-
-		Globals.onPause(this);
-		mapWidget.onPause();
-
 		super.onPause();
-	}
-
-	@Override
-	protected void onStop() {
-		mapWidget.onStop();
-		super.onStop();
-	}
-
-	@Override
-	public void onLowMemory() {
-		super.onLowMemory();
-		mapWidget.onLowMemory();
 	}
 
 	@Override
@@ -341,14 +259,7 @@ public class MapActivity extends AppCompatActivity implements IOrientationListen
 			searchTask.cancel();
 		}
 		searchResultsPopup.dismiss();
-		mapWidget.onDestroy();
 		super.onDestroy();
-	}
-
-	@Override
-	protected void onSaveInstanceState(Bundle outState) {
-		mapWidget.onSaveInstanceState(outState);
-		super.onSaveInstanceState(outState);
 	}
 
 	@Override
@@ -374,20 +285,7 @@ public class MapActivity extends AppCompatActivity implements IOrientationListen
 	}
 
 	private void updateFilterIcon() {
-		LayerDrawable icon = (LayerDrawable) ResourcesCompat.getDrawable(this.getResources(), R.drawable.ic_filter_checkable, null);
-		if (icon == null) {
-			return;
-		}
-		// The layers share ConstantState with every other use of the same drawables (e.g. ic_done);
-		// mutate so the alpha change stays local to this FAB icon.
-		icon.mutate();
-
-		if (NodeDisplayFilters.hasFilters(configs)) {
-			icon.findDrawableByLayerId(R.id.icon_notification).setAlpha(255);
-		} else {
-			icon.findDrawableByLayerId(R.id.icon_notification).setAlpha(0);
-		}
-		((FloatingActionButton) findViewById(R.id.filterButton)).setImageDrawable(icon);
+		NodeDisplayFilters.showFilterState(this, configs);
 	}
 
 	public void onClick(View v) {

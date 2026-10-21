@@ -14,16 +14,13 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.widget.SwitchCompat;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
-import com.climbtheworld.app.configs.ConfigFragment;
 import com.climbtheworld.app.configs.Configs;
+import com.climbtheworld.app.utils.views.EdgeToEdge;
 import com.climbtheworld.app.utils.views.TextViewSwitcher;
-import com.climbtheworld.app.utils.views.dialogs.WalkieTalkieSettingsDialogue;
+import com.climbtheworld.app.utils.views.dialogs.SettingsDialogue;
 import com.climbtheworld.app.walkietalkie.application.Client;
 import com.climbtheworld.app.walkietalkie.application.IUiClientEvent;
 import com.climbtheworld.app.walkietalkie.application.WalkietalkieServiceController;
@@ -95,12 +92,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_walkie_talkie);
 
-		ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-			Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars()
-					| WindowInsetsCompat.Type.displayCutout() | WindowInsetsCompat.Type.ime());
-			v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-			return WindowInsetsCompat.CONSUMED;
-		});
+		EdgeToEdge.padForSystemBars(findViewById(R.id.main));
 
 		Ask.on(this)
 				.addPermission(Manifest.permission.RECORD_AUDIO,
@@ -145,13 +137,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 		findViewById(R.id.ButtonWalkieTalkieMenu).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				WalkieTalkieSettingsDialogue.showConfigDialog(WalkieTalkieActivity.this,
-						new ConfigFragment.OnConfigChangeListener() {
-							@Override
-							public void onConfigChange() {
-								initConfigs();
-							}
-						});
+				SettingsDialogue.showWalkieTalkie(WalkieTalkieActivity.this, () -> initConfigs());
 			}
 		});
 

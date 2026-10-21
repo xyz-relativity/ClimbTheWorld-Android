@@ -163,19 +163,7 @@ public class ArPlacementController implements ArPlacement {
 			}
 		});
 
-		GestureDetector taps = new GestureDetector(activity,
-				new GestureDetector.SimpleOnGestureListener() {
-					@Override
-					public boolean onDown(MotionEvent event) {
-						return true;
-					}
-
-					@Override
-					public boolean onSingleTapUp(MotionEvent event) {
-						arCore.tap(event.getX(), event.getY());
-						return true;
-					}
-				});
+		GestureDetector taps = arCore.tapDetector(activity);
 		// The height of the routes aligned on, as the scene has the terrain.
 		arCore.setGroundElevations(scene::getGroundElevation);
 		container.findViewById(R.id.arSurfaceView).setOnTouchListener((view, event) -> {

@@ -117,13 +117,6 @@ public class OsmCollectionEntity extends OsmEntity {
 	}
 
 	public void createMembersList(JSONArray nodes) {
-		if (nodes == null) {
-			return;
-		}
-
-		for (int i = 0; i < nodes.length(); ++i) {
-			Long nodeId = nodes.optJSONObject(i).optLong(ClimbingTags.KEY_REF);
-			osmMembers.add(nodeId);
-		}
+		osmMembers.addAll(RelationMembers.refs(nodes));
 	}
 }

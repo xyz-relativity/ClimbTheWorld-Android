@@ -3,7 +3,6 @@ package com.climbtheworld.app.storage.views;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.view.View;
@@ -15,7 +14,6 @@ import android.widget.Toast;
 
 import androidx.annotation.LayoutRes;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.widget.SwitchCompat;
 
 import com.climbtheworld.app.R;
@@ -219,13 +217,8 @@ public class UploadPagerFragment extends DataFragment
 					})
 					.setNegativeButton(android.R.string.no, null).create();
 
-			Drawable icon =
-					AppCompatResources.getDrawable(parent.get(),
-									android.R.drawable.ic_dialog_alert)
-							.mutate();
-			icon.setTint(parent.get().getResources().getColor(android.R.color.holo_orange_light));
-
-			alertDialog.setIcon(icon);
+			alertDialog.setIcon(DialogBuilder.tintedIcon(parent.get(),
+					android.R.drawable.ic_dialog_alert, android.R.color.holo_orange_light));
 			alertDialog.create();
 			alertDialog.show();
 		} else if (id == R.id.ButtonPush) {

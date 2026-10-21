@@ -87,7 +87,7 @@ public class ClimbingGeometryBuilderTest {
 				new MapCoordinate(45, 25)), 27, null);
 
 		assertEquals(1, geometries.size());
-		assertEquals(GeoNode.NodeTypes.area,
+		assertEquals(OsmEntity.EntityClimbingType.area,
 				new GeoNode(new JSONObject(area.jsonNodeInfo.toString())).getNodeType());
 		assertEquals(27, geometries.get(0).relationElementCount);
 		assertTrue(geometries.get(0).getLabelImageId().endsWith("-27"));
@@ -128,7 +128,7 @@ public class ClimbingGeometryBuilderTest {
 				new MapCoordinate(45, 24), new MapCoordinate(46, 25)));
 
 		assertEquals(OsmEntity.EntityClimbingType.route, route.entityClimbingType);
-		assertEquals(GeoNode.NodeTypes.route,
+		assertEquals(OsmEntity.EntityClimbingType.route,
 				new GeoNode(new JSONObject(route.jsonNodeInfo.toString())).getNodeType());
 		assertEquals(1, geometries.size());
 		assertFalse(geometries.get(0).polygon);

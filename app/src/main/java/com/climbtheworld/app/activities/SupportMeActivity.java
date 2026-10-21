@@ -9,12 +9,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.marker.MarkerUtils;
+import com.climbtheworld.app.utils.views.EdgeToEdge;
 
 public class SupportMeActivity extends AppCompatActivity {
 
@@ -23,12 +21,7 @@ public class SupportMeActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_support_me);
 
-		ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-			Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars()
-					| WindowInsetsCompat.Type.displayCutout() | WindowInsetsCompat.Type.ime());
-			v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-			return WindowInsetsCompat.CONSUMED;
-		});
+		EdgeToEdge.padForSystemBars(findViewById(R.id.main));
 
 		((TextView) findViewById(R.id.osmText)).setText(Html.fromHtml(getString(R.string.osm_text, getString(R.string.app_name))));
 		((TextView) findViewById(R.id.patreonText)).setText(Html.fromHtml(getString(R.string.patreon_text, getString(R.string.app_name))));

@@ -27,8 +27,8 @@ public class LogBookEntry {
 	public long createdAt;
 	public long updatedAt;
 
-	// Snapshot of the element. The type is kept as text so that changes to GeoNode.NodeTypes
-	// can never make a stored entry unreadable.
+	// Snapshot of the element. The type is kept as text so that changes to
+	// OsmEntity.EntityClimbingType can never make a stored entry unreadable.
 	public String name;
 	public String nodeType;
 	public double decimalLatitude;
@@ -44,17 +44,17 @@ public class LogBookEntry {
 	}
 
 	/**
-	 * The type from the snapshot; {@link GeoNode.NodeTypes#unknown} when it has none or it is no
-	 * longer a known type.
+	 * The type from the snapshot; {@link OsmEntity.EntityClimbingType#others} when it has none
+	 * or it is no longer a known type, as "unknown" stored by an older version.
 	 */
-	public GeoNode.NodeTypes getElementType() {
+	public OsmEntity.EntityClimbingType getElementType() {
 		if (nodeType == null) {
-			return GeoNode.NodeTypes.unknown;
+			return OsmEntity.EntityClimbingType.others;
 		}
 		try {
-			return GeoNode.NodeTypes.valueOf(nodeType);
+			return OsmEntity.EntityClimbingType.valueOf(nodeType);
 		} catch (IllegalArgumentException ignored) {
-			return GeoNode.NodeTypes.unknown;
+			return OsmEntity.EntityClimbingType.others;
 		}
 	}
 

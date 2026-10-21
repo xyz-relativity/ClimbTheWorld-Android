@@ -11,6 +11,7 @@ import com.climbtheworld.app.storage.database.EntityCountry;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
+import com.climbtheworld.app.storage.edit.RelationMembers;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -216,34 +217,25 @@ public class CountryOsmImporter {
 		}
 
 		List<Long> nodeIds = new ArrayList<>();
-		JSONArray members = collection.jsonNodeInfo.optJSONArray(ClimbingTags.KEY_MEMBERS);
-		if (members == null) {
-			return nodeIds;
-		}
-		for (int index = 0; index < members.length(); index++) {
-			JSONObject member = members.optJSONObject(index);
-			if (member == null) {
-				continue;
-			}
-			long memberId = member.optLong(ClimbingTags.KEY_REF, 0);
-			String memberTypeName = member.optString(ClimbingTags.KEY_TYPE);
+		for (JSONObject member : RelationMembers.of(collection.jsonNodeInfo)) {
+			long memberId = RelationMembers.ref(member);
+			OsmEntity.EntityOsmType memberType = RelationMembers.osmType(member);
 			if (memberId == 0) {
 				continue;
 			}
-			if (OsmEntity.EntityOsmType.node.name().equals(memberTypeName)) {
+			if (memberType == OsmEntity.EntityOsmType.node) {
 				if (nodes.containsKey(memberId)) {
 					nodeIds.add(memberId);
 				}
 				continue;
 			}
-			try {
-				OsmEntity.EntityOsmType memberType = OsmEntity.EntityOsmType.valueOf(memberTypeName);
-				OsmCollectionEntity memberCollection = collections.get(entityKey(memberType, memberId));
-				if (memberCollection != null) {
-					nodeIds.addAll(resolveNodeIds(memberCollection, nodes, collections, visited));
-				}
-			} catch (IllegalArgumentException ignored) {
-				// Ignore unsupported Overpass member types.
+			if (memberType == null) {
+				// An Overpass member type the app has no use for.
+				continue;
+			}
+			OsmCollectionEntity memberCollection = collections.get(entityKey(memberType, memberId));
+			if (memberCollection != null) {
+				nodeIds.addAll(resolveNodeIds(memberCollection, nodes, collections, visited));
 			}
 		}
 		return nodeIds;

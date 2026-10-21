@@ -9,8 +9,8 @@ import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
+import com.climbtheworld.app.storage.edit.RelationMembers;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayDeque;
@@ -76,15 +76,7 @@ public final class ClusterContentResolver {
 			if (relation.osmType != OsmEntity.EntityOsmType.relation) {
 				continue;
 			}
-			JSONArray members = relation.jsonNodeInfo.optJSONArray(ClimbingTags.KEY_MEMBERS);
-			if (members == null) {
-				continue;
-			}
-			for (int index = 0; index < members.length(); index++) {
-				JSONObject member = members.optJSONObject(index);
-				if (member == null) {
-					continue;
-				}
+			for (JSONObject member : RelationMembers.of(relation.jsonNodeInfo)) {
 				List<OsmCollectionEntity> parents = parentsByMember.computeIfAbsent(
 						entityKey(member.optString(ClimbingTags.KEY_TYPE),
 								member.optLong(ClimbingTags.KEY_REF)),

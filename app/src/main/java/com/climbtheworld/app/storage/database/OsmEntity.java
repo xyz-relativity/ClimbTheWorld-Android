@@ -11,6 +11,9 @@ import com.climbtheworld.app.R;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class OsmEntity {
 	/** Negative for an entity created in the app that is not on OSM yet. */
 	public long osmID;
@@ -79,8 +82,13 @@ public abstract class OsmEntity {
 
 		artificial(R.string.artificial, R.string.artificial_description,
 				R.layout.icon_climbing_artificial_display),
+		/**
+		 * An element with tags that is no {@link ClimbingFeature}. Only one changed in the app,
+		 * or a log book entry without a type, can be a pin of this type, so it is not offered as
+		 * a choice.
+		 */
 		others(R.string.unknown, R.string.unknown_description, R.layout.icon_node_topo_display),
-
+		/** An element without tags, like the nodes of a way, which is never a pin. */
 		NAN();
 
 		private final int stringTypeNameId;
@@ -99,7 +107,10 @@ public abstract class OsmEntity {
 			this.iconId = iconID;
 		}
 
-		/** The types of a {@link ClimbingFeature}: all but {@link #others} and {@link #NAN}. */
+		/**
+		 * The types of a {@link ClimbingFeature}: all but {@link #others} and {@link #NAN}, which
+		 * a user can pick between.
+		 */
 		public static EntityClimbingType[] features() {
 			return new EntityClimbingType[]{route, crag, area, artificial};
 		}
@@ -125,6 +136,35 @@ public abstract class OsmEntity {
 				default:
 					return others;
 			}
+		}
+
+		/**
+		 * @return the type of a pin standing for the element, which may have no tags yet:
+		 * {@link #others} rather than {@link #NAN} for an element that is no feature
+		 */
+		public static EntityClimbingType ofPin(JSONObject element) {
+			EntityClimbingType type = fromElement(element);
+			return type == NAN ? others : type;
+		}
+
+		/** The types a pin can have: the features, and {@link #others}. */
+		public static EntityClimbingType[] pinTypes() {
+			return new EntityClimbingType[]{route, crag, area, artificial, others};
+		}
+
+		/**
+		 * The types the node editor offers a node: a route or artificial climbing. Crags and areas
+		 * are site relations, as the OSM wiki's Climbing page has them, so a node keeps a crag or
+		 * {@link #others} type only when it already has it. No node is an area.
+		 */
+		public static EntityClimbingType[] nodeEditorValues(EntityClimbingType current) {
+			List<EntityClimbingType> result = new ArrayList<>();
+			for (EntityClimbingType type : pinTypes()) {
+				if (type == route || type == artificial || type == current) {
+					result.add(type);
+				}
+			}
+			return result.toArray(new EntityClimbingType[0]);
 		}
 
 		@NotNull

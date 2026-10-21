@@ -4,9 +4,7 @@ import android.app.AlertDialog;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.text.Editable;
 import android.text.Html;
-import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.view.Gravity;
 import android.view.View;
@@ -38,14 +36,16 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
+import com.climbtheworld.app.storage.edit.RelationMembers;
 import com.climbtheworld.app.storage.logbook.LogBookFilter;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.GradeViewUtils;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
+import com.climbtheworld.app.utils.views.MemberIconCard;
 import com.climbtheworld.app.utils.views.Sorters;
+import com.climbtheworld.app.utils.views.TextWatchers;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -66,7 +66,6 @@ import needle.UiRelatedTask;
 public class NodeDialogBuilder {
 	private static final int INFO_DIALOG_STYLE_ICON_SIZE = Globals.convertDpToPixel(10).intValue();
 	private static final int MEMBER_CARD_STYLE_ICON_SIZE = Globals.convertDpToPixel(16).intValue();
-	private static final int MEMBER_ICON_NAME_MIN_WIDTH = Globals.convertDpToPixel(80).intValue();
 
 	private NodeDialogBuilder() {
 		//hide constructor
@@ -82,7 +81,7 @@ public class NodeDialogBuilder {
 		GradeSystem gradeSystem = GradeSystem.fromString(
 				Configs.instance(activity).getString(Configs.ConfigKey.usedGradeSystem));
 		List<View> memberViews = new ArrayList<>();
-		if (relation.getNodeType() == GeoNode.NodeTypes.area) {
+		if (relation.getNodeType() == OsmEntity.EntityClimbingType.area) {
 			int padding = Globals.convertDpToPixel(4).intValue();
 			elements.setGravity(Gravity.TOP);
 			elements.setPadding(padding, padding, padding, padding);
@@ -101,7 +100,7 @@ public class NodeDialogBuilder {
 			// map numbers them: a route top goes with its route's bottom.
 			int routeNumber = 0;
 			for (CollectionMember member : members) {
-				boolean isRoute = member.poi.getNodeType() == GeoNode.NodeTypes.route
+				boolean isRoute = member.poi.getNodeType() == OsmEntity.EntityClimbingType.route
 						&& !member.poi.isRouteTop();
 				memberViews.add(
 						buildMemberIcon(activity, elements, member, isRoute ? ++routeNumber : 0));
@@ -116,13 +115,13 @@ public class NodeDialogBuilder {
 			elements.addView(memberView);
 		}
 		setMemberFilter(result, members, memberViews);
-		GeoNode.NodeTypes nodeType = relation.getNodeType();
-		if (nodeType == GeoNode.NodeTypes.area) {
+		OsmEntity.EntityClimbingType nodeType = relation.getNodeType();
+		if (nodeType == OsmEntity.EntityClimbingType.area) {
 			((TextView) result.findViewById(R.id.textElementsTitle)).setText(R.string.crags);
-		} else if (nodeType == GeoNode.NodeTypes.crag) {
+		} else if (nodeType == OsmEntity.EntityClimbingType.crag) {
 			((TextView) result.findViewById(R.id.textElementsTitle)).setText(R.string.routes);
 		}
-		if (nodeType == GeoNode.NodeTypes.area || nodeType == GeoNode.NodeTypes.crag) {
+		if (nodeType == OsmEntity.EntityClimbingType.area || nodeType == OsmEntity.EntityClimbingType.crag) {
 			setCragDetails(activity, result, ClimbingInfo.fromRoutes(self.routes),
 					relation.getKey(ClimbingTags.KEY_DESCRIPTION));
 			Map<GeoNode.ClimbingStyle, Integer> styleCounts = self.routes.getStyleCounts();
@@ -165,32 +164,21 @@ public class NodeDialogBuilder {
 		View noMatch = result.findViewById(R.id.textNoMatchingElements);
 		EditText quickFilter = result.findViewById(R.id.editFind);
 		quickFilter.setHint(R.string.quick_filter);
-		quickFilter.addTextChangedListener(new TextWatcher() {
-			@Override
-			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-			}
-
-			@Override
-			public void onTextChanged(CharSequence s, int start, int before, int count) {
-			}
-
-			@Override
-			public void afterTextChanged(Editable s) {
-				String filter = LogBookFilter.normalize(s.toString().trim());
-				boolean anyVisible = false;
-				for (int index = 0; index < memberViews.size(); index++) {
-					boolean visible = filter.isEmpty();
-					for (String text : memberTexts.get(index)) {
-						visible = visible || text.contains(filter);
-					}
-					memberViews.get(index).setVisibility(visible ? View.VISIBLE : View.GONE);
-					anyVisible |= visible;
+		quickFilter.addTextChangedListener(TextWatchers.afterTextChanged(s -> {
+			String filter = LogBookFilter.normalize(s.toString().trim());
+			boolean anyVisible = false;
+			for (int index = 0; index < memberViews.size(); index++) {
+				boolean visible = filter.isEmpty();
+				for (String text : memberTexts.get(index)) {
+					visible = visible || text.contains(filter);
 				}
-				noMatch.setVisibility(anyVisible ? View.GONE : View.VISIBLE);
-				// The first match, rather than wherever the full list was scrolled to.
-				scroll.scrollTo(0, 0);
+				memberViews.get(index).setVisibility(visible ? View.VISIBLE : View.GONE);
+				anyVisible |= visible;
 			}
-		});
+			noMatch.setVisibility(anyVisible ? View.GONE : View.VISIBLE);
+			// The first match, rather than wherever the full list was scrolled to.
+			scroll.scrollTo(0, 0);
+		}));
 	}
 
 	/**
@@ -200,30 +188,8 @@ public class NodeDialogBuilder {
 	                                    CollectionMember member, int routeNumber) {
 		View card = activity.getLayoutInflater()
 				.inflate(R.layout.list_item_climbing_member_icon, container, false);
-		Drawable icon = new PoiMarkerDrawable(activity, new DisplayableGeoNode(member.poi),
-				PoiMarkerDrawable.PinShape.slim).getDrawable();
-		int iconWidth = Math.max(icon.getIntrinsicWidth() * 2, 1);
-		ImageView image = card.findViewById(R.id.memberIconImage);
-		image.setImageDrawable(icon);
-		image.getLayoutParams().width = iconWidth;
-		// All as tall as the tallest pin, which the image puts at the bottom, so that the tips and
-		// the names line up along the row whatever the pin.
-		image.getLayoutParams().height = MarkerUtils.getTallestPinHeight(activity) * 2;
-
-		String name = member.getName();
-		TextView nameView = card.findViewById(R.id.memberIconName);
-		nameView.setText(name);
-		card.findViewById(R.id.memberIconLabel).getLayoutParams().width =
-				Math.max(iconWidth, MEMBER_ICON_NAME_MIN_WIDTH);
-		if (routeNumber > 0) {
-			TextView numberView = card.findViewById(R.id.memberIconNumber);
-			numberView.setText(routeNumber + ".");
-			numberView.setVisibility(View.VISIBLE);
-			nameView.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
-			name = routeNumber + ". " + name;
-		}
-
-		card.setContentDescription(name);
+		MemberIconCard.show(activity, card, new DisplayableGeoNode(member.poi), member.getName(),
+				routeNumber);
 		return card;
 	}
 
@@ -361,26 +327,13 @@ public class NodeDialogBuilder {
 	private static List<CollectionMember> loadCollectionMembers(AppCompatActivity activity,
 	                                                            OsmCollectionEntity collection)
 			throws JSONException {
-		JSONArray memberData = collection.jsonNodeInfo.optJSONArray(ClimbingTags.KEY_MEMBERS);
-		if (memberData == null) {
+		List<JSONObject> members = RelationMembers.of(collection.jsonNodeInfo);
+		if (members.isEmpty()) {
 			return Collections.emptyList();
 		}
 
-		List<Long> nodeIds = new ArrayList<>();
-		List<Long> collectionIds = new ArrayList<>();
-		for (int index = 0; index < memberData.length(); index++) {
-			JSONObject member = memberData.optJSONObject(index);
-			if (member == null) {
-				continue;
-			}
-			long id = member.optLong(ClimbingTags.KEY_REF);
-			if ("node".equals(member.optString(ClimbingTags.KEY_TYPE))) {
-				nodeIds.add(id);
-			} else {
-				collectionIds.add(id);
-			}
-		}
-
+		List<Long> nodeIds = RelationMembers.nodeRefs(members);
+		List<Long> collectionIds = RelationMembers.collectionRefs(members);
 		DataManager dataManager = new DataManager();
 		Map<Long, OsmNode> nodes = nodeIds.isEmpty()
 				? Collections.emptyMap() : dataManager.loadNodeData(activity, nodeIds);
@@ -388,13 +341,10 @@ public class NodeDialogBuilder {
 				? Collections.emptyMap() : dataManager.loadCollectionData(activity, collectionIds);
 		ClimbingRouteCounter routeCounter = ClimbingRouteCounter.forDatabase(activity);
 		List<CollectionMember> result = new ArrayList<>();
-		for (int index = 0; index < memberData.length(); index++) {
-			JSONObject member = memberData.optJSONObject(index);
-			if (member == null) {
-				continue;
-			}
-			long id = member.optLong(ClimbingTags.KEY_REF);
-			if ("node".equals(member.optString(ClimbingTags.KEY_TYPE))) {
+		for (JSONObject member : members) {
+			long id = RelationMembers.ref(member);
+			OsmEntity.EntityOsmType memberType = RelationMembers.osmType(member);
+			if (memberType == OsmEntity.EntityOsmType.node) {
 				OsmNode node = nodes.get(id);
 				if (node != null) {
 					GeoNode poi = toGeoNode(node);
@@ -403,14 +353,7 @@ public class NodeDialogBuilder {
 									node.elevationMeters),
 							routeCounter.summarize(node)));
 				}
-			} else {
-				OsmEntity.EntityOsmType memberType;
-				try {
-					memberType = OsmEntity.EntityOsmType.valueOf(
-							member.optString(ClimbingTags.KEY_TYPE));
-				} catch (IllegalArgumentException ignored) {
-					continue;
-				}
+			} else if (memberType != null) {
 				OsmCollectionEntity child = collections.get(
 						DataManager.collectionKey(memberType, id));
 				if (child != null) {
@@ -790,7 +733,7 @@ public class NodeDialogBuilder {
 		// OSM type for the links, and don't offer the node editor for them.
 		String osmEntityType = poi.jsonNodeInfo.optString(ClimbingTags.KEY_TYPE, "node");
 		if (OsmEntity.EntityOsmType.relation.name().equals(osmEntityType)
-				&& poi.getNodeType() != GeoNode.NodeTypes.route) {
+				&& poi.getNodeType() != OsmEntity.EntityClimbingType.route) {
 			// Relations (crags/areas, e.g. from search) get the same dialog as their map label.
 			// A route relation gets the route dialog, as any route.
 			showRelationInfoDialog(parent, poi);
@@ -844,7 +787,7 @@ public class NodeDialogBuilder {
 						dialogueView =
 								buildArtificialDialog(parent, alertDialog.getListView(), poi);
 						break;
-					case unknown:
+					case others:
 					default:
 						dialogueView = buildUnknownDialog(parent, alertDialog.getListView(), poi);
 						break;
@@ -967,9 +910,7 @@ public class NodeDialogBuilder {
 					new EnumMap<>(GeoNode.ClimbingStyle.class);
 			for (GeoNode.ClimbingStyle style : poi.getClimbingStyles()) {
 				try {
-					int count = Integer.parseInt(poi.getKey(
-									ClimbingTags.KEY_CLIMBING + ClimbingTags.KEY_SEPARATOR + style.name())
-							.trim());
+					int count = Integer.parseInt(poi.getKey(style.tagKey()).trim());
 					if (count > 0) {
 						result.put(style, count);
 					}

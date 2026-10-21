@@ -165,7 +165,7 @@ public class AugmentedRealityScene {
 		}
 		return new ClimbingHull(geometry.key,
 				collection.entityClimbingType == OsmEntity.EntityClimbingType.crag
-						? GeoNode.NodeTypes.crag : GeoNode.NodeTypes.area,
+						? OsmEntity.EntityClimbingType.crag : OsmEntity.EntityClimbingType.area,
 				pin, latitudes, longitudes, nodeIds);
 	}
 
@@ -199,7 +199,7 @@ public class AugmentedRealityScene {
 	 * @return how far the closest of the loaded nodes of a type is from the camera, in meters, NaN
 	 * while none is loaded
 	 */
-	public double getNearestDistance(GeoNode.NodeTypes type) {
+	public double getNearestDistance(OsmEntity.EntityClimbingType type) {
 		double nearest = Double.NaN;
 		for (DisplayableGeoNode displayable : arPOIs.values()) {
 			GeoNode node = displayable.getGeoNode();

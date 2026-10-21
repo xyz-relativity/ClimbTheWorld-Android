@@ -10,6 +10,7 @@ import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
+import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
 
 import org.json.JSONArray;
@@ -275,7 +276,7 @@ public class ClimbingRouteCounterTest {
 		GeoNode pin = counter.pin(crag, new MapCoordinate(45.5, 24.5));
 
 		assertEquals("2", pin.getKey(ClimbingTags.KEY_ROUTES));
-		assertEquals(GeoNode.NodeTypes.crag, pin.getNodeType());
+		assertEquals(OsmEntity.EntityClimbingType.crag, pin.getNodeType());
 		assertEquals(45.5, pin.decimalLatitude, 0);
 		assertEquals(24.5, pin.decimalLongitude, 0);
 		// The crag keeps its own tags, and no location.

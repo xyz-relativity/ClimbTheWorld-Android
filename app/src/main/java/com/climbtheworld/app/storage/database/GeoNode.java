@@ -41,7 +41,7 @@ public class GeoNode implements Comparable {
 	public double deltaDegAzimuth = 0;
 	public double difDegAngle = 0;
 	public double elevationDegAngle = 0;
-	NodeTypes nodeType;
+	OsmEntity.EntityClimbingType nodeType;
 	public GeoNode(String stringNodeInfo) throws JSONException {
 		this(new JSONObject(stringNodeInfo));
 	}
@@ -59,10 +59,10 @@ public class GeoNode implements Comparable {
 		this.elevationMeters = parseElevation(getTags().optString(ClimbingTags.KEY_ELEVATION));
 
 		this.osmID = this.jsonNodeInfo.optLong(ClimbingTags.KEY_ID, 0);
-		this.nodeType = NodeTypes.fromElement(this.jsonNodeInfo);
+		this.nodeType = OsmEntity.EntityClimbingType.ofPin(this.jsonNodeInfo);
 	}
 
-	public NodeTypes getNodeType() {
+	public OsmEntity.EntityClimbingType getNodeType() {
 		return nodeType;
 	}
 
@@ -71,7 +71,7 @@ public class GeoNode implements Comparable {
 	 * leaves the tags alone, so values the app would not write itself, like
 	 * sport=climbing;hiking, survive an edit.
 	 */
-	public void setClimbingType(NodeTypes nodeType) {
+	public void setClimbingType(OsmEntity.EntityClimbingType nodeType) {
 		if (this.nodeType == nodeType) {
 			return;
 		}
@@ -127,7 +127,7 @@ public class GeoNode implements Comparable {
 				case artificial:
 					tagsMap.put(ClimbingTags.KEY_LEISURE, ClimbingTags.VALUE_SPORTS_CENTRE);
 					break;
-				case unknown:
+				case others:
 				default:
 					break;
 			}
@@ -225,8 +225,7 @@ public class GeoNode implements Comparable {
 		while (keyIt.hasNext()) {
 			String key = keyIt.next();
 			for (GeoNode.ClimbingStyle style : GeoNode.ClimbingStyle.values()) {
-				if (key.equalsIgnoreCase(
-						ClimbingTags.KEY_CLIMBING + ClimbingTags.KEY_SEPARATOR + style.name())
+				if (key.equalsIgnoreCase(style.tagKey())
 						&& !tags.optString(key).equalsIgnoreCase("no")) {
 					result.add(style);
 				}
@@ -242,12 +241,10 @@ public class GeoNode implements Comparable {
 		while (keyIt.hasNext()) {
 			String key = keyIt.next();
 			for (GeoNode.ClimbingStyle style : GeoNode.ClimbingStyle.values()) {
-				if (key.equalsIgnoreCase(
-						ClimbingTags.KEY_CLIMBING + ClimbingTags.KEY_SEPARATOR + style.name())) {
+				if (key.equalsIgnoreCase(style.tagKey())) {
 					if (styles.contains(style)) {
 						try {
-							getTags().put(ClimbingTags.KEY_CLIMBING + ClimbingTags.KEY_SEPARATOR +
-									style.name(), "yes");
+							getTags().put(style.tagKey(), "yes");
 							styles.remove(style);
 						} catch (JSONException e) {
 							e.printStackTrace();
@@ -265,8 +262,7 @@ public class GeoNode implements Comparable {
 
 		for (GeoNode.ClimbingStyle style : styles) {
 			try {
-				getTags().put(ClimbingTags.KEY_CLIMBING + ClimbingTags.KEY_SEPARATOR + style.name(),
-						"yes");
+				getTags().put(style.tagKey(), "yes");
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
@@ -519,15 +515,14 @@ public class GeoNode implements Comparable {
 		this.decimalLongitude = pDecimalLongitude;
 		this.decimalLatitude = pDecimalLatitude;
 		this.elevationMeters = pMetersAltitude;
+		OsmNode.putLocation(jsonNodeInfo, decimalLatitude, decimalLongitude);
 
-		try {
-			jsonNodeInfo.put(ClimbingTags.KEY_LAT, this.decimalLatitude);
-			jsonNodeInfo.put(ClimbingTags.KEY_LON, this.decimalLongitude);
-			if (elevationMeters != 0) {
+		if (elevationMeters != 0) {
+			try {
 				getTags().put(ClimbingTags.KEY_ELEVATION, formatElevation(elevationMeters));
+			} catch (JSONException e) {
+				e.printStackTrace();
 			}
-		} catch (JSONException e) {
-			e.printStackTrace();
 		}
 	}
 
@@ -612,7 +607,7 @@ public class GeoNode implements Comparable {
 	 * @return whether this is the top of a route (climbing=route_top) rather than its bottom.
 	 */
 	public boolean isRouteTop() {
-		return getNodeType() == NodeTypes.route
+		return getNodeType() == OsmEntity.EntityClimbingType.route
 				&& this.getKey(ClimbingTags.KEY_CLIMBING)
 				.equalsIgnoreCase(ClimbingTags.VALUE_ROUTE_TOP);
 	}
@@ -676,103 +671,7 @@ public class GeoNode implements Comparable {
 		}
 	}
 
-	public enum NodeTypes {
-		//individual route
-		route(R.string.route, R.string.route_description, R.layout.icon_node_topo_display),
-		//a crag will contain one or more routes
-		crag(R.string.crag, R.string.crag_description, R.layout.icon_climbing_crag_display),
-		//a site will contain one or more crags
-		area(R.string.area, R.string.area_description, R.layout.icon_climbing_area_display),
-
-		artificial(R.string.artificial, R.string.artificial_description,
-				R.layout.icon_climbing_artificial_display),
-		unknown(R.string.unknown, R.string.unknown_description, R.layout.icon_node_topo_display);
-
-		private static final NodeTypes[] SELECTABLE_VALUES = buildSelectableValues();
-
-		private final int stringTypeNameId;
-		private final int stringTypeDescriptionId;
-		private final int iconId;
-
-		NodeTypes(int pStringId, int pStringDescriptionId, int iconID) {
-			this.stringTypeNameId = pStringId;
-			this.stringTypeDescriptionId = pStringDescriptionId;
-			this.iconId = iconID;
-		}
-
-		private static NodeTypes[] buildSelectableValues() {
-			List<NodeTypes> result = new ArrayList<>();
-			for (NodeTypes type : values()) {
-				if (type != unknown) {
-					result.add(type);
-				}
-			}
-			return result.toArray(new NodeTypes[0]);
-		}
-
-		/**
-		 * The types a user can pick between. {@link #unknown} is an element that is no
-		 * {@link ClimbingFeature}, which only one changed in the app or a log book entry without a
-		 * type can be, so it is not offered as a choice.
-		 */
-		public static NodeTypes[] selectableValues() {
-			return SELECTABLE_VALUES.clone();
-		}
-
-		/**
-		 * The types the node editor offers a node: a route or artificial climbing. Crags and areas
-		 * are site relations, as the OSM wiki's Climbing page has them, so a node keeps a crag or
-		 * unknown type only when it already has it. No node is an area.
-		 */
-		public static NodeTypes[] nodeEditorValues(NodeTypes current) {
-			List<NodeTypes> result = new ArrayList<>();
-			for (NodeTypes type : values()) {
-				if (type == route || type == artificial || type == current) {
-					result.add(type);
-				}
-			}
-			return result.toArray(new NodeTypes[0]);
-		}
-
-		/** @return the {@link ClimbingFeature} of the element, {@link #unknown} for none */
-		public static NodeTypes fromElement(JSONObject element) {
-			switch (ClimbingFeature.of(element)) {
-				case route:
-					return route;
-				case crag:
-					return crag;
-				case area:
-					return area;
-				case artificial:
-					return artificial;
-				default:
-					return unknown;
-			}
-		}
-
-		@NotNull
-		@Override
-		public String toString() {
-			throw new UnsupportedOperationException("Do not use toString. Use asString");
-		}
-
-		public String asString(AppCompatActivity parent) {
-			return parent.getString(stringTypeNameId);
-		}
-
-		public int getNameId() {
-			return stringTypeNameId;
-		}
-
-		public int getDescriptionId() {
-			return stringTypeDescriptionId;
-		}
-
-		public int getIconId() {
-			return iconId;
-		}
-	}
-
+	/** A way of climbing a route, tagged climbing:&lt;style&gt;=yes on it. */
 	public enum ClimbingStyle {
 		ice(R.string.ice, R.string.ice_short, R.string.ice_description),
 		mixed(R.string.mixed, R.string.mixed_short, R.string.mixed_description),
@@ -792,6 +691,11 @@ public class GeoNode implements Comparable {
 			this.stringTypeNameId = pStringId;
 			this.stringTypeShortNameId = pStringShortId;
 			this.stringTypeDescriptionId = pStringDescriptionId;
+		}
+
+		/** The tag saying whether a route is climbed this way. */
+		public String tagKey() {
+			return ClimbingTags.KEY_CLIMBING + ClimbingTags.KEY_SEPARATOR + name();
 		}
 
 		@NotNull

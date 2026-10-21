@@ -1,8 +1,6 @@
 package com.climbtheworld.app.storage.views;
 
 import android.content.Intent;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -15,6 +13,7 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.services.DownloadService;
 import com.climbtheworld.app.utils.views.FilteredListAdapter;
 import com.climbtheworld.app.utils.views.IPagerViewFragment;
+import com.climbtheworld.app.utils.views.TextWatchers;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -148,22 +147,7 @@ public class RemotePagerFragment extends DataFragment implements IPagerViewFragm
 
 		EditText filter = findViewById(R.id.editFind);
 		viewAdaptor.applyFilter(filter.getText().toString());
-		filter.addTextChangedListener(new TextWatcher() {
-			@Override
-			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-			}
-
-			@Override
-			public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-			}
-
-			@Override
-			public void afterTextChanged(Editable s) {
-				viewAdaptor.applyFilter(s.toString());
-			}
-		});
+		filter.addTextChangedListener(TextWatchers.afterTextChanged(s -> viewAdaptor.applyFilter(s.toString())));
 
 		listView.setAdapter(viewAdaptor);
 	}

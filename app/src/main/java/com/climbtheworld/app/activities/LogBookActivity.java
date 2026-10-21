@@ -6,11 +6,8 @@ import android.database.SQLException;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
@@ -25,9 +22,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.DisplayableGeoNode;
@@ -47,6 +41,9 @@ import com.climbtheworld.app.storage.logbook.LogBookEntry;
 import com.climbtheworld.app.storage.logbook.LogBookFilter;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.constants.Constants;
+import com.climbtheworld.app.utils.views.EdgeToEdge;
+import com.climbtheworld.app.utils.views.SpinnerUtils;
+import com.climbtheworld.app.utils.views.TextWatchers;
 import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 import com.climbtheworld.app.utils.views.dialogs.LogBookDialogBuilder;
 import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
@@ -104,12 +101,7 @@ public class LogBookActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_log_book);
 
-		ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-			Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars()
-					| WindowInsetsCompat.Type.displayCutout() | WindowInsetsCompat.Type.ime());
-			v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-			return WindowInsetsCompat.CONSUMED;
-		});
+		EdgeToEdge.padForSystemBars(findViewById(R.id.main));
 
 		countView = findViewById(R.id.logBookCount);
 		emptyView = findViewById(R.id.logBookListEmpty);
@@ -175,21 +167,10 @@ public class LogBookActivity extends AppCompatActivity {
 	private void initTextFilter() {
 		EditText text = findViewById(R.id.editFind);
 		text.setHint(R.string.log_book_filter_hint);
-		text.addTextChangedListener(new TextWatcher() {
-			@Override
-			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-			}
-
-			@Override
-			public void onTextChanged(CharSequence s, int start, int before, int count) {
-			}
-
-			@Override
-			public void afterTextChanged(Editable s) {
-				filter.setText(s.toString());
-				applyFilter();
-			}
-		});
+		text.addTextChangedListener(TextWatchers.afterTextChanged(s -> {
+			filter.setText(s.toString());
+			applyFilter();
+		}));
 	}
 
 	private void initStatusFilter() {
@@ -212,9 +193,9 @@ public class LogBookActivity extends AppCompatActivity {
 	}
 
 	private void initTypeFilter() {
-		List<FilterChoice<GeoNode.NodeTypes>> choices = new ArrayList<>();
+		List<FilterChoice<OsmEntity.EntityClimbingType>> choices = new ArrayList<>();
 		choices.add(new FilterChoice<>(getString(R.string.log_book_filter_any_type), null));
-		for (GeoNode.NodeTypes type : GeoNode.NodeTypes.values()) {
+		for (OsmEntity.EntityClimbingType type : OsmEntity.EntityClimbingType.pinTypes()) {
 			choices.add(new FilterChoice<>(getString(type.getNameId()), type));
 		}
 
@@ -228,17 +209,10 @@ public class LogBookActivity extends AppCompatActivity {
 				new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, choices);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinner.setAdapter(adapter);
-		spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-			@Override
-			public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-				listener.onChoice(choices.get(position));
-				applyFilter();
-			}
-
-			@Override
-			public void onNothingSelected(AdapterView<?> parent) {
-			}
-		});
+		spinner.setOnItemSelectedListener(SpinnerUtils.onItemSelected(position -> {
+			listener.onChoice(choices.get(position));
+			applyFilter();
+		}));
 	}
 
 	private void applyFilter() {

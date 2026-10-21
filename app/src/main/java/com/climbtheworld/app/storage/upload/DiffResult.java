@@ -86,13 +86,9 @@ public final class DiffResult {
 		String type = element.optString(ClimbingTags.KEY_TYPE);
 		try {
 			element.put(ClimbingTags.KEY_ID, newId(type, element.optLong(ClimbingTags.KEY_ID)));
-			JSONArray members = element.optJSONArray(ClimbingTags.KEY_MEMBERS);
-			for (int index = 0; members != null && index < members.length(); index++) {
-				JSONObject member = members.optJSONObject(index);
-				if (member != null) {
-					member.put(ClimbingTags.KEY_REF, newId(member.optString(ClimbingTags.KEY_TYPE),
-							member.optLong(ClimbingTags.KEY_REF)));
-				}
+			for (JSONObject member : RelationMembers.of(element)) {
+				member.put(ClimbingTags.KEY_REF, newId(member.optString(ClimbingTags.KEY_TYPE),
+						RelationMembers.ref(member)));
 			}
 			JSONArray nodes = element.optJSONArray(ClimbingTags.KEY_NODES);
 			for (int index = 0; nodes != null && index < nodes.length(); index++) {

@@ -22,7 +22,7 @@ import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.storage.database.ClimbingTags;
-import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.constants.Constants;
 
@@ -136,9 +136,9 @@ public class PoiMarkerDrawable extends Drawable {
 		this.parentRef = new WeakReference<>(parent);
 		this.poi = poi;
 		this.alpha = alpha;
-		GeoNode.NodeTypes nodeType = poi.getGeoNode().getNodeType();
+		OsmEntity.EntityClimbingType nodeType = poi.getGeoNode().getNodeType();
 		this.slim = shape == PinShape.slim
-				&& (nodeType == GeoNode.NodeTypes.route || nodeType == GeoNode.NodeTypes.unknown);
+				&& (nodeType == OsmEntity.EntityClimbingType.route || nodeType == OsmEntity.EntityClimbingType.others);
 		this.routeTop = slim && poi.getGeoNode().isRouteTop();
 
 		prepareBackground(parentRef.get(), poi);
@@ -260,13 +260,13 @@ public class PoiMarkerDrawable extends Drawable {
 	}
 
 	private boolean isGroupIcon() {
-		GeoNode.NodeTypes nodeType = poi.getGeoNode().getNodeType();
-		return nodeType == GeoNode.NodeTypes.area || nodeType == GeoNode.NodeTypes.crag;
+		OsmEntity.EntityClimbingType nodeType = poi.getGeoNode().getNodeType();
+		return nodeType == OsmEntity.EntityClimbingType.area || nodeType == OsmEntity.EntityClimbingType.crag;
 	}
 
 	private float getNameBaseline(int line) {
 		int topOffset = isGroupIcon()
-				|| poi.getGeoNode().getNodeType() == GeoNode.NodeTypes.artificial
+				|| poi.getGeoNode().getNodeType() == OsmEntity.EntityClimbingType.artificial
 				? GROUP_NAME_TOP_OFFSET : NAME_TOP_OFFSET;
 		return topOffset + NAME_FONT_SIZE * line + TEXT_PADDING * line;
 	}
@@ -311,8 +311,8 @@ public class PoiMarkerDrawable extends Drawable {
 	}
 
 	private void prepareStyleRender() {
-		if ((poi.getGeoNode().getNodeType() != GeoNode.NodeTypes.route
-				&& poi.getGeoNode().getNodeType() != GeoNode.NodeTypes.crag) || routeTop) {
+		if ((poi.getGeoNode().getNodeType() != OsmEntity.EntityClimbingType.route
+				&& poi.getGeoNode().getNodeType() != OsmEntity.EntityClimbingType.crag) || routeTop) {
 			return;
 		}
 
@@ -336,13 +336,13 @@ public class PoiMarkerDrawable extends Drawable {
 
 		this.gradeString = getGradeString();
 		this.color = ColorStateList.valueOf(DisplayableGeoNode.POI_DEFAULT_COLOR).withAlpha(255);
-		if (poi.geoNode.getNodeType() == GeoNode.NodeTypes.route) {
+		if (poi.geoNode.getNodeType() == OsmEntity.EntityClimbingType.route) {
 			color = Globals.gradeToColorState(poi.geoNode.getLevelId(ClimbingTags.KEY_GRADE_TAG));
-		} else if (poi.geoNode.getNodeType() == GeoNode.NodeTypes.area
-				|| poi.geoNode.getNodeType() == GeoNode.NodeTypes.crag) {
+		} else if (poi.geoNode.getNodeType() == OsmEntity.EntityClimbingType.area
+				|| poi.geoNode.getNodeType() == OsmEntity.EntityClimbingType.crag) {
 			color = ColorStateList.valueOf(
 					DisplayableGeoNode.getHullPinColor(poi.geoNode.getNodeType()));
-		} else if (poi.geoNode.getNodeType() == GeoNode.NodeTypes.artificial) {
+		} else if (poi.geoNode.getNodeType() == OsmEntity.EntityClimbingType.artificial) {
 			color = ColorStateList.valueOf(
 					DisplayableGeoNode.getArtificialPinColor(poi.geoNode.getArtificialKind()));
 		}
@@ -443,9 +443,9 @@ public class PoiMarkerDrawable extends Drawable {
 	}
 
 	private String getGradeString() {
-		if (poi.geoNode.getNodeType() == GeoNode.NodeTypes.unknown) {
+		if (poi.geoNode.getNodeType() == OsmEntity.EntityClimbingType.others) {
 			return MarkerUtils.UNKNOWN_TYPE;
-		} else if (poi.geoNode.getNodeType() == GeoNode.NodeTypes.route) {
+		} else if (poi.geoNode.getNodeType() == OsmEntity.EntityClimbingType.route) {
 			return GradeSystem.fromString(Configs.instance(parentRef).getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.geoNode.getLevelId(ClimbingTags.KEY_GRADE_TAG));
 		}
 

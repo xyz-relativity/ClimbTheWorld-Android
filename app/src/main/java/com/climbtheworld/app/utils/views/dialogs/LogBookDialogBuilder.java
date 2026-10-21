@@ -4,11 +4,9 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.database.SQLException;
 import android.graphics.drawable.Drawable;
-import android.text.Editable;
 import android.text.InputFilter;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
-import android.text.TextWatcher;
 import android.text.style.RelativeSizeSpan;
 import android.view.View;
 import android.widget.Button;
@@ -30,6 +28,7 @@ import com.climbtheworld.app.storage.logbook.LogBook;
 import com.climbtheworld.app.storage.logbook.LogBookDatabase;
 import com.climbtheworld.app.storage.logbook.LogBookEntry;
 import com.climbtheworld.app.utils.constants.Constants;
+import com.climbtheworld.app.utils.views.TextWatchers;
 
 import needle.UiRelatedTask;
 
@@ -122,7 +121,7 @@ public class LogBookDialogBuilder {
 		CheckBox climbed = view.findViewById(R.id.logBookClimbedCheck);
 		RadioGroup attemptGroup = view.findViewById(R.id.logBookAttemptGroup);
 		// Attempts only make sense for routes; still show them if the element stopped being one.
-		boolean showAttempts = element.getNodeType() == GeoNode.NodeTypes.route
+		boolean showAttempts = element.getNodeType() == OsmEntity.EntityClimbingType.route
 				|| entry.attempt != LogBookEntry.Attempt.none;
 		if (showAttempts) {
 			for (LogBookEntry.Attempt attempt : LogBookEntry.Attempt.values()) {
@@ -148,21 +147,10 @@ public class LogBookDialogBuilder {
 		EditText note = view.findViewById(R.id.logBookNoteEdit);
 		TextView counter = view.findViewById(R.id.logBookNoteCounter);
 		note.setFilters(new InputFilter[]{new InputFilter.LengthFilter(LogBook.MAX_NOTE_LENGTH)});
-		note.addTextChangedListener(new TextWatcher() {
-			@Override
-			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-			}
-
-			@Override
-			public void onTextChanged(CharSequence s, int start, int before, int count) {
-			}
-
-			@Override
-			public void afterTextChanged(Editable s) {
-				counter.setText(activity.getString(R.string.log_book_note_counter, s.length(),
-						LogBook.MAX_NOTE_LENGTH));
-			}
-		});
+		note.addTextChangedListener(TextWatchers.afterTextChanged(s -> {
+			counter.setText(activity.getString(R.string.log_book_note_counter, s.length(),
+					LogBook.MAX_NOTE_LENGTH));
+		}));
 		note.setText(entry.note);
 
 		dialog.setView(view);

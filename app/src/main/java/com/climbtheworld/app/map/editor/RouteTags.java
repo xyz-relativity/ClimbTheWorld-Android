@@ -55,25 +55,17 @@ public class RouteTags extends Tags implements ITags {
 		dropdownGradeSystem.setSelection(Arrays.asList(gradeSystems).indexOf(gradeSystem), false);
 		showGrades(editNode);
 
-		dropdownGradeSystem.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-			@Override
-			public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-				// The spinner also reports the selection it starts with.
-				if (gradeSystems[i] == gradeSystem) {
-					return;
-				}
-				gradeSystem = gradeSystems[i];
-				// The grade picked so far, as the new system has it.
-				showGrades(editNode);
-				saveToNode(editNode);
-				refreshEditor();
+		dropdownGradeSystem.setOnItemSelectedListener(SpinnerUtils.onItemSelected(i -> {
+			// The spinner also reports the selection it starts with.
+			if (gradeSystems[i] == gradeSystem) {
+				return;
 			}
-
-			@Override
-			public void onNothingSelected(AdapterView<?> adapterView) {
-
-			}
-		});
+			gradeSystem = gradeSystems[i];
+			// The grade picked so far, as the new system has it.
+			showGrades(editNode);
+			saveToNode(editNode);
+			refreshEditor();
+		}));
 
 		dropdownGrade.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 			@Override

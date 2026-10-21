@@ -6,14 +6,12 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.editor.ITags;
 import com.climbtheworld.app.map.editor.OtherTags;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.utils.views.EdgeToEdge;
 
 import org.json.JSONException;
 
@@ -26,12 +24,7 @@ public class EditNodeAdvancedActivity extends AppCompatActivity implements View.
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_edit_node_advanced);
 
-		ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-			Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars()
-					| WindowInsetsCompat.Type.displayCutout() | WindowInsetsCompat.Type.ime());
-			v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-			return WindowInsetsCompat.CONSUMED;
-		});
+		EdgeToEdge.padForSystemBars(findViewById(R.id.main));
 
 		Intent intent = getIntent();
 		String nodeJson = intent.getStringExtra("nodeJson");

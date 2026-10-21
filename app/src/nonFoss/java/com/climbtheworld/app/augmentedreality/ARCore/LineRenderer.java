@@ -7,8 +7,6 @@ import com.climbtheworld.app.augmentedreality.ARCore.helpers.ShaderUtil;
 import com.climbtheworld.app.augmentedreality.placement.LineVertices;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 /**
@@ -21,17 +19,12 @@ class LineRenderer {
 	private static final int COLOR_FLOATS = 4;
 	private static final int STRIDE_BYTES = LineVertices.FLOATS_PER_VERTEX * Float.BYTES;
 
-	private FloatBuffer buffer = floatBuffer(LineVertices.FLOATS_PER_VERTEX * 1024);
+	private FloatBuffer buffer = ShaderUtil.floatBuffer(LineVertices.FLOATS_PER_VERTEX * 1024);
 	private boolean created;
 	private int program;
 	private int positionAttribute;
 	private int colorAttribute;
 	private int viewProjectionUniform;
-
-	private static FloatBuffer floatBuffer(int size) {
-		return ByteBuffer.allocateDirect(size * Float.BYTES).order(ByteOrder.nativeOrder())
-				.asFloatBuffer();
-	}
 
 	/**
 	 * Makes the program drawing the lines. Again whenever the GL context is new.
@@ -64,7 +57,7 @@ class LineRenderer {
 		}
 		int floats = count * LineVertices.FLOATS_PER_VERTEX;
 		if (buffer.capacity() < floats) {
-			buffer = floatBuffer(floats * 2);
+			buffer = ShaderUtil.floatBuffer(floats * 2);
 		}
 		buffer.clear();
 		buffer.put(vertices.getFloats(), 0, floats);

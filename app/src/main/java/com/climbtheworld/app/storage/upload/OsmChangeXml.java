@@ -1,6 +1,7 @@
 package com.climbtheworld.app.storage.upload;
 
 import com.climbtheworld.app.storage.database.ClimbingTags;
+import com.climbtheworld.app.storage.edit.RelationMembers;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -80,12 +81,7 @@ public final class OsmChangeXml {
 		for (int index = 0; nodes != null && index < nodes.length(); index++) {
 			xml.append("<nd ref=\"").append(nodes.optLong(index)).append("\"/>");
 		}
-		JSONArray members = element.optJSONArray(ClimbingTags.KEY_MEMBERS);
-		for (int index = 0; members != null && index < members.length(); index++) {
-			JSONObject member = members.optJSONObject(index);
-			if (member == null) {
-				continue;
-			}
+		for (JSONObject member : RelationMembers.of(element)) {
 			xml.append("<member type=\"").append(escape(member.optString(ClimbingTags.KEY_TYPE)))
 					.append("\" ref=\"").append(member.optLong(ClimbingTags.KEY_REF))
 					.append("\" role=\"").append(escape(member.optString(ClimbingTags.KEY_ROLE)))

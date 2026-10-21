@@ -11,16 +11,16 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.ColorRes;
+import androidx.annotation.DrawableRes;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.storage.views.DataFragment;
 import com.climbtheworld.app.storage.views.RemotePagerFragment;
+import com.climbtheworld.app.utils.views.EdgeToEdge;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,14 +48,7 @@ public class DialogBuilder {
 		if (fullscreen) {
 			alertDialog = new AlertDialog.Builder(activity, R.style.FullscreenDialogTheme).create();
 			// Fullscreen dialogs are edge-to-edge from Android 15, like the activities.
-			ViewCompat.setOnApplyWindowInsetsListener(
-					alertDialog.getWindow().getDecorView().findViewById(android.R.id.content),
-					(v, insets) -> {
-						Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars()
-								| WindowInsetsCompat.Type.displayCutout() | WindowInsetsCompat.Type.ime());
-						v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-						return WindowInsetsCompat.CONSUMED;
-					});
+			EdgeToEdge.padForSystemBars(alertDialog.getWindow().getDecorView().findViewById(android.R.id.content));
 		} else {
 			alertDialog = new AlertDialog.Builder(activity).create();
 		}
@@ -71,6 +64,14 @@ public class DialogBuilder {
 		return alertDialog;
 	}
 
+	/** A system dialog icon in the colour, like the alert icon in orange. */
+	public static Drawable tintedIcon(Context context, @DrawableRes int iconId,
+	                                  @ColorRes int colorId) {
+		Drawable icon = ContextCompat.getDrawable(context, iconId).mutate();
+		icon.setTint(ContextCompat.getColor(context, colorId));
+		return icon;
+	}
+
 	public static void closeAllDialogs() {
 		for (Dialog diag : activeDialogs) {
 			diag.dismiss();
@@ -84,9 +85,7 @@ public class DialogBuilder {
 		alertDialog.setCanceledOnTouchOutside(true);
 		alertDialog.setTitle(R.string.tutorial_region_download_title);
 
-		Drawable icon = ContextCompat.getDrawable(activity, android.R.drawable.ic_dialog_alert).mutate();
-		icon.setTint(activity.getResources().getColor(android.R.color.holo_orange_light));
-		alertDialog.setIcon(icon);
+		alertDialog.setIcon(tintedIcon(activity, android.R.drawable.ic_dialog_alert, android.R.color.holo_orange_light));
 
 		ViewGroup result = (ViewGroup) activity.getLayoutInflater().inflate(R.layout.fragment_dialog_download, alertDialog.getListView(), false);
 		RemotePagerFragment downloadView = new RemotePagerFragment(activity, R.layout.fragment_data_manager_remote_data, DataFragment.initCountryMap(activity));
@@ -123,9 +122,7 @@ public class DialogBuilder {
 	                                                String countryName,
 	                                                DialogInterface.OnClickListener onDownload) {
 		AlertDialog alertDialog = getNewDialog(activity);
-		Drawable icon = ContextCompat.getDrawable(activity, android.R.drawable.ic_dialog_alert).mutate();
-		icon.setTint(activity.getResources().getColor(android.R.color.holo_orange_light));
-		alertDialog.setIcon(icon);
+		alertDialog.setIcon(tintedIcon(activity, android.R.drawable.ic_dialog_alert, android.R.color.holo_orange_light));
 
 		alertDialog.setTitle(R.string.download_mobile_data_title);
 		alertDialog.setMessage(activity.getString(R.string.download_mobile_data_message, countryName));
@@ -144,9 +141,7 @@ public class DialogBuilder {
 
 		loadingDialog = getNewDialog(activity);
 		loadingDialog.setTitle(R.string.loading_dialog);
-		Drawable icon = ContextCompat.getDrawable(activity, android.R.drawable.ic_dialog_info).mutate();
-		icon.setTint(activity.getResources().getColor(android.R.color.holo_green_light));
-		loadingDialog.setIcon(icon);
+		loadingDialog.setIcon(tintedIcon(activity, android.R.drawable.ic_dialog_info, android.R.color.holo_green_light));
 
 		ViewGroup result = (ViewGroup) activity.getLayoutInflater().inflate(R.layout.dialog_loading, loadingDialog.getListView(), false);
 		loadingDialog.setView(result);
@@ -185,9 +180,7 @@ public class DialogBuilder {
 	public static void showErrorDialog(final AppCompatActivity activity, final String message, final DialogInterface.OnClickListener listener) {
 
 		AlertDialog alertDialog = getNewDialog(activity);
-		Drawable icon = ContextCompat.getDrawable(activity, android.R.drawable.ic_dialog_alert).mutate();
-		icon.setTint(activity.getResources().getColor(android.R.color.holo_red_light));
-		alertDialog.setIcon(icon);
+		alertDialog.setIcon(tintedIcon(activity, android.R.drawable.ic_dialog_alert, android.R.color.holo_red_light));
 
 		alertDialog.setTitle(activity.getResources().getString(android.R.string.dialog_alert_title));
 		alertDialog.setMessage(Html.fromHtml(message));

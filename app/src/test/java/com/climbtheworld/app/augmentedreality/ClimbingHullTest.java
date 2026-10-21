@@ -6,7 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.database.OsmEntity;
 
 import org.junit.Test;
 import org.locationtech.jts.geom.Coordinate;
@@ -33,7 +33,7 @@ public class ClimbingHullTest {
 			longitudes[index] = LONGITUDE + corners[index][0] / METERS_PER_DEGREE_LONGITUDE;
 			latitudes[index] = LATITUDE + corners[index][1] / ClimbingHull.METERS_PER_DEGREE;
 		}
-		return new ClimbingHull("crag|relation|1", GeoNode.NodeTypes.crag, null, latitudes,
+		return new ClimbingHull("crag|relation|1", OsmEntity.EntityClimbingType.crag, null, latitudes,
 				longitudes, new long[]{11, 12});
 	}
 

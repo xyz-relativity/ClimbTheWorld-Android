@@ -12,19 +12,21 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
+import com.climbtheworld.app.storage.edit.RelationMembers;
 import com.climbtheworld.app.utils.GeoUtils;
 import com.climbtheworld.app.utils.Vector4d;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 public class DataManager {
 	private static final int SEARCH_RESULTS_LIMIT = 50;
@@ -37,12 +39,17 @@ public class DataManager {
 
 	public List<Long> loadCollectionBBox(Context appCompatActivity, MapBounds bBox, OsmEntity.EntityClimbingType ... type) {
 		AppDatabase appDB = AppDatabase.getInstance(appCompatActivity);
+		return loadBBox(bBox, part -> appDB.osmCollectionDao().loadBBox(part.getNorth(),
+				part.getEast(), part.getSouth(), part.getWest(), type));
+	}
 
+	/** The ids the query finds in the bounds, once for each side of the antimeridian. */
+	private static List<Long> loadBBox(MapBounds bBox,
+	                                   Function<MapBounds, ? extends Collection<Long>> query) {
 		// The query compares longitudes as numbers, so it looks on either side of the antimeridian.
 		Set<Long> ids = new LinkedHashSet<>();
 		for (MapBounds part : bBox.splitAtAntimeridian()) {
-			ids.addAll(appDB.osmCollectionDao().loadBBox(part.getNorth(), part.getEast(),
-					part.getSouth(), part.getWest(), type));
+			ids.addAll(query.apply(part));
 		}
 		return new ArrayList<>(ids);
 	}
@@ -78,17 +85,9 @@ public class DataManager {
 				longitude - PARENT_SEARCH_MARGIN_DEGREES);
 		List<OsmCollectionEntity> result = new ArrayList<>();
 		for (OsmCollectionEntity relation : loadRelationsBBox(context, bounds)) {
-			JSONArray members = relation.jsonNodeInfo.optJSONArray(ClimbingTags.KEY_MEMBERS);
-			if (members == null) {
-				continue;
-			}
-			for (int index = 0; index < members.length(); index++) {
-				JSONObject member = members.optJSONObject(index);
-				if (member != null && member.optLong(ClimbingTags.KEY_REF) == osmId
-						&& osmType.name().equals(member.optString(ClimbingTags.KEY_TYPE))) {
-					result.add(relation);
-					break;
-				}
+			if (RelationMembers.contains(relation.jsonNodeInfo.optJSONArray(ClimbingTags.KEY_MEMBERS),
+					osmType.name(), osmId)) {
+				result.add(relation);
 			}
 		}
 		return result;
@@ -250,14 +249,8 @@ public class DataManager {
 
 	public List<Long> loadNodeBBox(Context appCompatActivity, MapBounds bBox, OsmEntity.EntityClimbingType ... type) {
 		AppDatabase appDB = AppDatabase.getInstance(appCompatActivity);
-
-		// The query compares longitudes as numbers, so it looks on either side of the antimeridian.
-		Set<Long> ids = new LinkedHashSet<>();
-		for (MapBounds part : bBox.splitAtAntimeridian()) {
-			ids.addAll(appDB.osmNodeDao().loadBBox(part.getNorth(), part.getEast(),
-					part.getSouth(), part.getWest(), type));
-		}
-		return new ArrayList<>(ids);
+		return loadBBox(bBox, part -> appDB.osmNodeDao().loadBBox(part.getNorth(),
+				part.getEast(), part.getSouth(), part.getWest(), type));
 	}
 
 	public Map<Long, OsmNode> loadNodeData(Context appCompatActivity, List<Long> ids) {

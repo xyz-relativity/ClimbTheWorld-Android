@@ -2,7 +2,7 @@ package com.climbtheworld.app.storage.logbook;
 
 import androidx.annotation.Nullable;
 
-import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.database.OsmEntity;
 
 import java.text.Normalizer;
 import java.util.EnumSet;
@@ -19,7 +19,7 @@ public class LogBookFilter {
 
 	private String text = "";
 	private Set<LogBookEntry.Attempt> attempts = EnumSet.noneOf(LogBookEntry.Attempt.class);
-	private GeoNode.NodeTypes nodeType = null;
+	private OsmEntity.EntityClimbingType nodeType = null;
 
 	public void setText(String text) {
 		this.text = normalize(text.trim());
@@ -36,7 +36,7 @@ public class LogBookFilter {
 	/**
 	 * @param nodeType the accepted element type; null accepts any.
 	 */
-	public void setNodeType(@Nullable GeoNode.NodeTypes nodeType) {
+	public void setNodeType(@Nullable OsmEntity.EntityClimbingType nodeType) {
 		this.nodeType = nodeType;
 	}
 

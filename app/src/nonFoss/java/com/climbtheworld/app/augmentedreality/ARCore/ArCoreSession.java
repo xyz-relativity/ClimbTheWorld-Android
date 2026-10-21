@@ -9,6 +9,8 @@ import android.opengl.GLSurfaceView;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -413,6 +415,22 @@ class ArCoreSession {
 	 * @param x in the view's pixels
 	 * @param y in the view's pixels
 	 */
+	/** A detector handing the single taps on the view to {@link #tap}. */
+	GestureDetector tapDetector(Context context) {
+		return new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
+			@Override
+			public boolean onDown(MotionEvent event) {
+				return true;
+			}
+
+			@Override
+			public boolean onSingleTapUp(MotionEvent event) {
+				tap(event.getX(), event.getY());
+				return true;
+			}
+		});
+	}
+
 	void tap(float x, float y) {
 		renderer.tap(x, y);
 	}

@@ -1,5 +1,8 @@
 package com.climbtheworld.app.augmentedreality;
 
+import com.climbtheworld.app.sensors.camera.VirtualCamera;
+import com.climbtheworld.app.utils.Vector2d;
+
 import java.util.Arrays;
 
 /**
@@ -43,6 +46,17 @@ final class HullProjection {
 	 * @param centreX    horizontal position of the view centre, half the width of the container
 	 * @param centreY    vertical position of the view centre, half the height of the container
 	 */
+	/**
+	 * Takes the camera's position and angles of view, for a view of viewSize drawing width by
+	 * height pixels.
+	 */
+	void setCamera(VirtualCamera camera, Vector2d viewSize, double width, double height) {
+		setCamera(camera.degAzimuth, -camera.degPitch,
+				AugmentedRealityUtils.focalLength(camera.angleOfViewDeg.x, viewSize.x),
+				AugmentedRealityUtils.focalLength(camera.angleOfViewDeg.y, viewSize.y),
+				width / 2.0, height / 2.0);
+	}
+
 	void setCamera(double azimuthDeg, double pitchDeg, double focalX, double focalY,
 	               double centreX, double centreY) {
 		sinAzimuth = Math.sin(Math.toRadians(azimuthDeg));
