@@ -209,7 +209,8 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 						nameRequired = editNodeID == 0 || !result.getName().trim().isEmpty();
 						cragMembership = new ParentMembership(EditNodeActivity.this,
 								findViewById(R.id.containerCrags), ParentMembership.Kind.CRAG,
-								editNode.osmID, () -> editNode, () -> mapWidget.getVisibleBounds());
+								editNode.osmID, () -> editNode, () -> mapWidget.getVisibleBounds(),
+								Collections.emptyList());
 						cragMembership.setParentEditor(crag -> openCragEditor(crag));
 						buildUi();
 						updateMapMarker();
@@ -400,7 +401,8 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
 	/**
 	 * Opens the crag, one the route is in or a new one, as part of this edit, with the route as the
-	 * form has it; the crag comes back to be saved with the route.
+	 * form has it and the areas changed so far; the crag comes back with the areas it joined or
+	 * left, to be saved with the route.
 	 */
 	private void openCragEditor(OsmCollectionEntity crag) {
 		JSONObject edited = resolveEdits();
@@ -410,6 +412,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 		Intent intent = new Intent(this, EditRelationActivity.class);
 		intent.putExtra(EditRelationActivity.EXTRA_RELATION_JSON, crag.jsonNodeInfo.toString());
 		intent.putExtra(EditRelationActivity.EXTRA_MEMBER_JSON, edited.toString());
+		EditRelationActivity.putParents(intent, cragMembership.changedGrandparents());
 		startActivityForResult(intent, REQUEST_CRAG_EDITOR);
 	}
 
@@ -450,13 +453,14 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 				return;
 			}
 			final OsmNode savedNode = new OsmNode(edited);
-			final List<OsmCollectionEntity> crags = cragMembership.changedParents();
+			// The crags, then their areas.
+			final List<OsmCollectionEntity> relations = cragMembership.changedParents();
 			Constants.DB_EXECUTOR
 					.execute(new UiRelatedTask<Boolean>() {
 						@Override
 						protected Boolean doWork() {
 							new OsmEditStore(EditNodeActivity.this)
-									.save(Collections.singletonList(savedNode), crags);
+									.save(Collections.singletonList(savedNode), relations);
 							return true;
 						}
 
@@ -594,7 +598,8 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 		if (requestCode == REQUEST_CRAG_EDITOR && resultCode == RESULT_OK) {
 			try {
 				cragMembership.parentEdited(new OsmCollectionEntity(new JSONObject(
-						data.getStringExtra(EditRelationActivity.EXTRA_RELATION_JSON))));
+								data.getStringExtra(EditRelationActivity.EXTRA_RELATION_JSON))),
+						EditRelationActivity.parents(data));
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}

@@ -37,8 +37,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -50,8 +52,9 @@ import needle.UiRelatedTask;
  * An editor's section listing the relations the edited element is a member of, a route's crags or
  * a crag's areas, with its place in each, adding it to one nearby or on the editor's map, one found
  * by name or a new one, and taking it out of one. An element joins at the end; its place is changed in the
- * parent's own editor, which a new parent opens in right away. Nothing is stored until the editor
- * saves the parents together with the element.
+ * parent's own editor, which a new parent opens in right away, and where the parent can join its
+ * own parents in turn, like a route's new crag joining an area. Nothing is stored until the editor
+ * saves the parents together with the element, followed by the parents' parents.
  */
 public class ParentMembership {
 	private static final double NEARBY_PARENT_METERS = 1000;
@@ -114,6 +117,15 @@ public class ParentMembership {
 	private final List<Membership> memberships = new ArrayList<>();
 	/** Stored parents the element was taken out of; saving them records the change. */
 	private final List<OsmCollectionEntity> leftParents = new ArrayList<>();
+	/**
+	 * Parents changed earlier in the same edit, by id, standing in for their stored versions: the
+	 * areas a route's editor kept from the crag's editor, when it opens again.
+	 */
+	private final Map<Long, OsmCollectionEntity> editedParents = new HashMap<>();
+	/** The parents' parents changed in the parents' editors, by id, like the areas of the crags. */
+	private final Map<Long, OsmCollectionEntity> grandparents = new LinkedHashMap<>();
+	/** The parents that came back from their editor, the ones that can have changed grandparents. */
+	private final Set<Long> parentsEdited = new HashSet<>();
 	private boolean canAdd = true;
 	private ParentEditor parentEditor;
 
@@ -143,15 +155,21 @@ public class ParentMembership {
 	 *                      number and for the distances to the parents.
 	 * @param shownBounds   the part of the editor's map on screen, where the parents to choose from
 	 *                      are listed besides the nearby ones, or null before the map is ready.
+	 * @param editedParents parents changed earlier in the same edit, which the element may be in or
+	 *                      have left; see changedGrandparents.
 	 */
 	public ParentMembership(AppCompatActivity parent, ViewGroup container, Kind kind, long memberId,
-	                        Supplier<GeoNode> editedElement, Supplier<MapBounds> shownBounds) {
+	                        Supplier<GeoNode> editedElement, Supplier<MapBounds> shownBounds,
+	                        List<OsmCollectionEntity> editedParents) {
 		this.parent = parent;
 		this.kind = kind;
 		this.store = new OsmEditStore(parent);
 		this.memberId = memberId;
 		this.editedElement = editedElement;
 		this.shownBounds = shownBounds;
+		for (OsmCollectionEntity relation : editedParents) {
+			this.editedParents.put(relation.osmID, relation);
+		}
 
 		section = parent.getLayoutInflater().inflate(R.layout.fragment_edit_parents, container, false);
 		container.addView(section);
@@ -178,12 +196,51 @@ public class ParentMembership {
 		render();
 	}
 
-	/** The parents whose members changed, to save together with the element. */
+	/**
+	 * The parents whose members changed, then the grandparents changed in the parents' editors, to
+	 * save together with the element in this order: a new area is placed by its crags once they are
+	 * stored. The grandparents no longer list the parents this edit drops.
+	 */
 	public List<OsmCollectionEntity> changedParents() {
 		List<OsmCollectionEntity> result = new ArrayList<>(leftParents);
 		for (Membership membership : memberships) {
 			if (membership.changed) {
 				result.add(membership.relation);
+			}
+		}
+		Set<Long> dropped = droppedParents();
+		for (OsmCollectionEntity grandparent : grandparents.values()) {
+			OsmCollectionEntity saved = copy(grandparent);
+			for (long droppedId : dropped) {
+				RelationMembers.removeAll(saved.getMembers(), EntityOsmType.relation.name(), droppedId);
+			}
+			result.add(saved);
+		}
+		return result;
+	}
+
+	/**
+	 * The grandparents changed so far, for the next parent's editor to start from, as the parents
+	 * it opens with.
+	 */
+	public List<OsmCollectionEntity> changedGrandparents() {
+		return new ArrayList<>(grandparents.values());
+	}
+
+	/**
+	 * The parents back from their editor that the edit doesn't keep: new ones the element left,
+	 * which are never stored, and ones left without members, which saving deletes.
+	 */
+	private Set<Long> droppedParents() {
+		Set<Long> result = new HashSet<>(parentsEdited);
+		for (Membership membership : memberships) {
+			if (membership.relation.getMembers().length() > 0) {
+				result.remove(membership.relation.osmID);
+			}
+		}
+		for (OsmCollectionEntity relation : leftParents) {
+			if (relation.getMembers().length() > 0) {
+				result.remove(relation.osmID);
 			}
 		}
 		return result;
@@ -208,14 +265,21 @@ public class ParentMembership {
 	 * was in, or a new one it joins. A parent that no longer lists the element leaves the section.
 	 */
 	public void parentEdited(OsmCollectionEntity relation) {
+		parentEdited(relation, Collections.emptyList());
+	}
+
+	/**
+	 * Takes back a parent as parentEdited(OsmCollectionEntity) does, with the parents it joined or
+	 * left in its editor, which replace the ones changed in an earlier visit.
+	 */
+	public void parentEdited(OsmCollectionEntity relation, List<OsmCollectionEntity> relationParents) {
 		Membership membership = null;
 		for (Membership candidate : memberships) {
 			if (candidate.relation.osmID == relation.osmID) {
 				membership = candidate;
 			}
 		}
-		boolean listsElement = RelationMembers.contains(relation.getMembers(),
-				kind.memberType.name(), memberId);
+		boolean listsElement = listsElement(relation);
 		if (membership == null) {
 			if (listsElement) {
 				// Changes in its editor happen in the same edit.
@@ -225,6 +289,10 @@ public class ParentMembership {
 			} else {
 				return;
 			}
+		}
+		parentsEdited.add(relation.osmID);
+		for (OsmCollectionEntity grandparent : relationParents) {
+			grandparents.put(grandparent.osmID, grandparent);
 		}
 		if (!listsElement) {
 			memberships.remove(membership);
@@ -255,13 +323,26 @@ public class ParentMembership {
 
 	private void loadMemberships() {
 		Constants.DB_EXECUTOR.execute(new UiRelatedTask<List<Membership>>() {
+			/** The stored parents the element left earlier in the edit. */
+			private final List<OsmCollectionEntity> left = new ArrayList<>();
+
 			@Override
 			protected List<Membership> doWork() {
 				List<Membership> result = new ArrayList<>();
 				for (OsmCollectionEntity relation : store.loadParents(kind.memberType, memberId)) {
-					if (relation.entityClimbingType != EntityClimbingType.NAN) {
+					OsmCollectionEntity edited = editedParents.get(relation.osmID);
+					if (edited != null) {
+						if (!listsElement(edited)) {
+							left.add(edited);
+						}
+					} else if (relation.entityClimbingType != EntityClimbingType.NAN) {
 						result.add(new Membership(relation,
 								store.loadMembers(relation.getMembers()), false));
+					}
+				}
+				for (OsmCollectionEntity edited : editedParents.values()) {
+					if (listsElement(edited)) {
+						result.add(new Membership(edited, store.loadMembers(edited.getMembers()), true));
 					}
 				}
 				return result;
@@ -270,9 +351,14 @@ public class ParentMembership {
 			@Override
 			protected void thenDoUiRelatedWork(List<Membership> result) {
 				memberships.addAll(result);
+				leftParents.addAll(left);
 				render();
 			}
 		});
+	}
+
+	private boolean listsElement(OsmCollectionEntity relation) {
+		return RelationMembers.contains(relation.getMembers(), kind.memberType.name(), memberId);
 	}
 
 	private void render() {
@@ -472,7 +558,10 @@ public class ParentMembership {
 		}
 	}
 
-	private void addTo(OsmCollectionEntity relation) {
+	private void addTo(OsmCollectionEntity listed) {
+		// Joins the parent as changed earlier in the edit, keeping those changes.
+		OsmCollectionEntity relation = editedParents.containsKey(listed.osmID)
+				? editedParents.get(listed.osmID) : listed;
 		Constants.DB_EXECUTOR.execute(new UiRelatedTask<Map<String, OsmEntity>>() {
 			@Override
 			protected Map<String, OsmEntity> doWork() {
@@ -524,9 +613,8 @@ public class ParentMembership {
 
 	/** Adds the element at the end of the parent, unless the parent lists it already. */
 	private void join(Membership membership) {
-		JSONArray members = membership.relation.getMembers();
-		if (!RelationMembers.contains(members, kind.memberType.name(), memberId)) {
-			RelationMembers.append(members, kind.memberType.name(), memberId, "");
+		if (!listsElement(membership.relation)) {
+			RelationMembers.append(membership.relation.getMembers(), kind.memberType.name(), memberId, "");
 		}
 		memberships.add(membership);
 		render();
@@ -573,6 +661,14 @@ public class ParentMembership {
 	private boolean isEditedElement(JSONObject member) {
 		return member != null && member.optLong(ClimbingTags.KEY_REF) == memberId
 				&& kind.memberType.name().equals(member.optString(ClimbingTags.KEY_TYPE));
+	}
+
+	private static OsmCollectionEntity copy(OsmCollectionEntity relation) {
+		try {
+			return new OsmCollectionEntity(new JSONObject(relation.jsonNodeInfo.toString()));
+		} catch (JSONException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	private String nameOf(OsmCollectionEntity relation) {

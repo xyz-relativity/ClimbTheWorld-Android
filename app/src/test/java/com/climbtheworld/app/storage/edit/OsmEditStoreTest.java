@@ -250,6 +250,41 @@ public class OsmEditStoreTest {
 	}
 
 	@Test
+	public void newAreaSavedAfterItsNewCragIsPlacedByTheRoute() {
+		OsmNode node = store.newNode(45.60, -73.70);
+		OsmCollectionEntity crag = store.newRelation();
+		RelationMembers.append(crag.getMembers(), "node", node.osmID, "");
+		OsmCollectionEntity area = store.newRelation();
+		RelationMembers.append(area.getMembers(), "relation", crag.osmID, "");
+
+		// As the route's editor saves them: the crag, then its area.
+		store.save(Collections.singletonList(node), Arrays.asList(crag, area));
+
+		OsmCollectionEntity storedArea = relation(area.osmID);
+		assertEquals(Collections.singletonList(crag.osmID), storedArea.osmMembers);
+		assertEquals(Collections.singletonList(node.osmID), storedArea.osmNodes);
+		assertEquals(45.60, storedArea.bBoxNorth, 1e-9);
+		assertEquals(Collections.singletonList("CA"),
+				database.entityCountryDao().findCountries(EntityOsmType.relation, area.osmID));
+	}
+
+	@Test
+	public void newCragJoinsAStoredAreaInTheRoutesSave() {
+		OsmNode node = store.newNode(45.60, -73.70);
+		OsmCollectionEntity crag = store.newRelation();
+		RelationMembers.append(crag.getMembers(), "node", node.osmID, "");
+		OsmCollectionEntity area = relation(200);
+		RelationMembers.append(area.getMembers(), "relation", crag.osmID, "");
+
+		store.save(Collections.singletonList(node), Arrays.asList(crag, area));
+
+		OsmCollectionEntity storedArea = relation(200);
+		assertEquals(Arrays.asList(100L, crag.osmID), storedArea.osmMembers);
+		assertEquals(EntityState.toUpdate, storedArea.localUpdateState);
+		assertEquals(45.60, storedArea.bBoxNorth, 1e-9);
+	}
+
+	@Test
 	public void revertBringsBackADeletedRoute() throws Exception {
 		store.deleteNode(3);
 		store.revert(EntityOsmType.node, 3);

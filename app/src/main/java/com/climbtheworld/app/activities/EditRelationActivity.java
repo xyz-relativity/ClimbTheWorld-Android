@@ -53,6 +53,7 @@ import com.climbtheworld.app.utils.views.EditorMapSizer;
 import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.maplibre.android.MapLibre;
@@ -69,7 +70,8 @@ import needle.UiRelatedTask;
  * Edits a crag or an area relation: its tags, its members in order, and for a crag the areas it
  * is in. Members are added by tapping them on the map. Opened from the relation's info dialog it
  * saves by itself; opened from the editor of one of its members it is part of that edit, and
- * hands the relation back for that editor to save with the member.
+ * hands the relation back, a crag with the areas it joined or left, for that editor to save with
+ * the member.
  */
 public class EditRelationActivity extends AppCompatActivity implements IOrientationListener, ILocationListener {
 	/** The stored relation to edit. */
@@ -78,6 +80,11 @@ public class EditRelationActivity extends AppCompatActivity implements IOrientat
 	public static final String EXTRA_RELATION_JSON = "relationJson";
 	/** With EXTRA_RELATION_JSON: the member whose editor opened this one, as that editor has it. */
 	public static final String EXTRA_MEMBER_JSON = "memberJson";
+	/**
+	 * With EXTRA_RELATION_JSON, for a crag: the areas changed earlier in the member's edit, as a
+	 * JSON array; the areas changed here come back under the same key. See putParents.
+	 */
+	public static final String EXTRA_PARENTS_JSON = "parentsJson";
 
 	private static final int LOCATION_UPDATE = 5000;
 	/** Where a collection is shown, read by DataManager.toDisplayableNode. */
@@ -107,12 +114,38 @@ public class EditRelationActivity extends AppCompatActivity implements IOrientat
 		final OsmCollectionEntity relation;
 		final Map<String, OsmEntity> members;
 		final String highlightedKey;
+		final List<OsmCollectionEntity> editedParents;
 
-		Loaded(OsmCollectionEntity relation, Map<String, OsmEntity> members, String highlightedKey) {
+		Loaded(OsmCollectionEntity relation, Map<String, OsmEntity> members, String highlightedKey,
+		       List<OsmCollectionEntity> editedParents) {
 			this.relation = relation;
 			this.members = members;
 			this.highlightedKey = highlightedKey;
+			this.editedParents = editedParents;
 		}
+	}
+
+	/** Puts the relations into the intent under EXTRA_PARENTS_JSON. */
+	public static void putParents(Intent intent, List<OsmCollectionEntity> parents) {
+		JSONArray array = new JSONArray();
+		for (OsmCollectionEntity parent : parents) {
+			array.put(parent.jsonNodeInfo);
+		}
+		intent.putExtra(EXTRA_PARENTS_JSON, array.toString());
+	}
+
+	/** The relations under EXTRA_PARENTS_JSON, none without it. */
+	public static List<OsmCollectionEntity> parents(Intent intent) throws JSONException {
+		List<OsmCollectionEntity> result = new ArrayList<>();
+		String json = intent.getStringExtra(EXTRA_PARENTS_JSON);
+		if (json == null) {
+			return result;
+		}
+		JSONArray array = new JSONArray(json);
+		for (int index = 0; index < array.length(); index++) {
+			result.add(new OsmCollectionEntity(array.getJSONObject(index)));
+		}
+		return result;
 	}
 
 	@Override
@@ -183,15 +216,16 @@ public class EditRelationActivity extends AppCompatActivity implements IOrientat
 						OsmCollectionEntity loaded = new OsmCollectionEntity(
 								new JSONObject(intent.getStringExtra(EXTRA_RELATION_JSON)));
 						Map<String, OsmEntity> members = store.loadMembers(loaded.getMembers());
+						List<OsmCollectionEntity> editedParents = parents(intent);
 						String memberJson = intent.getStringExtra(EXTRA_MEMBER_JSON);
 						if (memberJson == null) {
-							return new Loaded(loaded, members, null);
+							return new Loaded(loaded, members, null, editedParents);
 						}
 						// The member as its editor has it, which may not be stored yet.
 						OsmEntity member = fromJson(new JSONObject(memberJson));
 						String key = RelationMembers.key(member.osmType.name(), member.osmID);
 						members.put(key, member);
-						return new Loaded(loaded, members, key);
+						return new Loaded(loaded, members, key, editedParents);
 					}
 					OsmEntity stored = store.load(EntityOsmType.relation,
 							intent.getLongExtra(EXTRA_RELATION_ID, 0));
@@ -199,7 +233,8 @@ public class EditRelationActivity extends AppCompatActivity implements IOrientat
 						return null;
 					}
 					OsmCollectionEntity loaded = (OsmCollectionEntity) stored;
-					return new Loaded(loaded, store.loadMembers(loaded.getMembers()), null);
+					return new Loaded(loaded, store.loadMembers(loaded.getMembers()), null,
+							Collections.emptyList());
 				} catch (JSONException e) {
 					return null;
 				}
@@ -226,11 +261,10 @@ public class EditRelationActivity extends AppCompatActivity implements IOrientat
 
 		memberList = new RelationMemberList(this, findViewById(R.id.containerMembers), area,
 				relation.getMembers(), loaded.members, loaded.highlightedKey, this::updateMapMarkers);
-		if (!area && !partOfMemberEdit) {
-			// From a route's editor the areas stay out of it, for one level of editing at a time.
+		if (!area) {
 			areaMembership = new ParentMembership(this, findViewById(R.id.containerParents),
 					ParentMembership.Kind.AREA, relation.osmID, this::locatedRelation,
-					mapWidget::getVisibleBounds);
+					mapWidget::getVisibleBounds, loaded.editedParents);
 			areaMembership.setParentEditor(this::openAreaEditor);
 		}
 		buildTagSections();
@@ -468,12 +502,17 @@ public class EditRelationActivity extends AppCompatActivity implements IOrientat
 	}
 
 	/**
-	 * Hands the relation back to the member's editor, or stores it with the areas it joined or
-	 * left. Without members it is deleted.
+	 * Hands the relation back to the member's editor, or stores it, in both cases with the areas
+	 * it joined or left. Without members it is deleted.
 	 */
 	private void save(JSONObject edited) {
 		if (partOfMemberEdit) {
-			setResult(RESULT_OK, new Intent().putExtra(EXTRA_RELATION_JSON, edited.toString()));
+			Intent result = new Intent().putExtra(EXTRA_RELATION_JSON, edited.toString());
+			if (areaMembership != null) {
+				// The member's editor leaves out a crag it doesn't keep.
+				putParents(result, areaMembership.changedParents());
+			}
+			setResult(RESULT_OK, result);
 			finish();
 			return;
 		}
