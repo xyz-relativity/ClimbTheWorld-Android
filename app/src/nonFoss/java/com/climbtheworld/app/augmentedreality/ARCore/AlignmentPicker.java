@@ -3,12 +3,15 @@ package com.climbtheworld.app.augmentedreality.ARCore;
 import android.app.AlertDialog;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.BaseAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.augmentedreality.placement.AlignmentChoices;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.DataManager;
@@ -19,6 +22,7 @@ import com.climbtheworld.app.utils.GeoUtils;
 import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
+import com.climbtheworld.app.utils.views.TextWatchers;
 import com.climbtheworld.app.utils.views.dialogs.DialogueUtils;
 
 import java.util.ArrayList;
@@ -33,13 +37,15 @@ import needle.UiRelatedTask;
 
 /**
  * Asks which mapped route to align on, from the routes around the user, closest first, in rows
- * like the search results. The routes already aligned on are listed wherever they are, each with
- * a button to delete its alignment.
+ * like the search results, with a quick filter on their names over them, see AlignmentChoices.
+ * The routes already aligned on are listed wherever they are, each with a button to delete its
+ * alignment.
  */
 class AlignmentPicker {
 	// How far around where the user seems to be routes are looked for, as GPS can be that far
 	// off.
 	private static final double SEARCH_METERS = 150;
+	// How many routes are listed, the closest; the filter looks through all of them.
 	private static final int MAX_ROUTES = 40;
 	private static final double METERS_PER_DEGREE = GeoUtils.EARTH_RADIUS_M * Math.PI / 180;
 
@@ -59,7 +65,8 @@ class AlignmentPicker {
 
 	/**
 	 * The routes around a point, closest first: only nodes, which are at one spot, and with a pin
-	 * of their own, as the A.R. view shows them. The routes aligned on are among them, however far.
+	 * of their own, as the A.R. view shows them, all of them, for the filter to look through. The
+	 * routes aligned on are among them, however far.
 	 */
 	private List<GeoNode> loadRoutes(double latitude, double longitude, long excludedId,
 	                                 Set<Long> aligned) {
@@ -74,14 +81,8 @@ class AlignmentPicker {
 				routes.add(node);
 			}
 		}
-		Comparator<GeoNode> closestFirst =
-				Comparator.comparingDouble(node -> distanceMeters(node, latitude, longitude));
-		routes.sort(closestFirst);
-		if (routes.size() > MAX_ROUTES) {
-			routes = new ArrayList<>(routes.subList(0, MAX_ROUTES));
-		}
 
-		// The routes aligned on and left out above, for their alignments to be deleted too.
+		// The routes aligned on farther away, for their alignments to be deleted too.
 		Set<Long> missing = new HashSet<>(aligned);
 		for (GeoNode route : routes) {
 			missing.remove(route.osmID);
@@ -91,8 +92,8 @@ class AlignmentPicker {
 					.values()) {
 				routes.add(DataManager.toDisplayableNode(node).getGeoNode());
 			}
-			routes.sort(closestFirst);
 		}
+		routes.sort(Comparator.comparingDouble(node -> distanceMeters(node, latitude, longitude)));
 		return routes;
 	}
 
@@ -129,6 +130,7 @@ class AlignmentPicker {
 	}
 
 	/**
+	 * @param routes  the routes around, closest first, see loadRoutes
 	 * @param aligned the OSM IDs of the routes aligned on, which deleting an alignment updates
 	 */
 	private void showDialog(List<GeoNode> routes, double latitude, double longitude,
@@ -148,18 +150,23 @@ class AlignmentPicker {
 			return;
 		}
 
-		ListView list = new ListView(activity);
-		builder.setView(list);
+		View content = activity.getLayoutInflater()
+				.inflate(R.layout.fragment_dialog_align_route, null);
+		builder.setView(content);
 		dialog = builder.create();
-		list.setAdapter(new BaseAdapter() {
+		// Listed wherever they are as the list opens, even once their alignment is deleted.
+		Set<Long> alignedAtOpen = new HashSet<>(aligned);
+		// The routes the filter lets through.
+		List<GeoNode> listed = new ArrayList<>();
+		BaseAdapter adapter = new BaseAdapter() {
 			@Override
 			public int getCount() {
-				return routes.size();
+				return listed.size();
 			}
 
 			@Override
 			public Object getItem(int i) {
-				return routes.get(i);
+				return listed.get(i);
 			}
 
 			@Override
@@ -169,7 +176,7 @@ class AlignmentPicker {
 
 			@Override
 			public View getView(int i, View view, ViewGroup viewGroup) {
-				GeoNode route = routes.get(i);
+				GeoNode route = listed.get(i);
 				String distance = activity.getString(R.string.ar_placement_align_distance,
 						Math.round(distanceMeters(route, latitude, longitude)));
 				if (view == null) {
@@ -197,7 +204,19 @@ class AlignmentPicker {
 				});
 				return view;
 			}
-		});
+		};
+		EditText filter = content.findViewById(R.id.editFind);
+		Runnable applyFilter = () -> {
+			listed.clear();
+			listed.addAll(AlignmentChoices.listed(routes, filter.getText().toString(),
+					GeoNode::getName, route -> alignedAtOpen.contains(route.osmID), MAX_ROUTES));
+			adapter.notifyDataSetChanged();
+		};
+		filter.addTextChangedListener(TextWatchers.afterTextChanged(typed -> applyFilter.run()));
+		applyFilter.run();
+		((ListView) content.findViewById(R.id.listAlignRoutes)).setAdapter(adapter);
+		// The filter field takes the focus, but most of the time the closest route is the one.
+		dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 		dialog.show();
 	}
 
