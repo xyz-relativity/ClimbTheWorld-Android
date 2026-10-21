@@ -120,7 +120,8 @@
                 android:textStyle="bold"
                 android:visibility="gone" />
 
-            <!-- Align and Sight, down the right, below the settings button. -->
+            <!-- Align, down the right, below the settings button. Triangulation, for placing
+                 nodes, is the node editor's only. -->
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -158,16 +159,6 @@
                         android:visibility="gone" />
 
                 </FrameLayout>
-
-                <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:id="@+id/arSightButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="5dip"
-                    android:background="?android:selectableItemBackground"
-                    android:contentDescription="@string/ar_placement_sight"
-                    android:enabled="false"
-                    app:srcCompat="@drawable/ic_ar_sight" />
 
             </LinearLayout>
 

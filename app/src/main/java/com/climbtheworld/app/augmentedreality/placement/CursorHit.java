@@ -34,6 +34,18 @@ public class CursorHit {
 	}
 
 	/**
+	 * The same spot, as its anchor has it now, seen from where the camera is now: as a
+	 * triangulated spot, fixed in the session's world, while the camera moves.
+	 *
+	 * @param point  where the spot is now, in the session's world
+	 * @param camera where the camera is now, in the session's world
+	 */
+	public CursorHit seenFrom(double[] point, double[] camera) {
+		return new CursorHit(point.clone(), normal, length(subtract(point, camera)), source,
+				uncertaintyMeters);
+	}
+
+	/**
 	 * @param pixelX where the crosshair is in the depth image
 	 * @param pixelY where the crosshair is in the depth image
 	 * @return the hit, null where the depth around the crosshair is unknown

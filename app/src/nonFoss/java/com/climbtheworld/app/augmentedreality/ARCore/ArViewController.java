@@ -21,10 +21,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
  * map, its tracking moves and turns Globals.virtualCamera in place of GPS and the sensors, so the
  * A.R. view draws as it does, only steadier. Until then, and whenever ARCore loses track, GPS and
  * the sensors stand in, over ARCore's image. It runs on the same session as the A.R. placement in
- * the node editor, see ArCoreSession, with its Align and Sight. Where ARCore cannot measure depth,
- * it still runs, the cursor then only showing where the crosshair crosses a first sighting.
+ * the node editor, see ArCoreSession, with its Align, but not its Triangulation, which is for
+ * placing nodes. Where ARCore cannot measure depth, it still runs, with no cursor to align with.
  * <p>
- * The tools to aim with, the crosshair, the cursor, the rock's wireframe, Align and Sight, show
+ * The tools to aim with, the crosshair, the cursor, the rock's wireframe and Align, show
  * only near mapped routes, see AlignmentRange, as farther away there is nothing to align on. There,
  * a button hides them, until the user shows them again or walks away.
  * <p>
@@ -72,7 +72,7 @@ public class ArViewController implements ArViewTracking {
 		this.surfaceView = container.findViewById(R.id.arSurfaceView);
 		this.controls = container.findViewById(R.id.arCoreControls);
 		this.toolsButton = container.findViewById(R.id.arCoreToolsButton);
-		this.arCore = new ArCoreSession(activity, container, false, new ArCoreSession.Host() {
+		this.arCore = new ArCoreSession(activity, container, false, false, new ArCoreSession.Host() {
 			@Override
 			public void onStarted() {
 				Log.i(TAG, "ARCore runs");

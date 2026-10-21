@@ -57,9 +57,10 @@ import java.util.function.Consumer;
  * <p>
  * GPS and the compass tie ARCore's world to the map, see GeoRegistration. Align ties it to mapped
  * routes instead: the user aims at one and picks it, and what is placed or shown then lands right
- * next to them. Past the depth, the cursor follows the wall below; Sight takes a first sighting of
- * a spot, for the user to aim at it again from a few meters to the side, the cursor then being
- * where the two cross. On a phone that cannot measure depth, that crossing is the only cursor.
+ * next to them. Past the depth, the cursor follows the wall below. In the node editor,
+ * Triangulation fixes a spot too far for the depth: a first sighting of it, then a second from a
+ * few meters to the side, the spot being where the two cross, as ARCore measures the step between
+ * them. On a phone that cannot measure depth, that is the only cursor there.
  * <p>
  * ARCore runs on Google Play Services for AR, which not every phone can run. The first time, it
  * tells the user about ARCore; it asks for the camera, and has ARCore installed or updated, when
@@ -85,7 +86,8 @@ class ArCoreSession {
 	private final FloatingActionButton alignButton;
 	// On the align button's corner.
 	private final TextView alignedCount;
-	private final FloatingActionButton sightButton;
+	// Only with triangulation, null otherwise.
+	private final FloatingActionButton triangulateButton;
 	private final ArSessionRenderer renderer;
 	private final GeoRegistration registration = new GeoRegistration();
 	private final AlignmentPicker alignmentPicker;
@@ -124,8 +126,8 @@ class ArCoreSession {
 	private boolean resumed;
 	// The session and the view drawing it are running.
 	private boolean running;
-	// A first sighting is taken, see sight.
-	private boolean sighting;
+	// How far the triangulation is, see triangulate.
+	private TriangulationStep triangulationStep = TriangulationStep.NONE;
 	// As the renderer last told them; null until it does.
 	private TrackingState trackingState;
 	private TrackingFailureReason trackingFailureReason;
@@ -145,10 +147,14 @@ class ArCoreSession {
 	 *
 	 * @param container     holds the R.id.arSurfaceView the session draws in, and its
 	 *                      R.id.arStatusHint, R.id.arCrosshair, R.id.arCursorDistance,
-	 *                      R.id.arAlignButton, R.id.arAlignedCount and R.id.arSightButton
+	 *                      R.id.arAlignButton and R.id.arAlignedCount, and with triangulation,
+	 *                      R.id.arTriangulateButton
 	 * @param depthRequired whether it only runs where ARCore can measure depth
+	 * @param triangulation whether the user can triangulate a spot too far for the depth, see
+	 *                      triangulate
 	 */
-	ArCoreSession(AppCompatActivity activity, View container, boolean depthRequired, Host host) {
+	ArCoreSession(AppCompatActivity activity, View container, boolean depthRequired,
+	              boolean triangulation, Host host) {
 		this.activity = activity;
 		this.host = host;
 		this.depthRequired = depthRequired;
@@ -158,7 +164,8 @@ class ArCoreSession {
 		this.cursorDistance = container.findViewById(R.id.arCursorDistance);
 		this.alignButton = container.findViewById(R.id.arAlignButton);
 		this.alignedCount = container.findViewById(R.id.arAlignedCount);
-		this.sightButton = container.findViewById(R.id.arSightButton);
+		this.triangulateButton = triangulation
+				? container.findViewById(R.id.arTriangulateButton) : null;
 		this.alignmentPicker = new AlignmentPicker(activity);
 		this.displayManager = (DisplayManager) activity.getSystemService(Context.DISPLAY_SERVICE);
 
@@ -212,7 +219,9 @@ class ArCoreSession {
 				});
 
 		alignButton.setOnClickListener(view -> align());
-		sightButton.setOnClickListener(view -> sight());
+		if (triangulateButton != null) {
+			triangulateButton.setOnClickListener(view -> triangulate());
+		}
 	}
 
 	/**
@@ -368,11 +377,12 @@ class ArCoreSession {
 	}
 
 	/**
-	 * Drops the first sighting, once the spot it was taken of is placed.
+	 * Drops the triangulation, once its spot is placed.
 	 */
-	void endSighting() {
-		sighting = false;
+	void endTriangulation() {
+		triangulationStep = TriangulationStep.NONE;
 		renderer.setSighting(null);
+		renderer.setTriangulated(null);
 		updateStatus();
 	}
 
@@ -614,8 +624,9 @@ class ArCoreSession {
 			}
 			// The session's world may be new after a pause.
 			registration.reset();
-			sighting = false;
+			triangulationStep = TriangulationStep.NONE;
 			renderer.setSighting(null);
+			renderer.setTriangulated(null);
 			trackingState = null;
 			trackingFailureReason = null;
 			cursor = null;
@@ -674,10 +685,15 @@ class ArCoreSession {
 			hint = R.string.ar_placement_waiting_location;
 		} else if (tracking && !registration.hasHeading()) {
 			hint = R.string.ar_placement_waiting_heading;
-		} else if (tracking && sighting && cursor == null) {
-			hint = R.string.ar_placement_sight_move;
+		} else if (tracking && triangulationStep == TriangulationStep.FIRST) {
+			// The cursor shows once the crosshair crosses the first sighting.
+			hint = cursor == null ? R.string.ar_placement_triangulate_move
+					: R.string.ar_placement_triangulate_fix_hint;
+		} else if (tracking && triangulationStep == TriangulationStep.FIXED) {
+			hint = R.string.ar_placement_triangulated;
 		} else if (tracking && cursor != null && cursor.source == CursorHit.Source.WALL_PLANE) {
-			hint = R.string.ar_placement_on_wall_plane;
+			hint = triangulateButton != null ? R.string.ar_placement_on_wall_plane
+					: R.string.ar_view_on_wall_plane;
 		} else if (tracking) {
 			hint = host.idleHint();
 		}
@@ -699,11 +715,26 @@ class ArCoreSession {
 				: activity.getString(R.string.ar_placement_align_count, alignedRoutes.size()));
 		alignedCount.setVisibility(alignedRoutes.isEmpty() ? View.GONE : View.VISIBLE);
 		alignedCount.setText(String.valueOf(alignedRoutes.size()));
-		setIconEnabled(sightButton, tracking);
-		sightButton.setImageResource(sighting ? R.drawable.ic_ar_sight_cancel
-				: R.drawable.ic_ar_sight);
-		describe(sightButton, activity.getString(sighting ? R.string.ar_placement_sight_cancel
-				: R.string.ar_placement_sight));
+		if (triangulateButton != null) {
+			setIconEnabled(triangulateButton, tracking);
+			switch (triangulationStep) {
+				case FIRST:
+					triangulateButton.setImageResource(R.drawable.ic_ar_triangulate_first);
+					describe(triangulateButton,
+							activity.getString(R.string.ar_placement_triangulate_fix));
+					break;
+				case FIXED:
+					triangulateButton.setImageResource(R.drawable.ic_ar_triangulate_fixed);
+					describe(triangulateButton,
+							activity.getString(R.string.ar_placement_triangulate_drop));
+					break;
+				default:
+					triangulateButton.setImageResource(R.drawable.ic_ar_triangulate);
+					describe(triangulateButton,
+							activity.getString(R.string.ar_placement_triangulate));
+					break;
+			}
+		}
 		host.onStateChanged();
 	}
 
@@ -720,20 +751,37 @@ class ArCoreSession {
 	}
 
 	/**
-	 * Takes a first sighting along the crosshair, for the user to aim at the same spot again from
-	 * a few meters to the side, or drops it.
+	 * Triangulation, a step per tap: a first sighting along the crosshair; then, aimed at the same
+	 * spot from a few meters to the side, the spot where the two cross, fixed for Place or Align
+	 * to use, the cursor staying on it; then dropping it.
 	 */
-	private void sight() {
-		if (sighting) {
-			sighting = false;
-			renderer.setSighting(null);
-		} else {
-			ViewRay ray = renderer.getCrosshairRay();
-			if (ray == null) {
-				return;
+	private void triangulate() {
+		switch (triangulationStep) {
+			case NONE: {
+				ViewRay ray = renderer.getCrosshairRay();
+				if (ray == null) {
+					return;
+				}
+				triangulationStep = TriangulationStep.FIRST;
+				renderer.setSighting(ray);
+				break;
 			}
-			sighting = true;
-			renderer.setSighting(ray);
+			case FIRST: {
+				CursorHit crossing = renderer.getCursor();
+				if (crossing == null || crossing.source != CursorHit.Source.SIGHTING) {
+					Toast.makeText(activity, R.string.ar_placement_triangulate_no_crossing,
+							Toast.LENGTH_LONG).show();
+					return;
+				}
+				triangulationStep = TriangulationStep.FIXED;
+				renderer.setSighting(null);
+				renderer.setTriangulated(crossing);
+				break;
+			}
+			default:
+				triangulationStep = TriangulationStep.NONE;
+				renderer.setTriangulated(null);
+				break;
 		}
 		updateStatus();
 	}
@@ -786,6 +834,11 @@ class ArCoreSession {
 		renderer.setAnchor(aligned.anchorKey(), aimed);
 		Toast.makeText(activity, activity.getString(R.string.ar_placement_aligned,
 				route.getName()), Toast.LENGTH_LONG).show();
+		// A triangulated spot, now aligned on.
+		if (triangulationStep == TriangulationStep.FIXED) {
+			triangulationStep = TriangulationStep.NONE;
+			renderer.setTriangulated(null);
+		}
 		updateStatus();
 	}
 
@@ -821,6 +874,17 @@ class ArCoreSession {
 			}
 		}
 		registration.setLandmarks(landmarks);
+	}
+
+	/**
+	 * How far the triangulation is, see triangulate.
+	 */
+	private enum TriangulationStep {
+		NONE,
+		// The first sighting is taken: the cursor shows where the crosshair crosses it.
+		FIRST,
+		// The spot where the two cross is fixed, and the cursor stays on it.
+		FIXED
 	}
 
 	/**

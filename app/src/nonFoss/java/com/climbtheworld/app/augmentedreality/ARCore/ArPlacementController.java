@@ -104,7 +104,7 @@ public class ArPlacementController implements ArPlacement {
 		this.scene = new AugmentedRealityScene(activity, sceneCamera, (ViewGroup) sceneContainer,
 				this::updateScene);
 
-		arCore = new ArCoreSession(activity, container, true, new ArCoreSession.Host() {
+		arCore = new ArCoreSession(activity, container, true, true, new ArCoreSession.Host() {
 			@Override
 			public void onStarted() {
 				// The A.R. settings may have changed in the A.R. view.
@@ -345,7 +345,7 @@ public class ArPlacementController implements ArPlacement {
 		arCore.setPin(hit.point);
 		placed = true;
 		if (hit.source == CursorHit.Source.SIGHTING) {
-			arCore.endSighting();
+			arCore.endTriangulation();
 		}
 		arCore.updateStatus();
 	}

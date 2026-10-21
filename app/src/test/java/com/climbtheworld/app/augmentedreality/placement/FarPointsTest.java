@@ -125,6 +125,24 @@ public class FarPointsTest {
 	}
 
 	@Test
+	public void keepsATriangulatedSpotWhereItsAnchorIs() {
+		double[] top = {3, 24, -12};
+		CursorHit fixed = RayCrossing.cross(ray(new double[]{0, 1.5, 0}, top),
+				ray(new double[]{4, 1.5, 0.5}, top), null);
+		// ARCore moved the anchor a little as it learned more of the world, and the user walked.
+		double[] anchored = {3.1, 24, -12};
+		double[] camera = {10, 1.5, 2};
+
+		CursorHit seen = fixed.seenFrom(anchored, camera);
+
+		assertArrayEquals(anchored, seen.point, 1e-9);
+		assertEquals(CursorHit.length(CursorHit.subtract(anchored, camera)), seen.distance, 1e-9);
+		assertEquals(CursorHit.Source.SIGHTING, seen.source);
+		assertEquals(fixed.uncertaintyMeters, seen.uncertaintyMeters, 1e-9);
+		assertArrayEquals(fixed.normal, seen.normal, 1e-9);
+	}
+
+	@Test
 	public void takesTheMiddleOfSightingsThatMiss() {
 		double[] top = {0, 20, -15};
 		ViewRay first = ray(new double[]{0, 1.5, 0}, top);

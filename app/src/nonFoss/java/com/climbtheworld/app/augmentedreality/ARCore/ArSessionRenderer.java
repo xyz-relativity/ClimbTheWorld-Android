@@ -63,6 +63,8 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 	private static final double TURN_RATE_SMOOTHING = 0.3;
 	// The anchor of the placed pin.
 	static final String PIN_ANCHOR = "pin";
+	// The anchor of the spot fixed by triangulation.
+	private static final String TRIANGULATED_ANCHOR = "triangulated";
 	// An anchor request taking the anchor away.
 	private static final double[] NO_ANCHOR = new double[0];
 
@@ -104,6 +106,9 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 	private volatile ViewRay crosshairRay;
 	// Set from the main thread: the first sighting, which the crosshair is aimed across, or null.
 	private volatile ViewRay sighting;
+	// Set from the main thread: the spot fixed by triangulation, which the cursor stays on, kept
+	// in place by its anchor, or null.
+	private volatile CursorHit triangulated;
 	// Set from the main thread: where the user last tapped the view, in its pixels, null once
 	// told.
 	private final AtomicReference<float[]> pendingTap = new AtomicReference<>();
@@ -191,6 +196,16 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 	 */
 	void tap(float x, float y) {
 		pendingTap.set(new float[]{x, y});
+	}
+
+	/**
+	 * Fixes the cursor on a triangulated spot, from the main thread, ARCore keeping it in place
+	 * as it learns more of the world, until set to null. The first sighting is no longer aimed
+	 * across meanwhile.
+	 */
+	void setTriangulated(CursorHit spot) {
+		triangulated = spot;
+		setAnchor(TRIANGULATED_ANCHOR, spot == null ? null : spot.point);
 	}
 
 	/**
@@ -407,13 +422,23 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 		ViewRay ray = Float.isNaN(textureCentre[0]) ? null : rayThrough(camera, textureCentre);
 		crosshairRay = ray;
 
-		ViewRay first = sighting;
-		if (first != null) {
-			sightingLines.clear();
-			CursorRing.sightingLine(first, sightingLines);
-			lines.draw(viewProjection, sightingLines, CURSOR_WIDTH_DP * density);
+		CursorHit hit;
+		CursorHit fixed = triangulated;
+		if (fixed != null) {
+			// Where its anchor has it now, until ARCore tracks the anchor.
+			double[] anchored = anchorPositions.get(TRIANGULATED_ANCHOR);
+			SessionCamera now = sessionCamera;
+			hit = fixed.seenFrom(anchored != null ? anchored : fixed.point,
+					new double[]{now.x(), now.y(), now.z()});
+		} else {
+			ViewRay first = sighting;
+			if (first != null) {
+				sightingLines.clear();
+				CursorRing.sightingLine(first, sightingLines);
+				lines.draw(viewProjection, sightingLines, CURSOR_WIDTH_DP * density);
+			}
+			hit = resolve(depthHit, ray);
 		}
-		CursorHit hit = resolve(depthHit, ray);
 		if (hit != null) {
 			cursorLines.clear();
 			CursorRing.build(hit, cursorLines);

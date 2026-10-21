@@ -202,8 +202,8 @@
                         android:tooltipText="@string/ar_placement_place_cursor"
                         app:srcCompat="@drawable/ic_ar_place_cursor" />
 
-                    <!-- Align and Sight, down the right, clear of the hint above and of the
-                         switch button at the bottom right. -->
+                    <!-- Align and Triangulation, down the right, clear of the hint above and of
+                         the switch button at the bottom right. -->
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -243,14 +243,14 @@
                         </FrameLayout>
 
                         <com.google.android.material.floatingactionbutton.FloatingActionButton
-                            android:id="@+id/arSightButton"
+                            android:id="@+id/arTriangulateButton"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_margin="5dip"
                             android:background="?android:selectableItemBackground"
-                            android:contentDescription="@string/ar_placement_sight"
+                            android:contentDescription="@string/ar_placement_triangulate"
                             android:enabled="false"
-                            app:srcCompat="@drawable/ic_ar_sight" />
+                            app:srcCompat="@drawable/ic_ar_triangulate" />
 
                     </LinearLayout>
 
