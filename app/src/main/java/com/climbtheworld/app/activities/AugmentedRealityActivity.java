@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.hardware.SensorManager;
@@ -12,6 +13,7 @@ import android.os.CountDownTimer;
 import android.os.SystemClock;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,8 +34,11 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
+import com.climbtheworld.app.augmentedreality.ArCoreFeatures;
+import com.climbtheworld.app.augmentedreality.ArViewTracking;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityScene;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
+import com.climbtheworld.app.augmentedreality.CameraMinimap;
 import com.climbtheworld.app.augmentedreality.HorizonMode;
 import com.climbtheworld.app.augmentedreality.TerrainWireframe;
 import com.climbtheworld.app.augmentedreality.TerrainWireframeView;
@@ -58,17 +63,26 @@ import com.google.common.util.concurrent.ListenableFuture;
 import org.maplibre.android.MapLibre;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public class AugmentedRealityActivity extends AppCompatActivity
 		implements ILocationListener, ConfigFragment.OnConfigChangeListener, IOrientationListener {
 
+	private static final String TAG = AugmentedRealityActivity.class.getSimpleName();
 	private static final int LOCATION_UPDATE_INTERVAL = 250;
 	private final View[] compassBazelCardinals = new View[4];
 	private final List<AlertDialog> startupDialogs = new ArrayList<>();
-	// The pins, route lines and outlines, as the sensors' camera sees them.
+	// The pins, route lines and outlines, as the camera sees them.
 	private AugmentedRealityScene scene;
+	// ARCore's tracking, on the phones it runs on in the non-FOSS build.
+	private ArViewTracking arCore;
+	// Whether ARCore moves and turns Globals.virtualCamera, in place of GPS and the sensors, see
+	// ArViewTracking.
+	private boolean onArCore;
+	// The minimap following ARCore's camera.
+	private CameraMinimap cameraMinimap;
 	private TerrainWireframe terrainWireframe;
 	private PreviewView cameraView;
 	private OrientationManager orientationManager;
@@ -128,6 +142,45 @@ public class AugmentedRealityActivity extends AppCompatActivity
 			}
 		});
 
+		this.mapWidget = new MapLibreMapWidget(this, findViewById(R.id.mapViewContainer),
+				savedInstanceState, MapLibreMapWidget.Profile.AR_MINIMAP);
+		cameraMinimap = new CameraMinimap(mapWidget);
+
+		initHUD();
+
+		//location
+		deviceLocationManager = new DeviceLocationManager(this, LOCATION_UPDATE_INTERVAL);
+
+		//orientation
+		orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_GAME);
+
+		arCore = ArCoreFeatures.viewTracking(this, findViewById(R.id.arContainer),
+				new ArViewTracking.Listener() {
+					@Override
+					public void onStarted() {
+						// ARCore shows what the camera sees.
+						cameraView.setVisibility(View.GONE);
+					}
+
+					@Override
+					public void onGaveUp() {
+						cameraView.setVisibility(View.VISIBLE);
+						startCameraPreview();
+					}
+
+					@Override
+					public void onMovesCameraChanged(boolean moves) {
+						useArCore(moves);
+					}
+
+					@Override
+					public void onCameraMoved() {
+						cameraMinimap.show(Globals.virtualCamera, scene.getMaxDistance());
+						updateBoundingBox();
+					}
+				});
+
+		// Asked once what it starts is made.
 		Ask.on(this)
 				.id(501) // in case you are invoking multiple time Ask from same activity or
 				// fragment
@@ -144,37 +197,22 @@ public class AugmentedRealityActivity extends AppCompatActivity
 							findViewById(R.id.cameraTextError).setVisibility(View.VISIBLE);
 						}
 
-						cameraProviderFuture =
-								ProcessCameraProvider.getInstance(AugmentedRealityActivity.this);
-						cameraProviderFuture.addListener(new Runnable() {
-							@Override
-							public void run() {
-								try {
-									ProcessCameraProvider cameraProvider =
-											cameraProviderFuture.get();
-									cameraPreview = new Preview.Builder().build();
-									camera = bindPreview(cameraProvider, cameraPreview);
-									updateViewAngles();
-								} catch (ExecutionException | InterruptedException e) {
-									// No errors need to be handled for this Future.
-									// This should never be reached.
-								}
-							}
-						}, ContextCompat.getMainExecutor(AugmentedRealityActivity.this));
+						// Asked of Android itself: the answer lists only what was asked this
+						// time.
+						boolean camera = ContextCompat.checkSelfPermission(
+								AugmentedRealityActivity.this, Manifest.permission.CAMERA)
+								== PackageManager.PERMISSION_GRANTED;
+						Log.i(TAG, "Camera " + (camera ? "allowed" : "not allowed")
+								+ "; granted " + Arrays.toString(granted)
+								+ ", denied " + Arrays.toString(denied));
+						// ARCore takes the camera on the phones it runs on, and CameraX shows it
+						// elsewhere.
+						if (!camera || !arCore.start()) {
+							startCameraPreview();
+						}
 					}
 				})
 				.go();
-
-		this.mapWidget = new MapLibreMapWidget(this, findViewById(R.id.mapViewContainer),
-				savedInstanceState, MapLibreMapWidget.Profile.AR_MINIMAP);
-
-		initHUD();
-
-		//location
-		deviceLocationManager = new DeviceLocationManager(this, LOCATION_UPDATE_INTERVAL);
-
-		//orientation
-		orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_GAME);
 
 		updateMapViewCone();
 		mapWidget.setInitialZoomToFitRadius(scene.getMaxDistance());
@@ -182,7 +220,45 @@ public class AugmentedRealityActivity extends AppCompatActivity
 		showWarning();
 	}
 
+	/**
+	 * Shows the camera through CameraX, with the sensors' camera.
+	 */
+	private void startCameraPreview() {
+		cameraProviderFuture = ProcessCameraProvider.getInstance(AugmentedRealityActivity.this);
+		cameraProviderFuture.addListener(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
+					cameraPreview = new Preview.Builder().build();
+					camera = bindPreview(cameraProvider, cameraPreview);
+					updateViewAngles();
+				} catch (ExecutionException | InterruptedException e) {
+					// No errors need to be handled for this Future.
+					// This should never be reached.
+				}
+			}
+		}, ContextCompat.getMainExecutor(AugmentedRealityActivity.this));
+	}
+
+	/**
+	 * Lets ARCore move and turn Globals.virtualCamera, or gives that back to GPS and the sensors.
+	 */
+	private void useArCore(boolean on) {
+		onArCore = on;
+		orientationManager.setTurnsCamera(!on);
+		if (on && gpsUpdateAnimationTimer != null) {
+			gpsUpdateAnimationTimer.cancel();
+		}
+		if (!on) {
+			// ARCore's pose follows the screen already, which the sensors' does not.
+			Globals.virtualCamera.screenRotation =
+					Globals.orientationToAngle(getWindowManager().getDefaultDisplay().getRotation());
+		}
+	}
+
 	private void updateViewAngles() {
+		// Without CameraX, ARCore tells its own, see ArViewTracking.
 		if (camera == null) {
 			return;
 		}
@@ -297,6 +373,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 
 	@Override
 	public void onDestroy() {
+		arCore.onDestroy();
 		mapWidget.onDestroy();
 		for (AlertDialog startupDialog : startupDialogs) {
 			startupDialog.dismiss();
@@ -353,18 +430,20 @@ public class AugmentedRealityActivity extends AppCompatActivity
 
 		deviceLocationManager.requestUpdates(this);
 		orientationManager.requestUpdates(this);
+		arCore.onResume();
 
 		scene.loadSettings();
 		applyHorizonMode(configs.getHorizonMode());
 
-		updatePosition(Globals.virtualCamera.decimalLatitude,
-				Globals.virtualCamera.decimalLongitude, Globals.virtualCamera.elevationMeters, 1);
+		moveTo(Globals.virtualCamera.decimalLatitude, Globals.virtualCamera.decimalLongitude,
+				Globals.virtualCamera.elevationMeters);
 	}
 
 	@Override
 	protected void onPause() {
 		deviceLocationManager.stopUpdates();
 		orientationManager.stopUpdates();
+		arCore.onPause();
 		if (gpsUpdateAnimationTimer != null) {
 			gpsUpdateAnimationTimer.cancel();
 		}
@@ -404,15 +483,33 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	}
 
 	public void updateOrientation(OrientationManager.OrientationEvent event) {
+		arCore.onOrientation(event);
+		// ARCore turns the camera, see ArViewTracking.Listener.onCameraMoved.
+		if (onArCore) {
+			return;
+		}
 		mapWidget.onOrientationChange(event.camera, event);
 		updateView(false);
 	}
 
 	public void updatePosition(final double pDecLatitude, final double pDecLongitude,
 	                           final double pMetersAltitude, final double accuracy) {
+		arCore.onLocation(pDecLatitude, pDecLongitude, pMetersAltitude, accuracy);
+		moveTo(pDecLatitude, pDecLongitude, pMetersAltitude);
+	}
+
+	/**
+	 * Loads what is around a location, and moves the camera there, unless ARCore moves it.
+	 */
+	private void moveTo(final double pDecLatitude, final double pDecLongitude,
+	                    final double pMetersAltitude) {
 		final int animationInterval = 100;
 
 		scene.refreshAround(new Vector4d(pDecLatitude, pDecLongitude, pMetersAltitude, 0));
+		// ARCore moves the camera, see ArViewTracking.Listener.onCameraMoved.
+		if (onArCore) {
+			return;
+		}
 
 		if (gpsUpdateAnimationTimer != null) {
 			gpsUpdateAnimationTimer.cancel();

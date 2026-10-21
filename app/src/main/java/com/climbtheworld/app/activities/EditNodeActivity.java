@@ -24,8 +24,8 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.augmentedreality.ArCoreFeatures;
 import com.climbtheworld.app.augmentedreality.placement.ArPlacement;
-import com.climbtheworld.app.augmentedreality.placement.ArPlacements;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.editor.ArtificialTags;
 import com.climbtheworld.app.map.editor.ContactTags;
@@ -131,7 +131,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 			// Where the node now is in the A.R. is not known.
 			arPlacement.clearPin();
 		});
-		arPlacement = ArPlacements.create(this, findViewById(R.id.mapViewContainer),
+		arPlacement = ArCoreFeatures.placement(this, findViewById(R.id.mapViewContainer),
 				mapWidget, (latitude, longitude) -> {
 					if (editNode == null) {
 						return;

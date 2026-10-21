@@ -9,7 +9,7 @@ import com.climbtheworld.app.sensors.orientation.OrientationManager;
  * The A.R. placement in an editor's map box, as the editor sees it: it forwards its lifecycle,
  * the node and the readings, and is told where the user placed the node.
  * <p>
- * Only the non-FOSS build has it, as ARCore is not free software; see ArPlacements, which each
+ * Only the non-FOSS build has it, as ARCore is not free software; see ArCoreFeatures, which each
  * build has its own of. Without it, nothing here does anything, and the map box stays a map, as
  * on a phone ARCore does not run on.
  */

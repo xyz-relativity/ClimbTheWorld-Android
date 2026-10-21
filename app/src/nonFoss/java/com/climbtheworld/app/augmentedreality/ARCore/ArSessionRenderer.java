@@ -85,6 +85,9 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 	private final float[] textureCentre = {Float.NaN, Float.NaN};
 	// Set while the session runs, from the main thread.
 	private volatile Session session;
+	// Whether the session measures depth, which some phones cannot do: without it, there is no
+	// wireframe of the rock, and the cursor only shows where the crosshair crosses a first sighting.
+	private volatile boolean depthEnabled;
 	// Set from the main thread when the display turns, which the view size does not show for a
 	// half turn.
 	private volatile boolean displayChanged;
@@ -134,8 +137,10 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 
 	/**
 	 * @param session the running session, null when it is paused
+	 * @param depth   whether the session measures depth
 	 */
-	void setSession(Session session) {
+	void setSession(Session session, boolean depth) {
+		this.depthEnabled = depth;
 		this.session = session;
 		trackingReset = true;
 	}
@@ -300,7 +305,8 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 				frame.transformCoordinates2d(Coordinates2d.VIEW, tap,
 						Coordinates2d.TEXTURE_NORMALIZED, tapTexture);
 			}
-			DepthHits depthHits = drawDepth(frame, camera, tapTexture);
+			DepthHits depthHits = depthEnabled ? drawDepth(frame, camera, tapTexture)
+					: new DepthHits(null, null);
 			hit = drawCursor(depthHits.centre(), camera);
 			if (tapTexture != null) {
 				listener.onTapped(resolve(depthHits.tap(), rayThrough(camera, tapTexture)));

@@ -10,6 +10,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.augmentedreality.ArCoreFeatures;
 import com.climbtheworld.app.configs.AugmentedRealityFragment;
 import com.climbtheworld.app.configs.ConfigFragment;
 import com.climbtheworld.app.configs.Configs;
@@ -42,7 +43,10 @@ public class SettingsActivity extends AppCompatActivity
 	private void uiSetup() {
 		//Device settings
 		ConfigFragment.addSwitch(findViewById(R.id.linerLayoutDeviceSettings), this, Configs.ConfigKey.keepScreenOn);
-//        ViewUtils.addSwitch((ViewGroup)findViewById(R.id.linerLayoutDeviceSettings), this, Configs.ConfigKey.useArCore);
+		// Only the non-FOSS build has ARCore.
+		if (ArCoreFeatures.AVAILABLE) {
+			ConfigFragment.addSwitch(findViewById(R.id.linerLayoutDeviceSettings), this, Configs.ConfigKey.useArCore);
+		}
 		ConfigFragment.addSwitch(findViewById(R.id.linerLayoutDeviceSettings), this, Configs.ConfigKey.useMobileDataForMap);
 		ConfigFragment.addSwitch(findViewById(R.id.linerLayoutDeviceSettings), this, Configs.ConfigKey.useMobileDataForRoutes);
 
@@ -76,6 +80,11 @@ public class SettingsActivity extends AppCompatActivity
 	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 		if (buttonView.getId() == Configs.ConfigKey.useArCore.stringId) {
 			configs.setBoolean(Configs.ConfigKey.useArCore, isChecked);
+			if (isChecked) {
+				// The user wants ARCore again, whatever they refused before.
+				configs.setInt(Configs.ConfigKey.arCoreViewRefusals, 0);
+				configs.setBoolean(Configs.ConfigKey.arCoreViewRefusedThisRun, false);
+			}
 		}
 
 		if (buttonView.getId() == Configs.ConfigKey.keepScreenOn.stringId) {

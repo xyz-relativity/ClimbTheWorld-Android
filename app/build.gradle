@@ -21,9 +21,10 @@ android {
         }
     }
     // Two builds of the same app, which install over each other: foss, all free software, and
-    // nonFoss, which adds what needs libraries that are not free software. So far that is the A.R.
-    // placement in the node editor, on Google's ARCore. F-Droid and IzzyOnDroid take the foss
-    // build. Each has its own ArPlacements, in src/foss and src/nonFoss.
+    // nonFoss, which adds what needs libraries that are not free software. So far that is Google's
+    // ARCore, which the A.R. view tracks the camera with and the node editor places nodes in A.R.
+    // with. F-Droid and IzzyOnDroid take the foss build. Each has its own ArCoreFeatures, in
+    // src/foss and src/nonFoss.
     flavorDimensions "distribution"
     productFlavors {
         foss {
@@ -98,9 +99,9 @@ dependencies {
     // walkie-talkie hands-free voice activity detection
     implementation 'com.github.gkonovalov.android-vad:webrtc:2.0.10'
 
-    // A.R. placement in the node editor, in the nonFoss build only. Optional at runtime: it needs
-    // Google Play Services for AR, which is not free software and not on every phone; see
-    // src/nonFoss/AndroidManifest.xml.
+    // The A.R. view's tracking and the A.R. placement in the node editor, in the nonFoss build
+    // only. Optional at runtime: it needs Google Play Services for AR, which is not free software
+    // and not on every phone; see src/nonFoss/AndroidManifest.xml.
     nonFossImplementation 'com.google.ar:core:1.56.0'
 
     //database
