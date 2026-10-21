@@ -23,8 +23,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.augmentedreality.AugmentedRealityScene;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityViewManager;
-import com.climbtheworld.app.augmentedreality.TerrainWireframe;
 import com.climbtheworld.app.augmentedreality.placement.AlignedHeight;
 import com.climbtheworld.app.augmentedreality.placement.CursorHit;
 import com.climbtheworld.app.augmentedreality.placement.GeoRegistration;
@@ -157,8 +157,8 @@ class ArCoreSession {
 	private CursorHit cursor;
 	// A node not to align on, as the node being edited, 0 for none.
 	private long leftOutNodeId;
-	// The ground elevation under the routes aligned on, null while unknown.
-	private TerrainWireframe.ElevationSource groundElevations;
+	// The elevation the scene stands the routes aligned on at, null while unknown.
+	private AugmentedRealityScene.PinElevations pinElevations;
 	// The latest GPS fix, NaN until there is one.
 	private double lastLatitude = Double.NaN;
 	private double lastLongitude = Double.NaN;
@@ -354,11 +354,34 @@ class ArCoreSession {
 	}
 
 	/**
-	 * @return whether the user is aligning on a route, see align, while the other pins are to
-	 * hide
+	 * @return whether the user is aligning on a route, see align, while only the pins of the
+	 * routes aligned on are to show, see getShownWhileAligning
 	 */
 	boolean isAligning() {
 		return pickingRoute || aligningRoute != null;
+	}
+
+	/**
+	 * @return while the user aligns, the OSM IDs of the routes aligned on, but the one riding on
+	 * the cursor, whose pins alone the scene is to show; null when not aligning
+	 */
+	Set<Long> getShownWhileAligning() {
+		if (!isAligning()) {
+			return null;
+		}
+		Set<Long> shown = alignedIds();
+		if (aligningRoute != null) {
+			shown.remove(aligningRoute.osmID);
+		}
+		return shown;
+	}
+
+	private Set<Long> alignedIds() {
+		Set<Long> ids = new HashSet<>();
+		for (AlignedRoute aligned : alignedRoutes) {
+			ids.add(aligned.osmId());
+		}
+		return ids;
 	}
 
 	boolean isTracking() {
@@ -395,11 +418,11 @@ class ArCoreSession {
 	}
 
 	/**
-	 * Gives the ground elevation under the routes aligned on, for the camera's height to follow
-	 * them, see poseCamera.
+	 * Gives the elevation the scene stands the routes aligned on at, for the camera's height to
+	 * follow them, see poseCamera.
 	 */
-	void setGroundElevations(TerrainWireframe.ElevationSource groundElevations) {
-		this.groundElevations = groundElevations;
+	void setPinElevations(AugmentedRealityScene.PinElevations pinElevations) {
+		this.pinElevations = pinElevations;
 	}
 
 	/**
@@ -503,7 +526,7 @@ class ArCoreSession {
 	 * @return the eye's elevation the routes aligned on tell, NaN while they tell none
 	 */
 	private double alignedEyeElevation(ArSessionRenderer.SessionCamera sessionCamera) {
-		if (groundElevations == null || alignedRoutes.isEmpty()) {
+		if (pinElevations == null || alignedRoutes.isEmpty()) {
 			return Double.NaN;
 		}
 		Map<String, double[]> positions = renderer.getAnchorPositions();
@@ -518,9 +541,8 @@ class ArCoreSession {
 				continue;
 			}
 			baseYs[route] = position[1];
-			baseElevations[route] = groundElevations.getElevation(aligned.latitude(),
-					aligned.longitude(), Math.hypot(position[0] - sessionCamera.x(),
-							position[2] - sessionCamera.z()));
+			baseElevations[route] = pinElevations.getElevation(aligned.route(),
+					Math.hypot(position[0] - sessionCamera.x(), position[2] - sessionCamera.z()));
 		}
 		return AlignedHeight.eyeElevation(sessionCamera.y(), baseYs, baseElevations);
 	}
@@ -877,10 +899,10 @@ class ArCoreSession {
 	}
 
 	/**
-	 * Align, a step per tap: the list of the routes around opens, the other pins hiding; the route
-	 * picked rides on the cursor, for the user to bring it onto where the route starts; a tap on
-	 * the button, or on that spot, drops it there, which ties ARCore's world to the route. Back
-	 * puts it away.
+	 * Align, a step per tap: the list of the routes around opens, the pins hiding but those of the
+	 * routes aligned on, see getShownWhileAligning; the route picked rides on the cursor, for the
+	 * user to bring it onto where the route starts; a tap on the button, or on that spot, drops it
+	 * there, which ties ARCore's world to the route. Back puts it away.
 	 */
 	private void align() {
 		if (aligningRoute != null) {
@@ -896,13 +918,9 @@ class ArCoreSession {
 					Globals.virtualCamera.decimalLatitude, Globals.virtualCamera.decimalLongitude}
 					: new double[]{lastLatitude, lastLongitude};
 		}
-		Set<Long> alignedIds = new HashSet<>();
-		for (AlignedRoute aligned : alignedRoutes) {
-			alignedIds.add(aligned.osmId());
-		}
 		pickingRoute = true;
 		updateStatus();
-		alignmentPicker.show(around[0], around[1], leftOutNodeId, alignedIds,
+		alignmentPicker.show(around[0], around[1], leftOutNodeId, alignedIds(),
 				new AlignmentPicker.Listener() {
 					@Override
 					public void onPicked(GeoNode route) {
@@ -959,7 +977,7 @@ class ArCoreSession {
 	}
 
 	/**
-	 * Puts the route being aligned on away, if any, and shows the other pins again.
+	 * Puts the route being aligned on away, if any, and shows all the pins again.
 	 */
 	private void endAligning() {
 		pickingRoute = false;
@@ -984,8 +1002,7 @@ class ArCoreSession {
 
 	private void alignOn(GeoNode route, double[] aimed) {
 		alignedRoutes.removeIf(aligned -> aligned.osmId() == route.osmID);
-		AlignedRoute aligned = new AlignedRoute(route.osmID, route.decimalLatitude,
-				route.decimalLongitude);
+		AlignedRoute aligned = new AlignedRoute(route);
 		alignedRoutes.add(aligned);
 		renderer.setAnchor(aligned.anchorKey(), aimed);
 		Toast.makeText(activity, activity.getString(R.string.ar_placement_aligned,
@@ -1112,11 +1129,24 @@ class ArCoreSession {
 	}
 
 	/**
-	 * A mapped route the user aimed at, and where the map has it.
+	 * A mapped route the user aimed at.
 	 */
-	private record AlignedRoute(long osmId, double latitude, double longitude) {
+	private record AlignedRoute(GeoNode route) {
+		long osmId() {
+			return route.osmID;
+		}
+
+		// Where the map has it.
+		double latitude() {
+			return route.decimalLatitude;
+		}
+
+		double longitude() {
+			return route.decimalLongitude;
+		}
+
 		String anchorKey() {
-			return "route:" + osmId;
+			return "route:" + route.osmID;
 		}
 	}
 }

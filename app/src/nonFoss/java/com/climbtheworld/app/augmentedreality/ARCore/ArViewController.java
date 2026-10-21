@@ -10,11 +10,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.augmentedreality.AlignmentRange;
 import com.climbtheworld.app.augmentedreality.ArViewTracking;
-import com.climbtheworld.app.augmentedreality.TerrainWireframe;
+import com.climbtheworld.app.augmentedreality.AugmentedRealityScene;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.utils.Globals;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * The A.R. view on ARCore, on the phones it runs on: ARCore's camera image, with the rock as its
@@ -60,7 +63,7 @@ public class ArViewController implements ArViewTracking {
 	// Whether ARCore moves and turns the camera, see Listener.onMovesCameraChanged.
 	private boolean movesCamera;
 	// As the listener was last told, see Listener.onAligningChanged.
-	private boolean aligning;
+	private Set<Long> shownWhileAligning;
 
 	/**
 	 * To be made in the activity's onCreate, as it registers for the camera permission result.
@@ -127,9 +130,10 @@ public class ArViewController implements ArViewTracking {
 				if (!(arCore.isTracking() && arCore.isReady())) {
 					setMovesCamera(false);
 				}
-				if (arCore.isAligning() != aligning) {
-					aligning = arCore.isAligning();
-					listener.onAligningChanged(aligning);
+				Set<Long> shown = arCore.getShownWhileAligning();
+				if (!Objects.equals(shown, shownWhileAligning)) {
+					shownWhileAligning = shown;
+					listener.onAligningChanged(shown);
 				}
 			}
 		});
@@ -192,8 +196,8 @@ public class ArViewController implements ArViewTracking {
 	}
 
 	@Override
-	public void setGroundElevations(TerrainWireframe.ElevationSource groundElevations) {
-		arCore.setGroundElevations(groundElevations);
+	public void setPinElevations(AugmentedRealityScene.PinElevations pinElevations) {
+		arCore.setPinElevations(pinElevations);
 	}
 
 	@Override

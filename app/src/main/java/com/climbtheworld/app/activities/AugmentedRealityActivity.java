@@ -64,6 +64,7 @@ import org.maplibre.android.MapLibre;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 public class AugmentedRealityActivity extends MapWidgetActivity
@@ -181,13 +182,13 @@ public class AugmentedRealityActivity extends MapWidgetActivity
 					}
 
 					@Override
-					public void onAligningChanged(boolean aligning) {
-						// Only the route being aligned on shows, riding on the cursor.
-						scene.setPoisShown(!aligning);
+					public void onAligningChanged(Set<Long> shownNodeIds) {
+						// Besides the route riding on the cursor, only those aligned on show.
+						scene.showOnly(shownNodeIds);
 					}
 				});
-		// The height of the routes aligned on, as the scene has the terrain.
-		arCore.setGroundElevations(scene::getGroundElevation);
+		// The height of the routes aligned on, as the scene stands their pins.
+		arCore.setPinElevations(scene::getPinElevation);
 
 		// Asked once what it starts is made.
 		Ask.on(this)

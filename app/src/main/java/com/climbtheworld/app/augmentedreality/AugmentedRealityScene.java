@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
@@ -98,8 +99,8 @@ public class AugmentedRealityScene {
 	private double maxDistance;
 	private boolean useElevation;
 	private boolean showClimbingHulls;
-	// Whether the pins, route lines and outlines show, see setPoisShown.
-	private boolean poisShown = true;
+	// While set, only the pins of these nodes show, see showOnly; null for all.
+	private Set<Long> shownOnly;
 	// A node whose pin is left out, null for none.
 	private Long leftOutNodeId;
 
@@ -230,7 +231,7 @@ public class AugmentedRealityScene {
 		maxDistance = configs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit);
 		useElevation = configs.isArElevation();
 		showClimbingHulls = configs.getBoolean(Configs.ConfigKey.arClimbingHulls);
-		climbingHullView.setVisibility(showClimbingHulls && poisShown ? View.VISIBLE
+		climbingHullView.setVisibility(showClimbingHulls && shownOnly == null ? View.VISIBLE
 				: View.INVISIBLE);
 	}
 
@@ -248,12 +249,26 @@ public class AugmentedRealityScene {
 	 * display filters.
 	 */
 	public void clearPins() {
-		for (GeoNode poi : boundingBoxPOIs.values()) {
-			arViewManager.removePOIFromView(poi);
+		removePinsExcept(Collections.emptySet());
+	}
+
+	/**
+	 * Takes the pins off the view, but those of some nodes.
+	 */
+	private void removePinsExcept(Set<Long> kept) {
+		for (Map.Entry<Long, GeoNode> entry : boundingBoxPOIs.entrySet()) {
+			if (!kept.contains(entry.getKey())) {
+				arViewManager.removePOIFromView(entry.getValue());
+			}
 		}
 		for (RouteRelation relation : routeRelations) {
-			arViewManager.removePOIFromView(relation.start);
+			if (!kept.contains(relation.start.getID())) {
+				arViewManager.removePOIFromView(relation.start);
+			}
 			arViewManager.removePOIFromView(relation.top);
+		}
+		for (RouteLine route : routeLines.getRoutes()) {
+			arViewManager.removePOIFromView(route.top);
 		}
 		for (ClimbingHull hull : climbingHulls.getHulls()) {
 			arViewManager.removePOIFromView(hull.pin);
@@ -261,20 +276,22 @@ public class AugmentedRealityScene {
 	}
 
 	/**
-	 * Hides the pins, the route lines and the crag and area outlines, as while the user aligns
-	 * the A.R. on a route, or shows them again, from the next draw on. The terrain and the
-	 * horizon stay.
+	 * Shows only the pins of some nodes, as those of the routes aligned on while the user aligns
+	 * the A.R. on another, each where and when it shows the rest of the time; the other pins, the
+	 * route lines and the crag and area outlines hide. The terrain and the horizon stay.
+	 *
+	 * @param nodeIds null to show everything again, from the next draw on
 	 */
-	public void setPoisShown(boolean shown) {
-		if (shown == poisShown) {
+	public void showOnly(Set<Long> nodeIds) {
+		if (Objects.equals(nodeIds, shownOnly)) {
 			return;
 		}
-		poisShown = shown;
-		climbingHullView.setVisibility(showClimbingHulls && shown ? View.VISIBLE
-				: View.INVISIBLE);
-		routeLineView.setVisibility(shown ? View.VISIBLE : View.INVISIBLE);
-		if (!shown) {
-			clearPins();
+		shownOnly = nodeIds == null ? null : new HashSet<>(nodeIds);
+		boolean all = shownOnly == null;
+		climbingHullView.setVisibility(showClimbingHulls && all ? View.VISIBLE : View.INVISIBLE);
+		routeLineView.setVisibility(all ? View.VISIBLE : View.INVISIBLE);
+		if (!all) {
+			removePinsExcept(shownOnly);
 		}
 	}
 
@@ -504,9 +521,7 @@ public class AugmentedRealityScene {
 	 * Lays the routes, crags and areas out as the camera sees them from the eye, and draws them.
 	 */
 	public void draw(EyeElevation eye) {
-		if (!poisShown) {
-			return;
-		}
+		Set<Long> only = shownOnly;
 		boolean useTerrain = useElevation && eye.onTerrain();
 		double observerElevation = useElevation ? eye.meters() : Double.NaN;
 		updateHulls(useTerrain, observerElevation);
@@ -529,6 +544,7 @@ public class AugmentedRealityScene {
 					// Route tops only show on the terrain, those of the routes mapped as a way
 					// along with their line, below.
 					if (!entry.getKey().equals(leftOutNodeId)
+							&& (only == null || only.contains(entry.getKey()))
 							&& !climbingHulls.isHidden(entry.getKey())
 							&& !(poi.isRouteTop()
 							&& (!useTerrain || routeLines.isTop(entry.getKey())))
@@ -543,7 +559,7 @@ public class AugmentedRealityScene {
 				// Up close, the routes show in the crag and area hulls instead of their pin. As
 				// on the map, the pins are not filtered.
 				for (ClimbingHull hull : climbingHulls.getHulls()) {
-					if (!hull.isShowingRoutes()
+					if (only == null && !hull.isShowingRoutes()
 							&& placeInView(hull.pin, false, useTerrain, observerElevation,
 							maxViewAngle)) {
 						visible.add(hull.pin);
@@ -557,13 +573,14 @@ public class AugmentedRealityScene {
 				// top, as the routes mapped as a way do.
 				for (RouteRelation relation : routeRelations) {
 					boolean shown = isRouteShown(relation.start);
-					if (shown && placeInView(relation.start, false, useTerrain, observerElevation,
+					if (shown && (only == null || only.contains(relation.start.getID()))
+							&& placeInView(relation.start, false, useTerrain, observerElevation,
 							maxViewAngle)) {
 						visible.add(relation.start);
 					} else {
 						arViewManager.removePOIFromView(relation.start);
 					}
-					if (shown && useTerrain
+					if (shown && only == null && useTerrain
 							&& placeInView(relation.top, false, true, observerElevation,
 							maxViewAngle)) {
 						visible.add(relation.top);
@@ -577,6 +594,11 @@ public class AugmentedRealityScene {
 				// bottom is not, looking up the wall.
 				shownRoutes.clear();
 				for (RouteLine route : routeLines.getRoutes()) {
+					// Neither the lines nor the tops show along with only some pins.
+					if (only != null) {
+						arViewManager.removePOIFromView(route.top);
+						continue;
+					}
 					// A pitch of a route relation shows along with the route, which has the top.
 					// Its own top may be the route's, so it is left on the view.
 					if (route.routeRelation != null) {
@@ -596,7 +618,9 @@ public class AugmentedRealityScene {
 					}
 					arViewManager.removePOIFromView(route.top);
 				}
-				updateRouteLines(useTerrain, observerElevation);
+				if (only == null) {
+					updateRouteLines(useTerrain, observerElevation);
+				}
 
 				Collections.sort(visible);
 
@@ -766,6 +790,17 @@ public class AugmentedRealityScene {
 	}
 
 	/**
+	 * The elevation a pin stands at on the terrain, as the scene draws it, for the eye's height to
+	 * be worked out from the routes aligned on, so that their pins stand where they were aimed.
+	 *
+	 * @param distance how far the pin is from the eye, in meters
+	 * @return the elevation above sea level, NaN while unknown
+	 */
+	public double getPinElevation(GeoNode poi, double distance) {
+		return getElevation(poi, distance, true);
+	}
+
+	/**
 	 * Ground elevation from the terrain model, the same way for the terrain wireframe and the
 	 * POIs too far for their foot to matter, so these sit on it.
 	 *
@@ -783,6 +818,17 @@ public class AugmentedRealityScene {
 	 * @param onTerrain whether it comes from the terrain model rather than from the GPS altitude
 	 */
 	public record EyeElevation(boolean onTerrain, double meters) {
+	}
+
+	/**
+	 * Where the scene stands pins, see getPinElevation.
+	 */
+	public interface PinElevations {
+		/**
+		 * @param distance how far the pin is from the eye, in meters
+		 * @return the elevation above sea level, NaN while unknown
+		 */
+		double getElevation(GeoNode poi, double distance);
 	}
 
 	private record FootElevation(double meters, int terrainVersion) {

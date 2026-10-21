@@ -2,6 +2,8 @@ package com.climbtheworld.app.augmentedreality;
 
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
 
+import java.util.Set;
+
 /**
  * ARCore's tracking for the A.R. view, as the A.R. view sees it: once the camera may be used, it
  * takes the camera on the phones ARCore runs on and shows what it sees. While it tracks and its
@@ -53,10 +55,10 @@ public interface ArViewTracking {
 	}
 
 	/**
-	 * Gives the ground elevation, under the routes aligned on, for the eye's height to follow
-	 * them, see Globals.virtualCamera.alignedEyeElevationMeters.
+	 * Gives the elevation the scene stands the routes aligned on at, for the eye's height to
+	 * follow them, see Globals.virtualCamera.alignedEyeElevationMeters.
 	 */
-	default void setGroundElevations(TerrainWireframe.ElevationSource groundElevations) {
+	default void setPinElevations(AugmentedRealityScene.PinElevations pinElevations) {
 	}
 
 	/**
@@ -87,9 +89,10 @@ public interface ArViewTracking {
 		void onCameraMoved();
 
 		/**
-		 * @param aligning whether the user is aligning on a route, while the scene's pins, lines
-		 *                 and outlines are to hide, see AugmentedRealityScene.setPoisShown
+		 * @param shownNodeIds while the user aligns on a route, the routes aligned on so far, by
+		 *                     OSM ID, whose pins alone are to show, see
+		 *                     AugmentedRealityScene.showOnly; null when not aligning
 		 */
-		void onAligningChanged(boolean aligning);
+		void onAligningChanged(Set<Long> shownNodeIds);
 	}
 }
