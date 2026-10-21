@@ -464,7 +464,8 @@
     <string name="ar_placement_waiting_location">Waiting for a GPS fix, or align on a mapped route…</string>
     <string name="ar_placement_waiting_heading">Hold the phone up and look ahead, for the compass…</string>
     <string name="ar_placement_distance">%1$.1f m</string>
-    <string name="ar_placement_tap_to_place">Tap where the node goes.</string>
+    <string name="ar_placement_tap_to_place">Tap where the node goes, or place it at the cursor with the button below.</string>
+    <string name="ar_placement_place_cursor">Place at the cursor</string>
     <string name="ar_placement_tap_nothing">Nothing known there to place on: no depth, and no wall seen below it.</string>
     <string name="ar_placement_tap_not_ready">Not tied to the map yet: wait for GPS and the compass, or align on a mapped route.</string>
     <string name="ar_placement_align">Align</string>

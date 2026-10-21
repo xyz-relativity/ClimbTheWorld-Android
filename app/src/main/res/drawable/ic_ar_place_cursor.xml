@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Place at the cursor in the A.R. placement: a pin going down onto the amber 3D cursor, see
+     CursorRing. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <path
+        android:pathData="M24,39m-15,0a15,5.5 0,1 1,30 0a15,5.5 0,1 1,-30 0"
+        android:strokeWidth="5"
+        android:strokeColor="#000000" />
+    <path
+        android:pathData="M24,39m-15,0a15,5.5 0,1 1,30 0a15,5.5 0,1 1,-30 0"
+        android:strokeWidth="2.5"
+        android:strokeColor="#ffbf1a" />
+    <path
+        android:fillColor="#fffffe"
+        android:pathData="M24,39 C24,39 14.5,28.5 14.5,21.5 A9.5,9.5 0,1 1,33.5 21.5 C33.5,28.5 24,39 24,39 Z"
+        android:strokeWidth="2"
+        android:strokeColor="#000000"
+        android:strokeLineJoin="round" />
+    <path
+        android:fillColor="#000000"
+        android:pathData="M24,21.5m-3.5,0a3.5,3.5 0,1 1,7 0a3.5,3.5 0,1 1,-7 0" />
+</vector>

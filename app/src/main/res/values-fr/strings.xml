@@ -463,7 +463,8 @@
     <string name="ar_placement_waiting_location">En attente d’une position GPS, ou alignez sur une voie cartographiée…</string>
     <string name="ar_placement_waiting_heading">Levez le téléphone et regardez devant vous, pour la boussole…</string>
     <string name="ar_placement_distance">%1$.1f m</string>
-    <string name="ar_placement_tap_to_place">Touchez l’endroit où placer l’élément.</string>
+    <string name="ar_placement_tap_to_place">Touchez l’endroit où placer l’élément, ou placez-le au curseur avec le bouton en dessous.</string>
+    <string name="ar_placement_place_cursor">Placer au curseur</string>
     <string name="ar_placement_tap_nothing">Rien de connu où placer à cet endroit : pas de profondeur, et aucune paroi vue en dessous.</string>
     <string name="ar_placement_tap_not_ready">Pas encore relié à la carte : attendez le GPS et la boussole, ou alignez sur une voie cartographiée.</string>
     <string name="ar_placement_align">Aligner</string>

@@ -16,7 +16,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -61,7 +60,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * The A.R. placement in an editor's map box: a button swaps the map for the camera, as ARCore
  * tracks it, with the rock as ARCore's depth sees it and a 3D cursor where the crosshair meets
- * it. A tap puts the node where it meets the rock, as on the editor's map, on the map as GPS and
+ * it. A tap puts the node where it meets the rock, as on the editor's map, and the place button
+ * where the cursor is, on the map as GPS and
  * the compass tie ARCore's world to it, and its pin there in the A.R., as the A.R. view draws
  * pins and the editor's map the edited node.
  * Align ties ARCore's world to mapped routes instead: the user aims at one and picks it, and
@@ -87,6 +87,7 @@ public class ArPlacementController {
 	// How far the observer moves before the data around them is loaded again.
 	private static final double SCENE_RELOAD_METERS = 10;
 	private static final long TOGGLE_TURN_MS = 400;
+	private static final float DISABLED_ICON_ALPHA = 0.4f;
 
 	private final AppCompatActivity activity;
 	private final PlaceListener placeListener;
@@ -96,8 +97,11 @@ public class ArPlacementController {
 	private final TextView statusHint;
 	private final View crosshair;
 	private final TextView cursorDistance;
-	private final Button alignButton;
-	private final Button sightButton;
+	private final FloatingActionButton alignButton;
+	// On the align button's corner.
+	private final TextView alignedCount;
+	private final FloatingActionButton sightButton;
+	private final FloatingActionButton placeButton;
 	// The placed node's pin, not interactive, as the editor's map has it.
 	private final ImageView pin;
 	private final FloatingActionButton toggleButton;
@@ -191,7 +195,9 @@ public class ArPlacementController {
 		this.crosshair = container.findViewById(R.id.arCrosshair);
 		this.cursorDistance = container.findViewById(R.id.arCursorDistance);
 		this.alignButton = container.findViewById(R.id.arAlignButton);
+		this.alignedCount = container.findViewById(R.id.arAlignedCount);
 		this.sightButton = container.findViewById(R.id.arSightButton);
+		this.placeButton = container.findViewById(R.id.arPlaceButton);
 		this.alignmentPicker = new AlignmentPicker(activity);
 		this.pin = container.findViewById(R.id.arPlacedPin);
 		this.toggleButton = container.findViewById(R.id.arPlacementToggleButton);
@@ -234,7 +240,7 @@ public class ArPlacementController {
 
 					@Override
 					public void onTapped(CursorHit hit) {
-						activity.runOnUiThread(() -> tapped(hit));
+						activity.runOnUiThread(() -> place(hit));
 					}
 				});
 		surfaceView.setPreserveEGLContextOnPause(true);
@@ -277,6 +283,7 @@ public class ArPlacementController {
 		});
 		alignButton.setOnClickListener(view -> align());
 		sightButton.setOnClickListener(view -> sight());
+		placeButton.setOnClickListener(view -> place(renderer.getCursor()));
 		toggleButton.setOnClickListener(view -> toggle());
 		toggleButton.setVisibility(View.GONE);
 		ArCoreApk.getInstance().checkAvailabilityAsync(activity.getApplicationContext(),
@@ -587,13 +594,34 @@ public class ArPlacementController {
 			cursorDistance.setText(distanceText(cursor));
 		}
 		// A mapped route is aimed at precisely, which the wall carried on is not.
-		alignButton.setEnabled(aiming && cursor.source != CursorHit.Source.WALL_PLANE);
-		sightButton.setEnabled(tracking);
-		sightButton.setText(sighting ? R.string.ar_placement_sight_cancel
-				: R.string.ar_placement_sight);
-		alignButton.setText(alignedRoutes.isEmpty()
+		setIconEnabled(alignButton, aiming && cursor.source != CursorHit.Source.WALL_PLANE);
+		describe(alignButton, alignedRoutes.isEmpty()
 				? activity.getString(R.string.ar_placement_align)
 				: activity.getString(R.string.ar_placement_align_count, alignedRoutes.size()));
+		alignedCount.setVisibility(alignedRoutes.isEmpty() ? View.GONE : View.VISIBLE);
+		alignedCount.setText(String.valueOf(alignedRoutes.size()));
+		setIconEnabled(placeButton, aiming && registration.isReady());
+		setIconEnabled(sightButton, tracking);
+		sightButton.setImageResource(sighting ? R.drawable.ic_ar_sight_cancel
+				: R.drawable.ic_ar_sight);
+		describe(sightButton, activity.getString(sighting ? R.string.ar_placement_sight_cancel
+				: R.string.ar_placement_sight));
+	}
+
+	/**
+	 * Dims an icon button while it does nothing, which it does not show on its own.
+	 */
+	private static void setIconEnabled(View button, boolean enabled) {
+		button.setEnabled(enabled);
+		button.setAlpha(enabled ? 1f : DISABLED_ICON_ALPHA);
+	}
+
+	/**
+	 * Names an icon button, for accessibility, and in a tooltip on a long press.
+	 */
+	private static void describe(View button, CharSequence text) {
+		button.setContentDescription(text);
+		button.setTooltipText(text);
 	}
 
 	private String distanceText(CursorHit hit) {
@@ -627,11 +655,12 @@ public class ArPlacementController {
 	}
 
 	/**
-	 * Puts the node where the user tapped the rock, as the session's world is tied to the map.
+	 * Puts the node where a tap, or the crosshair, meets the rock, as the session's world is tied
+	 * to the map.
 	 *
-	 * @param hit where the tap meets the rock, null where nothing is known of it
+	 * @param hit where the tap or the crosshair meets the rock, null where nothing is known of it
 	 */
-	private void tapped(CursorHit hit) {
+	private void place(CursorHit hit) {
 		if (!running) {
 			return;
 		}

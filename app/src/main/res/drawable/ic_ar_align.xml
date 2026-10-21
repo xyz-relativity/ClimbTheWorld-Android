@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Align in the A.R. placement: a mapped route's pin in the crosshair, to tie the A.R. to it. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <path
+        android:pathData="M24,3 L24,10 M24,38 L24,45 M3,24 L10,24 M38,24 L45,24"
+        android:strokeWidth="3"
+        android:strokeColor="#000000"
+        android:strokeLineCap="round" />
+    <path
+        android:fillColor="#66dd66"
+        android:pathData="M24,36 C24,36 15,27 15,20 A9,9 0,1 1,33 20 C33,27 24,36 24,36 Z"
+        android:strokeWidth="2"
+        android:strokeColor="#000000"
+        android:strokeLineJoin="round" />
+    <path
+        android:fillColor="#fffffe"
+        android:pathData="M24,20m-3.5,0a3.5,3.5 0,1 1,7 0a3.5,3.5 0,1 1,-7 0"
+        android:strokeWidth="1.5"
+        android:strokeColor="#000000" />
+</vector>

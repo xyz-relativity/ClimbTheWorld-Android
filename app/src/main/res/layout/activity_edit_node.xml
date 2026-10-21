@@ -188,27 +188,69 @@
                         android:textStyle="bold"
                         android:visibility="gone" />
 
-                    <LinearLayout
+                    <!-- Places the node where the cursor is, which a tap elsewhere does where
+                         it is. -->
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/arPlaceButton"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="bottom|center_horizontal"
-                        android:layout_margin="8dp"
-                        android:orientation="horizontal">
+                        android:layout_margin="5dip"
+                        android:background="?android:selectableItemBackground"
+                        android:contentDescription="@string/ar_placement_place_cursor"
+                        android:enabled="false"
+                        android:tooltipText="@string/ar_placement_place_cursor"
+                        app:srcCompat="@drawable/ic_ar_place_cursor" />
 
-                        <Button
-                            android:id="@+id/arAlignButton"
+                    <!-- Align and Sight, down the right, clear of the hint above and of the
+                         switch button at the bottom right. -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end|center_vertical"
+                        android:orientation="vertical">
+
+                        <FrameLayout
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="8dp"
-                            android:enabled="false"
-                            android:text="@string/ar_placement_align" />
+                            android:layout_height="wrap_content">
 
-                        <Button
+                            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                                android:id="@+id/arAlignButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_margin="5dip"
+                                android:background="?android:selectableItemBackground"
+                                android:contentDescription="@string/ar_placement_align"
+                                android:enabled="false"
+                                app:srcCompat="@drawable/ic_ar_align" />
+
+                            <!-- How many mapped routes the A.R. is aligned on. -->
+                            <TextView
+                                android:id="@+id/arAlignedCount"
+                                android:layout_width="wrap_content"
+                                android:layout_height="20dp"
+                                android:layout_gravity="bottom|end"
+                                android:background="@drawable/shape_count_badge"
+                                android:gravity="center"
+                                android:minWidth="20dp"
+                                android:paddingStart="4dp"
+                                android:paddingEnd="4dp"
+                                android:textColor="@android:color/white"
+                                android:textSize="12sp"
+                                android:textStyle="bold"
+                                android:visibility="gone" />
+
+                        </FrameLayout>
+
+                        <com.google.android.material.floatingactionbutton.FloatingActionButton
                             android:id="@+id/arSightButton"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_margin="5dip"
+                            android:background="?android:selectableItemBackground"
+                            android:contentDescription="@string/ar_placement_sight"
                             android:enabled="false"
-                            android:text="@string/ar_placement_sight" />
+                            app:srcCompat="@drawable/ic_ar_sight" />
 
                     </LinearLayout>
 

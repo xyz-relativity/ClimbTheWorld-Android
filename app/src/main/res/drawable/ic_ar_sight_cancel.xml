@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Cancel the sight in the A.R. placement: ic_ar_sight, with its first line taken, crossed out. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <path
+        android:pathData="M40,41 L24,11"
+        android:strokeWidth="3"
+        android:strokeColor="#000000"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M8,41 L24,11"
+        android:strokeWidth="3"
+        android:strokeColor="#00c853"
+        android:strokeLineCap="round" />
+    <path
+        android:fillColor="#000000"
+        android:pathData="M8,41m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0 M40,41m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0" />
+    <path
+        android:fillColor="#ffeb3b"
+        android:pathData="M24,11m-6,0a6,6 0,1 1,12 0a6,6 0,1 1,-12 0"
+        android:strokeWidth="2"
+        android:strokeColor="#000000" />
+    <path
+        android:pathData="M33,25 L45,37 M45,25 L33,37"
+        android:strokeWidth="4"
+        android:strokeColor="#e53935"
+        android:strokeLineCap="round" />
+</vector>
