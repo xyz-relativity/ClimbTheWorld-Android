@@ -139,6 +139,16 @@ public class GeneralTags extends Tags implements ITags {
 		return true;
 	}
 
+	/** Whether the name field has a name; when it doesn't, the field shows an error and takes focus. */
+	public boolean checkNameGiven() {
+		if (!editTopoName.getText().toString().trim().isEmpty()) {
+			return true;
+		}
+		editTopoName.setError(parent.getString(R.string.name_required));
+		editTopoName.requestFocus();
+		return false;
+	}
+
 	@Override
 	public void cancelNode(GeoNode editNode) {
 
