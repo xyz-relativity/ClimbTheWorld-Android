@@ -116,6 +116,10 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 	private WallPlane wallPlane;
 	// Null while the pin is not in view.
 	private volatile PinOnScreen pinOnScreen;
+	// Set from the main thread: whether a pin rides on the cursor, as a route being aligned on.
+	private volatile boolean cursorPinShown;
+	// Null while it is not in view, or no pin rides on the cursor.
+	private volatile PinOnScreen cursorPinOnScreen;
 	// Set from the main thread, by key: where to put an anchor, NO_ANCHOR to take it away.
 	private final Map<String, double[]> anchorRequests = new ConcurrentHashMap<>();
 	// Points ARCore keeps in place as it learns more of the world, by key. GL thread only.
@@ -237,6 +241,20 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 	/**
 	 * @return where the pin shows, null while it is not in view
 	 */
+	/**
+	 * @param shown whether a pin rides on the cursor, see getCursorPinOnScreen
+	 */
+	void setCursorPinShown(boolean shown) {
+		cursorPinShown = shown;
+	}
+
+	/**
+	 * @return where the pin riding on the cursor shows, null while it is not in view
+	 */
+	PinOnScreen getCursorPinOnScreen() {
+		return cursorPinOnScreen;
+	}
+
 	PinOnScreen getPinOnScreen() {
 		return pinOnScreen;
 	}
@@ -315,6 +333,7 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 		updateAnchors(current);
 		CursorHit hit = null;
 		PinOnScreen pin = null;
+		PinOnScreen cursorPin = null;
 		if (camera.getTrackingState() == TrackingState.TRACKING) {
 			camera.getProjectionMatrix(projection, 0, NEAR_METERS, FAR_METERS);
 			camera.getViewMatrix(view, 0);
@@ -343,6 +362,9 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 				listener.onTapped(resolve(depthHits.tap(), rayThrough(camera, tapTexture)));
 			}
 			pin = projectPin();
+			if (cursorPinShown && hit != null) {
+				cursorPin = projectPoint(hit.point);
+			}
 		} else {
 			sessionCamera = null;
 			crosshairRay = null;
@@ -350,6 +372,7 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 		}
 		reportCursor(hit);
 		reportPin(pin);
+		reportCursorPin(cursorPin);
 		reportTracking(camera.getTrackingState(), camera.getTrackingFailureReason());
 	}
 
@@ -397,9 +420,13 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 	 */
 	private PinOnScreen projectPin() {
 		double[] point = anchorPositions.get(PIN_ANCHOR);
-		if (point == null) {
-			return null;
-		}
+		return point == null ? null : projectPoint(point);
+	}
+
+	/**
+	 * @return where a pin at a point of the session's world shows, null when it is not in view
+	 */
+	private PinOnScreen projectPoint(double[] point) {
 		ScreenPoint screen = ScreenPoint.project(viewProjection, point, viewWidth, viewHeight);
 		if (screen == null) {
 			return null;
@@ -565,6 +592,15 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 		}
 	}
 
+	private void reportCursorPin(PinOnScreen pin) {
+		// As the placed pin.
+		boolean told = pin != null || cursorPinOnScreen != null;
+		cursorPinOnScreen = pin;
+		if (told) {
+			listener.onCursorPinMoved();
+		}
+	}
+
 	private void reportPin(PinOnScreen pin) {
 		// Told on every frame it shows, as the view moves, and once when it goes.
 		boolean told = pin != null || pinOnScreen != null;
@@ -598,6 +634,12 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 		 * The pin moved in the view, or went out of it, see getPinOnScreen.
 		 */
 		void onPinMoved();
+
+		/**
+		 * The pin riding on the cursor moved in the view, or went out of it, see
+		 * getCursorPinOnScreen.
+		 */
+		void onCursorPinMoved();
 
 		/**
 		 * The camera moved, while tracking, see getSessionCamera.

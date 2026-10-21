@@ -292,10 +292,14 @@ public class ArPlacementController implements ArPlacement {
 		turnToggleIcon();
 		toggleButton.setContentDescription(activity.getString(
 				shown ? R.string.ar_placement_hide : R.string.ar_placement_show));
-		if (!arCore.isRunning()) {
+		boolean aligning = arCore.isAligning();
+		// While the user aligns on a route, only its pin shows, riding on the cursor.
+		scene.setPoisShown(!aligning);
+		if (!arCore.isRunning() || aligning) {
 			pin.setVisibility(View.GONE);
 		}
-		ArCoreSession.setIconEnabled(placeButton, arCore.isAiming() && arCore.isReady());
+		ArCoreSession.setIconEnabled(placeButton,
+				!aligning && arCore.isAiming() && arCore.isReady());
 	}
 
 	/**
@@ -382,7 +386,8 @@ public class ArPlacementController implements ArPlacement {
 	private void movePin() {
 		pinMovePosted.set(false);
 		ArSessionRenderer.PinOnScreen onScreen = arCore.getPinOnScreen();
-		if (!arCore.isRunning() || onScreen == null || pin.getDrawable() == null) {
+		if (!arCore.isRunning() || arCore.isAligning() || onScreen == null
+				|| pin.getDrawable() == null) {
 			pin.setVisibility(View.GONE);
 			return;
 		}

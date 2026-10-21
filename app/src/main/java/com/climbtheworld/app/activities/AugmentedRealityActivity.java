@@ -188,6 +188,12 @@ public class AugmentedRealityActivity extends AppCompatActivity
 						cameraMinimap.show(Globals.virtualCamera, scene.getMaxDistance());
 						updateBoundingBox();
 					}
+
+					@Override
+					public void onAligningChanged(boolean aligning) {
+						// Only the route being aligned on shows, riding on the cursor.
+						scene.setPoisShown(!aligning);
+					}
 				});
 		// The height of the routes aligned on, as the scene has the terrain.
 		arCore.setGroundElevations(scene::getGroundElevation);

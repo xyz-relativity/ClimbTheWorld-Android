@@ -10,21 +10,25 @@ import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.augmentedreality.AugmentedRealityViewManager;
 import com.climbtheworld.app.augmentedreality.TerrainWireframe;
 import com.climbtheworld.app.augmentedreality.placement.AlignedHeight;
 import com.climbtheworld.app.augmentedreality.placement.CursorHit;
 import com.climbtheworld.app.augmentedreality.placement.GeoRegistration;
 import com.climbtheworld.app.augmentedreality.placement.ViewRay;
 import com.climbtheworld.app.configs.Configs;
+import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.sensors.camera.VirtualCamera;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.storage.database.GeoNode;
@@ -56,8 +60,8 @@ import java.util.function.Consumer;
  * ArSessionRenderer, with the tools to aim with.
  * <p>
  * GPS and the compass tie ARCore's world to the map, see GeoRegistration. Align ties it to mapped
- * routes instead: the user aims at one and picks it, and what is placed or shown then lands right
- * next to them. Past the depth, the cursor follows the wall below. In the node editor,
+ * routes instead: the user picks a route, brings its pin, riding on the cursor, onto where the
+ * route starts, and drops it there, and what is placed or shown then lands right next to it. Past the depth, the cursor follows the wall below. In the node editor,
  * Triangulation fixes a spot too far for the depth: a first sighting of it, then a second from a
  * few meters to the side, the spot being where the two cross, as ARCore measures the step between
  * them. On a phone that cannot measure depth, that is the only cursor there.
@@ -86,6 +90,19 @@ class ArCoreSession {
 	private final FloatingActionButton alignButton;
 	// On the align button's corner.
 	private final TextView alignedCount;
+	// The pin of the route being aligned on, riding on the cursor, see align.
+	private final ImageView alignPin;
+	// Whether moving the align pin is already posted to the main thread, which reads where it is
+	// then.
+	private final AtomicBoolean alignPinMovePosted = new AtomicBoolean();
+	private final Runnable moveAlignPin = this::moveAlignPin;
+	// Back puts the route being aligned on away, see align.
+	private final OnBackPressedCallback cancelAlignment = new OnBackPressedCallback(false) {
+		@Override
+		public void handleOnBackPressed() {
+			endAligning();
+		}
+	};
 	// Only with triangulation, null otherwise.
 	private final FloatingActionButton triangulateButton;
 	private final ArSessionRenderer renderer;
@@ -128,6 +145,10 @@ class ArCoreSession {
 	private boolean running;
 	// How far the triangulation is, see triangulate.
 	private TriangulationStep triangulationStep = TriangulationStep.NONE;
+	// Aligning, see align: the list of the routes is open, ...
+	private boolean pickingRoute;
+	// ... or the route picked rides on the cursor; null otherwise.
+	private GeoNode aligningRoute;
 	// As the renderer last told them; null until it does.
 	private TrackingState trackingState;
 	private TrackingFailureReason trackingFailureReason;
@@ -147,8 +168,8 @@ class ArCoreSession {
 	 *
 	 * @param container     holds the R.id.arSurfaceView the session draws in, and its
 	 *                      R.id.arStatusHint, R.id.arCrosshair, R.id.arCursorDistance,
-	 *                      R.id.arAlignButton and R.id.arAlignedCount, and with triangulation,
-	 *                      R.id.arTriangulateButton
+	 *                      R.id.arAlignButton, R.id.arAlignedCount and R.id.arAlignPin, and with
+	 *                      triangulation, R.id.arTriangulateButton
 	 * @param depthRequired whether it only runs where ARCore can measure depth
 	 * @param triangulation whether the user can triangulate a spot too far for the depth, see
 	 *                      triangulate
@@ -164,6 +185,7 @@ class ArCoreSession {
 		this.cursorDistance = container.findViewById(R.id.arCursorDistance);
 		this.alignButton = container.findViewById(R.id.arAlignButton);
 		this.alignedCount = container.findViewById(R.id.arAlignedCount);
+		this.alignPin = container.findViewById(R.id.arAlignPin);
 		this.triangulateButton = triangulation
 				? container.findViewById(R.id.arTriangulateButton) : null;
 		this.alignmentPicker = new AlignmentPicker(activity);
@@ -188,6 +210,13 @@ class ArCoreSession {
 					}
 
 					@Override
+					public void onCursorPinMoved() {
+						if (alignPinMovePosted.compareAndSet(false, true)) {
+							activity.runOnUiThread(moveAlignPin);
+						}
+					}
+
+					@Override
 					public void onCameraMoved() {
 						if (cameraMovePosted.compareAndSet(false, true)) {
 							activity.runOnUiThread(cameraMoved);
@@ -197,7 +226,13 @@ class ArCoreSession {
 					@Override
 					public void onTapped(CursorHit hit) {
 						activity.runOnUiThread(() -> {
-							if (running) {
+							if (!running) {
+								return;
+							}
+							// A tap drops the route being aligned on there.
+							if (aligningRoute != null) {
+								drop(hit);
+							} else {
 								host.onTapped(hit);
 							}
 						});
@@ -219,6 +254,7 @@ class ArCoreSession {
 				});
 
 		alignButton.setOnClickListener(view -> align());
+		activity.getOnBackPressedDispatcher().addCallback(activity, cancelAlignment);
 		if (triangulateButton != null) {
 			triangulateButton.setOnClickListener(view -> triangulate());
 		}
@@ -287,8 +323,21 @@ class ArCoreSession {
 		if (!shown) {
 			return;
 		}
+		cancelAligning();
 		shown = false;
 		apply();
+	}
+
+	/**
+	 * Puts the route being aligned on away, and closes the list of the routes, as when the aiming
+	 * tools go.
+	 */
+	void cancelAligning() {
+		if (!isAligning()) {
+			return;
+		}
+		alignmentPicker.dismiss();
+		endAligning();
 	}
 
 	/**
@@ -300,6 +349,14 @@ class ArCoreSession {
 
 	boolean isRunning() {
 		return running;
+	}
+
+	/**
+	 * @return whether the user is aligning on a route, see align, while the other pins are to
+	 * hide
+	 */
+	boolean isAligning() {
+		return pickingRoute || aligningRoute != null;
 	}
 
 	boolean isTracking() {
@@ -679,8 +736,13 @@ class ArCoreSession {
 		refreshLandmarks();
 		boolean tracking = isTracking();
 		int hint = 0;
+		CharSequence hintText = null;
 		if (running && !tracking) {
 			hint = trackingMessage(trackingState, trackingFailureReason);
+		} else if (tracking && aligningRoute != null) {
+			// Aligning is what ties the world to the map, which may not be done yet.
+			hintText = activity.getString(R.string.ar_placement_align_drag,
+					aligningRoute.getName());
 		} else if (tracking && !registration.hasLocation()) {
 			hint = R.string.ar_placement_waiting_location;
 		} else if (tracking && !registration.hasHeading()) {
@@ -697,9 +759,12 @@ class ArCoreSession {
 		} else if (tracking) {
 			hint = host.idleHint();
 		}
-		statusHint.setVisibility(hint == 0 ? View.GONE : View.VISIBLE);
 		if (hint != 0) {
-			statusHint.setText(hint);
+			hintText = activity.getText(hint);
+		}
+		statusHint.setVisibility(hintText == null ? View.GONE : View.VISIBLE);
+		if (hintText != null) {
+			statusHint.setText(hintText);
 		}
 
 		crosshair.setVisibility(running ? View.VISIBLE : View.GONE);
@@ -708,11 +773,18 @@ class ArCoreSession {
 		if (aiming) {
 			cursorDistance.setText(distanceText(cursor));
 		}
-		// A mapped route is aimed at precisely, which the wall carried on is not.
-		setIconEnabled(alignButton, aiming && cursor.source != CursorHit.Source.WALL_PLANE);
-		describe(alignButton, alignedRoutes.isEmpty()
-				? activity.getString(R.string.ar_placement_align)
-				: activity.getString(R.string.ar_placement_align_count, alignedRoutes.size()));
+		if (aligningRoute != null) {
+			alignButton.setImageResource(R.drawable.ic_ar_align_drop);
+			describe(alignButton, activity.getString(R.string.ar_placement_align_drop));
+			// A mapped route is aimed at precisely, which the wall carried on is not.
+			setIconEnabled(alignButton, aiming && cursor.source != CursorHit.Source.WALL_PLANE);
+		} else {
+			alignButton.setImageResource(R.drawable.ic_ar_align);
+			describe(alignButton, alignedRoutes.isEmpty()
+					? activity.getString(R.string.ar_placement_align)
+					: activity.getString(R.string.ar_placement_align_count, alignedRoutes.size()));
+			setIconEnabled(alignButton, tracking && !pickingRoute);
+		}
 		alignedCount.setVisibility(alignedRoutes.isEmpty() ? View.GONE : View.VISIBLE);
 		alignedCount.setText(String.valueOf(alignedRoutes.size()));
 		if (triangulateButton != null) {
@@ -787,17 +859,20 @@ class ArCoreSession {
 	}
 
 	/**
-	 * Asks which mapped route the cursor is on, to tie ARCore's world to it.
+	 * Align, a step per tap: the list of the routes around opens, the other pins hiding; the route
+	 * picked rides on the cursor, for the user to bring it onto where the route starts; a tap on
+	 * the button, or on that spot, drops it there, which ties ARCore's world to the route. Back
+	 * puts it away.
 	 */
 	private void align() {
-		CursorHit hit = renderer.getCursor();
-		if (hit == null) {
+		if (aligningRoute != null) {
+			drop(renderer.getCursor());
 			return;
 		}
-		// Where the user aimed, kept as the phone may move while they pick.
-		double[] aimed = hit.point.clone();
 		refreshLandmarks();
-		double[] around = registration.toLatLon(aimed[0], aimed[2]);
+		// Around where the user is, who aims once they have picked the route.
+		ArSessionRenderer.SessionCamera camera = renderer.getSessionCamera();
+		double[] around = camera == null ? null : registration.toLatLon(camera.x(), camera.z());
 		if (around == null) {
 			around = Double.isNaN(lastLatitude) ? new double[]{
 					Globals.virtualCamera.decimalLatitude, Globals.virtualCamera.decimalLongitude}
@@ -807,11 +882,14 @@ class ArCoreSession {
 		for (AlignedRoute aligned : alignedRoutes) {
 			alignedIds.add(aligned.osmId());
 		}
+		pickingRoute = true;
+		updateStatus();
 		alignmentPicker.show(around[0], around[1], leftOutNodeId, alignedIds,
 				new AlignmentPicker.Listener() {
 					@Override
 					public void onPicked(GeoNode route) {
-						alignOn(route, aimed);
+						pickingRoute = false;
+						startDragging(route);
 					}
 
 					@Override
@@ -822,8 +900,68 @@ class ArCoreSession {
 					@Override
 					public void onCleared() {
 						clearAlignment();
+						endAligning();
+					}
+
+					@Override
+					public void onCancelled() {
+						endAligning();
 					}
 				});
+	}
+
+	/**
+	 * Has the route picked ride on the cursor, for the user to drop it where it starts.
+	 */
+	private void startDragging(GeoNode route) {
+		aligningRoute = route;
+		AugmentedRealityViewManager.setIcon(alignPin,
+				AugmentedRealityViewManager.createIcon(activity, new DisplayableGeoNode(route)));
+		renderer.setCursorPinShown(true);
+		cancelAlignment.setEnabled(true);
+		updateStatus();
+	}
+
+	/**
+	 * Aligns on the route riding on the cursor where a hit is, the cursor's or a tap's.
+	 *
+	 * @param hit null where nothing is known of the rock
+	 */
+	private void drop(CursorHit hit) {
+		// A mapped route is aimed at precisely, which the wall carried on is not.
+		if (hit == null || hit.source == CursorHit.Source.WALL_PLANE) {
+			Toast.makeText(activity, triangulateButton != null
+					? R.string.ar_placement_align_too_far
+					: R.string.ar_view_align_too_far, Toast.LENGTH_LONG).show();
+			return;
+		}
+		GeoNode route = aligningRoute;
+		endAligning();
+		alignOn(route, hit.point.clone());
+	}
+
+	/**
+	 * Puts the route being aligned on away, if any, and shows the other pins again.
+	 */
+	private void endAligning() {
+		pickingRoute = false;
+		aligningRoute = null;
+		renderer.setCursorPinShown(false);
+		alignPin.setVisibility(View.GONE);
+		cancelAlignment.setEnabled(false);
+		updateStatus();
+	}
+
+	private void moveAlignPin() {
+		alignPinMovePosted.set(false);
+		ArSessionRenderer.PinOnScreen onScreen = renderer.getCursorPinOnScreen();
+		if (!running || aligningRoute == null || onScreen == null) {
+			alignPin.setVisibility(View.GONE);
+			return;
+		}
+		alignPin.setVisibility(View.VISIBLE);
+		AugmentedRealityViewManager.placePin(alignPin, onScreen.x(), onScreen.y(),
+				onScreen.distanceMeters(), onScreen.rotationDegrees());
 	}
 
 	private void alignOn(GeoNode route, double[] aimed) {

@@ -474,7 +474,11 @@
     <string name="ar_placement_tap_not_ready">Pas encore relié à la carte : attendez le GPS et la boussole, ou alignez sur une voie cartographiée.</string>
     <string name="ar_placement_align">Aligner</string>
     <string name="ar_placement_align_count">Aligner (%1$d)</string>
-    <string name="ar_placement_align_title">Quelle voie est sous le curseur ?</string>
+    <string name="ar_placement_align_title">Sur quelle voie s’aligner ?</string>
+    <string name="ar_placement_align_drop">Poser la voie ici</string>
+    <string name="ar_placement_align_drag">Amenez %1$s là où elle commence, puis touchez cet endroit, ou le bouton, pour l’y poser. Retour annule.</string>
+    <string name="ar_placement_align_too_far">Trop loin pour s’aligner précisément : visez là où la profondeur porte, ou triangulez le point.</string>
+    <string name="ar_view_align_too_far">Trop loin pour s’aligner précisément : visez là où la profondeur porte.</string>
     <string name="ar_placement_align_none">Aucune voie cartographiée à proximité.</string>
     <string name="ar_placement_align_clear">Effacer l’alignement</string>
     <string name="ar_placement_align_delete">Supprimer cet alignement</string>

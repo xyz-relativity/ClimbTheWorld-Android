@@ -31,12 +31,12 @@ import java.util.Set;
 import needle.UiRelatedTask;
 
 /**
- * Asks which mapped route the user aimed the cursor at, from the routes around it, closest first,
- * in rows like the search results. The routes already aligned on are listed wherever they are, each
- * with a button to delete its alignment.
+ * Asks which mapped route to align on, from the routes around the user, closest first, in rows
+ * like the search results. The routes already aligned on are listed wherever they are, each with
+ * a button to delete its alignment.
  */
 class AlignmentPicker {
-	// How far around where the cursor seems to be routes are looked for, as GPS can be that far
+	// How far around where the user seems to be routes are looked for, as GPS can be that far
 	// off.
 	private static final double SEARCH_METERS = 150;
 	private static final int MAX_ROUTES = 40;
@@ -96,8 +96,8 @@ class AlignmentPicker {
 	}
 
 	/**
-	 * @param latitude   where the cursor seems to be
-	 * @param longitude  where the cursor seems to be
+	 * @param latitude   where the user seems to be
+	 * @param longitude  where the user seems to be
 	 * @param excludedId the node being edited, which is not to align on
 	 * @param aligned    the OSM IDs of the routes aligned on
 	 */
@@ -134,7 +134,9 @@ class AlignmentPicker {
 	                        Set<Long> aligned, Listener listener) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(activity)
 				.setTitle(R.string.ar_placement_align_title)
-				.setNegativeButton(android.R.string.cancel, null);
+				.setNegativeButton(android.R.string.cancel,
+						(cancelled, which) -> listener.onCancelled())
+				.setOnCancelListener(cancelled -> listener.onCancelled());
 		if (!aligned.isEmpty()) {
 			builder.setNeutralButton(R.string.ar_placement_align_clear,
 					(clicked, which) -> listener.onCleared());
@@ -207,5 +209,10 @@ class AlignmentPicker {
 		void onDeleted(GeoNode route);
 
 		void onCleared();
+
+		/**
+		 * The user closed the list without picking a route.
+		 */
+		void onCancelled();
 	}
 }

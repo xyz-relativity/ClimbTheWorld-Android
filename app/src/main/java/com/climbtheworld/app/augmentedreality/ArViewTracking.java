@@ -85,5 +85,11 @@ public interface ArViewTracking {
 		 * ARCore moved and turned Globals.virtualCamera.
 		 */
 		void onCameraMoved();
+
+		/**
+		 * @param aligning whether the user is aligning on a route, while the scene's pins, lines
+		 *                 and outlines are to hide, see AugmentedRealityScene.setPoisShown
+		 */
+		void onAligningChanged(boolean aligning);
 	}
 }

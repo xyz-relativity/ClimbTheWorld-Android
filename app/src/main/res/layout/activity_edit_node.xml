@@ -154,6 +154,14 @@
                         android:importantForAccessibility="no"
                         android:visibility="gone" />
 
+                    <!-- The route being aligned on, riding on the cursor. -->
+                    <ImageView
+                        android:id="@+id/arAlignPin"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:importantForAccessibility="no"
+                        android:visibility="gone" />
+
                     <TextView
                         android:id="@+id/arStatusHint"
                         android:layout_width="wrap_content"

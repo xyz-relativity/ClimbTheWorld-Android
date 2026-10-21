@@ -98,6 +98,8 @@ public class AugmentedRealityScene {
 	private double maxDistance;
 	private boolean useElevation;
 	private boolean showClimbingHulls;
+	// Whether the pins, route lines and outlines show, see setPoisShown.
+	private boolean poisShown = true;
 	// A node whose pin is left out, null for none.
 	private Long leftOutNodeId;
 
@@ -228,7 +230,8 @@ public class AugmentedRealityScene {
 		maxDistance = configs.getInt(Configs.ConfigKey.maxNodesShowDistanceLimit);
 		useElevation = configs.isArElevation();
 		showClimbingHulls = configs.getBoolean(Configs.ConfigKey.arClimbingHulls);
-		climbingHullView.setVisibility(showClimbingHulls ? View.VISIBLE : View.INVISIBLE);
+		climbingHullView.setVisibility(showClimbingHulls && poisShown ? View.VISIBLE
+				: View.INVISIBLE);
 	}
 
 	/**
@@ -251,6 +254,27 @@ public class AugmentedRealityScene {
 		for (RouteRelation relation : routeRelations) {
 			arViewManager.removePOIFromView(relation.start);
 			arViewManager.removePOIFromView(relation.top);
+		}
+		for (ClimbingHull hull : climbingHulls.getHulls()) {
+			arViewManager.removePOIFromView(hull.pin);
+		}
+	}
+
+	/**
+	 * Hides the pins, the route lines and the crag and area outlines, as while the user aligns
+	 * the A.R. on a route, or shows them again, from the next draw on. The terrain and the
+	 * horizon stay.
+	 */
+	public void setPoisShown(boolean shown) {
+		if (shown == poisShown) {
+			return;
+		}
+		poisShown = shown;
+		climbingHullView.setVisibility(showClimbingHulls && shown ? View.VISIBLE
+				: View.INVISIBLE);
+		routeLineView.setVisibility(shown ? View.VISIBLE : View.INVISIBLE);
+		if (!shown) {
+			clearPins();
 		}
 	}
 
@@ -480,6 +504,9 @@ public class AugmentedRealityScene {
 	 * Lays the routes, crags and areas out as the camera sees them from the eye, and draws them.
 	 */
 	public void draw(EyeElevation eye) {
+		if (!poisShown) {
+			return;
+		}
 		boolean useTerrain = useElevation && eye.onTerrain();
 		double observerElevation = useElevation ? eye.meters() : Double.NaN;
 		updateHulls(useTerrain, observerElevation);

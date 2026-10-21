@@ -1,6 +1,8 @@
 package com.climbtheworld.app.augmentedreality.ARCore;
 
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 
@@ -58,6 +60,8 @@ public class ArViewController implements ArViewTracking {
 	private boolean gaveUp;
 	// Whether ARCore moves and turns the camera, see Listener.onMovesCameraChanged.
 	private boolean movesCamera;
+	// As the listener was last told, see Listener.onAligningChanged.
+	private boolean aligning;
 
 	/**
 	 * To be made in the activity's onCreate, as it registers for the camera permission result.
@@ -124,8 +128,27 @@ public class ArViewController implements ArViewTracking {
 				if (!(arCore.isTracking() && arCore.isReady())) {
 					setMovesCamera(false);
 				}
+				if (arCore.isAligning() != aligning) {
+					aligning = arCore.isAligning();
+					listener.onAligningChanged(aligning);
+				}
 			}
 		});
+		// A tap drops the route being aligned on there, see ArCoreSession.align.
+		GestureDetector taps = new GestureDetector(activity,
+				new GestureDetector.SimpleOnGestureListener() {
+					@Override
+					public boolean onDown(MotionEvent event) {
+						return true;
+					}
+
+					@Override
+					public boolean onSingleTapUp(MotionEvent event) {
+						arCore.tap(event.getX(), event.getY());
+						return true;
+					}
+				});
+		surfaceView.setOnTouchListener((view, event) -> taps.onTouchEvent(event));
 		toolsButton.setOnClickListener(view -> {
 			toolsHidden = !toolsHidden;
 			updateTools();
@@ -208,8 +231,11 @@ public class ArViewController implements ArViewTracking {
 		boolean near = !gaveUp && arCore.isShown() && range.isNear();
 		boolean shown = near && !toolsHidden;
 		controls.setVisibility(shown ? View.VISIBLE : View.GONE);
-		// Its depth work is left out with them.
+		// Its depth work is left out with them, as is aligning.
 		arCore.setAimingShown(shown);
+		if (!shown) {
+			arCore.cancelAligning();
+		}
 		toolsButton.setVisibility(near ? View.VISIBLE : View.GONE);
 		// Greyed out while they are hidden.
 		toolsButton.setImageResource(shown ? R.drawable.ic_ar_tools : R.drawable.ic_ar_tools_off);

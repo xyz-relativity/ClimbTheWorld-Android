@@ -475,7 +475,11 @@
     <string name="ar_placement_tap_not_ready">Not tied to the map yet: wait for GPS and the compass, or align on a mapped route.</string>
     <string name="ar_placement_align">Align</string>
     <string name="ar_placement_align_count">Align (%1$d)</string>
-    <string name="ar_placement_align_title">Which route is under the cursor?</string>
+    <string name="ar_placement_align_title">Which route will you align on?</string>
+    <string name="ar_placement_align_drop">Drop the route here</string>
+    <string name="ar_placement_align_drag">Bring %1$s onto where it starts, then tap there, or the button, to drop it. Back cancels.</string>
+    <string name="ar_placement_align_too_far">Too far to align on precisely: aim where the depth reaches, or triangulate the spot.</string>
+    <string name="ar_view_align_too_far">Too far to align on precisely: aim where the depth reaches.</string>
     <string name="ar_placement_align_none">No mapped route near here.</string>
     <string name="ar_placement_align_clear">Clear alignment</string>
     <string name="ar_placement_align_delete">Delete this alignment</string>
