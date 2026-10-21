@@ -44,6 +44,7 @@ import com.climbtheworld.app.sensors.location.DeviceLocationManager;
 import com.climbtheworld.app.sensors.location.ILocationListener;
 import com.climbtheworld.app.sensors.orientation.IOrientationListener;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
+import com.climbtheworld.app.sensors.pressure.Barometer;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.database.GeoNode;
@@ -89,6 +90,8 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 	private MapLibreMapWidget mapWidget;
 	private ArPlacement arPlacement;
 	private DeviceLocationManager deviceLocationManager;
+	// Steadies the GPS altitude the A.R. placement goes by, as in the A.R. view.
+	private Barometer barometer;
 	private OrientationManager orientationManager;
 	private Spinner dropdownType;
 	private ViewGroup containerTags;
@@ -172,6 +175,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
 		//location
 		deviceLocationManager = new DeviceLocationManager(this, locationUpdate);
+		barometer = new Barometer(this);
 
 		orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_NORMAL);
 		mapWidget.setOnFollowCompassChangeListener(orientationManager::setFastUpdates);
@@ -563,7 +567,8 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 		Globals.virtualCamera.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
 
 		mapWidget.onLocationChange(new MapCoordinate(pDecLatitude, pDecLongitude, pMetersAltitude));
-		arPlacement.onLocation(pDecLatitude, pDecLongitude, pMetersAltitude, accuracy);
+		arPlacement.onLocation(pDecLatitude, pDecLongitude, barometer.anchor(pMetersAltitude),
+				accuracy);
 	}
 
 	@Override
@@ -583,12 +588,14 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
 		deviceLocationManager.requestUpdates(this);
 		orientationManager.requestUpdates(this);
+		barometer.start();
 	}
 
 	@Override
 	protected void onPause() {
 		deviceLocationManager.stopUpdates();
 		orientationManager.stopUpdates();
+		barometer.stop();
 		Globals.onPause(this);
 
 		arPlacement.onPause();

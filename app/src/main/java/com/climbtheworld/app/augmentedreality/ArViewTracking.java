@@ -53,6 +53,13 @@ public interface ArViewTracking {
 	}
 
 	/**
+	 * Gives the ground elevation, under the routes aligned on, for the eye's height to follow
+	 * them, see Globals.virtualCamera.alignedEyeElevationMeters.
+	 */
+	default void setGroundElevations(TerrainWireframe.ElevationSource groundElevations) {
+	}
+
+	/**
 	 * Told on the main thread.
 	 */
 	interface Listener {

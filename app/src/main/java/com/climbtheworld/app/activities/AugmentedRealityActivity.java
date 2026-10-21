@@ -51,6 +51,7 @@ import com.climbtheworld.app.sensors.location.DeviceLocationManager;
 import com.climbtheworld.app.sensors.location.ILocationListener;
 import com.climbtheworld.app.sensors.orientation.IOrientationListener;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
+import com.climbtheworld.app.sensors.pressure.Barometer;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector2d;
@@ -88,6 +89,8 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	private PreviewView cameraView;
 	private OrientationManager orientationManager;
 	private DeviceLocationManager deviceLocationManager;
+	// Steadies the GPS altitude, where the phone has one.
+	private Barometer barometer;
 	private View horizon;
 	private TerrainWireframeView terrainWireframeView;
 	private HorizonMode horizonMode = HorizonMode.OFF;
@@ -135,6 +138,8 @@ public class AugmentedRealityActivity extends AppCompatActivity
 		//others
 		Globals.virtualCamera.screenRotation =
 				Globals.orientationToAngle(getWindowManager().getDefaultDisplay().getRotation());
+		// Until ARCore is aligned on routes again, see ArViewTracking.
+		Globals.virtualCamera.alignedEyeElevationMeters = Double.NaN;
 
 		//camera
 		this.cameraView = findViewById(R.id.cameraTexture);
@@ -154,6 +159,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 
 		//location
 		deviceLocationManager = new DeviceLocationManager(this, LOCATION_UPDATE_INTERVAL);
+		barometer = new Barometer(this);
 
 		//orientation
 		orientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_GAME);
@@ -183,6 +189,8 @@ public class AugmentedRealityActivity extends AppCompatActivity
 						updateBoundingBox();
 					}
 				});
+		// The height of the routes aligned on, as the scene has the terrain.
+		arCore.setGroundElevations(scene::getGroundElevation);
 
 		// Asked once what it starts is made.
 		Ask.on(this)
@@ -258,6 +266,8 @@ public class AugmentedRealityActivity extends AppCompatActivity
 			// ARCore's pose follows the screen already, which the sensors' does not.
 			Globals.virtualCamera.screenRotation =
 					Globals.orientationToAngle(getWindowManager().getDefaultDisplay().getRotation());
+			// Only ARCore follows the routes aligned on.
+			Globals.virtualCamera.alignedEyeElevationMeters = Double.NaN;
 		}
 	}
 
@@ -434,6 +444,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 
 		deviceLocationManager.requestUpdates(this);
 		orientationManager.requestUpdates(this);
+		barometer.start();
 		arCore.onResume();
 
 		scene.loadSettings();
@@ -447,6 +458,7 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	protected void onPause() {
 		deviceLocationManager.stopUpdates();
 		orientationManager.stopUpdates();
+		barometer.stop();
 		arCore.onPause();
 		if (gpsUpdateAnimationTimer != null) {
 			gpsUpdateAnimationTimer.cancel();
@@ -498,8 +510,10 @@ public class AugmentedRealityActivity extends AppCompatActivity
 
 	public void updatePosition(final double pDecLatitude, final double pDecLongitude,
 	                           final double pMetersAltitude, final double accuracy) {
-		arCore.onLocation(pDecLatitude, pDecLongitude, pMetersAltitude, accuracy);
-		moveTo(pDecLatitude, pDecLongitude, pMetersAltitude);
+		// GPS, steadied by the barometer.
+		double altitude = barometer.anchor(pMetersAltitude);
+		arCore.onLocation(pDecLatitude, pDecLongitude, altitude, accuracy);
+		moveTo(pDecLatitude, pDecLongitude, altitude);
 		updateNearestRoute();
 	}
 

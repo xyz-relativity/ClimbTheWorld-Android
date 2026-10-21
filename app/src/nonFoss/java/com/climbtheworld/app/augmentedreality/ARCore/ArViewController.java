@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.augmentedreality.AlignmentRange;
 import com.climbtheworld.app.augmentedreality.ArViewTracking;
+import com.climbtheworld.app.augmentedreality.TerrainWireframe;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.utils.Globals;
@@ -178,6 +179,11 @@ public class ArViewController implements ArViewTracking {
 	public void onLocation(double latitude, double longitude, double altitudeMeters,
 	                       double accuracyMeters) {
 		arCore.onLocation(latitude, longitude, altitudeMeters, accuracyMeters);
+	}
+
+	@Override
+	public void setGroundElevations(TerrainWireframe.ElevationSource groundElevations) {
+		arCore.setGroundElevations(groundElevations);
 	}
 
 	@Override

@@ -19,6 +19,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.augmentedreality.TerrainWireframe;
+import com.climbtheworld.app.augmentedreality.placement.AlignedHeight;
 import com.climbtheworld.app.augmentedreality.placement.CursorHit;
 import com.climbtheworld.app.augmentedreality.placement.GeoRegistration;
 import com.climbtheworld.app.augmentedreality.placement.ViewRay;
@@ -128,6 +130,8 @@ class ArCoreSession {
 	private CursorHit cursor;
 	// A node not to align on, as the node being edited, 0 for none.
 	private long leftOutNodeId;
+	// The ground elevation under the routes aligned on, null while unknown.
+	private TerrainWireframe.ElevationSource groundElevations;
 	// The latest GPS fix, NaN until there is one.
 	private double lastLatitude = Double.NaN;
 	private double lastLongitude = Double.NaN;
@@ -321,6 +325,14 @@ class ArCoreSession {
 	}
 
 	/**
+	 * Gives the ground elevation under the routes aligned on, for the camera's height to follow
+	 * them, see poseCamera.
+	 */
+	void setGroundElevations(TerrainWireframe.ElevationSource groundElevations) {
+		this.groundElevations = groundElevations;
+	}
+
+	/**
 	 * @param nodeId a node not to align on, as the node being edited, 0 for none
 	 */
 	void setLeftOutNode(long nodeId) {
@@ -374,7 +386,8 @@ class ArCoreSession {
 
 	/**
 	 * Puts a camera where ARCore's is, and turns it the same way, as ARCore's world is tied to the
-	 * map. Its altitude is the GPS one.
+	 * map. Its altitude is the one given with the GPS fixes; aligned on routes whose ground the
+	 * terrain tells, the eye's elevation follows them too, see AlignedHeight.
 	 *
 	 * @return false, leaving the camera as it is, until ARCore tracks and its world is tied to the
 	 * map
@@ -395,7 +408,34 @@ class ArCoreSession {
 		setAngleOfView(camera, sessionCamera);
 		// ARCore's pose follows the screen already.
 		camera.screenRotation = 0;
+		camera.alignedEyeElevationMeters = alignedEyeElevation(sessionCamera);
 		return true;
+	}
+
+	/**
+	 * @return the eye's elevation the routes aligned on tell, NaN while they tell none
+	 */
+	private double alignedEyeElevation(ArSessionRenderer.SessionCamera sessionCamera) {
+		if (groundElevations == null || alignedRoutes.isEmpty()) {
+			return Double.NaN;
+		}
+		Map<String, double[]> positions = renderer.getAnchorPositions();
+		double[] baseYs = new double[alignedRoutes.size()];
+		double[] baseElevations = new double[alignedRoutes.size()];
+		for (int route = 0; route < alignedRoutes.size(); route++) {
+			AlignedRoute aligned = alignedRoutes.get(route);
+			double[] position = positions.get(aligned.anchorKey());
+			if (position == null) {
+				baseYs[route] = Double.NaN;
+				baseElevations[route] = Double.NaN;
+				continue;
+			}
+			baseYs[route] = position[1];
+			baseElevations[route] = groundElevations.getElevation(aligned.latitude(),
+					aligned.longitude(), Math.hypot(position[0] - sessionCamera.x(),
+							position[2] - sessionCamera.z()));
+		}
+		return AlignedHeight.eyeElevation(sessionCamera.y(), baseYs, baseElevations);
 	}
 
 	/**

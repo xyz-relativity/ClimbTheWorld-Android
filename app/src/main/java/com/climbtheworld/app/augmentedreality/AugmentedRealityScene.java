@@ -462,10 +462,16 @@ public class AugmentedRealityScene {
 		if (useElevation || lookUpTerrain) {
 			double observerGround = terrainElevation.getElevation(camera.decimalLatitude,
 					camera.decimalLongitude, TerrainElevation.DETAIL_ZOOM);
-			// The GPS altitude stands in until the terrain under the observer is loaded.
 			useTerrain = !Double.isNaN(observerGround);
-			observerElevation = useTerrain
-					? observerGround + EYE_HEIGHT_METERS : getGpsElevation();
+			// Best first: the height aligning on routes tells, then the terrain under the
+			// observer, then the altitude, from GPS and the barometer, until the terrain is
+			// loaded.
+			if (!Double.isNaN(camera.alignedEyeElevationMeters)) {
+				observerElevation = camera.alignedEyeElevationMeters;
+			} else {
+				observerElevation = useTerrain
+						? observerGround + EYE_HEIGHT_METERS : getGpsElevation();
+			}
 		}
 		return new EyeElevation(useTerrain, observerElevation);
 	}

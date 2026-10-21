@@ -33,6 +33,9 @@ public class VirtualCamera extends GeoNode implements ILocationListener, IOrient
 	public double degRoll = 0;
 	public Vector2d angleOfViewDeg = new Vector2d(70.0f, 60.0f);
 	public double screenRotation = 0;
+	// The eye's elevation above sea level, when aligning on mapped routes tells it, see
+	// AlignedHeight, better than the terrain model or the altitude; NaN otherwise.
+	public double alignedEyeElevationMeters = Double.NaN;
 
 	public VirtualCamera(float pDecimalLatitude, float pDecimalLongitude, float pMetersAltitude) {
 		super(pDecimalLatitude, pDecimalLongitude, pMetersAltitude);

@@ -176,6 +176,8 @@ public class ArPlacementController implements ArPlacement {
 						return true;
 					}
 				});
+		// The height of the routes aligned on, as the scene has the terrain.
+		arCore.setGroundElevations(scene::getGroundElevation);
 		container.findViewById(R.id.arSurfaceView).setOnTouchListener((view, event) -> {
 			holdForm(view, event);
 			return taps.onTouchEvent(event);
