@@ -7,10 +7,12 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.augmentedreality.AlignmentRange;
 import com.climbtheworld.app.augmentedreality.ArViewTracking;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.utils.Globals;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 /**
  * The A.R. view on ARCore, on the phones it runs on: ARCore's camera image, with the rock as its
@@ -20,6 +22,10 @@ import com.climbtheworld.app.utils.Globals;
  * the sensors stand in, over ARCore's image. It runs on the same session as the A.R. placement in
  * the node editor, see ArCoreSession, with its Align and Sight. Where ARCore cannot measure depth,
  * it still runs, the cursor then only showing where the crosshair crosses a first sighting.
+ * <p>
+ * The tools to aim with, the crosshair, the cursor, the rock's wireframe, Align and Sight, show
+ * only near mapped routes, see AlignmentRange, as farther away there is nothing to align on. There,
+ * a button hides them, until the user shows them again or walks away.
  * <p>
  * Elsewhere, with the Use ARCore setting off, or when the user does not let ARCore run, the A.R.
  * view goes on with CameraX and the sensors. Once refused, ARCore is left alone until the app
@@ -37,7 +43,12 @@ public class ArViewController implements ArViewTracking {
 	private final View surfaceView;
 	// The crosshair, the hint and the aiming buttons, over the scene.
 	private final View controls;
+	// Hides the aiming tools, or shows them again, near routes.
+	private final FloatingActionButton toolsButton;
 	private final ArCoreSession arCore;
+	private final AlignmentRange range = new AlignmentRange();
+	// The user hid the aiming tools, until they show them again or walk away from the routes.
+	private boolean toolsHidden;
 	private boolean resumed;
 	// ARCore is to start once the activity is resumed, as in the node editor, where it starts
 	// from a button: ARCore may show its own screens on the way.
@@ -50,21 +61,23 @@ public class ArViewController implements ArViewTracking {
 	/**
 	 * To be made in the activity's onCreate, as it registers for the camera permission result.
 	 *
-	 * @param container the A.R. view's box: ARCore's camera image in R.id.arSurfaceView and the
-	 *                  aiming controls in R.id.arCoreControls, see ArCoreSession
+	 * @param container the A.R. view's box: ARCore's camera image in R.id.arSurfaceView, the
+	 *                  aiming controls in R.id.arCoreControls, see ArCoreSession, and the button
+	 *                  hiding them in R.id.arCoreToolsButton
 	 */
 	public ArViewController(AppCompatActivity activity, View container, Listener listener) {
 		this.activity = activity;
 		this.listener = listener;
 		this.surfaceView = container.findViewById(R.id.arSurfaceView);
 		this.controls = container.findViewById(R.id.arCoreControls);
+		this.toolsButton = container.findViewById(R.id.arCoreToolsButton);
 		this.arCore = new ArCoreSession(activity, container, false, new ArCoreSession.Host() {
 			@Override
 			public void onStarted() {
 				Log.i(TAG, "ARCore runs");
 				Configs.instance(activity).setInt(Configs.ConfigKey.arCoreViewRefusals, 0);
 				surfaceView.setVisibility(View.VISIBLE);
-				controls.setVisibility(View.VISIBLE);
+				updateTools();
 				listener.onStarted();
 			}
 
@@ -112,6 +125,11 @@ public class ArViewController implements ArViewTracking {
 				}
 			}
 		});
+		toolsButton.setOnClickListener(view -> {
+			toolsHidden = !toolsHidden;
+			updateTools();
+		});
+		updateTools();
 	}
 
 	@Override
@@ -160,6 +178,39 @@ public class ArViewController implements ArViewTracking {
 	public void onLocation(double latitude, double longitude, double altitudeMeters,
 	                       double accuracyMeters) {
 		arCore.onLocation(latitude, longitude, altitudeMeters, accuracyMeters);
+	}
+
+	@Override
+	public void setNearestRouteMeters(double meters) {
+		boolean wasNear = range.isNear();
+		if (range.update(meters) == wasNear) {
+			return;
+		}
+		Log.i(TAG, wasNear ? "Away from mapped routes" : "Near mapped routes");
+		if (wasNear) {
+			// The next time near routes, the tools show again.
+			toolsHidden = false;
+		}
+		updateTools();
+	}
+
+	/**
+	 * Shows the aiming tools while ARCore has the camera near mapped routes, unless the user hid
+	 * them, and the button to hide them, or show them again, while near.
+	 */
+	private void updateTools() {
+		boolean near = !gaveUp && arCore.isShown() && range.isNear();
+		boolean shown = near && !toolsHidden;
+		controls.setVisibility(shown ? View.VISIBLE : View.GONE);
+		// Its depth work is left out with them.
+		arCore.setAimingShown(shown);
+		toolsButton.setVisibility(near ? View.VISIBLE : View.GONE);
+		// Greyed out while they are hidden.
+		toolsButton.setImageResource(shown ? R.drawable.ic_ar_tools : R.drawable.ic_ar_tools_off);
+		CharSequence description = activity.getString(shown ? R.string.ar_view_hide_tools
+				: R.string.ar_view_show_tools);
+		toolsButton.setContentDescription(description);
+		toolsButton.setTooltipText(description);
 	}
 
 	private void startIfResumed() {
@@ -216,7 +267,7 @@ public class ArViewController implements ArViewTracking {
 		arCore.stop();
 		setMovesCamera(false);
 		surfaceView.setVisibility(View.GONE);
-		controls.setVisibility(View.GONE);
+		updateTools();
 		listener.onGaveUp();
 	}
 

@@ -51,6 +51,7 @@ import com.climbtheworld.app.sensors.location.DeviceLocationManager;
 import com.climbtheworld.app.sensors.location.ILocationListener;
 import com.climbtheworld.app.sensors.orientation.IOrientationListener;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
+import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector2d;
 import com.climbtheworld.app.utils.Vector4d;
@@ -125,7 +126,10 @@ public class AugmentedRealityActivity extends AppCompatActivity
 
 		configs = Configs.instance(this);
 		scene = new AugmentedRealityScene(this, Globals.virtualCamera,
-				findViewById(R.id.arViewContainer), this::updateBoundingBox);
+				findViewById(R.id.arViewContainer), () -> {
+					updateBoundingBox();
+					updateNearestRoute();
+				});
 		terrainWireframe = new TerrainWireframe(scene::getGroundElevation);
 
 		//others
@@ -496,6 +500,15 @@ public class AugmentedRealityActivity extends AppCompatActivity
 	                           final double pMetersAltitude, final double accuracy) {
 		arCore.onLocation(pDecLatitude, pDecLongitude, pMetersAltitude, accuracy);
 		moveTo(pDecLatitude, pDecLongitude, pMetersAltitude);
+		updateNearestRoute();
+	}
+
+	/**
+	 * Tells ARCore how far the closest mapped route is, as it shows its tools to align on them
+	 * near them only.
+	 */
+	private void updateNearestRoute() {
+		arCore.setNearestRouteMeters(scene.getNearestDistance(GeoNode.NodeTypes.route));
 	}
 
 	/**

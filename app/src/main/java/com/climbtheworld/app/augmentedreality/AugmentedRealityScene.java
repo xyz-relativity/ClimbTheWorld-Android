@@ -203,6 +203,25 @@ public class AugmentedRealityScene {
 	}
 
 	/**
+	 * @return how far the closest of the loaded nodes of a type is from the camera, in meters, NaN
+	 * while none is loaded
+	 */
+	public double getNearestDistance(GeoNode.NodeTypes type) {
+		double nearest = Double.NaN;
+		for (DisplayableGeoNode displayable : arPOIs.values()) {
+			GeoNode node = displayable.getGeoNode();
+			if (node.getNodeType() != type) {
+				continue;
+			}
+			double distance = GeoUtils.calculateDistance(camera, node);
+			if (Double.isNaN(nearest) || distance < nearest) {
+				nearest = distance;
+			}
+		}
+		return nearest;
+	}
+
+	/**
 	 * @return whether the routes are placed at their elevation, rather than on level ground
 	 */
 	public boolean usesElevation() {

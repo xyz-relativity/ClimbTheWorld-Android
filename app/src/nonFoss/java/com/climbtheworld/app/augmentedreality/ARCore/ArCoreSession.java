@@ -313,6 +313,14 @@ class ArCoreSession {
 	}
 
 	/**
+	 * Shows the rock's wireframe and the cursor, as at first, or hides them, the cursor then
+	 * being nowhere.
+	 */
+	void setAimingShown(boolean shown) {
+		renderer.setAimingShown(shown);
+	}
+
+	/**
 	 * @param nodeId a node not to align on, as the node being edited, 0 for none
 	 */
 	void setLeftOutNode(long nodeId) {

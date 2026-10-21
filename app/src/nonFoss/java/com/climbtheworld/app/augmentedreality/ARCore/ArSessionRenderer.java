@@ -88,6 +88,9 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 	// Whether the session measures depth, which some phones cannot do: without it, there is no
 	// wireframe of the rock, and the cursor only shows where the crosshair crosses a first sighting.
 	private volatile boolean depthEnabled;
+	// Set from the main thread: whether the rock's wireframe and the cursor show, and are worked
+	// out at all.
+	private volatile boolean aimingShown = true;
 	// Set from the main thread when the display turns, which the view size does not show for a
 	// half turn.
 	private volatile boolean displayChanged;
@@ -147,6 +150,14 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 
 	void onDisplayChanged() {
 		displayChanged = true;
+	}
+
+	/**
+	 * @param shown whether to draw the rock's wireframe and the cursor; without them, there is no
+	 *              cursor either, and no tap meets the rock
+	 */
+	void setAimingShown(boolean shown) {
+		aimingShown = shown;
 	}
 
 	/**
@@ -305,9 +316,14 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 				frame.transformCoordinates2d(Coordinates2d.VIEW, tap,
 						Coordinates2d.TEXTURE_NORMALIZED, tapTexture);
 			}
-			DepthHits depthHits = depthEnabled ? drawDepth(frame, camera, tapTexture)
+			boolean aiming = aimingShown;
+			DepthHits depthHits = depthEnabled && aiming ? drawDepth(frame, camera, tapTexture)
 					: new DepthHits(null, null);
-			hit = drawCursor(depthHits.centre(), camera);
+			if (aiming) {
+				hit = drawCursor(depthHits.centre(), camera);
+			} else {
+				crosshairRay = null;
+			}
 			if (tapTexture != null) {
 				listener.onTapped(resolve(depthHits.tap(), rayThrough(camera, tapTexture)));
 			}

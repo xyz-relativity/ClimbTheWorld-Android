@@ -17,7 +17,7 @@ builds:
   software. So far, that is Google's
   [ARCore](https://play.google.com/store/apps/details?id=com.google.ar.core), on the phones that
   support it: the A.R. view tracks the camera with it, steadier than with the sensors, and can be
-  aligned on mapped routes, and the node editor can place nodes in A.R. **Use ARCore** in the
+  aligned on mapped routes once close to them, and the node editor can place nodes in A.R. **Use ARCore** in the
   settings turns it off in the A.R. view.
 
 Either installs over the other, keeping your downloads and changes.

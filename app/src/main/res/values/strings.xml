@@ -274,7 +274,7 @@
     <string name="ar_climbing_hulls">A.R. crag and area outlines</string>
     <string name="ar_climbing_hulls_description">In augmented reality view, outline crags and areas on the ground, as on the map. Far crags show their pin instead of their routes either way.</string>
     <string name="use_ar_core">Use ARCore</string>
-    <string name="use_ar_core_description">In the A.R. view, track the camera with Google Play Services for AR (ARCore), steadier than with the sensors, on the phones it supports.</string>
+    <string name="use_ar_core_description">In the A.R. view, track the camera with Google Play Services for AR (ARCore), steadier than with the sensors, and align it on the mapped routes when close to them, on the phones it supports.</string>
     <string name="use_mobile_data_for_map">Map tiles download over mobile data</string>
     <string name="use_mobile_data_for_map_description">Use mobile internet for map tiles download (recommended).</string>
     <string name="use_mobile_data_for_routes">Nodes data download over mobile data</string>
@@ -461,6 +461,8 @@
     <string name="ar_placement_install_declined">Placing in A.R. needs Google Play Services for AR.</string>
     <string name="ar_placement_unsupported">ARCore doesn\'t run on this phone, so it can\'t place in A.R.</string>
     <string name="ar_view_arcore_install_declined">Without Google Play Services for AR, the A.R. view runs on the phone\'s sensors.</string>
+    <string name="ar_view_show_tools">Show the aiming tools</string>
+    <string name="ar_view_hide_tools">Hide the aiming tools</string>
     <string name="ar_view_arcore_unsupported">ARCore doesn\'t run on this phone, so the A.R. view runs on its sensors.</string>
     <string name="ar_placement_no_depth">ARCore can\'t measure depth on this phone, which placing in A.R. needs.</string>
     <string name="ar_placement_camera_unavailable">The camera is in use by another app.</string>

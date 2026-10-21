@@ -272,7 +272,7 @@
     <string name="ar_climbing_hulls">R.A. : contours des secteurs et des sites</string>
     <string name="ar_climbing_hulls_description">Dans la vue en réalité augmentée, dessiner au sol le contour des secteurs et des sites, comme sur la carte. Dans tous les cas, les secteurs éloignés affichent leur repère au lieu de leurs voies.</string>
     <string name="use_ar_core">Utiliser ARCore</string>
-    <string name="use_ar_core_description">Dans la vue en réalité augmentée, suivre la caméra avec les Services Google Play pour la RA (ARCore), plus stables que les capteurs, sur les téléphones compatibles.</string>
+    <string name="use_ar_core_description">Dans la vue en réalité augmentée, suivre la caméra avec les Services Google Play pour la RA (ARCore), plus stables que les capteurs, et l’aligner sur les voies cartographiées une fois près d’elles, sur les téléphones compatibles.</string>
     <string name="use_mobile_data_for_map">Télécharger les fonds de carte via les données mobiles</string>
     <string name="use_mobile_data_for_map_description">Utiliser l’internet mobile pour télécharger les tuiles de carte (recommandé).</string>
     <string name="use_mobile_data_for_routes">Télécharger les données d’escalade via les données mobiles</string>
@@ -460,6 +460,8 @@
     <string name="ar_placement_install_declined">Le placement en R.A. a besoin des Services Google Play pour la RA.</string>
     <string name="ar_placement_unsupported">ARCore ne fonctionne pas sur ce téléphone : le placement en R.A. n’est pas possible.</string>
     <string name="ar_view_arcore_install_declined">Sans les Services Google Play pour la RA, la vue en réalité augmentée utilise les capteurs du téléphone.</string>
+    <string name="ar_view_show_tools">Afficher les outils de visée</string>
+    <string name="ar_view_hide_tools">Masquer les outils de visée</string>
     <string name="ar_view_arcore_unsupported">ARCore ne fonctionne pas sur ce téléphone : la vue en réalité augmentée utilise ses capteurs.</string>
     <string name="ar_placement_no_depth">ARCore ne mesure pas la profondeur sur ce téléphone, ce dont le placement en R.A. a besoin.</string>
     <string name="ar_placement_camera_unavailable">L’appareil photo est utilisé par une autre application.</string>

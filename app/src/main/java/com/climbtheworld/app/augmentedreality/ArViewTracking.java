@@ -7,7 +7,8 @@ import com.climbtheworld.app.sensors.orientation.OrientationManager;
  * takes the camera on the phones ARCore runs on and shows what it sees. While it tracks and its
  * world is tied to the map, by GPS, the compass and the routes the user aligns on, it moves and
  * turns Globals.virtualCamera in place of GPS and the sensors, which stand in the rest of the
- * time. Elsewhere, the A.R. view runs on CameraX and the sensors.
+ * time. Near mapped routes, see AlignmentRange, it also shows its tools to aim at them and align
+ * on them. Elsewhere, the A.R. view runs on CameraX and the sensors.
  * <p>
  * Only the non-FOSS build has it, as ARCore is not free software; see ArCoreFeatures, which each
  * build has its own of. Without it, nothing here does anything.
@@ -43,6 +44,12 @@ public interface ArViewTracking {
 	 */
 	default void onLocation(double latitude, double longitude, double altitudeMeters,
 	                        double accuracyMeters) {
+	}
+
+	/**
+	 * @param meters how far the closest mapped route is, NaN while none is known
+	 */
+	default void setNearestRouteMeters(double meters) {
 	}
 
 	/**

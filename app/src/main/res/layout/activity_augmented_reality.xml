@@ -253,6 +253,21 @@
             android:layout_margin="5dip"
             app:srcCompat="@drawable/ic_menu" />
 
+        <!-- Hides ARCore's aiming tools, or shows them again, near mapped routes, where they show
+             by themselves; see ArViewTracking. At the bottom right, as the node editor's A.R.
+             switch. -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/arCoreToolsButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:layout_margin="5dip"
+            android:background="?android:selectableItemBackground"
+            android:contentDescription="@string/ar_view_hide_tools"
+            android:visibility="gone"
+            app:srcCompat="@drawable/ic_ar_tools" />
+
     </RelativeLayout>
 
     <RelativeLayout
