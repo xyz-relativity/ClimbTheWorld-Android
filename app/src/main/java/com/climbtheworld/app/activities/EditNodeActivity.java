@@ -131,7 +131,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 			arPlacement.clearPin();
 		});
 		arPlacement = new ArPlacementController(this, findViewById(R.id.mapViewContainer),
-				(latitude, longitude) -> {
+				mapWidget, (latitude, longitude) -> {
 					if (editNode == null) {
 						return;
 					}
@@ -556,6 +556,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 	protected void onStart() {
 		super.onStart();
 		mapWidget.onStart();
+		arPlacement.onStart();
 	}
 
 	@Override
@@ -584,6 +585,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 
 	@Override
 	protected void onStop() {
+		arPlacement.onStop();
 		mapWidget.onStop();
 		super.onStop();
 	}
@@ -592,6 +594,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 	public void onLowMemory() {
 		super.onLowMemory();
 		mapWidget.onLowMemory();
+		arPlacement.onLowMemory();
 	}
 
 	@Override

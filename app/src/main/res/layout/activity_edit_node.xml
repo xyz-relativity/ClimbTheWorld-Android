@@ -188,6 +188,26 @@
                         android:textStyle="bold"
                         android:visibility="gone" />
 
+                    <!-- Where the A.R. is on the map, as the A.R. view's minimap shows it. Drawn
+                         as a texture, to show over the camera's surface. -->
+                    <FrameLayout
+                        android:id="@+id/arMinimapContainer"
+                        android:layout_width="130dp"
+                        android:layout_height="130dp"
+                        android:layout_gravity="bottom|start"
+                        android:layout_margin="5dip"
+                        android:background="@android:color/white"
+                        android:padding="2dp"
+                        android:visibility="invisible">
+
+                        <org.maplibre.android.maps.MapView
+                            android:id="@+id/openMapView"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            app:maplibre_renderTextureMode="true" />
+
+                    </FrameLayout>
+
                     <!-- Places the node where the cursor is, which a tap elsewhere does where
                          it is. -->
                     <com.google.android.material.floatingactionbutton.FloatingActionButton

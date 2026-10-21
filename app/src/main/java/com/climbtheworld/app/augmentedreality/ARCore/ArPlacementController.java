@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.hardware.display.DisplayManager;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
@@ -34,6 +35,8 @@ import com.climbtheworld.app.augmentedreality.placement.GeoRegistration;
 import com.climbtheworld.app.augmentedreality.placement.ViewRay;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.map.DisplayableGeoNode;
+import com.climbtheworld.app.map.model.MapCoordinate;
+import com.climbtheworld.app.map.widget.MapLibreMapWidget;
 import com.climbtheworld.app.sensors.camera.VirtualCamera;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.storage.database.GeoNode;
@@ -69,7 +72,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * below; Sight takes a first sighting of a spot, for the user to aim at it again from a few
  * meters to the side, the cursor then being where the two cross. Once ARCore's world is tied to
  * the map, the routes, crags and areas around show as the A.R. view draws them, see
- * AugmentedRealityScene.
+ * AugmentedRealityScene, and a minimap shows where the A.R. is, as the A.R. view's does.
  * <p>
  * ARCore is optional: it runs on Google Play Services for AR, which not every phone can run. The
  * button only shows on phones ARCore supports, and is taken away when ARCore turns out not to run
@@ -88,6 +91,8 @@ public class ArPlacementController {
 	private static final double SCENE_RELOAD_METERS = 10;
 	private static final long TOGGLE_TURN_MS = 400;
 	private static final float DISABLED_ICON_ALPHA = 0.4f;
+	// How often the minimap follows the camera, which it animates to.
+	private static final long MINIMAP_UPDATE_MS = 200;
 
 	private final AppCompatActivity activity;
 	private final PlaceListener placeListener;
@@ -122,6 +127,14 @@ public class ArPlacementController {
 	// Whether updating the scene is already posted to the main thread.
 	private final AtomicBoolean sceneUpdatePosted = new AtomicBoolean();
 	private final Runnable updateScene = this::updateScene;
+	private final View minimapContainer;
+	private final MapLibreMapWidget minimap;
+	// The editor's own map, whose layer and zoom the minimap takes.
+	private final MapLibreMapWidget editorMap;
+	// Which way ARCore's camera looks, as the minimap takes it.
+	private final OrientationManager.OrientationEvent minimapOrientation =
+			new OrientationManager.OrientationEvent();
+	private long minimapUpdatedAt;
 	private final ActivityResultLauncher<String> cameraPermission;
 	private final DisplayManager displayManager;
 	private final DisplayManager.DisplayListener displayListener =
@@ -182,11 +195,13 @@ public class ArPlacementController {
 	 *
 	 * @param container     the map box, with the map views in R.id.mapLayer and the A.R. ones in
 	 *                      R.id.arPlacementLayer
+	 * @param editorMap     the editor's map in the map box, whose layer and zoom the minimap takes
 	 * @param placeListener told where the user placed the node
 	 */
 	public ArPlacementController(AppCompatActivity activity, View container,
-	                             PlaceListener placeListener) {
+	                             MapLibreMapWidget editorMap, PlaceListener placeListener) {
 		this.activity = activity;
+		this.editorMap = editorMap;
 		this.placeListener = placeListener;
 		this.mapLayer = container.findViewById(R.id.mapLayer);
 		this.arLayer = container.findViewById(R.id.arPlacementLayer);
@@ -210,6 +225,10 @@ public class ArPlacementController {
 		this.sceneContainer = container.findViewById(R.id.arSceneContainer);
 		this.scene = new AugmentedRealityScene(activity, sceneCamera, (ViewGroup) sceneContainer,
 				this::updateScene);
+		this.minimapContainer = container.findViewById(R.id.arMinimapContainer);
+		// Without a saved state: it would share its keys with the editor's own map.
+		this.minimap = new MapLibreMapWidget(activity, minimapContainer, null,
+				MapLibreMapWidget.Profile.AR_MINIMAP);
 
 		renderer = new ArSessionRenderer(activity, activity.getWindowManager().getDefaultDisplay(),
 				new ArSessionRenderer.Listener() {
@@ -272,14 +291,12 @@ public class ArPlacementController {
 					}
 				});
 		surfaceView.setOnTouchListener((view, event) -> {
-			// As on the map, the form does not scroll while the finger is on the view.
-			int action = event.getActionMasked();
-			if (action == MotionEvent.ACTION_DOWN) {
-				view.getParent().requestDisallowInterceptTouchEvent(true);
-			} else if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
-				view.getParent().requestDisallowInterceptTouchEvent(false);
-			}
+			holdForm(view, event);
 			return taps.onTouchEvent(event);
+		});
+		minimap.setOnTouchListener((view, event) -> {
+			holdForm(view, event);
+			return false;
 		});
 		alignButton.setOnClickListener(view -> align());
 		sightButton.setOnClickListener(view -> sight());
@@ -306,7 +323,20 @@ public class ArPlacementController {
 		outState.putBoolean(STATE_SHOWN, shown || startOnResume);
 	}
 
+	public void onStart() {
+		minimap.onStart();
+	}
+
+	public void onStop() {
+		minimap.onStop();
+	}
+
+	public void onLowMemory() {
+		minimap.onLowMemory();
+	}
+
 	public void onResume() {
+		minimap.onResume();
 		resumed = true;
 		if (startOnResume) {
 			startOnResume = false;
@@ -320,6 +350,7 @@ public class ArPlacementController {
 	public void onPause() {
 		resumed = false;
 		apply();
+		minimap.onPause();
 	}
 
 	public void onDestroy() {
@@ -333,6 +364,7 @@ public class ArPlacementController {
 			session.close();
 			session = null;
 		}
+		minimap.onDestroy();
 	}
 
 	/**
@@ -344,6 +376,7 @@ public class ArPlacementController {
 		scene.leaveOut(editedNodeId);
 		AugmentedRealityViewManager.setIcon(pin,
 				AugmentedRealityViewManager.createIcon(activity, node));
+		minimap.setEditMarker(node);
 	}
 
 	/**
@@ -494,6 +527,9 @@ public class ArPlacementController {
 			cursor = null;
 			renderer.setSession(session);
 			surfaceView.onResume();
+			// As the editor's map shows, which the user may have changed since.
+			minimap.reloadStyleIfChanged();
+			minimap.setZoom(editorMap.getZoom());
 			displayManager.registerDisplayListener(displayListener, null);
 			running = true;
 		} else if (!run && running) {
@@ -606,6 +642,18 @@ public class ArPlacementController {
 				: R.drawable.ic_ar_sight);
 		describe(sightButton, activity.getString(sighting ? R.string.ar_placement_sight_cancel
 				: R.string.ar_placement_sight));
+	}
+
+	/**
+	 * As on the editor's map, the form does not scroll while a finger is on the view.
+	 */
+	private static void holdForm(View view, MotionEvent event) {
+		int action = event.getActionMasked();
+		if (action == MotionEvent.ACTION_DOWN) {
+			view.getParent().requestDisallowInterceptTouchEvent(true);
+		} else if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
+			view.getParent().requestDisallowInterceptTouchEvent(false);
+		}
 	}
 
 	/**
@@ -779,8 +827,9 @@ public class ArPlacementController {
 		refreshLandmarks();
 		double[] latLon = running && camera != null
 				? registration.toLatLon(camera.x(), camera.z()) : null;
-		// Kept laid out while hidden, as it is sized to the view.
+		// Kept laid out while hidden, as they are sized to the view.
 		sceneContainer.setVisibility(latLon == null ? View.INVISIBLE : View.VISIBLE);
+		minimapContainer.setVisibility(latLon == null ? View.INVISIBLE : View.VISIBLE);
 		if (latLon == null) {
 			return;
 		}
@@ -808,6 +857,24 @@ public class ArPlacementController {
 		scene.updateBoundingBox();
 		scene.rotateWithCamera();
 		scene.draw(scene.getEyeElevation(false));
+		updateMinimap(latLon);
+	}
+
+	/**
+	 * Shows on the minimap where the camera is and which way it looks, as GPS and the compass do
+	 * on the A.R. view's.
+	 */
+	private void updateMinimap(double[] latLon) {
+		long now = SystemClock.elapsedRealtime();
+		if (now - minimapUpdatedAt < MINIMAP_UPDATE_MS) {
+			return;
+		}
+		minimapUpdatedAt = now;
+		minimap.setViewCone(sceneCamera.angleOfViewDeg.x, scene.getMaxDistance());
+		minimap.onLocationChange(new MapCoordinate(latLon[0], latLon[1], lastAltitude));
+		minimapOrientation.camera = new Vector4d(sceneCamera.degAzimuth, sceneCamera.degPitch,
+				sceneCamera.degRoll, 0);
+		minimap.onOrientationChange(minimapOrientation.camera, minimapOrientation);
 	}
 
 	private void movePin() {
