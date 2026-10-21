@@ -16,11 +16,9 @@ import androidx.appcompat.content.res.AppCompatResources;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityScene;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityViewManager;
-import com.climbtheworld.app.augmentedreality.CameraMinimap;
 import com.climbtheworld.app.augmentedreality.placement.ArPlacement;
 import com.climbtheworld.app.augmentedreality.placement.CursorHit;
 import com.climbtheworld.app.map.DisplayableGeoNode;
-import com.climbtheworld.app.map.widget.MapLibreMapWidget;
 import com.climbtheworld.app.sensors.camera.VirtualCamera;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.utils.GeoUtils;
@@ -36,8 +34,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * the place button where the cursor is, on the map as ARCore's world is tied to it, and its pin
  * there in the A.R., as the A.R. view draws pins and the editor's map the edited node. Once
  * ARCore's world is tied to the map, the routes, crags and areas around show as the A.R. view
- * draws them, see AugmentedRealityScene, and a minimap shows where the A.R. is, as the A.R.
- * view's does.
+ * draws them, see AugmentedRealityScene.
  * <p>
  * ARCore is optional: the button only shows on phones ARCore supports, and is taken away when
  * ARCore turns out not to run or not to measure depth there.
@@ -66,11 +63,6 @@ public class ArPlacementController implements ArPlacement {
 	private final VirtualCamera sceneCamera = new VirtualCamera(0, 0, 0);
 	private final AugmentedRealityScene scene;
 	private final View sceneContainer;
-	private final View minimapContainer;
-	private final MapLibreMapWidget minimap;
-	private final CameraMinimap cameraMinimap;
-	// The editor's own map, whose layer and zoom the minimap takes.
-	private final MapLibreMapWidget editorMap;
 
 	// ARCore turned out not to run, or not to measure depth, on this phone.
 	private boolean unavailable;
@@ -92,13 +84,11 @@ public class ArPlacementController implements ArPlacement {
 	 *
 	 * @param container     the map box, with the map views in R.id.mapLayer and the A.R. ones in
 	 *                      R.id.arPlacementLayer
-	 * @param editorMap     the editor's map in the map box, whose layer and zoom the minimap takes
 	 * @param placeListener told where the user placed the node
 	 */
 	public ArPlacementController(AppCompatActivity activity, View container,
-	                             MapLibreMapWidget editorMap, PlaceListener placeListener) {
+	                             PlaceListener placeListener) {
 		this.activity = activity;
-		this.editorMap = editorMap;
 		this.placeListener = placeListener;
 		this.mapLayer = container.findViewById(R.id.mapLayer);
 		this.arLayer = container.findViewById(R.id.arPlacementLayer);
@@ -113,11 +103,6 @@ public class ArPlacementController implements ArPlacement {
 		this.sceneContainer = container.findViewById(R.id.arSceneContainer);
 		this.scene = new AugmentedRealityScene(activity, sceneCamera, (ViewGroup) sceneContainer,
 				this::updateScene);
-		this.minimapContainer = container.findViewById(R.id.arMinimapContainer);
-		// Without a saved state: it would share its keys with the editor's own map.
-		this.minimap = new MapLibreMapWidget(activity, minimapContainer, null,
-				MapLibreMapWidget.Profile.AR_MINIMAP);
-		this.cameraMinimap = new CameraMinimap(minimap);
 
 		arCore = new ArCoreSession(activity, container, true, new ArCoreSession.Host() {
 			@Override
@@ -125,9 +110,6 @@ public class ArPlacementController implements ArPlacement {
 				// The A.R. settings may have changed in the A.R. view.
 				scene.loadSettings();
 				scene.clearPins();
-				// As the editor's map shows, which the user may have changed since.
-				minimap.reloadStyleIfChanged();
-				minimap.setZoom(editorMap.getZoom());
 			}
 
 			@Override
@@ -198,10 +180,6 @@ public class ArPlacementController implements ArPlacement {
 			holdForm(view, event);
 			return taps.onTouchEvent(event);
 		});
-		minimap.setOnTouchListener((view, event) -> {
-			holdForm(view, event);
-			return false;
-		});
 		placeButton.setOnClickListener(view -> place(arCore.getCursor()));
 		toggleButton.setOnClickListener(view -> toggle());
 		toggleButton.setVisibility(View.GONE);
@@ -239,23 +217,7 @@ public class ArPlacementController implements ArPlacement {
 	}
 
 	@Override
-	public void onStart() {
-		minimap.onStart();
-	}
-
-	@Override
-	public void onStop() {
-		minimap.onStop();
-	}
-
-	@Override
-	public void onLowMemory() {
-		minimap.onLowMemory();
-	}
-
-	@Override
 	public void onResume() {
-		minimap.onResume();
 		arCore.onResume();
 		if (startOnResume) {
 			startOnResume = false;
@@ -266,13 +228,11 @@ public class ArPlacementController implements ArPlacement {
 	@Override
 	public void onPause() {
 		arCore.onPause();
-		minimap.onPause();
 	}
 
 	@Override
 	public void onDestroy() {
 		arCore.onDestroy();
-		minimap.onDestroy();
 	}
 
 	/**
@@ -287,7 +247,6 @@ public class ArPlacementController implements ArPlacement {
 		scene.leaveOut(editedNodeId);
 		AugmentedRealityViewManager.setIcon(pin,
 				AugmentedRealityViewManager.createIcon(activity, node));
-		minimap.setEditMarker(node);
 	}
 
 	/**
@@ -395,9 +354,8 @@ public class ArPlacementController implements ArPlacement {
 	 */
 	private void updateScene() {
 		boolean posed = arCore.poseCamera(sceneCamera);
-		// Kept laid out while hidden, as they are sized to the view.
+		// Kept laid out while hidden, as it is sized to the view.
 		sceneContainer.setVisibility(posed ? View.VISIBLE : View.INVISIBLE);
-		minimapContainer.setVisibility(posed ? View.VISIBLE : View.INVISIBLE);
 		if (!posed) {
 			return;
 		}
@@ -417,7 +375,6 @@ public class ArPlacementController implements ArPlacement {
 		scene.updateBoundingBox();
 		scene.rotateWithCamera();
 		scene.draw(scene.getEyeElevation(false));
-		cameraMinimap.show(sceneCamera, scene.getMaxDistance());
 	}
 
 	private void movePin() {

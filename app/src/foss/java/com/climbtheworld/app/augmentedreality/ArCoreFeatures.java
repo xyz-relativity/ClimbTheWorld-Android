@@ -5,7 +5,6 @@ import android.view.View;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.augmentedreality.placement.ArPlacement;
-import com.climbtheworld.app.map.widget.MapLibreMapWidget;
 
 /**
  * Makes what runs on ARCore, which the FOSS build leaves out, as ARCore is not free software: the
@@ -20,7 +19,6 @@ public final class ArCoreFeatures {
 	}
 
 	public static ArPlacement placement(AppCompatActivity activity, View container,
-	                                    MapLibreMapWidget editorMap,
 	                                    ArPlacement.PlaceListener placeListener) {
 		return new ArPlacement() {
 		};

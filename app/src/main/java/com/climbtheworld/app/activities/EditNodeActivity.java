@@ -132,7 +132,7 @@ public class EditNodeActivity extends AppCompatActivity implements IOrientationL
 			arPlacement.clearPin();
 		});
 		arPlacement = ArCoreFeatures.placement(this, findViewById(R.id.mapViewContainer),
-				mapWidget, (latitude, longitude) -> {
+				(latitude, longitude) -> {
 					if (editNode == null) {
 						return;
 					}

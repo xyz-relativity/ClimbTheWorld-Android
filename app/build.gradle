@@ -32,6 +32,9 @@ android {
         }
         nonFoss {
             dimension = "distribution"
+            // The variant Android Studio selects after a sync, as it has every feature to try.
+            // Release builds are not affected.
+            isDefault = true
         }
     }
     // Leave out the dependency list that only Google can decrypt, which F-Droid and IzzyOnDroid flag.
