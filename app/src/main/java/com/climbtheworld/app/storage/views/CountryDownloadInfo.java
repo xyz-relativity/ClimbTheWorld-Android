@@ -6,7 +6,9 @@ import android.icu.text.RelativeDateTimeFormatter;
 import com.climbtheworld.app.R;
 
 import java.text.NumberFormat;
-import java.util.concurrent.TimeUnit;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 
 /** Describes an installed country's download, e.g. "Updated 3 months ago · 1,234 routes". */
 final class CountryDownloadInfo {
@@ -22,13 +24,18 @@ final class CountryDownloadInfo {
 		String routes = resources.getQuantityString(R.plurals.download_country_routes, routeCount,
 				NumberFormat.getIntegerInstance().format(routeCount));
 		return resources.getString(R.string.download_country_info,
-				age(downloadedAtMillis, nowMillis), routes);
+				age(downloadedAtMillis, nowMillis, ZoneId.systemDefault()), routes);
 	}
 
-	/** Day resolution is enough for data that changes over weeks; a future time counts as today. */
-	static String age(long downloadedAtMillis, long nowMillis) {
+	/**
+	 * Day resolution is enough for data that changes over weeks. Days are calendar days in
+	 * {@code zone}, so a download stops being "today" at midnight; a future time counts as today.
+	 */
+	static String age(long downloadedAtMillis, long nowMillis, ZoneId zone) {
 		RelativeDateTimeFormatter formatter = RelativeDateTimeFormatter.getInstance();
-		long days = TimeUnit.MILLISECONDS.toDays(Math.max(0, nowMillis - downloadedAtMillis));
+		long days = Math.max(0, ChronoUnit.DAYS.between(
+				Instant.ofEpochMilli(downloadedAtMillis).atZone(zone).toLocalDate(),
+				Instant.ofEpochMilli(nowMillis).atZone(zone).toLocalDate()));
 		if (days == 0) {
 			return formatter.format(RelativeDateTimeFormatter.Direction.THIS,
 					RelativeDateTimeFormatter.AbsoluteUnit.DAY);
