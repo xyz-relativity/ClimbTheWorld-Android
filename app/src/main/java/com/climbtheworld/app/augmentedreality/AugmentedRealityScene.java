@@ -13,12 +13,12 @@ import com.climbtheworld.app.map.marker.NodeDisplayFilters;
 import com.climbtheworld.app.map.model.MapBounds;
 import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.map.widget.climbing.ClimbingGeometryBuilder;
+import com.climbtheworld.app.map.widget.climbing.ClimbingRouteCounter;
 import com.climbtheworld.app.map.widget.climbing.RouteNumbers;
 import com.climbtheworld.app.map.widget.climbing.RouteRelation;
 import com.climbtheworld.app.sensors.camera.VirtualCamera;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.TerrainElevation;
-import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
@@ -29,7 +29,6 @@ import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.constants.Constants;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -144,20 +143,12 @@ public class AugmentedRealityScene {
 	 * The hull of a crag or area, with the relation as a POI in its middle, labelled with its
 	 * route count like on the map.
 	 */
-	private static ClimbingHull toClimbingHull(ClimbingGeometryBuilder.GeometrySpec geometry)
-			throws JSONException {
+	private static ClimbingHull toClimbingHull(ClimbingGeometryBuilder.GeometrySpec geometry) {
 		OsmCollectionEntity collection = geometry.collection;
-		GeoNode pin = new GeoNode(new JSONObject(collection.jsonNodeInfo.toString()));
-		MapCoordinate centre = geometry.labelCoordinate;
-		if (centre != null) {
-			JSONObject tags = new JSONObject(collection.getTags().toString());
-			tags.put(ClimbingTags.KEY_ROUTES, Integer.toString(geometry.relationElementCount));
-			pin.setTags(tags);
-		} else {
-			// Unnamed relations have no label on the map.
-			centre = DataManager.collectionCenter(collection);
-		}
-		pin.updatePOILocation(centre.getLatitude(), centre.getLongitude(), 0);
+		// Unnamed relations have no label on the map to place it at.
+		MapCoordinate centre = geometry.labelCoordinate != null
+				? geometry.labelCoordinate : DataManager.collectionCenter(collection);
+		GeoNode pin = ClimbingRouteCounter.pin(collection, centre, geometry.relationElementCount);
 
 		double[] latitudes = new double[geometry.coordinates.size()];
 		double[] longitudes = new double[geometry.coordinates.size()];
@@ -328,10 +319,7 @@ public class AugmentedRealityScene {
 									|| geometry.collection.osmType != OsmEntity.EntityOsmType.relation) {
 								continue;
 							}
-							try {
-								hulls.add(toClimbingHull(geometry));
-							} catch (JSONException ignore) {
-							}
+							hulls.add(toClimbingHull(geometry));
 						}
 						routeNumbers = RouteNumbers.load(activity.getApplicationContext(), bounds);
 						relations = RouteRelation.load(activity.getApplicationContext(), bounds);

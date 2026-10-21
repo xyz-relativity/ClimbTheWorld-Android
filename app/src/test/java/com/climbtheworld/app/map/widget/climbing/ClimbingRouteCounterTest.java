@@ -5,7 +5,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.climbtheworld.app.converter.tools.GradeSystem;
+import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.storage.DataManager;
+import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
@@ -260,6 +262,37 @@ public class ClimbingRouteCounterTest {
 		assertEquals(new HashSet<>(Arrays.asList("Apoplexie", "Long Route", "Dharma")),
 				new HashSet<>(summary.getRouteNames()));
 		assertEquals(1, counter.summarize(collections.get("relation|30")).getRouteCount());
+	}
+
+	@Test
+	public void pinShowsTheMappedRouteCountOnACopyOfTheCrag() throws JSONException {
+		addNode(10, route());
+		addNode(11, route());
+		OsmCollectionEntity crag = addCollection(2, "relation",
+				site("crag").put(ClimbingTags.KEY_ROUTES, "12"), members("node", 10, "node", 11));
+		crag.osmNodes = Arrays.asList(10L, 11L);
+
+		GeoNode pin = counter.pin(crag, new MapCoordinate(45.5, 24.5));
+
+		assertEquals("2", pin.getKey(ClimbingTags.KEY_ROUTES));
+		assertEquals(GeoNode.NodeTypes.crag, pin.getNodeType());
+		assertEquals(45.5, pin.decimalLatitude, 0);
+		assertEquals(24.5, pin.decimalLongitude, 0);
+		// The crag keeps its own tags, and no location.
+		assertEquals("12", crag.getTags().optString(ClimbingTags.KEY_ROUTES));
+		assertFalse(crag.jsonNodeInfo.has(ClimbingTags.KEY_LAT));
+	}
+
+	@Test
+	public void pinWithoutMappedRoutesShowsTheCragsOwnCountOrNone() throws JSONException {
+		OsmCollectionEntity tagged = addCollection(2, "relation",
+				site("crag").put(ClimbingTags.KEY_ROUTES, "12"), new JSONArray());
+		OsmCollectionEntity untagged = addCollection(3, "relation", site("crag"), new JSONArray());
+
+		assertEquals("12", counter.pin(tagged, new MapCoordinate(45, 24))
+				.getKey(ClimbingTags.KEY_ROUTES));
+		assertEquals("", ClimbingRouteCounter.pin(untagged, new MapCoordinate(45, 24), 0)
+				.getKey(ClimbingTags.KEY_ROUTES));
 	}
 
 	@Test

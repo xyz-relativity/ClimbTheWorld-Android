@@ -435,12 +435,13 @@ public final class ClimbingGeometryBuilder {
 			MapCoordinate labelCoordinate = null;
 			int relationElementCount = 0;
 			if (labelMaxZoom > 0 && collection.osmType == OsmEntity.EntityOsmType.relation) {
+				// Counted for unnamed ones too, which the A.R. view pins without a label.
+				relationElementCount = relationElementCountOverride >= 0
+						? relationElementCountOverride : collection.osmMembers.size();
 				labelName = collection.getTags().optString(ClimbingTags.KEY_NAME, "").trim();
 				if (!labelName.isEmpty()) {
 					Coordinate centroid = hull.getCentroid().getCoordinate();
 					labelCoordinate = new MapCoordinate(centroid.y, centroid.x);
-					relationElementCount = relationElementCountOverride >= 0
-							? relationElementCountOverride : collection.osmMembers.size();
 				}
 			}
 			result.add(new GeometrySpec(geometryKey(collection), hullCoordinates, true, fillColor,

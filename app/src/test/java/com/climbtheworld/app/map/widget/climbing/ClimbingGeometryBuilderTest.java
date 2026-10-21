@@ -94,6 +94,27 @@ public class ClimbingGeometryBuilderTest {
 	}
 
 	@Test
+	public void unnamedAreaHasNoLabelButKeepsItsRouteCountForItsPin() throws Exception {
+		OsmCollectionEntity area = new OsmCollectionEntity(new JSONObject()
+				.put("id", 457L)
+				.put("type", "relation")
+				.put("tags", new JSONObject()
+						.put("type", "site")
+						.put("sport", "climbing")
+						.put("climbing", "area")));
+		List<ClimbingGeometryBuilder.GeometrySpec> geometries = new ArrayList<>();
+
+		builder.addGeometry(geometries, area, Arrays.asList(
+				new MapCoordinate(45, 24),
+				new MapCoordinate(46, 24),
+				new MapCoordinate(45, 25)), 27, null);
+
+		assertEquals(1, geometries.size());
+		assertNull(geometries.get(0).labelCoordinate);
+		assertEquals(27, geometries.get(0).relationElementCount);
+	}
+
+	@Test
 	public void climbingRouteWayUsesRouteLineZoomLimit() throws Exception {
 		OsmCollectionEntity route = new OsmCollectionEntity(new JSONObject()
 				.put("id", 123L)

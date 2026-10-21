@@ -142,11 +142,11 @@ public class ParentMembership {
 	/** A parent the picker lists, as its row shows it. */
 	private static final class ListedParent {
 		final OsmCollectionEntity relation;
-		/** The relation as its pin draws it, see pinOf. */
-		final GeoNode pin;
+		/** The relation as its pin draws it, with its route count. */
+		final DisplayableGeoNode pin;
 		final double distanceMeters;
 
-		ListedParent(OsmCollectionEntity relation, GeoNode pin, double distanceMeters) {
+		ListedParent(OsmCollectionEntity relation, DisplayableGeoNode pin, double distanceMeters) {
 			this.relation = relation;
 			this.pin = pin;
 			this.distanceMeters = distanceMeters;
@@ -499,7 +499,7 @@ public class ParentMembership {
 					View row = ListViewItemBuilder.getPaddedBuilder(parent, view, true)
 							.setTitle(nameOf(listedParent.relation))
 							.setDescription(Globals.getDistanceString(listedParent.distanceMeters))
-							.setIcon(new PoiMarkerDrawable(parent, new DisplayableGeoNode(listedParent.pin)))
+							.setIcon(new PoiMarkerDrawable(parent, listedParent.pin))
 							.build();
 					row.setOnClickListener(clicked -> {
 						dialog.dismiss();
@@ -575,7 +575,8 @@ public class ParentMembership {
 						// A crag doesn't go into itself.
 						if (!listed.contains(relation.osmID) && !(relation.osmID == memberId
 								&& kind.memberType == EntityOsmType.relation)) {
-							result.add(new ListedParent(relation, pinOf(relation, routeCounter),
+							result.add(new ListedParent(relation,
+									DataManager.toDisplayableNode(relation, routeCounter),
 									OsmEditStore.distanceMeters(latitude, longitude, relation)));
 						}
 					}
@@ -696,22 +697,6 @@ public class ParentMembership {
 	private boolean isEditedElement(JSONObject member) {
 		return member != null && member.optLong(ClimbingTags.KEY_REF) == memberId
 				&& kind.memberType.name().equals(member.optString(ClimbingTags.KEY_TYPE));
-	}
-
-	/** The relation with its route count, which its pin shows, as in the map's cluster list. */
-	private static GeoNode pinOf(OsmCollectionEntity relation, ClimbingRouteCounter routeCounter) {
-		GeoNode result;
-		try {
-			// A copy, so the route count drawn on the pin stays out of the relation's own tags.
-			result = new GeoNode(new JSONObject(relation.jsonNodeInfo.toString()));
-		} catch (JSONException e) {
-			throw new IllegalStateException(e);
-		}
-		int routeCount = routeCounter.summarize(relation).getRouteCount();
-		if (routeCount > 0) {
-			result.setKey(ClimbingTags.KEY_ROUTES, Integer.toString(routeCount));
-		}
-		return result;
 	}
 
 	private static OsmCollectionEntity copy(OsmCollectionEntity relation) {

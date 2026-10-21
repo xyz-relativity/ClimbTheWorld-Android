@@ -54,6 +54,7 @@ import com.climbtheworld.app.map.model.MapZoomLevels;
 import com.climbtheworld.app.map.style.MapStyleDefinition;
 import com.climbtheworld.app.map.style.MapStyleRegistry;
 import com.climbtheworld.app.map.widget.climbing.ClimbingGeometryBuilder;
+import com.climbtheworld.app.map.widget.climbing.ClimbingRouteCounter;
 import com.climbtheworld.app.map.widget.climbing.RouteNumbers;
 import com.climbtheworld.app.map.widget.climbing.RouteRelation;
 import com.climbtheworld.app.map.widget.climbing.RouteStandIn;
@@ -73,8 +74,6 @@ import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.dialogs.ClusterDialogBuilder;
 import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.maplibre.android.camera.CameraPosition;
 import org.maplibre.android.camera.CameraUpdate;
 import org.maplibre.android.camera.CameraUpdateFactory;
@@ -367,7 +366,7 @@ public class MapLibreMapWidget {
 				if (geometry != null && geometry.collection != null
 						&& geometry.labelCoordinate != null) {
 					NodeDialogBuilder.showCollectionInfoDialog(parent, geometry.collection,
-							geometry.labelCoordinate, geometry.relationElementCount);
+							geometry.labelCoordinate);
 					return true;
 				}
 			}
@@ -1179,22 +1178,10 @@ public class MapLibreMapWidget {
 
 	private Bitmap createRelationLabelBitmap(
 			ClimbingGeometryBuilder.GeometrySpec geometry) {
-		try {
-			JSONObject tags = new JSONObject(geometry.collection.getTags().toString());
-			tags.put(ClimbingTags.KEY_ROUTES,
-					Integer.toString(geometry.relationElementCount));
-			GeoNode relation = new GeoNode(
-					new JSONObject(geometry.collection.jsonNodeInfo.toString()));
-			relation.setTags(tags);
-			relation.updatePOILocation(geometry.labelCoordinate.getLatitude(),
-					geometry.labelCoordinate.getLongitude(),
-					geometry.labelCoordinate.getAltitudeMeters());
-			Drawable drawable = new PoiMarkerDrawable(
-					parent, new DisplayableGeoNode(relation)).getDrawable();
-			return bitmapFromDrawable(drawable);
-		} catch (JSONException exception) {
-			throw new IllegalStateException("Unable to render relation POI label", exception);
-		}
+		GeoNode relation = ClimbingRouteCounter.pin(geometry.collection,
+				geometry.labelCoordinate, geometry.relationElementCount);
+		return bitmapFromDrawable(new PoiMarkerDrawable(
+				parent, new DisplayableGeoNode(relation)).getDrawable());
 	}
 
 	private void renderMarkers() {

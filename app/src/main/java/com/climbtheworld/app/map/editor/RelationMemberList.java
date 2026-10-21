@@ -47,6 +47,7 @@ public class RelationMemberList {
 	private final AppCompatActivity parent;
 	private final JSONArray members;
 	private final Map<String, OsmEntity> resolved;
+	private final Map<String, Integer> routeCounts;
 	private final String highlightedKey;
 	private final OnMembersChangedListener listener;
 	private final RecyclerView list;
@@ -55,15 +56,20 @@ public class RelationMemberList {
 	/**
 	 * @param resolved       the stored members by RelationMembers.key, as OsmEditStore.loadMembers
 	 *                       gives them; members added here are put in it too.
+	 * @param routeCounts    the route counts of the crags among them by RelationMembers.key,
+	 *                       which their pins show, see ClimbingRouteCounter.pin; members added
+	 *                       here bring theirs.
 	 * @param highlightedKey the member to outline, the element whose editor opened this one, or
 	 *                       null.
 	 */
 	public RelationMemberList(AppCompatActivity parent, ViewGroup container, boolean area,
 	                          JSONArray members, Map<String, OsmEntity> resolved,
-	                          String highlightedKey, OnMembersChangedListener listener) {
+	                          Map<String, Integer> routeCounts, String highlightedKey,
+	                          OnMembersChangedListener listener) {
 		this.parent = parent;
 		this.members = members;
 		this.resolved = resolved;
+		this.routeCounts = routeCounts;
 		this.highlightedKey = highlightedKey;
 		this.listener = listener;
 
@@ -127,9 +133,11 @@ public class RelationMemberList {
 		return RelationMembers.contains(members, entity.osmType.name(), entity.osmID);
 	}
 
-	/** Adds the entity at the end. */
-	public void add(OsmEntity entity) {
-		resolved.put(RelationMembers.key(entity.osmType.name(), entity.osmID), entity);
+	/** Adds the entity at the end, with its route count for a crag, see the constructor. */
+	public void add(OsmEntity entity, int routeCount) {
+		String key = RelationMembers.key(entity.osmType.name(), entity.osmID);
+		resolved.put(key, entity);
+		routeCounts.put(key, routeCount);
 		RelationMembers.append(members, entity.osmType.name(), entity.osmID, "");
 		adapter.notifyItemInserted(members.length() - 1);
 		list.scrollToPosition(members.length() - 1);
@@ -158,12 +166,21 @@ public class RelationMemberList {
 		return result;
 	}
 
-	/** The member as the map and the strip show it, placed where it is. */
-	public static DisplayableGeoNode toDisplayable(OsmEntity member) {
+	/**
+	 * The member at the index as the map and the strip show it, placed where it is, or null when
+	 * it is not downloaded.
+	 */
+	public DisplayableGeoNode pinAt(int index) {
+		OsmEntity member = memberAt(index);
 		if (member instanceof OsmNode) {
 			return DataManager.toDisplayableNode((OsmNode) member);
 		}
-		return DataManager.toDisplayableNode((OsmCollectionEntity) member);
+		if (member instanceof OsmCollectionEntity) {
+			Integer routeCount = routeCounts.get(keyAt(index));
+			return DataManager.toDisplayableNode((OsmCollectionEntity) member,
+					routeCount != null ? routeCount : 0);
+		}
+		return null;
 	}
 
 	private String keyAt(int index) {
@@ -184,12 +201,15 @@ public class RelationMemberList {
 	}
 
 	private void bind(View card, int index) {
-		OsmEntity member = memberAt(index);
-		GeoNode poi = member != null
-				? toDisplayable(member).getGeoNode() : new GeoNode(new JSONObject());
+		DisplayableGeoNode pin = pinAt(index);
+		boolean downloaded = pin != null;
+		if (!downloaded) {
+			pin = new DisplayableGeoNode(new GeoNode(new JSONObject()));
+		}
+		GeoNode poi = pin.getGeoNode();
 
-		Drawable icon = new PoiMarkerDrawable(parent, new DisplayableGeoNode(poi),
-				PoiMarkerDrawable.PinShape.slim).getDrawable();
+		Drawable icon = new PoiMarkerDrawable(parent, pin, PoiMarkerDrawable.PinShape.slim)
+				.getDrawable();
 		int iconWidth = Math.max(icon.getIntrinsicWidth() * 2, 1);
 		ImageView image = card.findViewById(R.id.memberIconImage);
 		image.setImageDrawable(icon);
@@ -200,7 +220,7 @@ public class RelationMemberList {
 		card.findViewById(R.id.memberIconLabel).getLayoutParams().width =
 				Math.max(iconWidth, MEMBER_LABEL_MIN_WIDTH);
 
-		String name = member != null ? poi.getName() : parent.getString(R.string.member_not_downloaded);
+		String name = downloaded ? poi.getName() : parent.getString(R.string.member_not_downloaded);
 		TextView nameView = card.findViewById(R.id.memberIconName);
 		nameView.setText(name);
 		TextView numberView = card.findViewById(R.id.memberIconNumber);

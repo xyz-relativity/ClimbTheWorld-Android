@@ -414,13 +414,9 @@ public class NodeDialogBuilder {
 				OsmCollectionEntity child = collections.get(
 						DataManager.collectionKey(memberType, id));
 				if (child != null) {
-					MapCoordinate coordinate = collectionCenter(child);
+					MapCoordinate coordinate = DataManager.collectionCenter(child);
 					ClimbingRouteCounter.RouteSummary routes = routeCounter.summarize(child);
-					GeoNode poi = toGeoNode(child, coordinate);
-					if (routes.getRouteCount() > 0) {
-						poi.setKey(ClimbingTags.KEY_ROUTES,
-								Integer.toString(routes.getRouteCount()));
-					}
+					GeoNode poi = ClimbingRouteCounter.pin(child, coordinate, routes.getRouteCount());
 					result.add(new CollectionMember(poi, child, coordinate, routes));
 				}
 			}
@@ -434,29 +430,6 @@ public class NodeDialogBuilder {
 		result.setTags(tags);
 		result.countryIso = node.countryIso;
 		return result;
-	}
-
-	private static GeoNode toGeoNode(OsmCollectionEntity collection, MapCoordinate coordinate)
-			throws JSONException {
-		JSONObject tags = new JSONObject(collection.getTags().toString());
-		GeoNode result = new GeoNode(new JSONObject(collection.jsonNodeInfo.toString()));
-		result.setTags(tags);
-		result.updatePOILocation(coordinate.getLatitude(), coordinate.getLongitude(),
-				coordinate.getAltitudeMeters());
-		return result;
-	}
-
-	private static MapCoordinate collectionCenter(OsmCollectionEntity collection) {
-		double longitude;
-		if (collection.bBoxWest <= collection.bBoxEast) {
-			longitude = (collection.bBoxWest + collection.bBoxEast) / 2;
-		} else {
-			longitude = (collection.bBoxWest + collection.bBoxEast + 360) / 2;
-			if (longitude > 180) {
-				longitude -= 360;
-			}
-		}
-		return new MapCoordinate((collection.bBoxNorth + collection.bBoxSouth) / 2, longitude);
 	}
 
 	private static void setContactData(AppCompatActivity activity, View result, GeoNode poi) {
@@ -678,20 +651,13 @@ public class NodeDialogBuilder {
 			parentText.setText(name);
 			parentText.setVisibility(View.VISIBLE);
 
-			GeoNode center = DataManager.toDisplayableNode(parent).getGeoNode();
+			// The same pin as on the map, with the route count.
+			DisplayableGeoNode parentPin = DataManager.toDisplayableNode(parent,
+					ClimbingRouteCounter.forDatabase(activity));
+			GeoNode center = parentPin.getGeoNode();
 			MapCoordinate coordinate = new MapCoordinate(center.decimalLatitude,
 					center.decimalLongitude, 0);
-			try {
-				// The same pin as on the map, with the route count.
-				GeoNode parentPoi = toGeoNode(parent, coordinate);
-				int routeCount = ClimbingRouteCounter.forDatabase(activity).summarize(parent)
-						.getRouteCount();
-				parentPoi.setKey(ClimbingTags.KEY_ROUTES, Integer.toString(routeCount));
-				parentIcon.setImageDrawable(new PoiMarkerDrawable(activity,
-						new DisplayableGeoNode(parentPoi)).getDrawable());
-			} catch (JSONException e) {
-				return;
-			}
+			parentIcon.setImageDrawable(new PoiMarkerDrawable(activity, parentPin).getDrawable());
 			parentIcon.setContentDescription(name);
 			parentIcon.setVisibility(View.VISIBLE);
 			final OsmCollectionEntity shown = parent;
@@ -746,14 +712,7 @@ public class NodeDialogBuilder {
 	public static void showCollectionInfoDialog(AppCompatActivity parent,
 	                                            OsmCollectionEntity collection,
 	                                            MapCoordinate labelCoordinate) {
-		showCollectionInfoDialog(parent, collection, labelCoordinate, -1);
-	}
-
-	public static void showCollectionInfoDialog(AppCompatActivity parent,
-	                                            OsmCollectionEntity collection,
-	                                            MapCoordinate labelCoordinate,
-	                                            int routeCount) {
-		showCollectionInfoDialog(parent, collection, labelCoordinate, routeCount, "");
+		showCollectionInfoDialog(parent, collection, labelCoordinate, "");
 	}
 
 	/**
@@ -762,7 +721,7 @@ public class NodeDialogBuilder {
 	private static void showCollectionInfoDialog(AppCompatActivity parent,
 	                                             OsmCollectionEntity collection,
 	                                             MapCoordinate labelCoordinate,
-	                                             int routeCount, String quickFilter) {
+	                                             String quickFilter) {
 		DialogBuilder.showLoadingDialogue(parent,
 				parent.getResources().getString(R.string.loading_message), null);
 		final AlertDialog alertDialog = DialogBuilder.getNewDialog(parent, true);
@@ -773,12 +732,10 @@ public class NodeDialogBuilder {
 			@Override
 			protected Void doWork() {
 				try {
-					GeoNode relation = toGeoNode(collection, labelCoordinate);
 					ClimbingRouteCounter.RouteSummary routes =
 							ClimbingRouteCounter.forDatabase(parent).summarize(collection);
-					if (routeCount >= 0) {
-						relation.setKey(ClimbingTags.KEY_ROUTES, Integer.toString(routeCount));
-					}
+					GeoNode relation = ClimbingRouteCounter.pin(collection, labelCoordinate,
+							routes.getRouteCount());
 					List<CollectionMember> members = loadCollectionMembers(parent, collection);
 					dialogueView = buildCollectionDialog(parent, alertDialog.getListView(),
 							new CollectionMember(relation, collection, labelCoordinate, routes),
@@ -976,7 +933,6 @@ public class NodeDialogBuilder {
 					&& collection.entityClimbingType != OsmEntity.EntityClimbingType.route) {
 				// A route relation gets the route dialog, below, as any route.
 				showCollectionInfoDialog(parent, collection, coordinate,
-						routes.getRouteCount() > 0 ? routes.getRouteCount() : -1,
 						hasRouteMatching(quickFilter) ? quickFilter.trim() : "");
 			} else {
 				showNodeInfoDialog(parent, poi, collection.osmType.name(), false);

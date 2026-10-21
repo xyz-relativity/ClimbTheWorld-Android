@@ -24,16 +24,12 @@ import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.map.widget.climbing.ClimbingRouteCounter;
 import com.climbtheworld.app.map.widget.climbing.ClusterContentResolver;
 import com.climbtheworld.app.storage.DataManager;
-import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.FilteredListAdapter;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 import com.climbtheworld.app.utils.views.Sorters;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -62,26 +58,14 @@ public class ClusterDialogBuilder {
 		DialogBuilder.showLoadingDialogue(parent,
 				parent.getResources().getString(R.string.loading_message), null);
 		Constants.ASYNC_TASK_EXECUTOR.execute(new UiRelatedTask<List<ClusterEntry>>() {
-			private String errorMessage;
-
 			@Override
 			protected List<ClusterEntry> doWork() {
-				try {
-					return loadEntries(parent, pois);
-				} catch (JSONException exception) {
-					errorMessage = parent.getString(
-							R.string.exception_message, exception.getMessage());
-					return Collections.emptyList();
-				}
+				return loadEntries(parent, pois);
 			}
 
 			@Override
 			protected void thenDoUiRelatedWork(List<ClusterEntry> entries) {
 				DialogBuilder.dismissLoadingDialogue();
-				if (errorMessage != null) {
-					DialogBuilder.showErrorDialog(parent, errorMessage, null);
-					return;
-				}
 				showDialog(parent, pois.size(), entries, onZoomIn);
 			}
 		});
@@ -160,8 +144,7 @@ public class ClusterDialogBuilder {
 	}
 
 	private static List<ClusterEntry> loadEntries(AppCompatActivity parent,
-	                                              List<DisplayableGeoNode> pois)
-			throws JSONException {
+	                                              List<DisplayableGeoNode> pois) {
 		ClusterContentResolver.Content content =
 				ClusterContentResolver.forDatabase(parent).resolve(pois);
 		ClimbingRouteCounter routeCounter = ClimbingRouteCounter.forDatabase(parent);
@@ -169,12 +152,7 @@ public class ClusterDialogBuilder {
 		for (OsmCollectionEntity relation : content.relations) {
 			ClimbingRouteCounter.RouteSummary routes = routeCounter.summarize(relation);
 			MapCoordinate center = DataManager.collectionCenter(relation);
-			// A copy, so the route count drawn on the icon stays out of the relation's own tags.
-			GeoNode poi = new GeoNode(new JSONObject(relation.jsonNodeInfo.toString()));
-			poi.updatePOILocation(center.getLatitude(), center.getLongitude(), 0);
-			if (routes.getRouteCount() > 0) {
-				poi.setKey(ClimbingTags.KEY_ROUTES, Integer.toString(routes.getRouteCount()));
-			}
+			GeoNode poi = ClimbingRouteCounter.pin(relation, center, routes.getRouteCount());
 			result.add(new ClusterEntry(poi, relation, center, routes,
 					describeRelation(parent, relation, routes)));
 		}
@@ -257,8 +235,7 @@ public class ClusterDialogBuilder {
 			if (relation == null) {
 				NodeDialogBuilder.showNodeInfoDialog(parent, poi);
 			} else {
-				NodeDialogBuilder.showCollectionInfoDialog(parent, relation, coordinate,
-						routes.getRouteCount() > 0 ? routes.getRouteCount() : -1);
+				NodeDialogBuilder.showCollectionInfoDialog(parent, relation, coordinate);
 			}
 		}
 	}

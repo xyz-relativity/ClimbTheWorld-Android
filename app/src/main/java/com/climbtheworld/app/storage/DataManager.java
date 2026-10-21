@@ -5,6 +5,7 @@ import android.content.Context;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.model.MapBounds;
 import com.climbtheworld.app.map.model.MapCoordinate;
+import com.climbtheworld.app.map.widget.climbing.ClimbingRouteCounter;
 import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
@@ -123,8 +124,9 @@ public class DataManager {
 				result.add(toDisplayableNode(node));
 			}
 		}
+		ClimbingRouteCounter routeCounter = ClimbingRouteCounter.forDatabase(context);
 		for (OsmCollectionEntity collection : appDB.osmCollectionDao().findCollections(searchString, SEARCH_RESULTS_LIMIT)) {
-			result.add(toDisplayableNode(collection));
+			result.add(toDisplayableNode(collection, routeCounter));
 		}
 		result.sort((a, b) -> String.CASE_INSENSITIVE_ORDER.compare(
 				a.getGeoNode().getName(), b.getGeoNode().getName()));
@@ -195,16 +197,28 @@ public class DataManager {
 				&& isDisplayablePoi(node);
 	}
 
+	/** The collection's pin without a route count of its own; see ClimbingRouteCounter.pin. */
 	public static DisplayableGeoNode toDisplayableNode(OsmCollectionEntity collection) {
-		GeoNode geoNode = new GeoNode(collection.jsonNodeInfo);
+		return toDisplayableNode(collection, 0);
+	}
+
+	/** The collection's pin, with its routes counted; see ClimbingRouteCounter.pin. */
+	public static DisplayableGeoNode toDisplayableNode(OsmCollectionEntity collection,
+	                                                   ClimbingRouteCounter routeCounter) {
+		return toDisplayableNode(collection, routeCounter.summarize(collection).getRouteCount());
+	}
+
+	/**
+	 * The collection's pin showing the route count, see ClimbingRouteCounter.pin, placed at the
+	 * center Overpass gave it, or else in the middle of its bounding box.
+	 */
+	public static DisplayableGeoNode toDisplayableNode(OsmCollectionEntity collection,
+	                                                   int routeCount) {
 		JSONObject center = collection.jsonNodeInfo.optJSONObject("center");
-		if (center != null) {
-			geoNode.updatePOILocation(center.optDouble("lat"), center.optDouble("lon"), 0);
-		} else {
-			MapCoordinate centerCoordinate = collectionCenter(collection);
-			geoNode.updatePOILocation(centerCoordinate.getLatitude(), centerCoordinate.getLongitude(), 0);
-		}
-		return new DisplayableGeoNode(geoNode);
+		MapCoordinate location = center != null
+				? new MapCoordinate(center.optDouble("lat"), center.optDouble("lon"))
+				: collectionCenter(collection);
+		return new DisplayableGeoNode(ClimbingRouteCounter.pin(collection, location, routeCount));
 	}
 
 	public static MapCoordinate collectionCenter(OsmCollectionEntity collection) {

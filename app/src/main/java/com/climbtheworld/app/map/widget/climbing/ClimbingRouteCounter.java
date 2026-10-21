@@ -2,6 +2,7 @@ package com.climbtheworld.app.map.widget.climbing;
 
 import android.content.Context;
 
+import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
@@ -11,6 +12,7 @@ import com.climbtheworld.app.storage.database.OsmNode;
 import com.climbtheworld.app.storage.logbook.LogBookFilter;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -225,6 +227,33 @@ public final class ClimbingRouteCounter {
 						: dataManager.loadCollectionData(context, ids);
 			}
 		});
+	}
+
+	/**
+	 * A copy of the collection as its pin draws it, placed at the location. A crag's or area's
+	 * pin shows the count of its mapped routes, or without any its own climbing:routes tag; the
+	 * copy keeps the count out of the collection's tags. The map, the A.R. view, the dialogs and
+	 * the lists all draw collections through it.
+	 */
+	public static GeoNode pin(OsmCollectionEntity collection, MapCoordinate location,
+	                          int routeCount) {
+		GeoNode result;
+		try {
+			result = new GeoNode(new JSONObject(collection.jsonNodeInfo.toString()));
+		} catch (JSONException e) {
+			throw new IllegalStateException(e);
+		}
+		result.updatePOILocation(location.getLatitude(), location.getLongitude(),
+				location.getAltitudeMeters());
+		if (routeCount > 0) {
+			result.setKey(ClimbingTags.KEY_ROUTES, Integer.toString(routeCount));
+		}
+		return result;
+	}
+
+	/** The collection's pin at the location, with its routes counted; see the static pin. */
+	public GeoNode pin(OsmCollectionEntity collection, MapCoordinate location) {
+		return pin(collection, location, summarize(collection).getRouteCount());
 	}
 
 	public RouteSummary summarize(OsmNode node) {

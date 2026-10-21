@@ -33,6 +33,7 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.map.model.MapCoordinate;
+import com.climbtheworld.app.map.widget.climbing.ClimbingRouteCounter;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.database.GeoNode;
@@ -86,7 +87,8 @@ public class LogBookActivity extends AppCompatActivity {
 	/**
 	 * @return the element from the downloaded OSM data, or null when it is not on the device.
 	 */
-	private static GeoNode loadStoredElement(AppDatabase osmData, LogBookEntry entry) {
+	private static GeoNode loadStoredElement(AppDatabase osmData,
+	                                         ClimbingRouteCounter routeCounter, LogBookEntry entry) {
 		if (entry.osmType == OsmEntity.EntityOsmType.node) {
 			OsmNode node = osmData.osmNodeDao().find(entry.osmType, entry.osmID);
 			return node != null ? DataManager.toDisplayableNode(node).getGeoNode() : null;
@@ -94,7 +96,7 @@ public class LogBookActivity extends AppCompatActivity {
 		OsmCollectionEntity collection =
 				osmData.osmCollectionDao().find(entry.osmType, entry.osmID);
 		return collection != null
-				? DataManager.toDisplayableNode(collection).getGeoNode() : null;
+				? DataManager.toDisplayableNode(collection, routeCounter).getGeoNode() : null;
 	}
 
 	@Override
@@ -156,9 +158,10 @@ public class LogBookActivity extends AppCompatActivity {
 	private List<LogBookItem> loadItems() {
 		LogBookDatabase logBook = LogBookDatabase.getInstance(this);
 		AppDatabase osmData = AppDatabase.getInstance(this);
+		ClimbingRouteCounter routeCounter = ClimbingRouteCounter.forDatabase(this);
 		List<LogBookItem> result = new ArrayList<>();
 		for (LogBookEntry entry : logBook.logBookDao().loadAll()) {
-			GeoNode element = loadStoredElement(osmData, entry);
+			GeoNode element = loadStoredElement(osmData, routeCounter, entry);
 			if (element != null) {
 				LogBook.refreshSnapshot(logBook, entry, element);
 				result.add(new LogBookItem(entry, element, true));

@@ -31,6 +31,7 @@ import com.climbtheworld.app.map.editor.RelationMemberList;
 import com.climbtheworld.app.map.model.MapBounds;
 import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.map.widget.MapLibreMapWidget;
+import com.climbtheworld.app.map.widget.climbing.ClimbingRouteCounter;
 import com.climbtheworld.app.sensors.location.DeviceLocationManager;
 import com.climbtheworld.app.sensors.location.ILocationListener;
 import com.climbtheworld.app.sensors.orientation.IOrientationListener;
@@ -60,6 +61,7 @@ import org.maplibre.android.MapLibre;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -113,13 +115,16 @@ public class EditRelationActivity extends AppCompatActivity implements IOrientat
 	private static final class Loaded {
 		final OsmCollectionEntity relation;
 		final Map<String, OsmEntity> members;
+		final Map<String, Integer> routeCounts;
 		final String highlightedKey;
 		final List<OsmCollectionEntity> editedParents;
 
-		Loaded(OsmCollectionEntity relation, Map<String, OsmEntity> members, String highlightedKey,
+		Loaded(OsmCollectionEntity relation, Map<String, OsmEntity> members,
+		       Map<String, Integer> routeCounts, String highlightedKey,
 		       List<OsmCollectionEntity> editedParents) {
 			this.relation = relation;
 			this.members = members;
+			this.routeCounts = routeCounts;
 			this.highlightedKey = highlightedKey;
 			this.editedParents = editedParents;
 		}
@@ -216,16 +221,18 @@ public class EditRelationActivity extends AppCompatActivity implements IOrientat
 						OsmCollectionEntity loaded = new OsmCollectionEntity(
 								new JSONObject(intent.getStringExtra(EXTRA_RELATION_JSON)));
 						Map<String, OsmEntity> members = store.loadMembers(loaded.getMembers());
+						// As stored, before the member whose editor opened this one stands in.
+						Map<String, Integer> routeCounts = countRoutes(members);
 						List<OsmCollectionEntity> editedParents = parents(intent);
 						String memberJson = intent.getStringExtra(EXTRA_MEMBER_JSON);
 						if (memberJson == null) {
-							return new Loaded(loaded, members, null, editedParents);
+							return new Loaded(loaded, members, routeCounts, null, editedParents);
 						}
 						// The member as its editor has it, which may not be stored yet.
 						OsmEntity member = fromJson(new JSONObject(memberJson));
 						String key = RelationMembers.key(member.osmType.name(), member.osmID);
 						members.put(key, member);
-						return new Loaded(loaded, members, key, editedParents);
+						return new Loaded(loaded, members, routeCounts, key, editedParents);
 					}
 					OsmEntity stored = store.load(EntityOsmType.relation,
 							intent.getLongExtra(EXTRA_RELATION_ID, 0));
@@ -233,7 +240,8 @@ public class EditRelationActivity extends AppCompatActivity implements IOrientat
 						return null;
 					}
 					OsmCollectionEntity loaded = (OsmCollectionEntity) stored;
-					return new Loaded(loaded, store.loadMembers(loaded.getMembers()), null,
+					Map<String, OsmEntity> members = store.loadMembers(loaded.getMembers());
+					return new Loaded(loaded, members, countRoutes(members), null,
 							Collections.emptyList());
 				} catch (JSONException e) {
 					return null;
@@ -260,7 +268,8 @@ public class EditRelationActivity extends AppCompatActivity implements IOrientat
 		((TextView) findViewById(R.id.textRelationType)).setText(area ? R.string.area : R.string.crag);
 
 		memberList = new RelationMemberList(this, findViewById(R.id.containerMembers), area,
-				relation.getMembers(), loaded.members, loaded.highlightedKey, this::updateMapMarkers);
+				relation.getMembers(), loaded.members, loaded.routeCounts, loaded.highlightedKey,
+				this::updateMapMarkers);
 		if (!area) {
 			areaMembership = new ParentMembership(this, findViewById(R.id.containerParents),
 					ParentMembership.Kind.AREA, relation.osmID, this::locatedRelation,
@@ -356,11 +365,11 @@ public class EditRelationActivity extends AppCompatActivity implements IOrientat
 		double west = 180;
 		boolean located = false;
 		for (int index = 0; index < memberList.size(); index++) {
-			OsmEntity member = memberList.memberAt(index);
-			if (member == null) {
+			DisplayableGeoNode pin = memberList.pinAt(index);
+			if (pin == null) {
 				continue;
 			}
-			GeoNode place = RelationMemberList.toDisplayable(member).getGeoNode();
+			GeoNode place = pin.getGeoNode();
 			north = Math.max(north, place.decimalLatitude);
 			south = Math.min(south, place.decimalLatitude);
 			east = Math.max(east, place.decimalLongitude);
@@ -382,11 +391,10 @@ public class EditRelationActivity extends AppCompatActivity implements IOrientat
 		List<DisplayableGeoNode> markers = new ArrayList<>();
 		int[] routeNumbers = memberList.routeNumbers();
 		for (int index = 0; index < memberList.size(); index++) {
-			OsmEntity member = memberList.memberAt(index);
-			if (member == null) {
+			DisplayableGeoNode marker = memberList.pinAt(index);
+			if (marker == null) {
 				continue;
 			}
-			DisplayableGeoNode marker = RelationMemberList.toDisplayable(member);
 			marker.setRouteNumber(routeNumbers[index]);
 			markers.add(marker);
 		}
@@ -428,9 +436,14 @@ public class EditRelationActivity extends AppCompatActivity implements IOrientat
 
 	private void addTapped(EntityOsmType osmType, long osmId) {
 		Constants.DB_EXECUTOR.execute(new UiRelatedTask<OsmEntity>() {
+			private int routeCount;
+
 			@Override
 			protected OsmEntity doWork() {
-				return store.load(osmType, osmId);
+				OsmEntity member = store.load(osmType, osmId);
+				routeCount = countRoutes(ClimbingRouteCounter.forDatabase(EditRelationActivity.this),
+						member);
+				return member;
 			}
 
 			@Override
@@ -444,7 +457,7 @@ public class EditRelationActivity extends AppCompatActivity implements IOrientat
 							getString(R.string.member_already_added, name), Toast.LENGTH_SHORT).show();
 					return;
 				}
-				memberList.add(member);
+				memberList.add(member, routeCount);
 				Toast.makeText(EditRelationActivity.this,
 						getString(R.string.member_added, name), Toast.LENGTH_SHORT).show();
 			}
@@ -587,6 +600,25 @@ public class EditRelationActivity extends AppCompatActivity implements IOrientat
 		} catch (ActivityNotFoundException e) {
 			DialogBuilder.showErrorDialog(this, getString(R.string.no_josm_app), null);
 		}
+	}
+
+	/**
+	 * The route counts of the crags among the members, by the same keys, which their pins show;
+	 * runs off the UI thread.
+	 */
+	private Map<String, Integer> countRoutes(Map<String, OsmEntity> members) {
+		ClimbingRouteCounter routeCounter = ClimbingRouteCounter.forDatabase(this);
+		Map<String, Integer> result = new HashMap<>();
+		for (Map.Entry<String, OsmEntity> member : members.entrySet()) {
+			result.put(member.getKey(), countRoutes(routeCounter, member.getValue()));
+		}
+		return result;
+	}
+
+	/** The routes of a crag, which its pin shows; 0 for a route, whose pin shows none. */
+	private static int countRoutes(ClimbingRouteCounter routeCounter, OsmEntity member) {
+		return member instanceof OsmCollectionEntity
+				? routeCounter.summarize((OsmCollectionEntity) member).getRouteCount() : 0;
 	}
 
 	private static OsmEntity fromJson(JSONObject json) {
