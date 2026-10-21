@@ -2,6 +2,7 @@ package com.climbtheworld.app.map.editor;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -60,6 +61,8 @@ import needle.UiRelatedTask;
  */
 public class ParentMembership {
 	private static final double NEARBY_PARENT_METERS = 1000;
+	/** The size of the picker's pins, against the map's. */
+	private static final double PICKER_PIN_SCALE = 0.78;
 
 	/** What the parents are. */
 	public enum Kind {
@@ -495,11 +498,14 @@ public class ParentMembership {
 				@Override
 				public View getView(int position, View view, ViewGroup group) {
 					ListedParent listedParent = relations.get(position);
-					// The rows of the map's cluster list, with the pin as the map draws it.
+					// The rows of the map's cluster list, with the pin as the map draws it, smaller.
+					Drawable pin = new PoiMarkerDrawable(parent, listedParent.pin).getDrawable();
 					View row = ListViewItemBuilder.getPaddedBuilder(parent, view, true)
 							.setTitle(nameOf(listedParent.relation))
 							.setDescription(Globals.getDistanceString(listedParent.distanceMeters))
-							.setIcon(new PoiMarkerDrawable(parent, listedParent.pin))
+							.setIcon(pin)
+							.setIconSize(pin.getIntrinsicWidth() * PICKER_PIN_SCALE,
+									pin.getIntrinsicHeight() * PICKER_PIN_SCALE)
 							.build();
 					row.setOnClickListener(clicked -> {
 						dialog.dismiss();
