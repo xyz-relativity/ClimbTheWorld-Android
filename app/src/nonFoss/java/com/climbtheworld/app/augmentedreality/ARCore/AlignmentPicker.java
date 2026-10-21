@@ -13,6 +13,7 @@ import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.database.OsmNode;
 import com.climbtheworld.app.utils.GeoUtils;
 import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.constants.Constants;
@@ -22,14 +23,17 @@ import com.climbtheworld.app.utils.views.dialogs.DialogueUtils;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import needle.UiRelatedTask;
 
 /**
  * Asks which mapped route the user aimed the cursor at, from the routes around it, closest first,
- * in rows like the search results.
+ * in rows like the search results. The routes already aligned on are listed wherever they are, each
+ * with a button to delete its alignment.
  */
 class AlignmentPicker {
 	// How far around where the cursor seems to be routes are looked for, as GPS can be that far
@@ -54,12 +58,14 @@ class AlignmentPicker {
 
 	/**
 	 * The routes around a point, closest first: only nodes, which are at one spot, and with a pin
-	 * of their own, as the A.R. view shows them.
+	 * of their own, as the A.R. view shows them. The routes aligned on are among them, however far.
 	 */
-	private List<GeoNode> loadRoutes(double latitude, double longitude, long excludedId) {
+	private List<GeoNode> loadRoutes(double latitude, double longitude, long excludedId,
+	                                 Set<Long> aligned) {
+		DataManager dataManager = new DataManager();
 		Map<Long, DisplayableGeoNode> found = new HashMap<>();
-		new DataManager().loadAround(activity, new Vector4d(latitude, longitude, 0, 0),
-				SEARCH_METERS, found);
+		dataManager.loadAround(activity, new Vector4d(latitude, longitude, 0, 0), SEARCH_METERS,
+				found);
 		List<GeoNode> routes = new ArrayList<>();
 		for (DisplayableGeoNode poi : found.values()) {
 			GeoNode node = poi.getGeoNode();
@@ -67,22 +73,42 @@ class AlignmentPicker {
 				routes.add(node);
 			}
 		}
-		routes.sort(Comparator.comparingDouble(node -> distanceMeters(node, latitude, longitude)));
-		return routes.size() > MAX_ROUTES ? new ArrayList<>(routes.subList(0, MAX_ROUTES)) : routes;
+		Comparator<GeoNode> closestFirst =
+				Comparator.comparingDouble(node -> distanceMeters(node, latitude, longitude));
+		routes.sort(closestFirst);
+		if (routes.size() > MAX_ROUTES) {
+			routes = new ArrayList<>(routes.subList(0, MAX_ROUTES));
+		}
+
+		// The routes aligned on and left out above, for their alignments to be deleted too.
+		Set<Long> missing = new HashSet<>(aligned);
+		for (GeoNode route : routes) {
+			missing.remove(route.osmID);
+		}
+		if (!missing.isEmpty()) {
+			for (OsmNode node : dataManager.loadNodeData(activity, new ArrayList<>(missing))
+					.values()) {
+				routes.add(DataManager.toDisplayableNode(node).getGeoNode());
+			}
+			routes.sort(closestFirst);
+		}
+		return routes;
 	}
 
 	/**
 	 * @param latitude   where the cursor seems to be
 	 * @param longitude  where the cursor seems to be
 	 * @param excludedId the node being edited, which is not to align on
-	 * @param aligned    whether there is an alignment to offer to clear
+	 * @param aligned    the OSM IDs of the routes aligned on
 	 */
-	void show(double latitude, double longitude, long excludedId, boolean aligned,
+	void show(double latitude, double longitude, long excludedId, Set<Long> aligned,
 	          Listener listener) {
+		// Kept up to date as the user deletes alignments in the dialog.
+		Set<Long> alignedLeft = new HashSet<>(aligned);
 		Constants.DB_EXECUTOR.execute(new UiRelatedTask<List<GeoNode>>() {
 			@Override
 			protected List<GeoNode> doWork() {
-				return loadRoutes(latitude, longitude, excludedId);
+				return loadRoutes(latitude, longitude, excludedId, alignedLeft);
 			}
 
 			@Override
@@ -90,7 +116,7 @@ class AlignmentPicker {
 				if (activity.isFinishing() || activity.isDestroyed()) {
 					return;
 				}
-				showDialog(routes, latitude, longitude, aligned, listener);
+				showDialog(routes, latitude, longitude, alignedLeft, listener);
 			}
 		});
 	}
@@ -101,12 +127,15 @@ class AlignmentPicker {
 		}
 	}
 
+	/**
+	 * @param aligned the OSM IDs of the routes aligned on, which deleting an alignment updates
+	 */
 	private void showDialog(List<GeoNode> routes, double latitude, double longitude,
-	                        boolean aligned, Listener listener) {
+	                        Set<Long> aligned, Listener listener) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(activity)
 				.setTitle(R.string.ar_placement_align_title)
 				.setNegativeButton(android.R.string.cancel, null);
-		if (aligned) {
+		if (!aligned.isEmpty()) {
 			builder.setNeutralButton(R.string.ar_placement_align_clear,
 					(clicked, which) -> listener.onCleared());
 		}
@@ -140,6 +169,9 @@ class AlignmentPicker {
 				GeoNode route = routes.get(i);
 				String distance = activity.getString(R.string.ar_placement_align_distance,
 						Math.round(distanceMeters(route, latitude, longitude)));
+				if (view == null) {
+					view = View.inflate(activity, R.layout.list_item_alignment_route, null);
+				}
 				view = ListViewItemBuilder.getPaddedBuilder(activity, view, true)
 						.setTitle(route.getName())
 						.setDescription(distance + "\n"
@@ -150,6 +182,16 @@ class AlignmentPicker {
 					dialog.dismiss();
 					listener.onPicked(route);
 				});
+				View delete = view.findViewById(R.id.buttonDeleteAlignment);
+				delete.setVisibility(aligned.contains(route.osmID) ? View.VISIBLE : View.GONE);
+				delete.setOnClickListener(clicked -> {
+					aligned.remove(route.osmID);
+					listener.onDeleted(route);
+					notifyDataSetChanged();
+					if (aligned.isEmpty()) {
+						dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setVisibility(View.GONE);
+					}
+				});
 				return view;
 			}
 		});
@@ -158,6 +200,11 @@ class AlignmentPicker {
 
 	interface Listener {
 		void onPicked(GeoNode route);
+
+		/**
+		 * The user deleted the alignment on a route; the dialog stays open.
+		 */
+		void onDeleted(GeoNode route);
 
 		void onCleared();
 	}

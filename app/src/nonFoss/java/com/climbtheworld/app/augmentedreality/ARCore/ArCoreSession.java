@@ -42,8 +42,10 @@ import com.google.ar.core.exceptions.UnavailableException;
 import com.google.ar.core.exceptions.UnavailableUserDeclinedInstallationException;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
@@ -753,11 +755,20 @@ class ArCoreSession {
 					Globals.virtualCamera.decimalLatitude, Globals.virtualCamera.decimalLongitude}
 					: new double[]{lastLatitude, lastLongitude};
 		}
-		alignmentPicker.show(around[0], around[1], leftOutNodeId, !alignedRoutes.isEmpty(),
+		Set<Long> alignedIds = new HashSet<>();
+		for (AlignedRoute aligned : alignedRoutes) {
+			alignedIds.add(aligned.osmId());
+		}
+		alignmentPicker.show(around[0], around[1], leftOutNodeId, alignedIds,
 				new AlignmentPicker.Listener() {
 					@Override
 					public void onPicked(GeoNode route) {
 						alignOn(route, aimed);
+					}
+
+					@Override
+					public void onDeleted(GeoNode route) {
+						deleteAlignment(route.osmID);
 					}
 
 					@Override
@@ -775,6 +786,16 @@ class ArCoreSession {
 		renderer.setAnchor(aligned.anchorKey(), aimed);
 		Toast.makeText(activity, activity.getString(R.string.ar_placement_aligned,
 				route.getName()), Toast.LENGTH_LONG).show();
+		updateStatus();
+	}
+
+	private void deleteAlignment(long osmId) {
+		for (AlignedRoute aligned : alignedRoutes) {
+			if (aligned.osmId() == osmId) {
+				renderer.setAnchor(aligned.anchorKey(), null);
+			}
+		}
+		alignedRoutes.removeIf(aligned -> aligned.osmId() == osmId);
 		updateStatus();
 	}
 

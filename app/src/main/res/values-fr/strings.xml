@@ -477,6 +477,7 @@
     <string name="ar_placement_align_title">Quelle voie est sous le curseur ?</string>
     <string name="ar_placement_align_none">Aucune voie cartographiée à proximité.</string>
     <string name="ar_placement_align_clear">Effacer l’alignement</string>
+    <string name="ar_placement_align_delete">Supprimer cet alignement</string>
     <string name="ar_placement_align_distance">À environ %1$d m</string>
     <string name="ar_placement_aligned">Aligné sur %1$s.</string>
     <string name="ar_placement_sight">Viser</string>

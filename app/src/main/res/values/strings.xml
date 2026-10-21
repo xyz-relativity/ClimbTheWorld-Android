@@ -478,6 +478,7 @@
     <string name="ar_placement_align_title">Which route is under the cursor?</string>
     <string name="ar_placement_align_none">No mapped route near here.</string>
     <string name="ar_placement_align_clear">Clear alignment</string>
+    <string name="ar_placement_align_delete">Delete this alignment</string>
     <string name="ar_placement_align_distance">About %1$d m away</string>
     <string name="ar_placement_aligned">Aligned on %1$s.</string>
     <string name="ar_placement_sight">Sight</string>

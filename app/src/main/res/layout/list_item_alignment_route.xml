@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A route of the A.R. align dialog: a row like the search results, with a button to delete the
+     alignment on the route, shown once it is aligned on. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="?android:imageButtonStyle"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?android:selectableItemBackground"
+    android:gravity="center_vertical"
+    android:orientation="horizontal">
+
+    <include
+        layout="@layout/list_item_switch_description_content"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1" />
+
+    <!-- Same as the delete button of the download manager's country list. -->
+    <ImageView
+        android:id="@+id/buttonDeleteAlignment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginStart="5dp"
+        android:adjustViewBounds="true"
+        android:background="?android:selectableItemBackground"
+        android:clickable="true"
+        android:contentDescription="@string/ar_placement_align_delete"
+        android:cropToPadding="true"
+        android:focusable="true"
+        android:scaleType="fitXY"
+        android:src="@drawable/ic_delete"
+        android:tooltipText="@string/ar_placement_align_delete" />
+</LinearLayout>
