@@ -245,6 +245,15 @@ public class AugmentedRealityScene {
 	}
 
 	/**
+	 * Has the next refreshAround load the crags, areas and route numbers again, however little
+	 * the observer moved, for data changed since, like a route just saved.
+	 */
+	public void dataChanged() {
+		hullsLatitude = Double.NaN;
+		hullsLongitude = Double.NaN;
+	}
+
+	/**
 	 * Takes all the pins off the view, to be put back by the next draw, as after a change of the
 	 * display filters.
 	 */

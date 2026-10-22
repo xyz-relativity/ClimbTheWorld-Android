@@ -2,6 +2,7 @@ package com.climbtheworld.app.activities;
 
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.hardware.SensorManager;
@@ -11,7 +12,9 @@ import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.PopupMenu;
+import android.widget.ScrollView;
 import android.widget.Spinner;
 
 import com.climbtheworld.app.R;
@@ -68,14 +71,7 @@ import java.util.Map;
 import needle.UiRelatedTask;
 
 public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
-	/** For a new node: the climbing type it starts as, by name, instead of a route. */
-	public static final String EXTRA_CLIMBING_TYPE = "climbingType";
-	/** For a new node: the ids of the stored crags it joins, at their end. */
-	public static final String EXTRA_CRAG_IDS = "cragIds";
-
 	private GeoNode editNode;
-	/** The crags of EXTRA_CRAG_IDS, listing the new node; set with editNode. */
-	private List<OsmCollectionEntity> joinedCrags = Collections.emptyList();
 	/** The node before the form changed it: as loaded, or as the advanced editor left it. */
 	private JSONObject originalJson;
 	/** What the form writes when nothing was changed in it; see FormChanges. */
@@ -166,10 +162,7 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 									intent.getDoubleExtra("poiLat", Globals.virtualCamera.decimalLatitude),
 									intent.getDoubleExtra("poiLon", Globals.virtualCamera.decimalLongitude));
 							GeoNode tmpPoi = new GeoNode(newNode.jsonNodeInfo);
-							String type = intent.getStringExtra(EXTRA_CLIMBING_TYPE);
-							tmpPoi.setClimbingType(type != null ? OsmEntity.EntityClimbingType.valueOf(type)
-									: OsmEntity.EntityClimbingType.route);
-							joinedCrags = cragsToJoin(tmpPoi.osmID);
+							tmpPoi.setClimbingType(OsmEntity.EntityClimbingType.route);
 
 							return tmpPoi;
 						}
@@ -196,40 +189,37 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 							finish();
 							return;
 						}
-						editNode = result;
-						originalJson = OsmElements.copy(result.jsonNodeInfo);
-						nameRequired = editNodeID == 0 || !result.getName().trim().isEmpty();
-						cragMembership = new ParentMembership(EditNodeActivity.this,
-								findViewById(R.id.containerCrags), ParentMembership.Kind.CRAG,
-								editNode.osmID, () -> editNode, () -> mapWidget.getVisibleBounds(),
-								joinedCrags);
-						cragMembership.setParentEditor(crag -> openCragEditor(crag));
-						buildUi();
-						updateMapMarker();
-						if (editNodeID == 0 && !intent.hasExtra(EXTRA_CLIMBING_TYPE)) {
+						startEditing(result, Collections.emptyList());
+						centerOnNode();
+						if (editNodeID == 0) {
 							dropdownType.performClick();
 						}
 					}
 				});
 	}
 
-	/** The stored crags of EXTRA_CRAG_IDS, listing the new node at their end. */
-	private List<OsmCollectionEntity> cragsToJoin(long nodeId) {
-		List<OsmCollectionEntity> result = new ArrayList<>();
-		long[] ids = intent.getLongArrayExtra(EXTRA_CRAG_IDS);
-		if (ids == null) {
-			return result;
-		}
-		OsmEditStore store = new OsmEditStore(this);
-		for (long id : ids) {
-			OsmEntity crag = store.load(OsmEntity.EntityOsmType.relation, id);
-			if (crag instanceof OsmCollectionEntity) {
-				OsmCollectionEntity joined = (OsmCollectionEntity) crag;
-				RelationMembers.append(joined.getMembers(), OsmEntity.EntityOsmType.node.name(), nodeId, "");
-				result.add(joined);
-			}
-		}
-		return result;
+	/**
+	 * Fills the form with the node.
+	 *
+	 * @param joinedCrags crags the node is in that are not stored so yet, see ParentMembership
+	 */
+	private void startEditing(GeoNode node, List<OsmCollectionEntity> joinedCrags) {
+		editNode = node;
+		originalJson = OsmElements.copy(node.jsonNodeInfo);
+		nameRequired = editNodeID == 0 || !node.getName().trim().isEmpty();
+		ViewGroup containerCrags = findViewById(R.id.containerCrags);
+		containerCrags.removeAllViews();
+		cragMembership = new ParentMembership(this, containerCrags, ParentMembership.Kind.CRAG,
+				editNode.osmID, () -> editNode, () -> mapWidget.getVisibleBounds(), joinedCrags);
+		cragMembership.setParentEditor(crag -> openCragEditor(crag));
+		buildUi();
+		updateMapMarker();
+	}
+
+	private void centerOnNode() {
+		mapWidget.centerOnLocation(new MapCoordinate(
+				editNode.decimalLatitude, editNode.decimalLongitude, editNode.elevationMeters),
+				MAP_EDIT_ZOOM_LEVEL);
 	}
 
 	private void buildPopupMenu() {
@@ -340,10 +330,6 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 	}
 
 	private void buildUi() {
-		mapWidget.centerOnLocation(new MapCoordinate(
-				editNode.decimalLatitude, editNode.decimalLongitude, editNode.elevationMeters),
-				MAP_EDIT_ZOOM_LEVEL);
-
 		containerTags.removeAllViews();
 		nodeTypesTags.clear();
 		allTagsHandlers.clear();
@@ -509,19 +495,60 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 	}
 
 	/**
-	 * Opens the editor on a new node where the saved one is, of its type and in its crags, for the
-	 * next route of the crag.
+	 * Starts the form over on a new node where the saved one is, of its type and at the end of its
+	 * crags, for the next route of the crag. The map and the A.R. stay as they are, the A.R. still
+	 * tied to the map, so that it need not be aligned again.
 	 */
 	private void addAnother() {
-		Intent next = new Intent(this, EditNodeActivity.class);
-		next.putExtra("poiLat", editNode.decimalLatitude);
-		next.putExtra("poiLon", editNode.decimalLongitude);
-		next.putExtra(EXTRA_CLIMBING_TYPE, editNode.getNodeType().name());
-		next.putExtra(EXTRA_CRAG_IDS, cragMembership.parentIds());
-		// What opened this editor hears back when the new one closes.
-		next.addFlags(Intent.FLAG_ACTIVITY_FORWARD_RESULT);
-		startActivity(next);
-		finish();
+		final double latitude = editNode.decimalLatitude;
+		final double longitude = editNode.decimalLongitude;
+		final OsmEntity.EntityClimbingType type = editNode.getNodeType();
+		final long[] cragIds = cragMembership.parentIds();
+		// Loading again until the new node is in.
+		editNode = null;
+		editNodeID = 0;
+		hideKeyboard();
+		// The saved node now shows among the others.
+		mapWidget.invalidateData();
+		arPlacement.nextNode();
+		Constants.DB_EXECUTOR
+				.execute(new UiRelatedTask<GeoNode>() {
+					/** The stored crags, listing the new node. */
+					private final List<OsmCollectionEntity> crags = new ArrayList<>();
+
+					@Override
+					protected GeoNode doWork() {
+						OsmEditStore store = new OsmEditStore(EditNodeActivity.this);
+						GeoNode node = new GeoNode(store.newNode(latitude, longitude).jsonNodeInfo);
+						node.setClimbingType(type);
+						for (long cragId : cragIds) {
+							OsmEntity crag = store.load(OsmEntity.EntityOsmType.relation, cragId);
+							if (crag instanceof OsmCollectionEntity) {
+								RelationMembers.append(((OsmCollectionEntity) crag).getMembers(),
+										OsmEntity.EntityOsmType.node.name(), node.osmID, "");
+								crags.add((OsmCollectionEntity) crag);
+							}
+						}
+						return node;
+					}
+
+					@Override
+					protected void thenDoUiRelatedWork(GeoNode node) {
+						startEditing(node, crags);
+						// Back to the map, to place it.
+						((ScrollView) findViewById(R.id.geoNodeEditView)).smoothScrollTo(0, 0);
+					}
+				});
+	}
+
+	private void hideKeyboard() {
+		View focused = getCurrentFocus();
+		if (focused == null) {
+			return;
+		}
+		focused.clearFocus();
+		((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE))
+				.hideSoftInputFromWindow(focused.getWindowToken(), 0);
 	}
 
 	/**
@@ -644,6 +671,7 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 				return;
 			}
 			editNode = new GeoNode(OsmElements.copy(originalJson));
+			centerOnNode();
 			buildUi();
 			updateMapMarker();
 		}

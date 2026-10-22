@@ -55,6 +55,13 @@ public interface ArPlacement {
 	}
 
 	/**
+	 * Starts over for another node, not placed yet, with ARCore's world still tied to the map and
+	 * the node just saved among the routes around.
+	 */
+	default void nextNode() {
+	}
+
+	/**
 	 * Takes a compass reading.
 	 */
 	default void onOrientation(OrientationManager.OrientationEvent event) {

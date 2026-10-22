@@ -249,6 +249,21 @@ public class ArPlacementController implements ArPlacement {
 	}
 
 	/**
+	 * Starts over for another node, not placed yet, with ARCore's world still tied to the map and
+	 * the node just saved among the routes around.
+	 */
+	@Override
+	public void nextNode() {
+		clearPin();
+		placed = false;
+		// Loaded again on the next camera move, with the saved node in.
+		sceneLatitude = Double.NaN;
+		sceneLongitude = Double.NaN;
+		scene.dataChanged();
+		arCore.updateStatus();
+	}
+
+	/**
 	 * Takes a compass reading, against which way ARCore has the camera look.
 	 */
 	@Override
