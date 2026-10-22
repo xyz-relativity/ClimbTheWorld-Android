@@ -484,7 +484,7 @@
     <string name="ar_placement_align_delete">Supprimer cet alignement</string>
     <string name="ar_placement_align_distance">À environ %1$d m</string>
     <string name="ar_placement_align_suggested">Suggérées, pour fixer l’orientation</string>
-    <string name="ar_placement_align_closest">Les plus proches d’abord</string>
+    <string name="ar_placement_align_by_crag">Par secteur, dans son ordre</string>
     <string name="ar_placement_aligned">Aligné sur %1$s.</string>
     <string name="ar_placement_on_wall_plane">Au-delà de la profondeur, le curseur suit la paroi en dessous. Triangulez le point pour en être sûr.</string>
     <string name="ar_view_on_wall_plane">Au-delà de la profondeur, le curseur suit la paroi en dessous.</string>

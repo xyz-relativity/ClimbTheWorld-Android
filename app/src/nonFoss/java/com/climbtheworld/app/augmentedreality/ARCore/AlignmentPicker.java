@@ -13,13 +13,16 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.augmentedreality.placement.AlignmentChoices;
+import com.climbtheworld.app.augmentedreality.placement.AlignmentOrder;
 import com.climbtheworld.app.augmentedreality.placement.AlignmentSuggestions;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
+import com.climbtheworld.app.storage.edit.RelationMembers;
 import com.climbtheworld.app.utils.GeoUtils;
 import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.constants.Constants;
@@ -38,17 +41,18 @@ import java.util.Set;
 import needle.UiRelatedTask;
 
 /**
- * Asks which mapped route to align on, from the routes around the user, closest first, in rows
- * like the search results, with a quick filter on their names over them, see AlignmentChoices.
- * Once a route is aligned on, the routes that would best set the heading come first, under a
- * title of their own, see AlignmentSuggestions, and the rest under another. The routes already
- * aligned on are listed wherever they are, each with a button to delete its alignment.
+ * Asks which mapped route to align on, from the routes around the user, as their crags list them,
+ * see AlignmentOrder, in rows like the search results, with a quick filter on their names over
+ * them, see AlignmentChoices. Once a route is aligned on, the routes that would best set the
+ * heading come first, under a title of their own, see AlignmentSuggestions, and the rest under
+ * another. The routes already aligned on are listed wherever they are, each with a button to
+ * delete its alignment.
  */
 class AlignmentPicker {
 	// How far around where the user seems to be routes are looked for, as GPS can be that far
 	// off.
 	private static final double SEARCH_METERS = 150;
-	// How many routes are listed, the closest; the filter looks through all of them.
+	// How many routes are listed, the first in order; the filter looks through all of them.
 	private static final int MAX_ROUTES = 40;
 	private static final double METERS_PER_DEGREE = GeoUtils.EARTH_RADIUS_M * Math.PI / 180;
 	// The list's rows: a section title, or a route.
@@ -98,9 +102,9 @@ class AlignmentPicker {
 	}
 
 	/**
-	 * The routes around a point, closest first: only nodes, which are at one spot, and with a pin
-	 * of their own, as the A.R. view shows them, all of them, for the filter to look through. The
-	 * routes aligned on are among them, however far.
+	 * The routes around a point, as their crags list them, see AlignmentOrder: only nodes, which
+	 * are at one spot, and with a pin of their own, as the A.R. view shows them, all of them, for
+	 * the filter to look through. The routes aligned on are among them, however far.
 	 */
 	private List<GeoNode> loadRoutes(double latitude, double longitude, long excludedId,
 	                                 Set<Long> aligned) {
@@ -128,7 +132,25 @@ class AlignmentPicker {
 			}
 		}
 		routes.sort(Comparator.comparingDouble(node -> distanceMeters(node, latitude, longitude)));
-		return routes;
+		return AlignmentOrder.ordered(routes, loadCragOrders(dataManager, latitude, longitude),
+				node -> node.osmID);
+	}
+
+	/**
+	 * Per crag relation around a point, the OSM IDs of its member nodes in the relation's order.
+	 * Any crag with a route around reaches the point, as its bounding box holds the route.
+	 */
+	private List<List<Long>> loadCragOrders(DataManager dataManager, double latitude,
+	                                        double longitude) {
+		List<List<Long>> crags = new ArrayList<>();
+		for (OsmCollectionEntity relation : dataManager.loadRelationsBBox(activity,
+				DataManager.computeBoundingBox(new Vector4d(latitude, longitude, 0, 0),
+						SEARCH_METERS))) {
+			if (relation.entityClimbingType == OsmEntity.EntityClimbingType.crag) {
+				crags.add(RelationMembers.nodeRefs(RelationMembers.list(relation.getMembers())));
+			}
+		}
+		return crags;
 	}
 
 	/**
@@ -164,7 +186,7 @@ class AlignmentPicker {
 	}
 
 	/**
-	 * @param routes  the routes around, closest first, see loadRoutes
+	 * @param routes  the routes around, in the order to list them, see loadRoutes
 	 * @param aligned the OSM IDs of the routes aligned on, which deleting an alignment updates
 	 */
 	private void showDialog(List<GeoNode> routes, double latitude, double longitude,
@@ -194,7 +216,8 @@ class AlignmentPicker {
 		filter.addTextChangedListener(TextWatchers.afterTextChanged(typed -> adapter.refresh()));
 		adapter.refresh();
 		((ListView) content.findViewById(R.id.listAlignRoutes)).setAdapter(adapter);
-		// The filter field takes the focus, but most of the time the closest route is the one.
+		// The filter field takes the focus, but most of the time the route is in the list's first
+		// rows.
 		dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 		dialog.show();
 	}
@@ -244,7 +267,7 @@ class AlignmentPicker {
 				rows.add(R.string.ar_placement_align_suggested);
 				rows.addAll(suggested);
 				if (!listed.isEmpty()) {
-					rows.add(R.string.ar_placement_align_closest);
+					rows.add(R.string.ar_placement_align_by_crag);
 				}
 			}
 			rows.addAll(listed);
