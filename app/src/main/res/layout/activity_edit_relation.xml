@@ -124,13 +124,13 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/containerMembers"
+                    android:id="@+id/containerTags"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical" />
 
                 <LinearLayout
-                    android:id="@+id/containerTags"
+                    android:id="@+id/containerMembers"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical" />

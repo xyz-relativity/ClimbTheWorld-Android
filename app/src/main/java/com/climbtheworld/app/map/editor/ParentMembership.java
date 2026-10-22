@@ -238,6 +238,15 @@ public class ParentMembership {
 		return result;
 	}
 
+	/** The ids of the parents the element is in now. */
+	public long[] parentIds() {
+		long[] result = new long[memberships.size()];
+		for (int index = 0; index < result.length; index++) {
+			result[index] = memberships.get(index).relation.osmID;
+		}
+		return result;
+	}
+
 	/**
 	 * The grandparents changed so far, for the next parent's editor to start from, as the parents
 	 * it opens with.

@@ -164,8 +164,9 @@
     <string name="geo_url">URL geo:</string>
     <string name="location_copied">Position copiée</string>
     <string name="nav_share">Naviguer/Partager</string>
-    <string name="save">Enregistrer les modifications</string>
-    <string name="delete">Supprimer la voie</string>
+    <string name="save">Enregistrer</string>
+    <string name="save_and_add">Enreg. et nouveau</string>
+    <string name="delete">Supprimer</string>
     <string name="cancel">Annuler</string>
     <string name="push">Envoyer les modifications locales</string>
     <string name="revert">Annuler les modifications locales</string>

@@ -42,6 +42,7 @@ import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
 import com.climbtheworld.app.storage.edit.FormChanges;
 import com.climbtheworld.app.storage.edit.OsmEditStore;
+import com.climbtheworld.app.storage.edit.RelationMembers;
 import com.climbtheworld.app.storage.upload.OsmElements;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector4d;
@@ -67,7 +68,14 @@ import java.util.Map;
 import needle.UiRelatedTask;
 
 public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
+	/** For a new node: the climbing type it starts as, by name, instead of a route. */
+	public static final String EXTRA_CLIMBING_TYPE = "climbingType";
+	/** For a new node: the ids of the stored crags it joins, at their end. */
+	public static final String EXTRA_CRAG_IDS = "cragIds";
+
 	private GeoNode editNode;
+	/** The crags of EXTRA_CRAG_IDS, listing the new node; set with editNode. */
+	private List<OsmCollectionEntity> joinedCrags = Collections.emptyList();
 	/** The node before the form changed it: as loaded, or as the advanced editor left it. */
 	private JSONObject originalJson;
 	/** What the form writes when nothing was changed in it; see FormChanges. */
@@ -158,7 +166,10 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 									intent.getDoubleExtra("poiLat", Globals.virtualCamera.decimalLatitude),
 									intent.getDoubleExtra("poiLon", Globals.virtualCamera.decimalLongitude));
 							GeoNode tmpPoi = new GeoNode(newNode.jsonNodeInfo);
-							tmpPoi.setClimbingType(OsmEntity.EntityClimbingType.route);
+							String type = intent.getStringExtra(EXTRA_CLIMBING_TYPE);
+							tmpPoi.setClimbingType(type != null ? OsmEntity.EntityClimbingType.valueOf(type)
+									: OsmEntity.EntityClimbingType.route);
+							joinedCrags = cragsToJoin(tmpPoi.osmID);
 
 							return tmpPoi;
 						}
@@ -191,15 +202,34 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 						cragMembership = new ParentMembership(EditNodeActivity.this,
 								findViewById(R.id.containerCrags), ParentMembership.Kind.CRAG,
 								editNode.osmID, () -> editNode, () -> mapWidget.getVisibleBounds(),
-								Collections.emptyList());
+								joinedCrags);
 						cragMembership.setParentEditor(crag -> openCragEditor(crag));
 						buildUi();
 						updateMapMarker();
-						if (editNodeID == 0) {
+						if (editNodeID == 0 && !intent.hasExtra(EXTRA_CLIMBING_TYPE)) {
 							dropdownType.performClick();
 						}
 					}
 				});
+	}
+
+	/** The stored crags of EXTRA_CRAG_IDS, listing the new node at their end. */
+	private List<OsmCollectionEntity> cragsToJoin(long nodeId) {
+		List<OsmCollectionEntity> result = new ArrayList<>();
+		long[] ids = intent.getLongArrayExtra(EXTRA_CRAG_IDS);
+		if (ids == null) {
+			return result;
+		}
+		OsmEditStore store = new OsmEditStore(this);
+		for (long id : ids) {
+			OsmEntity crag = store.load(OsmEntity.EntityOsmType.relation, id);
+			if (crag instanceof OsmCollectionEntity) {
+				OsmCollectionEntity joined = (OsmCollectionEntity) crag;
+				RelationMembers.append(joined.getMembers(), OsmEntity.EntityOsmType.node.name(), nodeId, "");
+				result.add(joined);
+			}
+		}
+		return result;
 	}
 
 	private void buildPopupMenu() {
@@ -410,30 +440,9 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 			// Still loading.
 			return;
 		} else if (id == R.id.ButtonSave) {
-			JSONObject edited = resolveEdits();
-			if (edited == null) {
-				return;
-			}
-			if (nameRequired && !genericTags.checkNameGiven()) {
-				return;
-			}
-			final OsmNode savedNode = new OsmNode(edited);
-			// The crags, then their areas.
-			final List<OsmCollectionEntity> relations = cragMembership.changedParents();
-			Constants.DB_EXECUTOR
-					.execute(new UiRelatedTask<Boolean>() {
-						@Override
-						protected Boolean doWork() {
-							new OsmEditStore(EditNodeActivity.this)
-									.save(Collections.singletonList(savedNode), relations);
-							return true;
-						}
-
-						@Override
-						protected void thenDoUiRelatedWork(Boolean result) {
-							finish();
-						}
-					});
+			save(this::finish);
+		} else if (id == R.id.ButtonSaveAndAdd) {
+			save(this::addAnother);
 		} else if (id == R.id.ButtonDelete) {
 			String message = getString(R.string.delete_confirmation_message);
 			List<String> crags = cragMembership.storedParentNames();
@@ -469,6 +478,50 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 					})
 					.setNegativeButton(android.R.string.no, null).show();
 		}
+	}
+
+	/** Saves the node with its crags, then runs then on the UI thread. */
+	private void save(Runnable then) {
+		JSONObject edited = resolveEdits();
+		if (edited == null) {
+			return;
+		}
+		if (nameRequired && !genericTags.checkNameGiven()) {
+			return;
+		}
+		final OsmNode savedNode = new OsmNode(edited);
+		// The crags, then their areas.
+		final List<OsmCollectionEntity> relations = cragMembership.changedParents();
+		Constants.DB_EXECUTOR
+				.execute(new UiRelatedTask<Boolean>() {
+					@Override
+					protected Boolean doWork() {
+						new OsmEditStore(EditNodeActivity.this)
+								.save(Collections.singletonList(savedNode), relations);
+						return true;
+					}
+
+					@Override
+					protected void thenDoUiRelatedWork(Boolean result) {
+						then.run();
+					}
+				});
+	}
+
+	/**
+	 * Opens the editor on a new node where the saved one is, of its type and in its crags, for the
+	 * next route of the crag.
+	 */
+	private void addAnother() {
+		Intent next = new Intent(this, EditNodeActivity.class);
+		next.putExtra("poiLat", editNode.decimalLatitude);
+		next.putExtra("poiLon", editNode.decimalLongitude);
+		next.putExtra(EXTRA_CLIMBING_TYPE, editNode.getNodeType().name());
+		next.putExtra(EXTRA_CRAG_IDS, cragMembership.parentIds());
+		// What opened this editor hears back when the new one closes.
+		next.addFlags(Intent.FLAG_ACTIVITY_FORWARD_RESULT);
+		startActivity(next);
+		finish();
 	}
 
 	/**

@@ -166,8 +166,9 @@
     <string name="geo_url">Geo Url</string>
     <string name="location_copied">Location copied</string>
     <string name="nav_share">Navigate/Share</string>
-    <string name="save">Save changes</string>
-    <string name="delete">Delete route</string>
+    <string name="save">Save</string>
+    <string name="save_and_add">Save &amp; new</string>
+    <string name="delete">Delete</string>
     <string name="cancel">Cancel</string>
     <string name="push">Push local changes</string>
     <string name="revert">Revert local changes</string>

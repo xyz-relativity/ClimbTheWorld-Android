@@ -28,6 +28,15 @@
             android:text="@string/save" />
 
         <Button
+            android:id="@+id/ButtonSaveAndAdd"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            style="?android:attr/buttonBarPositiveButtonStyle"
+            android:onClick="onClick"
+            android:text="@string/save_and_add" />
+
+        <Button
             android:id="@+id/ButtonDelete"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
