@@ -99,6 +99,12 @@ public class EditRelationActivity extends MapWidgetActivity {
 	private JSONObject originalJson;
 	private JSONObject untouchedJson;
 	private GeoNode editNode;
+	/**
+	 * Whether the relation can't be saved without a name: a new one, or one that had a name, as in
+	 * the node editor.
+	 */
+	private boolean nameRequired;
+	private GeneralTags generalTags;
 	private final List<ITags> tagSections = new ArrayList<>();
 	private RelationMemberList memberList;
 	private ParentMembership areaMembership;
@@ -233,6 +239,8 @@ public class EditRelationActivity extends MapWidgetActivity {
 	private void buildUi(Loaded loaded) {
 		relation = loaded.relation;
 		originalJson = OsmElements.copy(relation.jsonNodeInfo);
+		nameRequired = relation.isNew()
+				|| !relation.getTags().optString(ClimbingTags.KEY_NAME).trim().isEmpty();
 		boolean area = isArea();
 		((TextView) findViewById(R.id.textRelationType)).setText(area ? R.string.area : R.string.crag);
 
@@ -258,7 +266,7 @@ public class EditRelationActivity extends MapWidgetActivity {
 		tagSections.clear();
 		editNode = new GeoNode(OsmElements.copy(originalJson));
 
-		GeneralTags generalTags = new GeneralTags(editNode, this, containerTags);
+		generalTags = new GeneralTags(editNode, this, containerTags);
 		generalTags.hideLocation();
 		tagSections.add(generalTags);
 		// The crag tags (grades, routes, lengths, styles) are for crag and area nodes, not relations.
@@ -446,6 +454,10 @@ public class EditRelationActivity extends MapWidgetActivity {
 				return;
 			}
 			if (relation.getMembers().length() > 0) {
+				// Without members it is deleted, which needs no name.
+				if (nameRequired && !generalTags.checkNameGiven()) {
+					return;
+				}
 				save(edited);
 				return;
 			}
