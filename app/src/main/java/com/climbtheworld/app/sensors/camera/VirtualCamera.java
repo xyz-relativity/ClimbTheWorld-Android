@@ -16,6 +16,7 @@ import androidx.camera.core.Preview;
 import androidx.camera.core.ResolutionInfo;
 import androidx.camera.view.PreviewView;
 
+import com.climbtheworld.app.augmentedreality.placement.AlignedElevations;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.sensors.location.ILocationListener;
 import com.climbtheworld.app.sensors.orientation.IOrientationListener;
@@ -33,9 +34,10 @@ public class VirtualCamera extends GeoNode implements ILocationListener, IOrient
 	public double degRoll = 0;
 	public Vector2d angleOfViewDeg = new Vector2d(70.0f, 60.0f);
 	public double screenRotation = 0;
-	// The eye's elevation above sea level, when aligning on mapped routes tells it, see
-	// AlignedHeight, better than the terrain model or the altitude; NaN otherwise.
-	public double alignedEyeElevationMeters = Double.NaN;
+	// What aligning on mapped routes tells of the elevations, see AlignedElevations: the eye's,
+	// better than the terrain model or the altitude, and how the model is off around the routes;
+	// null otherwise.
+	public AlignedElevations alignedElevations;
 
 	public VirtualCamera(float pDecimalLatitude, float pDecimalLongitude, float pMetersAltitude) {
 		super(pDecimalLatitude, pDecimalLongitude, pMetersAltitude);

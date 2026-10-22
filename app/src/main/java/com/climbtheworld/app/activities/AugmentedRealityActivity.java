@@ -131,7 +131,7 @@ public class AugmentedRealityActivity extends MapWidgetActivity
 		Globals.virtualCamera.screenRotation =
 				Globals.orientationToAngle(getWindowManager().getDefaultDisplay().getRotation());
 		// Until ARCore is aligned on routes again, see ArViewTracking.
-		Globals.virtualCamera.alignedEyeElevationMeters = Double.NaN;
+		Globals.virtualCamera.alignedElevations = null;
 
 		//camera
 		this.cameraView = findViewById(R.id.cameraTexture);
@@ -265,7 +265,7 @@ public class AugmentedRealityActivity extends MapWidgetActivity
 			Globals.virtualCamera.screenRotation =
 					Globals.orientationToAngle(getWindowManager().getDefaultDisplay().getRotation());
 			// Only ARCore follows the routes aligned on.
-			Globals.virtualCamera.alignedEyeElevationMeters = Double.NaN;
+			Globals.virtualCamera.alignedElevations = null;
 		}
 	}
 

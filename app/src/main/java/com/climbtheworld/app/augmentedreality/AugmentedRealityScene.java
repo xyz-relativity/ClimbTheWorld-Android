@@ -507,8 +507,8 @@ public class AugmentedRealityScene {
 			// Best first: the height aligning on routes tells, then the terrain under the
 			// observer, then the altitude, from GPS and the barometer, until the terrain is
 			// loaded.
-			if (!Double.isNaN(camera.alignedEyeElevationMeters)) {
-				observerElevation = camera.alignedEyeElevationMeters;
+			if (camera.alignedElevations != null) {
+				observerElevation = camera.alignedElevations.eyeElevationMeters();
 			} else {
 				observerElevation = useTerrain
 						? observerGround + EYE_HEIGHT_METERS : getGpsElevation();
@@ -756,13 +756,27 @@ public class AugmentedRealityScene {
 	 * Elevation of the POI from the same source as the observer elevation, so the offset between
 	 * sources does not move the POI. OSM elevations mostly come from phone GPS altitudes, which
 	 * can be tens of meters away from the terrain model: at a close crag that is enough to put
-	 * the routes far below the horizon.
+	 * the routes far below the horizon. On the terrain, the routes aligned on correct the model
+	 * around them, see AlignedElevations.
 	 *
 	 * @param useTerrain whether the observer elevation comes from the terrain model rather than
 	 *                   from the GPS altitude
 	 * @return the elevation above sea level of the POI, NaN when unknown
 	 */
 	private double getElevation(GeoNode poi, double distance, boolean useTerrain) {
+		double elevation = getModelElevation(poi, distance, useTerrain);
+		if (useTerrain && camera.alignedElevations != null
+				&& distance < TERRAIN_DETAIL_DISTANCE_METERS) {
+			elevation += camera.alignedElevations.offsetMeters(poi.getID(), poi.decimalLatitude,
+					poi.decimalLongitude);
+		}
+		return elevation;
+	}
+
+	/**
+	 * Elevation of the POI as the terrain model, or else the POI, has it, see getElevation.
+	 */
+	private double getModelElevation(GeoNode poi, double distance, boolean useTerrain) {
 		if (useTerrain) {
 			// The top of a route is on top of the wall, which its foot would read far below.
 			return distance < TERRAIN_DETAIL_DISTANCE_METERS && !poi.isRouteTop()
@@ -790,14 +804,14 @@ public class AugmentedRealityScene {
 	}
 
 	/**
-	 * The elevation a pin stands at on the terrain, as the scene draws it, for the eye's height to
-	 * be worked out from the routes aligned on, so that their pins stand where they were aimed.
+	 * The elevation the terrain model stands a pin at, before the routes aligned on correct it,
+	 * for what they tell to be worked out, see AlignedElevations.
 	 *
 	 * @param distance how far the pin is from the eye, in meters
 	 * @return the elevation above sea level, NaN while unknown
 	 */
 	public double getPinElevation(GeoNode poi, double distance) {
-		return getElevation(poi, distance, true);
+		return getModelElevation(poi, distance, true);
 	}
 
 	/**
@@ -821,7 +835,7 @@ public class AugmentedRealityScene {
 	}
 
 	/**
-	 * Where the scene stands pins, see getPinElevation.
+	 * Where the terrain model stands pins, see getPinElevation.
 	 */
 	public interface PinElevations {
 		/**

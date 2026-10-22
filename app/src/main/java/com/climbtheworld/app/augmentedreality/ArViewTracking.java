@@ -55,8 +55,8 @@ public interface ArViewTracking {
 	}
 
 	/**
-	 * Gives the elevation the scene stands the routes aligned on at, for the eye's height to
-	 * follow them, see Globals.virtualCamera.alignedEyeElevationMeters.
+	 * Gives the elevation the terrain model stands the routes aligned on at, for the eye's
+	 * height to follow them, see Globals.virtualCamera.alignedElevations.
 	 */
 	default void setPinElevations(AugmentedRealityScene.PinElevations pinElevations) {
 	}

@@ -25,7 +25,7 @@ import androidx.core.content.ContextCompat;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityScene;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityViewManager;
-import com.climbtheworld.app.augmentedreality.placement.AlignedHeight;
+import com.climbtheworld.app.augmentedreality.placement.AlignedElevations;
 import com.climbtheworld.app.augmentedreality.placement.CursorHit;
 import com.climbtheworld.app.augmentedreality.placement.GeoRegistration;
 import com.climbtheworld.app.augmentedreality.placement.ViewRay;
@@ -497,7 +497,8 @@ class ArCoreSession {
 	/**
 	 * Puts a camera where ARCore's is, and turns it the same way, as ARCore's world is tied to the
 	 * map. Its altitude is the one given with the GPS fixes; aligned on routes whose ground the
-	 * terrain tells, the eye's elevation follows them too, see AlignedHeight.
+	 * terrain tells, the eye's elevation follows them too, and the terrain is corrected around
+	 * them, see AlignedElevations.
 	 *
 	 * @return false, leaving the camera as it is, until ARCore tracks and its world is tied to the
 	 * map
@@ -518,33 +519,30 @@ class ArCoreSession {
 		setAngleOfView(camera, sessionCamera);
 		// ARCore's pose follows the screen already.
 		camera.screenRotation = 0;
-		camera.alignedEyeElevationMeters = alignedEyeElevation(sessionCamera);
+		camera.alignedElevations = alignedElevations(sessionCamera);
 		return true;
 	}
 
 	/**
-	 * @return the eye's elevation the routes aligned on tell, NaN while they tell none
+	 * @return what the routes aligned on tell of the elevations, null while they tell nothing
 	 */
-	private double alignedEyeElevation(ArSessionRenderer.SessionCamera sessionCamera) {
+	private AlignedElevations alignedElevations(ArSessionRenderer.SessionCamera sessionCamera) {
 		if (pinElevations == null || alignedRoutes.isEmpty()) {
-			return Double.NaN;
+			return null;
 		}
 		Map<String, double[]> positions = renderer.getAnchorPositions();
-		double[] baseYs = new double[alignedRoutes.size()];
-		double[] baseElevations = new double[alignedRoutes.size()];
-		for (int route = 0; route < alignedRoutes.size(); route++) {
-			AlignedRoute aligned = alignedRoutes.get(route);
+		List<AlignedElevations.AimedBase> bases = new ArrayList<>(alignedRoutes.size());
+		for (AlignedRoute aligned : alignedRoutes) {
 			double[] position = positions.get(aligned.anchorKey());
 			if (position == null) {
-				baseYs[route] = Double.NaN;
-				baseElevations[route] = Double.NaN;
 				continue;
 			}
-			baseYs[route] = position[1];
-			baseElevations[route] = pinElevations.getElevation(aligned.route(),
+			double modelElevation = pinElevations.getElevation(aligned.route(),
 					Math.hypot(position[0] - sessionCamera.x(), position[2] - sessionCamera.z()));
+			bases.add(new AlignedElevations.AimedBase(aligned.osmId(), aligned.latitude(),
+					aligned.longitude(), position[1], modelElevation));
 		}
-		return AlignedHeight.eyeElevation(sessionCamera.y(), baseYs, baseElevations);
+		return AlignedElevations.of(sessionCamera.y(), bases);
 	}
 
 	/**
