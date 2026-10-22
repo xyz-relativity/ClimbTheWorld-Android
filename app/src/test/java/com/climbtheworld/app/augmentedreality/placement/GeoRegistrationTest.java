@@ -207,20 +207,45 @@ public class GeoRegistrationTest {
 	}
 
 	@Test
-	public void weighsLandmarkHeadingByHowFarApartTheyAre() {
-		double compassError = 10;
-		GeoRegistration close = new GeoRegistration();
-		addCompass(close, OFFSET_DEGREES + compassError, GeoRegistration.DEFAULT_HEADING_ACCURACY_DEGREES);
-		close.setLandmarks(List.of(landmark(-5, -8), landmark(5, -8)));
-		GeoRegistration apart = new GeoRegistration();
-		addCompass(apart, OFFSET_DEGREES + compassError, GeoRegistration.DEFAULT_HEADING_ACCURACY_DEGREES);
-		apart.setLandmarks(List.of(landmark(-50, -8), landmark(50, -8)));
+	public void landmarksApartSetTheHeadingOverTheCompass() {
+		GeoRegistration registration = new GeoRegistration();
+		addCompass(registration, OFFSET_DEGREES + 10, GeoRegistration.MIN_HEADING_ACCURACY_DEGREES);
+		registration.setLandmarks(List.of(landmark(-5, -8), landmark(5, -8)));
 
-		double closeError = close.getHeadingOffsetDegrees() - OFFSET_DEGREES;
-		double apartError = apart.getHeadingOffsetDegrees() - OFFSET_DEGREES;
-		// 10 m apart, landmarks mapped 2 m off are about as sure as a compass 15 degrees off.
-		assertTrue(closeError > 0 && closeError < compassError);
-		assertTrue(apartError > 0 && apartError < 0.5);
+		assertEquals(OFFSET_DEGREES, registration.getHeadingOffsetDegrees(), 1e-3);
+	}
+
+	@Test
+	public void usesTheCompassUntilLandmarksTellTheHeading() {
+		GeoRegistration registration = new GeoRegistration();
+		addCompass(registration, OFFSET_DEGREES + 10, GeoRegistration.DEFAULT_HEADING_ACCURACY_DEGREES);
+		registration.setLandmarks(List.of(landmark(-1, -8), landmark(1, -8)));
+
+		assertTrue(registration.hasHeading());
+		assertEquals(OFFSET_DEGREES + 10, registration.getHeadingOffsetDegrees(), 1e-3);
+	}
+
+	@Test
+	public void landmarkHeadingIsSurerTheFartherApartTheyAre() {
+		double apart = GeoRegistration.landmarkHeadingAccuracyDegrees(
+				List.of(new double[]{-50, 0}, new double[]{50, 0}));
+		double close = GeoRegistration.landmarkHeadingAccuracyDegrees(
+				List.of(new double[]{-5, 0}, new double[]{5, 0}));
+
+		assertTrue(apart > 0 && apart < close);
+		// Mapped 2 m off at 10 m apart, as the compass about 15 degrees off.
+		assertEquals(16, close, 1);
+		assertEquals(1.6, apart, 0.1);
+	}
+
+	@Test
+	public void landmarksTooFewOrTooCloseTellNoHeadingAccuracy() {
+		assertTrue(Double.isNaN(GeoRegistration.landmarkHeadingAccuracyDegrees(
+				List.of(new double[]{0, 0}))));
+		assertTrue(Double.isNaN(GeoRegistration.landmarkHeadingAccuracyDegrees(
+				List.of(new double[]{0, 0}, new double[]{2.9, 0}))));
+		assertFalse(Double.isNaN(GeoRegistration.landmarkHeadingAccuracyDegrees(
+				List.of(new double[]{0, 0}, new double[]{3.1, 0}))));
 	}
 
 	@Test

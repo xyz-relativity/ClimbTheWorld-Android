@@ -7,11 +7,13 @@ import android.view.WindowManager;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.augmentedreality.placement.AlignmentChoices;
+import com.climbtheworld.app.augmentedreality.placement.AlignmentSuggestions;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.DataManager;
@@ -38,8 +40,9 @@ import needle.UiRelatedTask;
 /**
  * Asks which mapped route to align on, from the routes around the user, closest first, in rows
  * like the search results, with a quick filter on their names over them, see AlignmentChoices.
- * The routes already aligned on are listed wherever they are, each with a button to delete its
- * alignment.
+ * Once a route is aligned on, the routes that would best set the heading come first, under a
+ * title of their own, see AlignmentSuggestions, and the rest under another. The routes already
+ * aligned on are listed wherever they are, each with a button to delete its alignment.
  */
 class AlignmentPicker {
 	// How far around where the user seems to be routes are looked for, as GPS can be that far
@@ -48,6 +51,9 @@ class AlignmentPicker {
 	// How many routes are listed, the closest; the filter looks through all of them.
 	private static final int MAX_ROUTES = 40;
 	private static final double METERS_PER_DEGREE = GeoUtils.EARTH_RADIUS_M * Math.PI / 180;
+	// The list's rows: a section title, or a route.
+	private static final int TYPE_TITLE = 0;
+	private static final int TYPE_ROUTE = 1;
 
 	private final AppCompatActivity activity;
 	private AlertDialog dialog;
@@ -56,11 +62,39 @@ class AlignmentPicker {
 		this.activity = activity;
 	}
 
-	private static double distanceMeters(GeoNode node, double latitude, double longitude) {
+	/**
+	 * Where a node is from a point, in meters east and north of it.
+	 */
+	private static double[] eastNorthMeters(GeoNode node, double latitude, double longitude) {
 		double north = (node.decimalLatitude - latitude) * METERS_PER_DEGREE;
 		double east = (node.decimalLongitude - longitude) * METERS_PER_DEGREE
 				* Math.cos(Math.toRadians(latitude));
-		return Math.hypot(north, east);
+		return new double[]{east, north};
+	}
+
+	private static double distanceMeters(GeoNode node, double latitude, double longitude) {
+		double[] eastNorth = eastNorthMeters(node, latitude, longitude);
+		return Math.hypot(eastNorth[0], eastNorth[1]);
+	}
+
+	/**
+	 * The routes that would best set the heading, aligned on next, see AlignmentSuggestions.
+	 *
+	 * @param aligned the OSM IDs of the routes aligned on now
+	 */
+	private static List<GeoNode> suggested(List<GeoNode> routes, double latitude,
+	                                       double longitude, Set<Long> aligned) {
+		List<GeoNode> candidates = new ArrayList<>();
+		List<double[]> alignedEastNorth = new ArrayList<>();
+		for (GeoNode route : routes) {
+			if (aligned.contains(route.osmID)) {
+				alignedEastNorth.add(eastNorthMeters(route, latitude, longitude));
+			} else {
+				candidates.add(route);
+			}
+		}
+		return AlignmentSuggestions.suggested(candidates,
+				route -> eastNorthMeters(route, latitude, longitude), alignedEastNorth);
 	}
 
 	/**
@@ -154,70 +188,142 @@ class AlignmentPicker {
 				.inflate(R.layout.fragment_dialog_align_route, null);
 		builder.setView(content);
 		dialog = builder.create();
-		// Listed wherever they are as the list opens, even once their alignment is deleted.
-		Set<Long> alignedAtOpen = new HashSet<>(aligned);
-		// The routes the filter lets through.
-		List<GeoNode> listed = new ArrayList<>();
-		BaseAdapter adapter = new BaseAdapter() {
-			@Override
-			public int getCount() {
-				return listed.size();
-			}
-
-			@Override
-			public Object getItem(int i) {
-				return listed.get(i);
-			}
-
-			@Override
-			public long getItemId(int i) {
-				return i;
-			}
-
-			@Override
-			public View getView(int i, View view, ViewGroup viewGroup) {
-				GeoNode route = listed.get(i);
-				String distance = activity.getString(R.string.ar_placement_align_distance,
-						Math.round(distanceMeters(route, latitude, longitude)));
-				if (view == null) {
-					view = View.inflate(activity, R.layout.list_item_alignment_route, null);
-				}
-				view = ListViewItemBuilder.getPaddedBuilder(activity, view, true)
-						.setTitle(route.getName())
-						.setDescription(distance + "\n"
-								+ DialogueUtils.buildDescription(activity, route))
-						.setIcon(new PoiMarkerDrawable(activity, new DisplayableGeoNode(route)))
-						.build();
-				view.setOnClickListener(clicked -> {
-					dialog.dismiss();
-					listener.onPicked(route);
-				});
-				View delete = view.findViewById(R.id.buttonDeleteAlignment);
-				delete.setVisibility(aligned.contains(route.osmID) ? View.VISIBLE : View.GONE);
-				delete.setOnClickListener(clicked -> {
-					aligned.remove(route.osmID);
-					listener.onDeleted(route);
-					notifyDataSetChanged();
-					if (aligned.isEmpty()) {
-						dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setVisibility(View.GONE);
-					}
-				});
-				return view;
-			}
-		};
 		EditText filter = content.findViewById(R.id.editFind);
-		Runnable applyFilter = () -> {
-			listed.clear();
-			listed.addAll(AlignmentChoices.listed(routes, filter.getText().toString(),
-					GeoNode::getName, route -> alignedAtOpen.contains(route.osmID), MAX_ROUTES));
-			adapter.notifyDataSetChanged();
-		};
-		filter.addTextChangedListener(TextWatchers.afterTextChanged(typed -> applyFilter.run()));
-		applyFilter.run();
+		RowsAdapter adapter = new RowsAdapter(routes, latitude, longitude, aligned, filter,
+				listener);
+		filter.addTextChangedListener(TextWatchers.afterTextChanged(typed -> adapter.refresh()));
+		adapter.refresh();
 		((ListView) content.findViewById(R.id.listAlignRoutes)).setAdapter(adapter);
 		// The filter field takes the focus, but most of the time the closest route is the one.
 		dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 		dialog.show();
+	}
+
+	/**
+	 * The list's rows: the routes the filter lets through, see AlignmentChoices, the suggested
+	 * ones first under a title of their own, when there are any, and the rest under another.
+	 */
+	private class RowsAdapter extends BaseAdapter {
+		private final List<GeoNode> routes;
+		private final double latitude;
+		private final double longitude;
+		// The OSM IDs of the routes aligned on, which deleting an alignment updates.
+		private final Set<Long> aligned;
+		// Listed wherever they are as the list opens, even once their alignment is deleted.
+		private final Set<Long> alignedAtOpen;
+		private final EditText filter;
+		private final Listener listener;
+		// A string resource ID for a title, or a GeoNode.
+		private final List<Object> rows = new ArrayList<>();
+
+		RowsAdapter(List<GeoNode> routes, double latitude, double longitude, Set<Long> aligned,
+		            EditText filter, Listener listener) {
+			this.routes = routes;
+			this.latitude = latitude;
+			this.longitude = longitude;
+			this.aligned = aligned;
+			this.alignedAtOpen = new HashSet<>(aligned);
+			this.filter = filter;
+			this.listener = listener;
+		}
+
+		/**
+		 * Lists the rows again, for what the filter holds and the routes aligned on now.
+		 */
+		void refresh() {
+			String text = filter.getText().toString();
+			List<GeoNode> suggested = suggested(routes, latitude, longitude, aligned);
+			suggested = AlignmentChoices.listed(suggested, text, GeoNode::getName,
+					route -> false, suggested.size());
+			List<GeoNode> others = new ArrayList<>(routes);
+			others.removeAll(suggested);
+			List<GeoNode> listed = AlignmentChoices.listed(others, text, GeoNode::getName,
+					route -> alignedAtOpen.contains(route.osmID), MAX_ROUTES);
+			rows.clear();
+			if (!suggested.isEmpty()) {
+				rows.add(R.string.ar_placement_align_suggested);
+				rows.addAll(suggested);
+				if (!listed.isEmpty()) {
+					rows.add(R.string.ar_placement_align_closest);
+				}
+			}
+			rows.addAll(listed);
+			notifyDataSetChanged();
+		}
+
+		@Override
+		public int getCount() {
+			return rows.size();
+		}
+
+		@Override
+		public Object getItem(int i) {
+			return rows.get(i);
+		}
+
+		@Override
+		public long getItemId(int i) {
+			return i;
+		}
+
+		@Override
+		public int getViewTypeCount() {
+			return 2;
+		}
+
+		@Override
+		public int getItemViewType(int i) {
+			return rows.get(i) instanceof Integer ? TYPE_TITLE : TYPE_ROUTE;
+		}
+
+		@Override
+		public boolean areAllItemsEnabled() {
+			return false;
+		}
+
+		@Override
+		public boolean isEnabled(int i) {
+			return getItemViewType(i) == TYPE_ROUTE;
+		}
+
+		@Override
+		public View getView(int i, View view, ViewGroup viewGroup) {
+			if (getItemViewType(i) == TYPE_TITLE) {
+				TextView title = view != null ? (TextView) view
+						: (TextView) activity.getLayoutInflater().inflate(
+						R.layout.list_item_section_title, viewGroup, false);
+				title.setText((Integer) rows.get(i));
+				return title;
+			}
+			GeoNode route = (GeoNode) rows.get(i);
+			String distance = activity.getString(R.string.ar_placement_align_distance,
+					Math.round(distanceMeters(route, latitude, longitude)));
+			if (view == null) {
+				view = View.inflate(activity, R.layout.list_item_alignment_route, null);
+			}
+			view = ListViewItemBuilder.getPaddedBuilder(activity, view, true)
+					.setTitle(route.getName())
+					.setDescription(distance + "\n"
+							+ DialogueUtils.buildDescription(activity, route))
+					.setIcon(new PoiMarkerDrawable(activity, new DisplayableGeoNode(route)))
+					.build();
+			view.setOnClickListener(clicked -> {
+				dialog.dismiss();
+				listener.onPicked(route);
+			});
+			View delete = view.findViewById(R.id.buttonDeleteAlignment);
+			delete.setVisibility(aligned.contains(route.osmID) ? View.VISIBLE : View.GONE);
+			delete.setOnClickListener(clicked -> {
+				aligned.remove(route.osmID);
+				listener.onDeleted(route);
+				// The suggestions follow the routes aligned on.
+				refresh();
+				if (aligned.isEmpty()) {
+					dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setVisibility(View.GONE);
+				}
+			});
+			return view;
+		}
 	}
 
 	interface Listener {

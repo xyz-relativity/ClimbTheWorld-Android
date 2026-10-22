@@ -22,8 +22,10 @@ import java.util.List;
  * <p>
  * Landmarks, mapped nodes the user aimed at, take over from GPS: the session's world is moved to
  * put them where the map has them, so that what is placed lands right next to them, whatever GPS
- * says. Two or more landmarks far enough apart also tell the heading, which is weighed against
- * the compass by how far apart they are: the farther, the less their own mapping errors turn it.
+ * says. Two or more landmarks far enough apart also tell the heading, which then takes over from
+ * the compass: next to rock the compass is steady but off, and the landmarks are what the user
+ * wants things lined up with. The farther apart they are, the less their own mapping errors turn
+ * the heading, see landmarkHeadingAccuracyDegrees.
  * <p>
  * Positions are worked out on a plane tangent to the Earth at the first fix or landmark, which is
  * exact enough over the few hundred meters a session covers.
@@ -43,8 +45,9 @@ public class GeoRegistration {
 	static final int MIN_HEADING_READINGS = 10;
 	// How far off a mapped node may be from where it really is.
 	static final double LANDMARK_ACCURACY_METERS = 2;
-	// Landmarks closer together than this, around their middle, tell nothing of the heading.
-	static final double MIN_LANDMARK_SPREAD_METERS = 2;
+	// Two landmarks closer together than this tell nothing of the heading: aiming a little off
+	// would turn it a lot.
+	static final double MIN_LANDMARK_SPREAD_METERS = 3;
 	private static final double METERS_PER_DEGREE = GeoUtils.EARTH_RADIUS_M * Math.PI / 180;
 
 	// Per reading: sine and cosine of the offset it tells, and its weight.
@@ -153,7 +156,7 @@ public class GeoRegistration {
 	 * @return whether which way north is in the session's world is known
 	 */
 	public boolean hasHeading() {
-		return headings.size() >= MIN_HEADING_READINGS || landmarkHeading() != null;
+		return headings.size() >= MIN_HEADING_READINGS || !Double.isNaN(landmarkHeading());
 	}
 
 	/**
@@ -168,89 +171,117 @@ public class GeoRegistration {
 	}
 
 	/**
-	 * @return the clockwise angle from the session's north to true north, in degrees, NaN until
-	 * there is any compass reading or the landmarks tell it
+	 * @return the clockwise angle from the session's north to true north, in degrees: as the
+	 * landmarks tell it when they can, else as the compass does, NaN until there is any compass
+	 * reading
 	 */
 	public double getHeadingOffsetDegrees() {
-		double[] compass = compassHeading();
-		double[] fromLandmarks = landmarkHeading();
-		if (compass == null && fromLandmarks == null) {
-			return Double.NaN;
+		double fromLandmarks = landmarkHeading();
+		if (!Double.isNaN(fromLandmarks)) {
+			return Math.toDegrees(fromLandmarks);
 		}
-		// Each weighted by how far off it may be.
-		double sin = 0;
-		double cos = 0;
-		for (double[] heading : new double[][]{compass, fromLandmarks}) {
-			if (heading != null) {
-				double weight = 1 / (heading[1] * heading[1]);
-				sin += Math.sin(heading[0]) * weight;
-				cos += Math.cos(heading[0]) * weight;
-			}
-		}
-		return Math.toDegrees(Math.atan2(sin, cos));
+		return Math.toDegrees(compassHeading());
 	}
 
 	/**
-	 * @return the offset the compass tells and how far off it may be, both in radians, null
-	 * without any reading. Averaging does not make it any less off, as a compass near rock is
-	 * mostly off the same way for a while.
+	 * @return the offset the compass tells, in radians, NaN without any reading. Averaging does
+	 * not make it any less off, as a compass near rock is mostly off the same way for a while.
 	 */
-	private double[] compassHeading() {
+	private double compassHeading() {
 		if (headings.isEmpty()) {
-			return null;
+			return Double.NaN;
 		}
 		double sin = 0;
 		double cos = 0;
-		double weights = 0;
 		for (double[] heading : headings) {
 			sin += heading[0] * heading[2];
 			cos += heading[1] * heading[2];
-			weights += heading[2];
 		}
-		return new double[]{Math.atan2(sin, cos),
-				Math.toRadians(Math.sqrt(headings.size() / weights))};
+		return Math.atan2(sin, cos);
+	}
+
+	/**
+	 * How far landmarks at some spots are spread around their middle: the sum of their squared
+	 * distances from it, in square meters, so for two landmarks half the square of how far apart
+	 * they are.
+	 *
+	 * @param eastNorth where each landmark is, in meters east and north of any one point
+	 */
+	private static double spread(List<double[]> eastNorth) {
+		double[] middle = new double[2];
+		for (double[] point : eastNorth) {
+			for (int axis = 0; axis < 2; axis++) {
+				middle[axis] += point[axis] / eastNorth.size();
+			}
+		}
+		double spread = 0;
+		for (double[] point : eastNorth) {
+			double east = point[0] - middle[0];
+			double north = point[1] - middle[1];
+			spread += east * east + north * north;
+		}
+		return spread;
+	}
+
+	/**
+	 * @return whether landmarks at some spots are far enough apart to tell the heading, see
+	 * MIN_LANDMARK_SPREAD_METERS
+	 */
+	private static boolean tellsHeading(List<double[]> eastNorth) {
+		return eastNorth.size() >= 2
+				&& spread(eastNorth) >= MIN_LANDMARK_SPREAD_METERS * MIN_LANDMARK_SPREAD_METERS / 2;
+	}
+
+	/**
+	 * How far off the heading landmarks at some spots tell may be, as each may be mapped
+	 * LANDMARK_ACCURACY_METERS off: the farther apart they are, the less that turns it.
+	 *
+	 * @param eastNorth where each landmark is, in meters east and north of any one point, as
+	 *                  the map has them
+	 * @return in degrees, NaN when they are too few or too close together to tell a heading
+	 */
+	public static double landmarkHeadingAccuracyDegrees(List<double[]> eastNorth) {
+		if (!tellsHeading(eastNorth)) {
+			return Double.NaN;
+		}
+		return Math.toDegrees(LANDMARK_ACCURACY_METERS / Math.sqrt(spread(eastNorth)));
 	}
 
 	/**
 	 * The turn that best puts the landmarks, around their middle, where the map has them.
 	 *
-	 * @return the offset and how far off it may be, both in radians, null when the landmarks are
-	 * too few or too close together to tell
+	 * @return the offset in radians, NaN when the landmarks are too few or too close together to
+	 * tell
 	 */
-	private double[] landmarkHeading() {
-		if (landmarks.size() < 2) {
-			return null;
+	private double landmarkHeading() {
+		List<double[]> session = new ArrayList<>(landmarks.size());
+		List<double[]> map = new ArrayList<>(landmarks.size());
+		for (Landmark landmark : landmarks) {
+			session.add(new double[]{landmark.sessionX(), -landmark.sessionZ()});
+			map.add(toReference(landmark.latitude(), landmark.longitude()));
 		}
-		double[][] session = new double[landmarks.size()][];
-		double[][] map = new double[landmarks.size()][];
+		if (!tellsHeading(session)) {
+			return Double.NaN;
+		}
 		double[] sessionMiddle = new double[2];
 		double[] mapMiddle = new double[2];
 		for (int i = 0; i < landmarks.size(); i++) {
-			Landmark landmark = landmarks.get(i);
-			session[i] = new double[]{landmark.sessionX(), -landmark.sessionZ()};
-			map[i] = toReference(landmark.latitude(), landmark.longitude());
 			for (int axis = 0; axis < 2; axis++) {
-				sessionMiddle[axis] += session[i][axis] / landmarks.size();
-				mapMiddle[axis] += map[i][axis] / landmarks.size();
+				sessionMiddle[axis] += session.get(i)[axis] / landmarks.size();
+				mapMiddle[axis] += map.get(i)[axis] / landmarks.size();
 			}
 		}
-
-		double spread = 0;
 		double sin = 0;
 		double cos = 0;
 		for (int i = 0; i < landmarks.size(); i++) {
-			double sessionEast = session[i][0] - sessionMiddle[0];
-			double sessionNorth = session[i][1] - sessionMiddle[1];
-			double mapEast = map[i][0] - mapMiddle[0];
-			double mapNorth = map[i][1] - mapMiddle[1];
-			spread += sessionEast * sessionEast + sessionNorth * sessionNorth;
+			double sessionEast = session.get(i)[0] - sessionMiddle[0];
+			double sessionNorth = session.get(i)[1] - sessionMiddle[1];
+			double mapEast = map.get(i)[0] - mapMiddle[0];
+			double mapNorth = map.get(i)[1] - mapMiddle[1];
 			sin += mapEast * sessionNorth - mapNorth * sessionEast;
 			cos += mapEast * sessionEast + mapNorth * sessionNorth;
 		}
-		if (spread < MIN_LANDMARK_SPREAD_METERS * MIN_LANDMARK_SPREAD_METERS) {
-			return null;
-		}
-		return new double[]{Math.atan2(sin, cos), LANDMARK_ACCURACY_METERS / Math.sqrt(spread)};
+		return Math.atan2(sin, cos);
 	}
 
 	/**

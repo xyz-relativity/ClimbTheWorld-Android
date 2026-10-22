@@ -484,6 +484,8 @@
     <string name="ar_placement_align_clear">Clear alignment</string>
     <string name="ar_placement_align_delete">Delete this alignment</string>
     <string name="ar_placement_align_distance">About %1$d m away</string>
+    <string name="ar_placement_align_suggested">Suggested, to set the heading</string>
+    <string name="ar_placement_align_closest">Closest first</string>
     <string name="ar_placement_aligned">Aligned on %1$s.</string>
     <string name="ar_placement_on_wall_plane">Past the depth, the cursor follows the wall below. Triangulate the spot to be sure.</string>
     <string name="ar_view_on_wall_plane">Past the depth, the cursor follows the wall below.</string>
