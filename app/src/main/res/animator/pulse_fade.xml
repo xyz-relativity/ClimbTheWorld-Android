@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A ring fading out as it grows, see pulse_grow. -->
+<objectAnimator xmlns:android="http://schemas.android.com/apk/res/android"
+    android:duration="1500"
+    android:propertyName="strokeAlpha"
+    android:repeatCount="infinite"
+    android:valueFrom="1.0"
+    android:valueTo="0.0"
+    android:valueType="floatType" />

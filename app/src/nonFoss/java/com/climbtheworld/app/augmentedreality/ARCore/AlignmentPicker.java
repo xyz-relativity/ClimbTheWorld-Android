@@ -23,7 +23,6 @@ import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
 import com.climbtheworld.app.storage.edit.RelationMembers;
-import com.climbtheworld.app.utils.GeoUtils;
 import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
@@ -54,7 +53,6 @@ class AlignmentPicker {
 	private static final double SEARCH_METERS = 150;
 	// How many routes are listed, the first in order; the filter looks through all of them.
 	private static final int MAX_ROUTES = 40;
-	private static final double METERS_PER_DEGREE = GeoUtils.EARTH_RADIUS_M * Math.PI / 180;
 	// The list's rows: a section title, or a route.
 	private static final int TYPE_TITLE = 0;
 	private static final int TYPE_ROUTE = 1;
@@ -70,10 +68,8 @@ class AlignmentPicker {
 	 * Where a node is from a point, in meters east and north of it.
 	 */
 	private static double[] eastNorthMeters(GeoNode node, double latitude, double longitude) {
-		double north = (node.decimalLatitude - latitude) * METERS_PER_DEGREE;
-		double east = (node.decimalLongitude - longitude) * METERS_PER_DEGREE
-				* Math.cos(Math.toRadians(latitude));
-		return new double[]{east, north};
+		return AlignmentSuggestions.eastNorthMeters(node.decimalLatitude, node.decimalLongitude,
+				latitude, longitude);
 	}
 
 	private static double distanceMeters(GeoNode node, double latitude, double longitude) {

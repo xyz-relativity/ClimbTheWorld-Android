@@ -134,37 +134,57 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end|center_vertical"
+                android:gravity="center_horizontal"
                 android:orientation="vertical">
 
+                <!-- The ring pulsing around Align while aligning on more routes would help,
+                     see ArCoreSession: orange until a route is aligned on, green after. -->
                 <FrameLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content">
 
-                    <com.google.android.material.floatingactionbutton.FloatingActionButton
-                        android:id="@+id/arAlignButton"
+                    <ImageView
+                        android:id="@+id/arAlignPulse"
+                        android:layout_width="86dp"
+                        android:layout_height="86dp"
+                        android:layout_gravity="center"
+                        android:importantForAccessibility="no"
+                        android:visibility="gone"
+                        app:srcCompat="@drawable/ic_ar_align_pulse_animated"
+                        app:tint="@android:color/holo_orange_dark" />
+
+                    <FrameLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_margin="5dip"
-                        android:background="?android:selectableItemBackground"
-                        android:contentDescription="@string/ar_placement_align"
-                        android:enabled="false"
-                        app:srcCompat="@drawable/ic_ar_align" />
+                        android:layout_gravity="center">
 
-                    <!-- How many mapped routes the A.R. is aligned on. -->
-                    <TextView
-                        android:id="@+id/arAlignedCount"
-                        android:layout_width="wrap_content"
-                        android:layout_height="20dp"
-                        android:layout_gravity="bottom|end"
-                        android:background="@drawable/shape_count_badge"
-                        android:gravity="center"
-                        android:minWidth="20dp"
-                        android:paddingStart="4dp"
-                        android:paddingEnd="4dp"
-                        android:textColor="@android:color/white"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        android:visibility="gone" />
+                        <com.google.android.material.floatingactionbutton.FloatingActionButton
+                            android:id="@+id/arAlignButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="5dip"
+                            android:background="?android:selectableItemBackground"
+                            android:contentDescription="@string/ar_placement_align"
+                            android:enabled="false"
+                            app:srcCompat="@drawable/ic_ar_align" />
+
+                        <!-- How many mapped routes the A.R. is aligned on. -->
+                        <TextView
+                            android:id="@+id/arAlignedCount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="20dp"
+                            android:layout_gravity="bottom|end"
+                            android:background="@drawable/shape_count_badge"
+                            android:gravity="center"
+                            android:minWidth="20dp"
+                            android:paddingStart="4dp"
+                            android:paddingEnd="4dp"
+                            android:textColor="@android:color/white"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:visibility="gone" />
+
+                    </FrameLayout>
 
                 </FrameLayout>
 

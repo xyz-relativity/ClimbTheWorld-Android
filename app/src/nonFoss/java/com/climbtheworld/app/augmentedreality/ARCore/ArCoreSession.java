@@ -4,6 +4,9 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
+import android.graphics.drawable.Animatable;
+import android.graphics.drawable.Drawable;
 import android.hardware.display.DisplayManager;
 import android.opengl.GLSurfaceView;
 import android.text.Html;
@@ -26,6 +29,7 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityScene;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityViewManager;
 import com.climbtheworld.app.augmentedreality.placement.AlignedElevations;
+import com.climbtheworld.app.augmentedreality.placement.AlignmentSuggestions;
 import com.climbtheworld.app.augmentedreality.placement.CursorHit;
 import com.climbtheworld.app.augmentedreality.placement.GeoRegistration;
 import com.climbtheworld.app.augmentedreality.placement.ViewRay;
@@ -90,6 +94,10 @@ class ArCoreSession {
 	private final View crosshair;
 	private final TextView cursorDistance;
 	private final FloatingActionButton alignButton;
+	// The ring pulsing around the align button while it can be tapped and aligning on more routes
+	// would help, see isHeadingGood: orange until a route is aligned on, as the A.R. is only
+	// roughly placed, green after.
+	private final ImageView alignPulse;
 	// On the align button's corner.
 	private final TextView alignedCount;
 	// The pin of the route being aligned on, riding on the cursor, see align.
@@ -170,8 +178,8 @@ class ArCoreSession {
 	 *
 	 * @param container     holds the R.id.arSurfaceView the session draws in, and its
 	 *                      R.id.arStatusHint, R.id.arCrosshair, R.id.arCursorDistance,
-	 *                      R.id.arAlignButton, R.id.arAlignedCount and R.id.arAlignPin, and with
-	 *                      triangulation, R.id.arTriangulateButton
+	 *                      R.id.arAlignButton, R.id.arAlignPulse, R.id.arAlignedCount and
+	 *                      R.id.arAlignPin, and with triangulation, R.id.arTriangulateButton
 	 * @param depthRequired whether it only runs where ARCore can measure depth
 	 * @param triangulation whether the user can triangulate a spot too far for the depth, see
 	 *                      triangulate
@@ -186,6 +194,7 @@ class ArCoreSession {
 		this.crosshair = container.findViewById(R.id.arCrosshair);
 		this.cursorDistance = container.findViewById(R.id.arCursorDistance);
 		this.alignButton = container.findViewById(R.id.arAlignButton);
+		this.alignPulse = container.findViewById(R.id.arAlignPulse);
 		this.alignedCount = container.findViewById(R.id.arAlignedCount);
 		this.alignPin = container.findViewById(R.id.arAlignPin);
 		this.triangulateButton = triangulation
@@ -268,6 +277,21 @@ class ArCoreSession {
 	static void setIconEnabled(View button, boolean enabled) {
 		button.setEnabled(enabled);
 		button.setAlpha(enabled ? 1f : DISABLED_ICON_ALPHA);
+	}
+
+	/**
+	 * Shows an animated drawable running, or hides it, stopping it.
+	 */
+	private static void setPulsing(ImageView view, boolean pulsing) {
+		view.setVisibility(pulsing ? View.VISIBLE : View.GONE);
+		Drawable drawable = view.getDrawable();
+		if (drawable instanceof Animatable) {
+			if (pulsing) {
+				((Animatable) drawable).start();
+			} else {
+				((Animatable) drawable).stop();
+			}
+		}
 	}
 
 	/**
@@ -374,6 +398,23 @@ class ArCoreSession {
 			shown.remove(aligningRoute.osmID);
 		}
 		return shown;
+	}
+
+	/**
+	 * @return whether the routes aligned on, as the map has them, set the heading well enough
+	 * that aligning on more would help little, see AlignmentSuggestions.isHeadingGood
+	 */
+	private boolean isHeadingGood() {
+		if (alignedRoutes.isEmpty()) {
+			return false;
+		}
+		AlignedRoute first = alignedRoutes.get(0);
+		List<double[]> eastNorth = new ArrayList<>(alignedRoutes.size());
+		for (AlignedRoute aligned : alignedRoutes) {
+			eastNorth.add(AlignmentSuggestions.eastNorthMeters(aligned.latitude(),
+					aligned.longitude(), first.latitude(), first.longitude()));
+		}
+		return AlignmentSuggestions.isHeadingGood(eastNorth);
 	}
 
 	private Set<Long> alignedIds() {
@@ -823,6 +864,14 @@ class ArCoreSession {
 					: activity.getString(R.string.ar_placement_align_count, alignedRoutes.size()));
 			setIconEnabled(alignButton, tracking && !pickingRoute);
 		}
+		// The ring draws the eye to Align while it can be tapped and aligning on more routes
+		// would help: orange until the A.R. is aligned on a route, green until the routes aligned
+		// on set the heading well enough.
+		alignPulse.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(activity,
+				alignedRoutes.isEmpty() ? android.R.color.holo_orange_dark
+						: android.R.color.holo_green_light)));
+		setPulsing(alignPulse, aligningRoute == null && tracking && !pickingRoute
+				&& !isHeadingGood());
 		alignedCount.setVisibility(alignedRoutes.isEmpty() ? View.GONE : View.VISIBLE);
 		alignedCount.setText(String.valueOf(alignedRoutes.size()));
 		if (triangulateButton != null) {

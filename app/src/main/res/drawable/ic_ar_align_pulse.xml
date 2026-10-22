@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The ring pulsing around the A.R. Align button, see ic_ar_align_pulse_animated: wider than
+     the 56 dp button, the ring at its edge, white, for the tint to colour it. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="86dp"
+    android:height="86dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+    <group
+        android:name="wave"
+        android:pivotX="50"
+        android:pivotY="50">
+        <path
+            android:name="ring"
+            android:pathData="M17,50 A33,33 0 1 1 83,50 A33,33 0 1 1 17,50 Z"
+            android:strokeWidth="4"
+            android:strokeColor="#ffffff"
+            android:strokeAlpha="1" />
+    </group>
+</vector>

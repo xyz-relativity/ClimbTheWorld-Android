@@ -1,6 +1,7 @@
 package com.climbtheworld.app.augmentedreality.placement;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -23,6 +24,22 @@ public class AlignmentSuggestionsTest {
 
 	private static List<String> suggested(List<String> candidates, List<double[]> aligned) {
 		return AlignmentSuggestions.suggested(candidates, AT::get, aligned);
+	}
+
+	@Test
+	public void theHeadingIsGoodWithTwoRoutesFarEnoughApart() {
+		assertFalse(AlignmentSuggestions.isHeadingGood(List.of()));
+		assertFalse(AlignmentSuggestions.isHeadingGood(List.of(AT.get("here"))));
+		assertFalse(AlignmentSuggestions.isHeadingGood(List.of(AT.get("here"), AT.get("middle"))));
+		assertTrue(AlignmentSuggestions.isHeadingGood(List.of(AT.get("here"), AT.get("far"))));
+	}
+
+	@Test
+	public void eastNorthIsFromTheOtherSpot() {
+		double[] eastNorth = AlignmentSuggestions.eastNorthMeters(45.52, -73.535 + 0.001,
+				45.52 - 0.001, -73.535);
+		assertEquals(111.3 * Math.cos(Math.toRadians(45.52)), eastNorth[0], 0.2);
+		assertEquals(111.3, eastNorth[1], 0.2);
 	}
 
 	@Test
