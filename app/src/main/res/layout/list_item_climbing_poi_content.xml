@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A row of the lists of climbing POIs, see ClimbingPoiRow: the pin, the name with the straight
-     line distance and the compass point on its right, what the POI is part of under them, and the
-     button centering the map on the POI, the distance part as in the info dialogs'
+<!-- A row of the lists of climbing POIs, see ClimbingPoiRow: the pin, the name with what the POI
+     is part of under it, the straight line distance over the compass point, and the button
+     centering the map on the POI, the distance part as in the info dialogs'
      fragment_info_geoloc, under the same ids. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
@@ -25,37 +25,37 @@
         android:layout_weight="1"
         android:orientation="vertical">
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/climbingPoiName"
+            style="@style/SectionItemLabel"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/climbingPoiName"
-                style="@style/SectionItemLabel"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
-
-            <TextView
-                android:id="@+id/editDistance"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:maxLines="1" />
-
-            <TextView
-                android:id="@+id/editBearings"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:maxLines="1" />
-        </LinearLayout>
+            android:layout_height="wrap_content" />
 
         <TextView
             android:id="@+id/climbingPoiParent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <!-- On two lines, centred as the button beside them. -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:gravity="end"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/editDistance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxLines="1" />
+
+        <TextView
+            android:id="@+id/editBearings"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxLines="1" />
     </LinearLayout>
 
     <ImageView
