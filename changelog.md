@@ -1,3 +1,25 @@
+=2026.10-6=
+========
+- Upload your pending changes before updating: this update clears the downloaded countries again, along with any change not uploaded yet. Download the countries again afterwards.
+- Publish two builds: ClimbTheWorld-Release.apk, all free software as before, and ClimbTheWorld-NonFOSS-Release.apk, the same with Google's ARCore for the A.R. features below. Either installs over the other. With Obtainium or ObtainX, pick the build with a filter, as the README describes.
+- In the non-FOSS build, run the A.R. view on Google Play Services for AR (ARCore) on the phones it supports, for a steadier view than with the sensors. Use ARCore, in the settings, turns it off. Until ARCore has found its place on the map, and while it has lost track, the pins are placed with GPS and the sensors as before.
+- Align the non-FOSS A.R. view on the mapped routes once near them: tap Align, pick a route you can see, aim the crosshair at where it starts and drop it there. A second route, away from the first, sets the heading too, and the app suggests which. The info icon on Align shows how, step by step.
+- Open the list of routes to align on at the closest one, list them by crag in their order, filter them by name, and delete a single alignment from it.
+- Show ARCore's aiming tools, a crosshair, a cursor with its distance and a wireframe of the rock, within about 30 m of a mapped route, with a button to hide them.
+- Tell what ARCore needs to keep track: moving more slowly, more light, or aiming at the rock.
+- Take the A.R. view's eye height from the routes aligned on when there are any, and from the barometer rather than GPS when the terrain model cannot tell it.
+- Place a node in A.R. from the node editor, in the non-FOSS build, on the phones where ARCore measures depth: tap where it goes, or place it at the cursor. Align on mapped routes as in the A.R. view, and triangulate a spot beyond the depth's reach from two places a few metres apart.
+- Add Save & new to the node editor: it saves the node and starts the next one in the same place, of the same type and in the same crags, keeping the map and the A.R. as they are.
+- Ask for a name before saving anything new, or anything that had a name.
+- Add a crag to an area also from the crag editor opened from a route's editor.
+- Give the map three quarters of the screen in the editors.
+- List climbing pins the same way in the search results, the map's cluster list, the editors' crag and area picker and the A.R. align list: the pin, the name with what it is part of under it, the distance and direction from you, each after its icon, and a button to centre the map on it. The info views' location line gets the same icons.
+- Show a route's length along the right of its slim pin, as a dimension in an engineering drawing.
+- Tap the compass calibration badge to see how to calibrate it: draw an infinity sign in the air with the phone. The dialog closes once the compass is calibrated.
+- Drop the experimental notice from the A.R. view. Its safety warning shows once more.
+- Fix the crags and areas across the Greenwich meridian, which were taken to go round the world, and show the climbing data on both sides of the antimeridian.
+- Say a country was updated yesterday once midnight has passed, instead of a whole day after its download.
+
 =2026.10-5=
 ========
 - Upload your pending changes before updating: this update clears the downloaded countries, along with any change not uploaded yet. Download the countries again afterwards.
