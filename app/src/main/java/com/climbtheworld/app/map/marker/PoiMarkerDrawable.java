@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.Typeface;
@@ -21,6 +22,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.map.DisplayableGeoNode;
+import com.climbtheworld.app.map.widget.climbing.RouteLength;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.utils.Globals;
@@ -28,6 +30,7 @@ import com.climbtheworld.app.utils.constants.Constants;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.concurrent.Semaphore;
 
 public class PoiMarkerDrawable extends Drawable {
@@ -45,6 +48,16 @@ public class PoiMarkerDrawable extends Drawable {
 	final DisplayableGeoNode poi;
 	private final boolean slim;
 	private final boolean routeTop;
+	// The length of the route, which slim route pins show on their right, null without one.
+	private final String lengthLabel;
+	// The room on either side of the pin for its length.
+	private final int lengthMargin;
+	private Paint lengthPaint;
+	private TextPaint lengthTextPaint;
+	private float lengthTextBaseline;
+	private float lengthLineX;
+	private Path lengthLines;
+	private Path lengthArrows;
 	private String gradeString;
 	private float gradeBaseline;
 	private Paint backgroundPaint;
@@ -112,6 +125,28 @@ public class PoiMarkerDrawable extends Drawable {
 	// Narrower letters fit more of the grade in the head and of the name along the body.
 	private final static String SLIM_FONT_FAMILY = "sans-serif-condensed";
 
+	// The length of a route, measured along the body of ic_poi_route as an engineering drawing
+	// would: an extension line off the top of the body, under the head, and one off the bottom of
+	// its rounded end, and between them, right of the pin, a dimension line with an arrow at each
+	// end, broken by the length. The pin gets as much room on its left as on its right, so that
+	// its tip stays half way across.
+	private final static int LENGTH_MARGIN = Globals.convertDpToPixel(5).intValue();
+	private final static float LENGTH_TOP = Globals.convertDpToPixel(21.12).floatValue();
+	private final static float LENGTH_BOTTOM = Globals.convertDpToPixel(78.71).floatValue();
+	// Where the extension lines start, a little off the outline, in from the right of the pin.
+	private final static float LENGTH_TOP_EXTENSION_INSET = Globals.convertDpToPixel(3.5).floatValue();
+	private final static float LENGTH_BOTTOM_EXTENSION_INSET = Globals.convertDpToPixel(7).floatValue();
+	private final static float LENGTH_EXTENSION_OVERSHOOT = Globals.convertDpToPixel(1.5).floatValue();
+	// Out from the right of the pin.
+	private final static float LENGTH_LINE_OFFSET = Globals.convertDpToPixel(0.5).floatValue();
+	private final static float LENGTH_LINE_WIDTH = Globals.convertDpToPixel(0.75).floatValue();
+	private final static float LENGTH_ARROW_LENGTH = Globals.convertDpToPixel(3).floatValue();
+	private final static float LENGTH_ARROW_HALF_WIDTH = Globals.convertDpToPixel(1).floatValue();
+	private final static float LENGTH_FONT_SIZE = Globals.convertDpToPixel(8).floatValue();
+	private final static float LENGTH_TEXT_GAP = Globals.convertDpToPixel(1).floatValue();
+	private final static float LENGTH_OUTLINE_STRENGTH =
+			Globals.convertDpToPixel(DisplayableGeoNode.MARKER_TEXT_OUTLINE_DP).floatValue();
+
 	Runnable backendRunnable = () -> {
 		prepareForRender();
 		refreshLock.release();
@@ -140,6 +175,10 @@ public class PoiMarkerDrawable extends Drawable {
 		this.slim = shape == PinShape.slim
 				&& (nodeType == OsmEntity.EntityClimbingType.route || nodeType == OsmEntity.EntityClimbingType.others);
 		this.routeTop = slim && poi.getGeoNode().isRouteTop();
+		// The route top marker leaves the length to the route bottom pin, as it does the name.
+		this.lengthLabel = slim && !routeTop ? RouteLength.label(
+				poi.getGeoNode().getKey(ClimbingTags.KEY_LENGTH), Locale.getDefault()) : null;
+		this.lengthMargin = lengthLabel != null ? LENGTH_MARGIN : 0;
 
 		prepareBackground(parentRef.get(), poi);
 	}
@@ -153,9 +192,12 @@ public class PoiMarkerDrawable extends Drawable {
 		if (isRendererPrepared) {
 			canvas.save();
 			canvas.translate(offsetX, offsetY);
-			canvas.scale(scale, scale, originalBitmap.getWidth()/2f,  originalBitmap.getHeight());
+			canvas.scale(scale, scale, IntrinsicWidth / 2f,  originalBitmap.getHeight());
+			// Under the pin, so that its outline stays whole.
+			drawLength(canvas);
+
 			//draw background
-			canvas.drawBitmap(originalBitmap, 0, 0, backgroundPaint);
+			canvas.drawBitmap(originalBitmap, lengthMargin, 0, backgroundPaint);
 
 			//draw grade text
 			//outline
@@ -243,6 +285,46 @@ public class PoiMarkerDrawable extends Drawable {
 		canvas.restore();
 	}
 
+	// Black on a white outline, as the text of the pin.
+	private void drawLength(Canvas canvas) {
+		if (lengthLabel == null) {
+			return;
+		}
+		lengthPaint.setColor(Color.WHITE);
+		lengthPaint.setAlpha(alpha);
+		lengthPaint.setStyle(Paint.Style.STROKE);
+		lengthPaint.setStrokeCap(Paint.Cap.ROUND);
+		lengthPaint.setStrokeWidth(LENGTH_LINE_WIDTH + LENGTH_OUTLINE_STRENGTH);
+		canvas.drawPath(lengthLines, lengthPaint);
+		lengthPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+		lengthPaint.setStrokeWidth(LENGTH_OUTLINE_STRENGTH);
+		canvas.drawPath(lengthArrows, lengthPaint);
+
+		lengthPaint.setColor(Color.BLACK);
+		lengthPaint.setAlpha(alpha);
+		lengthPaint.setStyle(Paint.Style.STROKE);
+		lengthPaint.setStrokeCap(Paint.Cap.BUTT);
+		lengthPaint.setStrokeWidth(LENGTH_LINE_WIDTH);
+		canvas.drawPath(lengthLines, lengthPaint);
+		lengthPaint.setStyle(Paint.Style.FILL);
+		canvas.drawPath(lengthArrows, lengthPaint);
+
+		// Reading top to bottom, as the name along the body.
+		canvas.save();
+		canvas.translate(lengthLineX, (LENGTH_TOP + LENGTH_BOTTOM) / 2);
+		canvas.rotate(90);
+		lengthTextPaint.setStyle(Paint.Style.STROKE);
+		lengthTextPaint.setStrokeWidth(LENGTH_OUTLINE_STRENGTH);
+		lengthTextPaint.setColor(Color.WHITE);
+		lengthTextPaint.setAlpha(alpha);
+		canvas.drawText(lengthLabel, 0, lengthTextBaseline, lengthTextPaint);
+		lengthTextPaint.setStyle(Paint.Style.FILL);
+		lengthTextPaint.setColor(Color.BLACK);
+		lengthTextPaint.setAlpha(alpha);
+		canvas.drawText(lengthLabel, 0, lengthTextBaseline, lengthTextPaint);
+		canvas.restore();
+	}
+
 	private void prepareForRender(boolean async) {
 		if (async && refreshLock.tryAcquire()) {
 			Constants.ASYNC_TASK_EXECUTOR.execute(backendRunnable);
@@ -253,6 +335,7 @@ public class PoiMarkerDrawable extends Drawable {
 
 	private void prepareForRender() {
 		prepareBackground(parentRef.get(), poi);
+		prepareLengthRender();
 		prepareGradeText();
 		prepareNameText();
 		prepareRouteCountText();
@@ -310,6 +393,61 @@ public class PoiMarkerDrawable extends Drawable {
 		}
 	}
 
+	private void prepareLengthRender() {
+		if (lengthLabel == null) {
+			return;
+		}
+		lengthPaint = new Paint();
+		lengthPaint.setAntiAlias(true);
+		lengthPaint.setStrokeJoin(Paint.Join.ROUND);
+
+		lengthTextPaint = new TextPaint();
+		lengthTextPaint.setAntiAlias(true);
+		lengthTextPaint.setSubpixelText(true);
+		lengthTextPaint.setTypeface(Typeface.create(SLIM_FONT_FAMILY, Typeface.BOLD));
+		lengthTextPaint.setTextSize(LENGTH_FONT_SIZE);
+		lengthTextPaint.setTextAlign(Paint.Align.CENTER);
+		lengthTextPaint.setLinearText(true);
+		// Shrunk to fit between the arrows.
+		float available = LENGTH_BOTTOM - LENGTH_TOP - 2 * (LENGTH_ARROW_LENGTH + LENGTH_TEXT_GAP);
+		float textWidth = lengthTextPaint.measureText(lengthLabel);
+		if (textWidth > available) {
+			lengthTextPaint.setTextSize(LENGTH_FONT_SIZE * available / textWidth);
+			textWidth = available;
+		}
+		// Centred on the line by the digits, whatever the separator.
+		Rect digit = new Rect();
+		lengthTextPaint.getTextBounds("0", 0, 1, digit);
+		lengthTextBaseline = -digit.exactCenterY();
+
+		float pinRight = IntrinsicWidth - lengthMargin;
+		lengthLineX = pinRight + LENGTH_LINE_OFFSET;
+		float extensionEnd = lengthLineX + LENGTH_EXTENSION_OVERSHOOT;
+		float middle = (LENGTH_TOP + LENGTH_BOTTOM) / 2;
+		lengthLines = new Path();
+		lengthLines.moveTo(pinRight - LENGTH_TOP_EXTENSION_INSET, LENGTH_TOP);
+		lengthLines.lineTo(extensionEnd, LENGTH_TOP);
+		lengthLines.moveTo(pinRight - LENGTH_BOTTOM_EXTENSION_INSET, LENGTH_BOTTOM);
+		lengthLines.lineTo(extensionEnd, LENGTH_BOTTOM);
+		// From the arrows, which hold the ends of the line.
+		lengthLines.moveTo(lengthLineX, LENGTH_TOP + LENGTH_ARROW_LENGTH);
+		lengthLines.lineTo(lengthLineX, middle - textWidth / 2 - LENGTH_TEXT_GAP);
+		lengthLines.moveTo(lengthLineX, middle + textWidth / 2 + LENGTH_TEXT_GAP);
+		lengthLines.lineTo(lengthLineX, LENGTH_BOTTOM - LENGTH_ARROW_LENGTH);
+
+		lengthArrows = new Path();
+		addLengthArrow(lengthLineX, LENGTH_TOP, LENGTH_ARROW_LENGTH);
+		addLengthArrow(lengthLineX, LENGTH_BOTTOM, -LENGTH_ARROW_LENGTH);
+	}
+
+	// Its tip on the extension line, and its base the given length below it, or above it.
+	private void addLengthArrow(float x, float tipY, float length) {
+		lengthArrows.moveTo(x, tipY);
+		lengthArrows.lineTo(x - LENGTH_ARROW_HALF_WIDTH, tipY + length);
+		lengthArrows.lineTo(x + LENGTH_ARROW_HALF_WIDTH, tipY + length);
+		lengthArrows.close();
+	}
+
 	private void prepareStyleRender() {
 		if ((poi.getGeoNode().getNodeType() != OsmEntity.EntityClimbingType.route
 				&& poi.getGeoNode().getNodeType() != OsmEntity.EntityClimbingType.crag) || routeTop) {
@@ -350,7 +488,7 @@ public class PoiMarkerDrawable extends Drawable {
 		Drawable drawable = slim
 				? MarkerUtils.getSlimRouteIcon(parent, color, routeTop)
 				: MarkerUtils.getPoiIcon(parent, poi.geoNode, color);
-		this.IntrinsicWidth = drawable.getIntrinsicWidth();
+		this.IntrinsicWidth = drawable.getIntrinsicWidth() + 2 * lengthMargin;
 		this.IntrinsicHeight = drawable.getIntrinsicHeight();
 		this.originalBitmap = ((BitmapDrawable) drawable).getBitmap();
 		this.centerX = IntrinsicWidth / 2;

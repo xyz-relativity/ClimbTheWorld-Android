@@ -1296,6 +1296,7 @@ public class MapLibreMapWidget {
 				+ "|" + poi.geoNode.getNodeType().name() + "|" + poi.geoNode.isRouteTop()
 				+ "|" + styles
 				+ "|" + poi.geoNode.getKey(ClimbingTags.KEY_ROUTES)
+				+ "|" + poi.geoNode.getKey(ClimbingTags.KEY_LENGTH)
 				+ "|" + poi.geoNode.getLevelId(ClimbingTags.KEY_GRADE_TAG);
 	}
 

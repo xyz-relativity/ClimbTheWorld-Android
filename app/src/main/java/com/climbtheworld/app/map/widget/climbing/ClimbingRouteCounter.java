@@ -144,7 +144,7 @@ public final class ClimbingRouteCounter {
 			if (!name.isEmpty()) {
 				routeNames.add(name);
 			}
-			double length = parseLength(tags.optString(ClimbingTags.KEY_LENGTH));
+			double length = RouteLength.parse(tags.optString(ClimbingTags.KEY_LENGTH));
 			if (!Double.isNaN(length)) {
 				minLength = Double.isNaN(minLength) ? length : Math.min(minLength, length);
 				maxLength = Double.isNaN(maxLength) ? length : Math.max(maxLength, length);
@@ -173,22 +173,6 @@ public final class ClimbingRouteCounter {
 		private RouteSummary build() {
 			return new RouteSummary(routeCount, styleCounts, styleGradeCounts, minLength,
 					maxLength, minGrade, maxGrade, routeNames);
-		}
-	}
-
-	/**
-	 * Parses a route length in meters, such as "25" or "25 m". Other units are ignored.
-	 */
-	static double parseLength(String value) {
-		String length = value.trim();
-		if (length.endsWith("m")) {
-			length = length.substring(0, length.length() - 1).trim();
-		}
-		try {
-			double result = Double.parseDouble(length);
-			return result > 0 && !Double.isInfinite(result) ? result : Double.NaN;
-		} catch (NumberFormatException ignored) {
-			return Double.NaN;
 		}
 	}
 

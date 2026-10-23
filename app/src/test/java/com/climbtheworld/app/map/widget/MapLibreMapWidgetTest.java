@@ -87,6 +87,19 @@ public class MapLibreMapWidgetTest {
 	}
 
 	@Test
+	public void aNewLengthGetsANewPin() throws Exception {
+		// The same route once its length was edited, which its pin shows.
+		assertNotEquals(poiIconKey(new JSONObject()
+						.put("sport", "climbing")
+						.put("climbing", "route_bottom")
+						.put("climbing:length", "25")),
+				poiIconKey(new JSONObject()
+						.put("sport", "climbing")
+						.put("climbing", "route_bottom")
+						.put("climbing:length", "30")));
+	}
+
+	@Test
 	public void routeTopIsPinnedWhereverItsBottomIs() throws Exception {
 		Map<Long, OsmNode> nodes = new HashMap<>();
 		OsmNode bottom = node(nodes, 11L, new JSONObject()
@@ -212,9 +225,13 @@ public class MapLibreMapWidgetTest {
 	}
 
 	private String poiIconKey(String climbing) throws Exception {
-		return MapLibreMapWidget.poiIconKey(new DisplayableGeoNode(nodeWithTags(new JSONObject()
+		return poiIconKey(new JSONObject()
 				.put("sport", "climbing")
-				.put("climbing", climbing))));
+				.put("climbing", climbing));
+	}
+
+	private String poiIconKey(JSONObject tags) throws Exception {
+		return MapLibreMapWidget.poiIconKey(new DisplayableGeoNode(nodeWithTags(tags)));
 	}
 
 	private GeoNode nodeWithTags(JSONObject tags) throws Exception {

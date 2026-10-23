@@ -44,6 +44,27 @@ public class SlimPinShapeTest {
 				vector.getAttributeNS(ANDROID_NS, "height"));
 	}
 
+	@Test
+	public void routePinBodyIsWhereTheLengthIsMeasured() throws Exception {
+		// PoiMarkerDrawable measures the length of a route on the right of the pin, from the top
+		// of the body, under the head, to the bottom of its rounded end, in dp on this viewport.
+		Element outline = (Element) loadVector("ic_poi_route.xml").getElementsByTagName("path")
+				.item(0);
+		List<float[]> points = pathPoints(outline.getAttributeNS(ANDROID_NS, "pathData"));
+
+		assertHasPoint(points, 19, 21.12f);
+		assertHasPoint(points, 14, 78.71f);
+	}
+
+	private static void assertHasPoint(List<float[]> points, float x, float y) {
+		for (float[] point : points) {
+			if (Math.abs(point[0] - x) < 0.01f && Math.abs(point[1] - y) < 0.01f) {
+				return;
+			}
+		}
+		fail("ic_poi_route.xml has no corner at " + x + "," + y);
+	}
+
 	static void assertTipIsTheBottomCentre(String drawable) throws Exception {
 		Element vector = loadVector(drawable);
 		// The outline is the first path; anything after it is drawn inside.
