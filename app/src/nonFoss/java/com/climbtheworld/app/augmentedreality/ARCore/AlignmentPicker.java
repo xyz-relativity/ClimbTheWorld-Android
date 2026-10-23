@@ -41,16 +41,19 @@ import needle.UiRelatedTask;
 /**
  * Asks which mapped route to align on, from the routes around the user, as their crags list them,
  * see AlignmentOrder, in the rows of the lists of climbing POIs, see ClimbingPoiRow, with a quick
- * filter on their names over them, see AlignmentChoices. Once a route is aligned on, the routes
- * that would best set the heading come first, under a title of their own, see
- * AlignmentSuggestions, and the rest under another. The routes already aligned on are listed
- * wherever they are, each with a button to delete its alignment.
+ * filter on their names over them, see AlignmentChoices. The list opens with the closest route
+ * in its middle, its neighbours along the wall around it, and so it does again for what the user
+ * types in the filter. Once a route is aligned on, the routes that would best set the heading
+ * come first, under a title of their own, see AlignmentSuggestions, and the rest under another.
+ * The routes already aligned on are listed wherever they are, each with a button to delete its
+ * alignment.
  */
 class AlignmentPicker {
 	// How far around where the user seems to be routes are looked for, as GPS can be that far
 	// off.
 	private static final double SEARCH_METERS = 150;
-	// How many routes are listed, the first in order; the filter looks through all of them.
+	// How many routes are listed, around the closest in order; the filter looks through all of
+	// them.
 	private static final int MAX_ROUTES = 40;
 	// The list's rows: a section title, or a route.
 	private static final int TYPE_TITLE = 0;
@@ -217,13 +220,34 @@ class AlignmentPicker {
 		EditText filter = content.findViewById(R.id.editFind);
 		RowsAdapter adapter = new RowsAdapter(routes, parentLabels, latitude, longitude, aligned,
 				filter, listener);
-		filter.addTextChangedListener(TextWatchers.afterTextChanged(typed -> adapter.refresh()));
+		ListView list = content.findViewById(R.id.listAlignRoutes);
+		filter.addTextChangedListener(TextWatchers.afterTextChanged(typed -> {
+			adapter.refresh();
+			centre(list, adapter, adapter.closestRow());
+		}));
 		adapter.refresh();
-		((ListView) content.findViewById(R.id.listAlignRoutes)).setAdapter(adapter);
-		// The filter field takes the focus, but most of the time the route is in the list's first
-		// rows.
+		list.setAdapter(adapter);
+		// The filter field takes the focus, but most of the time the route is the closest or one
+		// of its neighbours, in the list's middle rows.
 		dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 		dialog.show();
+		// Once the list is laid out, for its height.
+		list.post(() -> centre(list, adapter, adapter.closestRow()));
+	}
+
+	/**
+	 * Scrolls a list for a row to be in its middle, or as near as the list's ends let it.
+	 *
+	 * @param row the row's position, none for -1
+	 */
+	private static void centre(ListView list, BaseAdapter adapter, int row) {
+		if (row < 0) {
+			return;
+		}
+		View view = adapter.getView(row, null, list);
+		view.measure(View.MeasureSpec.makeMeasureSpec(list.getWidth(), View.MeasureSpec.EXACTLY),
+				View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+		list.setSelectionFromTop(row, (list.getHeight() - view.getMeasuredHeight()) / 2);
 	}
 
 	/**
@@ -269,11 +293,11 @@ class AlignmentPicker {
 			String text = filter.getText().toString();
 			List<GeoNode> suggested = suggested(routes, latitude, longitude, aligned);
 			suggested = AlignmentChoices.listed(suggested, text, GeoNode::getName,
-					route -> false, suggested.size());
+					route -> false, this::distance, suggested.size());
 			List<GeoNode> others = new ArrayList<>(routes);
 			others.removeAll(suggested);
 			List<GeoNode> listed = AlignmentChoices.listed(others, text, GeoNode::getName,
-					route -> alignedAtOpen.contains(route.osmID), MAX_ROUTES);
+					route -> alignedAtOpen.contains(route.osmID), this::distance, MAX_ROUTES);
 			rows.clear();
 			if (!suggested.isEmpty()) {
 				rows.add(R.string.ar_placement_align_suggested);
@@ -284,6 +308,18 @@ class AlignmentPicker {
 			}
 			rows.addAll(listed);
 			notifyDataSetChanged();
+		}
+
+		/**
+		 * @return the row of the closest route listed, -1 for none
+		 */
+		int closestRow() {
+			return AlignmentChoices.closest(rows, row -> row instanceof GeoNode
+					? distance((GeoNode) row) : Double.POSITIVE_INFINITY);
+		}
+
+		private double distance(GeoNode route) {
+			return distanceMeters(route, latitude, longitude);
 		}
 
 		@Override
