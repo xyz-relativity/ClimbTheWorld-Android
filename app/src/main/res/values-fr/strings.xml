@@ -487,6 +487,11 @@
     <string name="ar_placement_align_delete">Supprimer cet alignement</string>
     <string name="ar_placement_align_suggested">Suggérées, pour fixer l’orientation</string>
     <string name="ar_placement_align_by_crag">Par secteur, dans son ordre</string>
+    <string name="ar_align_help_title">Comment aligner</string>
+    <string name="ar_align_help_message">S’aligner sur des voies cartographiées relie la réalité augmentée à la carte.</string>
+    <string name="ar_align_help_pick">Touchez Aligner et choisissez une voie cartographiée que vous voyez.</string>
+    <string name="ar_align_help_drop">Visez avec le réticule le départ de cette voie, puis touchez de nouveau Aligner pour l’y poser.</string>
+    <string name="ar_align_help_second_route">Alignez-vous ensuite sur une deuxième voie, loin de la première, pour fixer l’orientation.</string>
     <string name="ar_placement_aligned">Aligné sur %1$s.</string>
     <string name="ar_placement_on_wall_plane">Au-delà de la profondeur, le curseur suit la paroi en dessous. Triangulez le point pour en être sûr.</string>
     <string name="ar_view_on_wall_plane">Au-delà de la profondeur, le curseur suit la paroi en dessous.</string>

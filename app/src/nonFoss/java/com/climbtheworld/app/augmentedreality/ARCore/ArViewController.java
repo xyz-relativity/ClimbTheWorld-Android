@@ -52,7 +52,8 @@ public class ArViewController implements ArViewTracking {
 	private final FloatingActionButton toolsButton;
 	private final ArCoreSession arCore;
 	private final AlignmentRange range = new AlignmentRange();
-	// The user hid the aiming tools, until they show them again or walk away from the routes.
+	// The user hid the aiming tools, until they show them again, across runs of the app, see
+	// Configs.ConfigKey.arCoreToolsHidden.
 	private boolean toolsHidden;
 	private boolean resumed;
 	// ARCore is to start once the activity is resumed, as in the node editor, where it starts
@@ -140,8 +141,10 @@ public class ArViewController implements ArViewTracking {
 		// A tap drops the route being aligned on there, see ArCoreSession.align.
 		GestureDetector taps = arCore.tapDetector(activity);
 		surfaceView.setOnTouchListener((view, event) -> taps.onTouchEvent(event));
+		toolsHidden = Configs.instance(activity).getBoolean(Configs.ConfigKey.arCoreToolsHidden);
 		toolsButton.setOnClickListener(view -> {
 			toolsHidden = !toolsHidden;
+			Configs.instance(activity).setBoolean(Configs.ConfigKey.arCoreToolsHidden, toolsHidden);
 			updateTools();
 		});
 		updateTools();
@@ -207,10 +210,6 @@ public class ArViewController implements ArViewTracking {
 			return;
 		}
 		Log.i(TAG, wasNear ? "Away from mapped routes" : "Near mapped routes");
-		if (wasNear) {
-			// The next time near routes, the tools show again.
-			toolsHidden = false;
-		}
 		updateTools();
 	}
 

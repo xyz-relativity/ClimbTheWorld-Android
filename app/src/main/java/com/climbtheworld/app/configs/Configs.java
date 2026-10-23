@@ -308,6 +308,9 @@ public class Configs {
 		// Whether the A.R. view runs on ARCore where it can, in the non-FOSS build. Refusing ARCore
 		// twice in a row turns it off, see ArViewController.
 		useArCore(R.string.use_ar_core, R.string.use_ar_core_description, "useArCore", true),
+		// Whether the user hid ARCore's aiming tools in the A.R. view, until they show them again,
+		// see ArViewController.
+		arCoreToolsHidden(-1, -1, "arCoreToolsHidden", false),
 		keepScreenOn(R.string.keep_screen_on, R.string.keep_screen_on_description, "keepScreenOn",
 				true),
 		useMobileDataForMap(R.string.use_mobile_data_for_map,

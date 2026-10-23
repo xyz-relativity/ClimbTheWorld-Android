@@ -489,6 +489,11 @@
     <string name="ar_placement_align_delete">Delete this alignment</string>
     <string name="ar_placement_align_suggested">Suggested, to set the heading</string>
     <string name="ar_placement_align_by_crag">By crag, as it lists them</string>
+    <string name="ar_align_help_title">How to Align</string>
+    <string name="ar_align_help_message">Aligning on mapped routes ties the A.R. to the map.</string>
+    <string name="ar_align_help_pick">Tap Align and pick a mapped route you can see.</string>
+    <string name="ar_align_help_drop">Aim the crosshair at where that route starts, then tap Align again to drop it there.</string>
+    <string name="ar_align_help_second_route">Then align on a second route, away from the first, to set the heading.</string>
     <string name="ar_placement_aligned">Aligned on %1$s.</string>
     <string name="ar_placement_on_wall_plane">Past the depth, the cursor follows the wall below. Triangulate the spot to be sure.</string>
     <string name="ar_view_on_wall_plane">Past the depth, the cursor follows the wall below.</string>
