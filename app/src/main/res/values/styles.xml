@@ -31,6 +31,21 @@
         <item name="android:textSize">18sp</item>
     </style>
 
+    <!-- The straight line distance from the user to a POI and its compass point, each after its
+         icon, with what it is on a long press, in the info dialogs and the lists of climbing POIs,
+         see DialogueUtils.setDistance. -->
+    <style name="DistanceFromUser">
+        <item name="android:drawableStart">@drawable/ic_distance_from_user</item>
+        <item name="android:drawablePadding">4dp</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:tooltipText">@string/distance_from_user</item>
+    </style>
+
+    <style name="DirectionFromUser" parent="DistanceFromUser">
+        <item name="android:drawableStart">@drawable/ic_direction_from_user</item>
+        <item name="android:tooltipText">@string/direction_from_user</item>
+    </style>
+
     <style name="SectionItemLabel">
         <item name="android:textStyle">bold</item>
     </style>

@@ -1,0 +1,8 @@
+<!-- The compass point of a POI from the user, beside its value in the info dialogs and the lists of
+     climbing POIs: the map's compass, at the size of the text. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:width="16dp"
+        android:height="16dp"
+        android:drawable="@drawable/ic_compass" />
+</layer-list>

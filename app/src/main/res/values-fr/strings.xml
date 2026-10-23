@@ -179,6 +179,8 @@
     <string name="points_of_interest_value">%d points d’intérêt</string>
     <string name="download_dialog_message">Aucune donnée régionale n’a encore été téléchargée. Pensez à télécharger une région qui vous intéresse avant d’utiliser l’application.</string>
     <string name="center_map_on_point">Centrer la carte sur ce point</string>
+    <string name="distance_from_user">Distance à vol d’oiseau depuis votre position</string>
+    <string name="direction_from_user">Direction depuis votre position</string>
     <string name="climbing_parent_label">%1$s : %2$s</string>
     <string name="country">Pays</string>
     <string name="delete_confirmation">Supprimer « %s » ?</string>

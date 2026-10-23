@@ -30,6 +30,7 @@
 
             <TextView
                 android:id="@+id/editDistance"
+                style="@style/DistanceFromUser"
                 android:layout_marginStart="4dp"
                 android:layout_marginEnd="4dp"
                 android:layout_width="wrap_content"
@@ -37,6 +38,7 @@
 
             <TextView
                 android:id="@+id/editBearings"
+                style="@style/DirectionFromUser"
                 android:layout_marginStart="4dp"
                 android:layout_marginEnd="4dp"
                 android:layout_width="wrap_content"

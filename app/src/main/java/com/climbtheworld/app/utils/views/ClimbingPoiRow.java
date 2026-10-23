@@ -18,9 +18,9 @@ import com.climbtheworld.app.utils.views.dialogs.DialogueUtils;
  * The rows of the lists of climbing POIs: the search results, on the map and on their own page,
  * the map's cluster list, the editors' crag and area picker and the A.R. align list. Each shows
  * the pin as the map draws it, smaller, the name with what the POI is part of under it, see
- * ClimbingParent, the straight line distance from the user over the compass point, and the button
- * centering the map on the POI, the distance part as the info dialogs show it, see
- * DialogueUtils.setDistance.
+ * ClimbingParent, the straight line distance from the user over the compass point, each after its
+ * icon, and the button centering the map on the POI, the distance part as the info dialogs show
+ * it, see DialogueUtils.setDistance.
  */
 public final class ClimbingPoiRow {
 	/** The size of the pins, against the map's. */
@@ -79,6 +79,10 @@ public final class ClimbingPoiRow {
 		((TextView) row.findViewById(R.id.climbingPoiName)).setText(name);
 		DialogueUtils.setDistance(activity, row, user != null ? user : Globals.virtualCamera,
 				pin.getGeoNode(), closeList);
+		// Their tooltips take the touches on them, so a tap on them is the row's, as on the rest.
+		View.OnClickListener rowTap = tapped -> row.performClick();
+		row.findViewById(R.id.editDistance).setOnClickListener(rowTap);
+		row.findViewById(R.id.editBearings).setOnClickListener(rowTap);
 		TextView parentView = row.findViewById(R.id.climbingPoiParent);
 		parentView.setText(parentLabel);
 		parentView.setVisibility(parentLabel.isEmpty() ? View.GONE : View.VISIBLE);

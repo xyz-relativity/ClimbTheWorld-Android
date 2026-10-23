@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- A row of the lists of climbing POIs, see ClimbingPoiRow: the pin, the name with what the POI
-     is part of under it, the straight line distance over the compass point, and the button
-     centering the map on the POI, the distance part as in the info dialogs'
-     fragment_info_geoloc, under the same ids. -->
+     is part of under it, the straight line distance over the compass point, each after its
+     icon, and the button centering the map on the POI, the distance part as in the info dialogs'
+     fragment_info_geoloc, under the same ids and styles. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -37,7 +37,8 @@
             android:layout_height="wrap_content" />
     </LinearLayout>
 
-    <!-- On two lines, centred as the button beside them. -->
+    <!-- On two lines, centred as the button beside them, the icons in a column and the values
+         lined up on the right. -->
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -47,14 +48,18 @@
 
         <TextView
             android:id="@+id/editDistance"
-            android:layout_width="wrap_content"
+            style="@style/DistanceFromUser"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="end|center_vertical"
             android:maxLines="1" />
 
         <TextView
             android:id="@+id/editBearings"
-            android:layout_width="wrap_content"
+            style="@style/DirectionFromUser"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="end|center_vertical"
             android:maxLines="1" />
     </LinearLayout>
 
