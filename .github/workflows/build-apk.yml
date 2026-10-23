@@ -168,8 +168,8 @@ jobs:
           BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOLS_VERSION }}
 
       # app-<flavor>-release-unsigned-signed.apk, as the signing action names them, become
-      # ClimbTheWorld-Release.apk for foss, the name releases always had, and
-      # ClimbTheWorld-NonFOSS-Release.apk for nonFoss.
+      # ClimbTheWorld-Release.apk for nonFoss, the default build, under the name releases always
+      # had, and ClimbTheWorld-foss-Release.apk for foss.
       - name: Rename Signed APKs
         shell: bash
         run: |
@@ -181,8 +181,8 @@ jobs:
             fi
             mv "$OLD_PATH" "app/build/outputs/apk/$1/release/$2"
           }
-          rename_apk foss ClimbTheWorld-Release.apk
-          rename_apk nonFoss ClimbTheWorld-NonFOSS-Release.apk
+          rename_apk nonFoss ClimbTheWorld-Release.apk
+          rename_apk foss ClimbTheWorld-foss-Release.apk
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -194,8 +194,8 @@ jobs:
           name: ${{ steps.release.outputs.tag }}
           body_path: ${{ steps.release.outputs.notes }}
           files: |
-            app/build/outputs/apk/foss/release/ClimbTheWorld-Release.apk
-            app/build/outputs/apk/nonFoss/release/ClimbTheWorld-NonFOSS-Release.apk
+            app/build/outputs/apk/nonFoss/release/ClimbTheWorld-Release.apk
+            app/build/outputs/apk/foss/release/ClimbTheWorld-foss-Release.apk
           # Fail rather than publish a release without either APK.
           fail_on_unmatched_files: true
         env:

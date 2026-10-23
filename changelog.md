@@ -1,7 +1,7 @@
 =2026.10-6=
 ========
 - Upload your pending changes before updating: this update clears the downloaded countries again, along with any change not uploaded yet. Download the countries again afterwards.
-- Publish two builds: ClimbTheWorld-Release.apk, all free software as before, and ClimbTheWorld-NonFOSS-Release.apk, the same with Google's ARCore for the A.R. features below. Either installs over the other. With Obtainium or ObtainX, pick the build with a filter, as the README describes.
+- Publish two builds: ClimbTheWorld-Release.apk, now with Google's ARCore for the A.R. features below, and ClimbTheWorld-foss-Release.apk, all free software as before. Either installs over the other. To keep to free software, switch to ClimbTheWorld-foss-Release.apk: with Obtainium or ObtainX, pick the build with a filter, as the README describes.
 - In the non-FOSS build, run the A.R. view on Google Play Services for AR (ARCore) on the phones it supports, for a steadier view than with the sensors. Use ARCore, in the settings, turns it off. Until ARCore has found its place on the map, and while it has lost track, the pins are placed with GPS and the sensors as before.
 - Align the non-FOSS A.R. view on the mapped routes once near them: tap Align, pick a route you can see, aim the crosshair at where it starts and drop it there. A second route, away from the first, sets the heading too, and the app suggests which. The info icon on Align shows how, step by step.
 - Open the list of routes to align on at the closest one, list them by crag in their order, filter them by name, and delete a single alignment from it.
