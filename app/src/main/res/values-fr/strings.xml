@@ -25,6 +25,9 @@
     <string name="absolute_humidity">Humidité abs.</string>
     <string name="compass_needs_calibration">La boussole doit être calibrée. Faites quelques mouvements en forme de 8 avec le téléphone, en le tournant dans tous les sens.</string>
     <string name="compass_disturbed">Quelque chose à proximité dévie le champ magnétique, la boussole peut donc indiquer une mauvaise direction. Éloignez-vous du métal, des voitures, des appareils électroniques et des aimants.</string>
+    <string name="compass_calibration_title">Calibrer la boussole</string>
+    <string name="compass_calibration_message">Tenez le téléphone et dessinez quelques fois le signe infini (∞) dans l’air, en l’inclinant et en le tournant dans tous les sens. Cette fenêtre se fermera une fois la boussole calibrée.</string>
+    <string name="compass_calibrated">La boussole est calibrée.</string>
 
     <string name="hint_compass">Afficher les coordonnées.</string>
     <string name="hint_center_gps">Centrer sur la position GPS.</string>

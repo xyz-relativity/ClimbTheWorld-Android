@@ -27,6 +27,9 @@
     <string name="absolute_humidity">Abs. Humidity</string>
     <string name="compass_needs_calibration">The compass needs calibrating: move the phone in a figure 8 a few times, turning it every way.</string>
     <string name="compass_disturbed">Something nearby bends the magnetic field, so the compass may point the wrong way. Move away from metal, cars, electronics and magnets.</string>
+    <string name="compass_calibration_title">Calibrate the Compass</string>
+    <string name="compass_calibration_message">Hold the phone and draw an infinity sign (∞) in the air a few times, tilting and turning it every way. This dialogue will close once the compass is calibrated.</string>
+    <string name="compass_calibrated">The compass is calibrated.</string>
 
     <string name="hint_compass">Show coordinates.</string>
     <string name="hint_center_gps">Center on GPS.</string>

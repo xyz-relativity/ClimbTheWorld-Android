@@ -166,7 +166,9 @@ public class OrientationManager implements SensorEventListener {
 		// as well, for its accuracy and the strength of the field it measures.
 		Sensor magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 		if (magnetometer != null) {
-			lastMagnetometerAccuracy = SensorManager.SENSOR_STATUS_ACCURACY_HIGH;
+			// The accuracy is kept from before the updates were stopped until the magnetometer
+			// tells it again: assuming it calibrated meanwhile would close the calibration dialog,
+			// see CompassStatusBadge, each time its screen comes back.
 			interferenceDetector.reset();
 			rotationKnown = false;
 			sensorManager.registerListener(this, magnetometer, SensorManager.SENSOR_DELAY_NORMAL);

@@ -152,8 +152,9 @@ public class MapLibreMapWidget {
 	private static final String HEADING_ACCURACY_LAYER_ID = "ctw-heading-accuracy-layer";
 	private static final String HEADING_ACCURACY_IMAGE_PREFIX = "ctw-heading-accuracy-";
 	private static final String HEADING_ACCURACY_IMAGE_PROPERTY = "headingAccuracyImage";
-	private static final int HEADING_ACCURACY_COLOR = 0x802196f3;
-	private static final float HEADING_ACCURACY_RADIUS_DP = 48f;
+	// Also the beam over the arrow in the compass calibration, see CompassCalibrationView.
+	public static final int HEADING_ACCURACY_COLOR = 0x802196f3;
+	public static final float HEADING_ACCURACY_RADIUS_DP = 48f;
 	// Wedges are only drawn for widths in whole steps, so that few images are made.
 	private static final int HEADING_ACCURACY_STEP_DEGREES = 5;
 	private static final String TAP_SOURCE_ID = "ctw-tap-source";
