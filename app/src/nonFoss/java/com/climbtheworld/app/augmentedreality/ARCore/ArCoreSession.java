@@ -52,6 +52,7 @@ import com.google.ar.core.exceptions.UnavailableException;
 import com.google.ar.core.exceptions.UnavailableUserDeclinedInstallationException;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -118,8 +119,13 @@ class ArCoreSession {
 	private final ArSessionRenderer renderer;
 	private final GeoRegistration registration = new GeoRegistration();
 	private final AlignmentPicker alignmentPicker;
-	// The mapped routes the user aimed at, each kept where they aimed by an anchor.
+	// The mapped routes the user aimed at, each kept where they aimed by an anchor. ARCore keeps
+	// the anchors through a pause, and tracks them again once it finds its way back to what it saw
+	// before; after a walk away with the phone locked it does not, and the alignments are lost
+	// until the user aligns again, see trackedAlignedRoutes.
 	private final List<AlignedRoute> alignedRoutes = new ArrayList<>();
+	// The anchors of the routes aligned on ARCore tracked last, see cameraMoved.
+	private Set<String> trackedAnchors = Collections.emptySet();
 	// Whether telling the host the camera moved is already posted to the main thread, which
 	// reads where it is then.
 	private final AtomicBoolean cameraMovePosted = new AtomicBoolean();
@@ -401,18 +407,19 @@ class ArCoreSession {
 	}
 
 	/**
-	 * @return whether the routes aligned on, as the map has them, set the heading well enough
-	 * that aligning on more would help little, see AlignmentSuggestions.isHeadingGood
+	 * @param aligned the routes aligned on that count, see updateStatus
+	 * @return whether they, as the map has them, set the heading well enough that aligning on
+	 * more would help little, see AlignmentSuggestions.isHeadingGood
 	 */
-	private boolean isHeadingGood() {
-		if (alignedRoutes.isEmpty()) {
+	private static boolean isHeadingGood(List<AlignedRoute> aligned) {
+		if (aligned.isEmpty()) {
 			return false;
 		}
-		AlignedRoute first = alignedRoutes.get(0);
-		List<double[]> eastNorth = new ArrayList<>(alignedRoutes.size());
-		for (AlignedRoute aligned : alignedRoutes) {
-			eastNorth.add(AlignmentSuggestions.eastNorthMeters(aligned.latitude(),
-					aligned.longitude(), first.latitude(), first.longitude()));
+		AlignedRoute first = aligned.get(0);
+		List<double[]> eastNorth = new ArrayList<>(aligned.size());
+		for (AlignedRoute route : aligned) {
+			eastNorth.add(AlignmentSuggestions.eastNorthMeters(route.latitude(),
+					route.longitude(), first.latitude(), first.longitude()));
 		}
 		return AlignmentSuggestions.isHeadingGood(eastNorth);
 	}
@@ -783,7 +790,32 @@ class ArCoreSession {
 
 	private void cameraMoved() {
 		cameraMovePosted.set(false);
+		// ARCore finding anchors again, or losing them, as after a pause, changes what the status
+		// shows of the alignment.
+		Set<String> tracked = new HashSet<>();
+		for (AlignedRoute aligned : trackedAlignedRoutes()) {
+			tracked.add(aligned.anchorKey());
+		}
+		if (!tracked.equals(trackedAnchors)) {
+			trackedAnchors = tracked;
+			updateStatus();
+		}
 		host.onCameraMoved();
+	}
+
+	/**
+	 * @return the routes aligned on whose anchor ARCore tracks now, which are the ones tying its
+	 * world to the map; the others are lost until it finds its way back to them
+	 */
+	private List<AlignedRoute> trackedAlignedRoutes() {
+		Map<String, double[]> positions = renderer.getAnchorPositions();
+		List<AlignedRoute> tracked = new ArrayList<>();
+		for (AlignedRoute aligned : alignedRoutes) {
+			if (positions.containsKey(aligned.anchorKey())) {
+				tracked.add(aligned);
+			}
+		}
+		return tracked;
 	}
 
 	private void trackingChanged(TrackingState state, TrackingFailureReason reason) {
@@ -852,6 +884,10 @@ class ArCoreSession {
 		if (aiming) {
 			cursorDistance.setText(distanceText(cursor));
 		}
+		// The alignments that count are the ones ARCore tracks: lost ones tie nothing to the map
+		// until the user aligns again. While ARCore has lost track altogether, as when the phone
+		// moves too fast, they all stay as they were, as they mostly come back at once.
+		List<AlignedRoute> counted = tracking ? trackedAlignedRoutes() : alignedRoutes;
 		if (aligningRoute != null) {
 			alignButton.setImageResource(R.drawable.ic_ar_align_drop);
 			describe(alignButton, activity.getString(R.string.ar_placement_align_drop));
@@ -859,21 +895,21 @@ class ArCoreSession {
 			setIconEnabled(alignButton, aiming && cursor.source != CursorHit.Source.WALL_PLANE);
 		} else {
 			alignButton.setImageResource(R.drawable.ic_ar_align);
-			describe(alignButton, alignedRoutes.isEmpty()
+			describe(alignButton, counted.isEmpty()
 					? activity.getString(R.string.ar_placement_align)
-					: activity.getString(R.string.ar_placement_align_count, alignedRoutes.size()));
+					: activity.getString(R.string.ar_placement_align_count, counted.size()));
 			setIconEnabled(alignButton, tracking && !pickingRoute);
 		}
 		// The ring draws the eye to Align while it can be tapped and aligning on more routes
 		// would help: orange until the A.R. is aligned on a route, green until the routes aligned
-		// on set the heading well enough.
+		// on set the heading well enough; and again once the alignments are lost.
 		alignPulse.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(activity,
-				alignedRoutes.isEmpty() ? android.R.color.holo_orange_dark
+				counted.isEmpty() ? android.R.color.holo_orange_dark
 						: android.R.color.holo_green_light)));
 		setPulsing(alignPulse, aligningRoute == null && tracking && !pickingRoute
-				&& !isHeadingGood());
-		alignedCount.setVisibility(alignedRoutes.isEmpty() ? View.GONE : View.VISIBLE);
-		alignedCount.setText(String.valueOf(alignedRoutes.size()));
+				&& !isHeadingGood(counted));
+		alignedCount.setVisibility(counted.isEmpty() ? View.GONE : View.VISIBLE);
+		alignedCount.setText(String.valueOf(counted.size()));
 		if (triangulateButton != null) {
 			setIconEnabled(triangulateButton, tracking);
 			switch (triangulationStep) {
