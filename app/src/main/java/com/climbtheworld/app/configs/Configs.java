@@ -266,8 +266,9 @@ public class Configs {
 				"Welcome"),
 
 		showHardwareLimitation(-1, -1, "showHardwareLimitation", true),
-		showExperimentalAR(-1, -1, "showExperimentalAR", true),
 		showDownloadClimbingData(-1, -1, "showDownloadClimbingData", true),
+		// Stored under the key of the experimental-view notice it was shown with, since removed, so
+		// that whoever turned that off stays spared.
 		showARWarning(-1, -1, "showExperimentalAR", true),
 		// Until the user has read that the A.R. view and placement run on Google Play Services for
 		// AR.

@@ -218,9 +218,6 @@
     <string name="compass_missing_message">Aucune boussole détectée sur cet appareil. La carte ne peut pas tourner avec vous, et la vue en réalité augmentée ne peut pas placer les voies autour de vous.</string>
     <string name="node_not_found">Impossible de trouver cet élément dans la base de données locale.</string>
 
-    <string name="experimental_view">Vue expérimentale</string>
-    <string name="experimental_view_message">La vue en réalité augmentée utilise tous les capteurs de votre appareil. &lt;br /&gt;&lt;br /&gt; Assurez-vous que les capteurs de votre appareil sont calibrés. Consultez cette &lt;a href=&quot;https://support.google.com/maps/answer/2839911?co=GENIE.Platform%3DAndroid&amp;hl=fr&amp;oco=0&quot;&gt;page d’aide&lt;/a&gt; pour en savoir plus.</string>
-
     <string name="ar_warning">La réalité augmentée peut être dangereuse</string>
     <string name="ar_warning_message">Lorsque vous utilisez la vue en réalité augmentée, tenez compte de ce qui suit :&lt;br /&gt;&lt;br /&gt;
         &#8226; Avant d’utiliser la vue en réalité augmentée, prenez conscience des dangers qui vous entourent, en particulier en extérieur.&lt;br /&gt;&lt;br /&gt;

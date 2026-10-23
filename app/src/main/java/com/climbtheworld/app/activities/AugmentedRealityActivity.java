@@ -318,12 +318,6 @@ public class AugmentedRealityActivity extends MapWidgetActivity
 	}
 
 	private void showWarning() {
-		if (configs.getBoolean(Configs.ConfigKey.showExperimentalAR)) {
-			showStartupNotice(android.R.drawable.ic_dialog_info, android.R.color.holo_green_light,
-					R.string.experimental_view, R.string.experimental_view_message,
-					Configs.ConfigKey.showExperimentalAR);
-		}
-
 		if (configs.getBoolean(Configs.ConfigKey.showARWarning)) {
 			showStartupNotice(android.R.drawable.ic_dialog_alert, android.R.color.holo_orange_light,
 					R.string.ar_warning, R.string.ar_warning_message,
