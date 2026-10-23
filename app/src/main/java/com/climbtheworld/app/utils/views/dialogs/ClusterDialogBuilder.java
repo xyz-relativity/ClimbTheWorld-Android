@@ -13,21 +13,18 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.configs.Configs;
-import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.MarkerUtils;
-import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.map.model.MapCoordinate;
+import com.climbtheworld.app.map.widget.climbing.ClimbingParent;
 import com.climbtheworld.app.map.widget.climbing.ClimbingRouteCounter;
 import com.climbtheworld.app.map.widget.climbing.ClusterContentResolver;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.utils.constants.Constants;
+import com.climbtheworld.app.utils.views.ClimbingPoiRow;
 import com.climbtheworld.app.utils.views.FilteredListAdapter;
-import com.climbtheworld.app.utils.views.ListViewItemBuilder;
-import com.climbtheworld.app.utils.views.Sorters;
 import com.climbtheworld.app.utils.views.TextWatchers;
 
 import java.util.ArrayList;
@@ -38,8 +35,8 @@ import java.util.List;
 import needle.UiRelatedTask;
 
 /**
- * Lists what a map cluster holds: the outermost relations its POIs belong to, followed by the
- * POIs that are in no relation. Each entry opens its own info dialog.
+ * Lists what a map cluster holds, see ClimbingPoiRow: the outermost relations its POIs belong to,
+ * followed by the POIs that are in no relation. Each entry opens its own info dialog.
  */
 public class ClusterDialogBuilder {
 	// Larger than any relation rank, so single POIs sort after every relation.
@@ -103,6 +100,8 @@ public class ClusterDialogBuilder {
 		// A cluster has no OSM element to share, edit or navigate to.
 		result.findViewById(R.id.menu).setVisibility(View.GONE);
 
+		// The dialog closes with the other dialogs.
+		ClimbingPoiRow rows = new ClimbingPoiRow(parent, null);
 		FilteredListAdapter<ClusterEntry> adapter = new FilteredListAdapter<ClusterEntry>(entries) {
 			@Override
 			protected boolean isVisible(int i, String filter) {
@@ -112,11 +111,8 @@ public class ClusterDialogBuilder {
 			@Override
 			public View getView(int i, View view, ViewGroup viewGroup) {
 				ClusterEntry entry = visibleList.get(i);
-				view = ListViewItemBuilder.getPaddedBuilder(parent, view, true)
-						.setTitle(entry.getName())
-						.setDescription(entry.description)
-						.setIcon(new PoiMarkerDrawable(parent, new DisplayableGeoNode(entry.poi)))
-						.build();
+				view = rows.build(view, new DisplayableGeoNode(entry.poi), entry.getName(),
+						entry.parentLabel);
 				view.setOnClickListener(clicked -> entry.showInfo(parent));
 				return view;
 			}
@@ -136,15 +132,14 @@ public class ClusterDialogBuilder {
 		ClimbingRouteCounter routeCounter = ClimbingRouteCounter.forDatabase(parent);
 		List<ClusterEntry> result = new ArrayList<>();
 		for (OsmCollectionEntity relation : content.relations) {
-			ClimbingRouteCounter.RouteSummary routes = routeCounter.summarize(relation);
 			MapCoordinate center = DataManager.collectionCenter(relation);
-			GeoNode poi = ClimbingRouteCounter.pin(relation, center, routes.getRouteCount());
-			result.add(new ClusterEntry(poi, relation, center, routes,
-					describeRelation(parent, relation, routes)));
+			GeoNode poi = routeCounter.pin(relation, center);
+			result.add(new ClusterEntry(poi, relation, center,
+					ClimbingParent.labelOf(parent, poi)));
 		}
 		for (DisplayableGeoNode poi : content.pois) {
-			result.add(new ClusterEntry(poi.geoNode, null, null, null,
-					DialogueUtils.buildDescription(parent, poi.geoNode)));
+			result.add(new ClusterEntry(poi.geoNode, null, null,
+					ClimbingParent.labelOf(parent, poi.geoNode)));
 		}
 		// From the outermost relations down to the single POIs.
 		Collections.sort(result, Comparator.comparingInt(ClusterEntry::getRank)
@@ -152,41 +147,11 @@ public class ClusterDialogBuilder {
 		return result;
 	}
 
-	private static String describeRelation(AppCompatActivity parent,
-	                                       OsmCollectionEntity relation,
-	                                       ClimbingRouteCounter.RouteSummary routes) {
-		StringBuilder result = new StringBuilder(
-				parent.getString(relation.entityClimbingType.getNameId()));
-		String separator = ": ";
-		for (GeoNode.ClimbingStyle style : Sorters.sortStyles(parent,
-				new ArrayList<>(routes.getStyleCounts().keySet()))) {
-			result.append(separator).append(parent.getString(style.getNameId()));
-			separator = ", ";
-		}
-		if (routes.getRouteCount() == 0) {
-			return result.toString();
-		}
-
-		result.append('\n').append(parent.getString(R.string.number_of_routes)).append(": ")
-				.append(routes.getRouteCount());
-		if (routes.getMinGrade() != ClimbingRouteCounter.UNKNOWN_GRADE) {
-			GradeSystem gradeSystem = GradeSystem.fromString(
-					Configs.instance(parent).getString(Configs.ConfigKey.usedGradeSystem));
-			String gradeSystemName = parent.getString(gradeSystem.shortName);
-			result.append('\n').append(parent.getString(R.string.min_grade, gradeSystemName))
-					.append(": ").append(gradeSystem.getGrade(routes.getMinGrade()))
-					.append('\n').append(parent.getString(R.string.max_grade, gradeSystemName))
-					.append(": ").append(gradeSystem.getGrade(routes.getMaxGrade()));
-		}
-		return result.toString();
-	}
-
 	/**
-	 * A relation (with its center and routes) or a single POI (with neither).
+	 * A relation (with its center) or a single POI (without), with what it is part of.
 	 */
 	private record ClusterEntry(GeoNode poi, OsmCollectionEntity relation,
-	                            MapCoordinate coordinate,
-	                            ClimbingRouteCounter.RouteSummary routes, String description) {
+	                            MapCoordinate coordinate, String parentLabel) {
 
 		private String getName() {
 			return !poi.getName().isEmpty() ? poi.getName() : Long.toString(poi.osmID);

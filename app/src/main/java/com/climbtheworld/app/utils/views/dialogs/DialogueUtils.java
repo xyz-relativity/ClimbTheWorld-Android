@@ -26,62 +26,15 @@ import com.climbtheworld.app.activities.EditNodeActivity;
 import com.climbtheworld.app.activities.EditRelationActivity;
 import com.climbtheworld.app.activities.MapActivity;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
-import com.climbtheworld.app.configs.Configs;
-import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.map.model.MapCoordinate;
-import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.GeoUtils;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.constants.Constants;
-import com.climbtheworld.app.utils.views.Sorters;
 
 import java.util.Locale;
 
 public class DialogueUtils {
-	public static String buildDescription(final AppCompatActivity parent, GeoNode poi) {
-		Configs configs = Configs.instance(parent);
-		StringBuilder appender = new StringBuilder();
-		String sepChr = "";
-		switch (poi.getNodeType()) {
-			case route:
-				for (GeoNode.ClimbingStyle style : Sorters.sortStyles(parent, poi.getClimbingStyles())) {
-					appender.append(sepChr).append(parent.getResources().getString(style.getNameId()));
-					sepChr = ", ";
-				}
-
-				appender.append("\n");
-
-				appender.append(parent.getString(R.string.length)).append(": ").append(Globals.getDistanceString(poi.getKey(ClimbingTags.KEY_LENGTH)));
-				break;
-			case crag:
-				for (GeoNode.ClimbingStyle style : Sorters.sortStyles(parent, poi.getClimbingStyles())) {
-					appender.append(sepChr).append(parent.getString(style.getNameId()));
-					sepChr = ", ";
-				}
-				appender.append("\n");
-
-				appender.append(parent.getString(R.string.min_grade, configs.getString(Configs.ConfigKey.usedGradeSystem)));
-				appender.append(": ").append(GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.getLevelId(ClimbingTags.KEY_GRADE_TAG_MIN)));
-
-				appender.append("\n");
-
-				appender.append(parent.getString(R.string.max_grade,
-						parent.getString(GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem)).shortName)));
-				appender.append(": ").append(GradeSystem.fromString(configs.getString(Configs.ConfigKey.usedGradeSystem)).getGrade(poi.getLevelId(ClimbingTags.KEY_GRADE_TAG_MAX)));
-
-				break;
-			case artificial:
-				appender.append(parent.getString(poi.getArtificialKind().getNameId()));
-			default:
-				appender.append("\n");
-				appender.append(poi.getKey(ClimbingTags.KEY_DESCRIPTION));
-				break;
-		}
-
-		return appender.toString();
-	}
-
 	protected static void buildTitle(final AppCompatActivity activity, final View result,
 	                                 final long osmId, final String name, Drawable icon,
 	                                 final GeoNode location, final String osmEntityType,
@@ -208,38 +161,46 @@ public class DialogueUtils {
 	}
 
 	public static void setLocation(AppCompatActivity parent, View result, GeoNode tmpPoi) {
-		double distance = tmpPoi.distanceMeters;
-
-		if (Globals.virtualCamera != null) {
-			distance = GeoUtils.calculateDistance(Globals.virtualCamera, tmpPoi);
-		}
-
-		((TextView) result.findViewById(R.id.editDistance)).setText(Globals.getDistanceString(distance));
-
-		double deltaAzimuth = GeoUtils.calculateTheoreticalAzimuth(Globals.virtualCamera, tmpPoi);
-		((TextView) result.findViewById(R.id.editBearings)).setText(AugmentedRealityUtils.getStringBearings(parent, deltaAzimuth));
+		setDistance(parent, result, Globals.virtualCamera, tmpPoi, null);
 
 		((TextView) result.findViewById(R.id.editLatitude)).setText(String.valueOf(tmpPoi.decimalLatitude));
 		((TextView) result.findViewById(R.id.editLongitude)).setText(String.valueOf(tmpPoi.decimalLongitude));
+	}
+
+	/**
+	 * Fills in the straight line distance and the compass point from the observer to the POI, and
+	 * sets the button that centers the map on the POI, the same in the info dialogs and in the
+	 * lists of climbing POIs: editDistance, editBearings and showOnMapButton in the view.
+	 *
+	 * @param closeList closes what the button is in, before the map shows the POI, unless it is a
+	 *                  dialog from getNewDialog, which all close anyway; null for nothing more
+	 */
+	public static void setDistance(AppCompatActivity parent, View result, GeoNode observer,
+	                               GeoNode poi, Runnable closeList) {
+		((TextView) result.findViewById(R.id.editDistance)).setText(
+				Globals.getDistanceString(GeoUtils.calculateDistance(observer, poi)));
+		((TextView) result.findViewById(R.id.editBearings)).setText(
+				AugmentedRealityUtils.getStringBearings(parent,
+						GeoUtils.calculateTheoreticalAzimuth(observer, poi)));
 
 		View geolocButton = result.findViewById(R.id.showOnMapButton);
-		if (geolocButton != null) {
-
-			geolocButton.setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					DialogBuilder.closeAllDialogs();
-					MapCoordinate location = new MapCoordinate(
-							tmpPoi.decimalLatitude, tmpPoi.decimalLongitude, tmpPoi.elevationMeters);
-					if (parent instanceof MapActivity) {
-						((MapActivity) parent).centerOnLocation(location);
-					} else {
-						Intent intent = new Intent(parent, MapActivity.class);
-						intent.putExtra("GeoPoint", location.toDelimitedString());
-						parent.startActivity(intent);
-					}
-				}
-			});
+		if (geolocButton == null) {
+			return;
 		}
+		geolocButton.setOnClickListener(clicked -> {
+			if (closeList != null) {
+				closeList.run();
+			}
+			DialogBuilder.closeAllDialogs();
+			MapCoordinate location = new MapCoordinate(
+					poi.decimalLatitude, poi.decimalLongitude, poi.elevationMeters);
+			if (parent instanceof MapActivity) {
+				((MapActivity) parent).centerOnLocation(location);
+			} else {
+				Intent intent = new Intent(parent, MapActivity.class);
+				intent.putExtra("GeoPoint", location.toDelimitedString());
+				parent.startActivity(intent);
+			}
+		});
 	}
 }

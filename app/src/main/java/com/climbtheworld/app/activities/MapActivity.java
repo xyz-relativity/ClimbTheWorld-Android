@@ -16,7 +16,6 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
 import com.climbtheworld.app.configs.ConfigFragment;
 import com.climbtheworld.app.configs.Configs;
-import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.map.marker.NodeDisplayFilters;
 import com.climbtheworld.app.map.model.MapBounds;
@@ -55,12 +54,12 @@ public class MapActivity extends MapWidgetActivity implements ConfigFragment.OnC
 	private final DataManager dataManager = new DataManager();
 	private final Handler searchHandler = new Handler(Looper.getMainLooper());
 	private Runnable pendingSearch;
-	private UiRelatedTask<List<DisplayableGeoNode>> searchTask;
+	private UiRelatedTask<List<SearchResultsAdapter.Result>> searchTask;
 	private SearchView searchView;
 	private ListPopupWindow searchResultsPopup;
 	private OnBackPressedCallback searchResultsBackCallback;
 	private SearchResultsAdapter searchResultsAdapter;
-	private final List<DisplayableGeoNode> searchResults = new ArrayList<>();
+	private final List<SearchResultsAdapter.Result> searchResults = new ArrayList<>();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -115,7 +114,10 @@ public class MapActivity extends MapWidgetActivity implements ConfigFragment.OnC
 		searchView.setQueryHint(getString(R.string.search));
 
 		searchResultsAdapter = new SearchResultsAdapter(this, searchResults,
-				this::onSearchResultSelected);
+				this::onSearchResultSelected, () -> {
+					searchResultsPopup.dismiss();
+					searchView.clearFocus();
+				});
 
 		searchResultsPopup = new ListPopupWindow(this);
 		// Anchor to the search bar's container (the space between the FAB columns) so the list is
@@ -173,14 +175,15 @@ public class MapActivity extends MapWidgetActivity implements ConfigFragment.OnC
 			return;
 		}
 
-		searchTask = new UiRelatedTask<List<DisplayableGeoNode>>() {
+		searchTask = new UiRelatedTask<List<SearchResultsAdapter.Result>>() {
 			@Override
-			protected List<DisplayableGeoNode> doWork() {
-				return dataManager.find(MapActivity.this, searchFor);
+			protected List<SearchResultsAdapter.Result> doWork() {
+				return SearchResultsAdapter.Result.load(MapActivity.this,
+						dataManager.find(MapActivity.this, searchFor));
 			}
 
 			@Override
-			protected void thenDoUiRelatedWork(List<DisplayableGeoNode> result) {
+			protected void thenDoUiRelatedWork(List<SearchResultsAdapter.Result> result) {
 				searchTask = null;
 				showSearchResults(result);
 			}
@@ -188,7 +191,7 @@ public class MapActivity extends MapWidgetActivity implements ConfigFragment.OnC
 		Constants.DB_EXECUTOR.execute(searchTask);
 	}
 
-	private void showSearchResults(List<DisplayableGeoNode> result) {
+	private void showSearchResults(List<SearchResultsAdapter.Result> result) {
 		if (isFinishing() || isDestroyed()) {
 			return;
 		}

@@ -176,6 +176,8 @@
     <string name="points_of_interest_value">%d points d’intérêt</string>
     <string name="download_dialog_message">Aucune donnée régionale n’a encore été téléchargée. Pensez à télécharger une région qui vous intéresse avant d’utiliser l’application.</string>
     <string name="center_map_on_point">Centrer la carte sur ce point</string>
+    <string name="climbing_parent_label">%1$s : %2$s</string>
+    <string name="country">Pays</string>
     <string name="delete_confirmation">Supprimer « %s » ?</string>
 
     <string name="delete_confirmation_message">Voulez-vous vraiment supprimer cet élément ?</string>
@@ -483,7 +485,6 @@
     <string name="ar_placement_align_none">Aucune voie cartographiée à proximité.</string>
     <string name="ar_placement_align_clear">Effacer l’alignement</string>
     <string name="ar_placement_align_delete">Supprimer cet alignement</string>
-    <string name="ar_placement_align_distance">À environ %1$d m</string>
     <string name="ar_placement_align_suggested">Suggérées, pour fixer l’orientation</string>
     <string name="ar_placement_align_by_crag">Par secteur, dans son ordre</string>
     <string name="ar_placement_aligned">Aligné sur %1$s.</string>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A row of the lists of climbing POIs, see ClimbingPoiRow: the pin, the name with the straight
+     line distance and the compass point on its right, what the POI is part of under them, and the
+     button centering the map on the POI, the distance part as in the info dialogs'
+     fragment_info_geoloc, under the same ids. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal">
+
+    <ImageView
+        android:id="@+id/climbingPoiIcon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:cropToPadding="true"
+        android:importantForAccessibility="no"
+        android:paddingEnd="2dp"
+        android:scaleType="centerInside" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/climbingPoiName"
+                style="@style/SectionItemLabel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/editDistance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:maxLines="1" />
+
+            <TextView
+                android:id="@+id/editBearings"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:maxLines="1" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/climbingPoiParent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/showOnMapButton"
+        style="?android:imageButtonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="2dp"
+        android:background="?android:selectableItemBackground"
+        android:clickable="true"
+        android:contentDescription="@string/center_map_on_point"
+        android:focusable="true"
+        android:padding="8dp"
+        android:src="@drawable/ic_tap_marker"
+        android:tooltipText="@string/center_map_on_point" />
+</LinearLayout>

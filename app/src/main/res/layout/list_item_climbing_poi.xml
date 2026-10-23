@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A row of the lists of climbing POIs, see ClimbingPoiRow. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="?android:imageButtonStyle"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?android:selectableItemBackground"
+    android:orientation="horizontal">
+
+    <include layout="@layout/list_item_climbing_poi_content" />
+</LinearLayout>

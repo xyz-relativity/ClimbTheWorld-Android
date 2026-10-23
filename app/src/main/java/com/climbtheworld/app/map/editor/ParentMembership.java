@@ -2,7 +2,6 @@ package com.climbtheworld.app.map.editor;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -16,8 +15,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.DisplayableGeoNode;
-import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.map.model.MapBounds;
+import com.climbtheworld.app.map.widget.climbing.ClimbingParent;
 import com.climbtheworld.app.map.widget.climbing.ClimbingRouteCounter;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.ClimbingTags;
@@ -28,9 +27,9 @@ import com.climbtheworld.app.storage.database.OsmEntity.EntityClimbingType;
 import com.climbtheworld.app.storage.database.OsmEntity.EntityOsmType;
 import com.climbtheworld.app.storage.edit.OsmEditStore;
 import com.climbtheworld.app.storage.edit.RelationMembers;
-import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.constants.Constants;
+import com.climbtheworld.app.utils.views.ClimbingPoiRow;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 import com.climbtheworld.app.utils.views.TextWatchers;
 
@@ -61,8 +60,6 @@ import needle.UiRelatedTask;
  */
 public class ParentMembership {
 	private static final double NEARBY_PARENT_METERS = 1000;
-	/** The size of the picker's pins, against the map's. */
-	private static final double PICKER_PIN_SCALE = 0.78;
 
 	/** What the parents are. */
 	public enum Kind {
@@ -147,12 +144,13 @@ public class ParentMembership {
 		final OsmCollectionEntity relation;
 		/** The relation as its pin draws it, with its route count. */
 		final DisplayableGeoNode pin;
-		final double distanceMeters;
+		/** What the relation is part of in turn, see ClimbingParent. */
+		final String parentLabel;
 
-		ListedParent(OsmCollectionEntity relation, DisplayableGeoNode pin, double distanceMeters) {
+		ListedParent(OsmCollectionEntity relation, DisplayableGeoNode pin, String parentLabel) {
 			this.relation = relation;
 			this.pin = pin;
-			this.distanceMeters = distanceMeters;
+			this.parentLabel = parentLabel;
 		}
 	}
 
@@ -440,9 +438,9 @@ public class ParentMembership {
 	}
 
 	/**
-	 * Lists the parents near the element or on the editor's map, last changed first, which zooming
-	 * the map out widens, then offers a new parent and finding one by name. Finding opens a filter
-	 * listing the parents of the name typed instead, at any distance.
+	 * Lists the parents near the element or on the editor's map, see ClimbingPoiRow, last changed
+	 * first, which zooming the map out widens, then offers a new parent and finding one by name.
+	 * Finding opens a filter listing the parents of the name typed instead, at any distance.
 	 */
 	private final class ParentPicker {
 		private final double latitude;
@@ -457,6 +455,7 @@ public class ParentMembership {
 		private final View filterContainer;
 		private final EditText filter;
 		private final AlertDialog dialog;
+		private final ClimbingPoiRow rows;
 
 		ParentPicker() {
 			GeoNode element = editedElement.get();
@@ -479,6 +478,7 @@ public class ParentMembership {
 					.setView(content)
 					.setNegativeButton(android.R.string.cancel, null)
 					.create();
+			rows = new ClimbingPoiRow(parent, dialog::dismiss);
 
 			adapter = new BaseAdapter() {
 				@Override
@@ -499,15 +499,8 @@ public class ParentMembership {
 				@Override
 				public View getView(int position, View view, ViewGroup group) {
 					ListedParent listedParent = relations.get(position);
-					// The rows of the map's cluster list, with the pin as the map draws it, smaller.
-					Drawable pin = new PoiMarkerDrawable(parent, listedParent.pin).getDrawable();
-					View row = ListViewItemBuilder.getPaddedBuilder(parent, view, true)
-							.setTitle(nameOf(listedParent.relation))
-							.setDescription(Globals.getDistanceString(listedParent.distanceMeters))
-							.setIcon(pin)
-							.setIconSize(pin.getIntrinsicWidth() * PICKER_PIN_SCALE,
-									pin.getIntrinsicHeight() * PICKER_PIN_SCALE)
-							.build();
+					View row = rows.build(view, listedParent.pin, nameOf(listedParent.relation),
+							listedParent.parentLabel);
 					row.setOnClickListener(clicked -> {
 						dialog.dismiss();
 						addTo(listedParent.relation);
@@ -569,9 +562,10 @@ public class ParentMembership {
 						// A crag doesn't go into itself.
 						if (!listed.contains(relation.osmID) && !(relation.osmID == memberId
 								&& kind.memberType == EntityOsmType.relation)) {
-							result.add(new ListedParent(relation,
-									DataManager.toDisplayableNode(relation, routeCounter),
-									OsmEditStore.distanceMeters(latitude, longitude, relation)));
+							DisplayableGeoNode pin =
+									DataManager.toDisplayableNode(relation, routeCounter);
+							result.add(new ListedParent(relation, pin,
+									ClimbingParent.labelOf(parent, pin.getGeoNode())));
 						}
 					}
 					return result;

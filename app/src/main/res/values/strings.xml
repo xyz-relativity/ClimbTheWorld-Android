@@ -178,6 +178,9 @@
     <string name="points_of_interest_value">%d Points of Interest</string>
     <string name="download_dialog_message">No regional data has been downloaded yet. Consider downloading a region of interest before using the app.</string>
     <string name="center_map_on_point">Center Map on Point</string>
+    <!-- What a climbing POI is part of, in the lists of climbing POIs: "Crag: Presles". -->
+    <string name="climbing_parent_label">%1$s: %2$s</string>
+    <string name="country">Country</string>
     <string name="delete_confirmation">Delete: \"%s\"?</string>
 
     <string name="delete_confirmation_message">Do you really want to delete this node?</string>
@@ -484,7 +487,6 @@
     <string name="ar_placement_align_none">No mapped route near here.</string>
     <string name="ar_placement_align_clear">Clear alignment</string>
     <string name="ar_placement_align_delete">Delete this alignment</string>
-    <string name="ar_placement_align_distance">About %1$d m away</string>
     <string name="ar_placement_align_suggested">Suggested, to set the heading</string>
     <string name="ar_placement_align_by_crag">By crag, as it lists them</string>
     <string name="ar_placement_aligned">Aligned on %1$s.</string>

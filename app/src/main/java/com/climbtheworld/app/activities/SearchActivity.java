@@ -4,16 +4,13 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
-import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.EdgeToEdge;
@@ -29,9 +26,9 @@ import needle.UiRelatedTask;
 public class SearchActivity extends AppCompatActivity {
 	private static final int SEARCH_DEBOUNCE_MS = 300;
 
-	UiRelatedTask<List<DisplayableGeoNode>> dbExecutor = null;
+	UiRelatedTask<List<SearchResultsAdapter.Result>> dbExecutor = null;
 	private final DataManager dataManager = new DataManager();
-	private final List<DisplayableGeoNode> searchResults = new ArrayList<>();
+	private final List<SearchResultsAdapter.Result> searchResults = new ArrayList<>();
 	private SearchResultsAdapter resultsAdapter;
 	private ProgressBar progress;
 	private View noMatch;
@@ -66,21 +63,22 @@ public class SearchActivity extends AppCompatActivity {
 			if (dbExecutor != null) {
 				dbExecutor.cancel();
 			}
-			updateUI(new ArrayList<DisplayableGeoNode>(), false);
+			updateUI(new ArrayList<>(), false);
 		} else {
 			noMatch.setVisibility(View.GONE);
 			progress.setVisibility(View.VISIBLE);
 			if (dbExecutor != null) {
 				dbExecutor.cancel();
 			}
-			dbExecutor = new UiRelatedTask<List<DisplayableGeoNode>>() {
+			dbExecutor = new UiRelatedTask<List<SearchResultsAdapter.Result>>() {
 				@Override
-				protected List<DisplayableGeoNode> doWork() {
-					return dataManager.find(SearchActivity.this, searchFor);
+				protected List<SearchResultsAdapter.Result> doWork() {
+					return SearchResultsAdapter.Result.load(SearchActivity.this,
+							dataManager.find(SearchActivity.this, searchFor));
 				}
 
 				@Override
-				protected void thenDoUiRelatedWork(List<DisplayableGeoNode> result) {
+				protected void thenDoUiRelatedWork(List<SearchResultsAdapter.Result> result) {
 					updateUI(result, true);
 				}
 			};
@@ -92,19 +90,11 @@ public class SearchActivity extends AppCompatActivity {
 
 	private void initResultsList() {
 		resultsAdapter = new SearchResultsAdapter(this, searchResults,
-				poi -> NodeDialogBuilder.showNodeInfoDialog(this, poi)) {
-			@Override
-			public View getView(int i, View view, ViewGroup viewGroup) {
-				view = super.getView(i, view, viewGroup);
-				((TextView) view.findViewById(R.id.itemID)).setText(
-						String.valueOf(searchResults.get(i).getGeoNode().getID()));
-				return view;
-			}
-		};
+				poi -> NodeDialogBuilder.showNodeInfoDialog(this, poi), null);
 		((ListView) findViewById(R.id.listSearchResults)).setAdapter(resultsAdapter);
 	}
 
-	private void updateUI(final List<DisplayableGeoNode> result, boolean showNoMatch) {
+	private void updateUI(final List<SearchResultsAdapter.Result> result, boolean showNoMatch) {
 		searchResults.clear();
 		searchResults.addAll(result);
 		resultsAdapter.notifyDataSetChanged();

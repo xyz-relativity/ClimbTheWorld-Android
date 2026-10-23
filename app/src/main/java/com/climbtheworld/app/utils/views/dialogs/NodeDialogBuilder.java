@@ -28,6 +28,7 @@ import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.map.model.MapCoordinate;
+import com.climbtheworld.app.map.widget.climbing.ClimbingParent;
 import com.climbtheworld.app.map.widget.climbing.ClimbingRouteCounter;
 import com.climbtheworld.app.map.widget.climbing.RouteStandIn;
 import com.climbtheworld.app.storage.DataManager;
@@ -57,7 +58,6 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.SortedMap;
 
@@ -560,10 +560,9 @@ public class NodeDialogBuilder {
 	}
 
 	/**
-	 * Names what the climbing feature is part of, on the right of the climbing info title: the
-	 * smallest named climbing relation listing it, so the next level up, with its icon, which
-	 * opens it. At the top, such as for an area, it is the country instead. Runs off the UI
-	 * thread.
+	 * Names what the climbing feature is part of, see ClimbingParent, on the right of the
+	 * climbing info title: a relation with its icon, which opens it, or the country. Runs off the
+	 * UI thread.
 	 *
 	 * @param location a point of the feature
 	 */
@@ -577,25 +576,14 @@ public class NodeDialogBuilder {
 			return;
 		}
 
-		DataManager dataManager = new DataManager();
-		OsmCollectionEntity parent = null;
-		for (OsmCollectionEntity relation : dataManager.loadParentRelations(activity, osmType,
-				osmId, location.decimalLatitude, location.decimalLongitude)) {
-			if (parent == null || isCloserParent(relation, parent)) {
-				parent = relation;
-			}
-		}
-
-		if (parent != null) {
-			String name = parent.getTags().optString(ClimbingTags.KEY_NAME, "").trim();
-			if (name.isEmpty()) {
-				name = activity.getString(parent.entityClimbingType.getNameId());
-			}
+		ClimbingParent parent = ClimbingParent.load(activity, osmType, osmId, location);
+		String name = parent.getName(activity);
+		if (parent.relation != null) {
 			parentText.setText(name);
 			parentText.setVisibility(View.VISIBLE);
 
 			// The same pin as on the map, with the route count.
-			DisplayableGeoNode parentPin = DataManager.toDisplayableNode(parent,
+			DisplayableGeoNode parentPin = DataManager.toDisplayableNode(parent.relation,
 					ClimbingRouteCounter.forDatabase(activity));
 			GeoNode center = parentPin.getGeoNode();
 			MapCoordinate coordinate = new MapCoordinate(center.decimalLatitude,
@@ -603,53 +591,16 @@ public class NodeDialogBuilder {
 			parentIcon.setImageDrawable(new PoiMarkerDrawable(activity, parentPin).getDrawable());
 			parentIcon.setContentDescription(name);
 			parentIcon.setVisibility(View.VISIBLE);
-			final OsmCollectionEntity shown = parent;
 			parentIcon.setOnClickListener(
-					view -> showCollectionInfoDialog(activity, shown, coordinate));
+					view -> showCollectionInfoDialog(activity, parent.relation, coordinate));
 			return;
 		}
 
-		List<String> countries = new ArrayList<>(dataManager.loadCountries(activity, osmType, osmId));
-		if (countries.isEmpty() && location.countryIso != null && !location.countryIso.isEmpty()) {
-			countries.add(location.countryIso);
-		}
-		if (countries.isEmpty()) {
+		if (name.isEmpty()) {
 			return;
 		}
-		// Along a border, the feature can be in more than one.
-		StringBuilder names = new StringBuilder();
-		for (String countryIso : countries) {
-			String name = new Locale("", countryIso).getDisplayCountry();
-			if (names.length() > 0) {
-				names.append(" / ");
-			}
-			names.append(!name.isEmpty() ? name : countryIso);
-		}
-		countryText.setText(names);
+		countryText.setText(name);
 		countryText.setVisibility(View.VISIBLE);
-	}
-
-	/**
-	 * Named relations come first, then the smaller one, as it is the closest level up: the crag
-	 * of a route rather than the area holding the crag.
-	 */
-	private static boolean isCloserParent(OsmCollectionEntity relation,
-	                                      OsmCollectionEntity other) {
-		boolean named = !relation.getTags().optString(ClimbingTags.KEY_NAME, "").trim().isEmpty();
-		boolean otherNamed = !other.getTags().optString(ClimbingTags.KEY_NAME, "").trim().isEmpty();
-		if (named != otherNamed) {
-			return named;
-		}
-		return boundingBoxSize(relation) < boundingBoxSize(other);
-	}
-
-	private static double boundingBoxSize(OsmCollectionEntity collection) {
-		double width = collection.bBoxEast - collection.bBoxWest;
-		if (width < 0) {
-			// Across the antimeridian.
-			width += 360;
-		}
-		return (collection.bBoxNorth - collection.bBoxSouth) * width;
 	}
 
 	public static void showCollectionInfoDialog(AppCompatActivity parent,
