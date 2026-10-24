@@ -41,6 +41,7 @@ import com.climbtheworld.app.augmentedreality.TerrainWireframe;
 import com.climbtheworld.app.augmentedreality.TerrainWireframeView;
 import com.climbtheworld.app.configs.ConfigFragment;
 import com.climbtheworld.app.configs.Configs;
+import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.map.marker.NodeDisplayFilters;
 import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.map.widget.MapLibreMapWidget;
@@ -118,6 +119,10 @@ public class AugmentedRealityActivity extends MapWidgetActivity
 						EnvironmentActivity.class));
 			}
 		});
+
+		// As the map's new node button.
+		((FloatingActionButton) findViewById(R.id.createButton)).setImageDrawable(
+				MarkerUtils.getLayoutIcon(this, R.layout.icon_climbing_add_display));
 
 		configs = Configs.instance(this);
 		scene = new AugmentedRealityScene(this, Globals.virtualCamera,
@@ -384,6 +389,15 @@ public class AugmentedRealityActivity extends MapWidgetActivity
 		} else if (id == R.id.toolsButton) {
 			intent = new Intent(AugmentedRealityActivity.this, ToolsActivity.class);
 			startActivityForResult(intent, Constants.OPEN_TOOLS_ACTIVITY);
+		} else if (id == R.id.createButton) {
+			// A new node where the camera is, placed in the editor's A.R., which takes ARCore's
+			// world over from this view as the editor covers it, with the routes aligned on, so
+			// that it need not be aligned again; see ArViewTracking.handOver. The view starts
+			// over once the editor closes, see onActivityResult, and takes the world back.
+			intent = new Intent(AugmentedRealityActivity.this, EditNodeActivity.class);
+			intent.putExtra(EditNodeActivity.EXTRA_AR_PLACEMENT, true);
+			arCore.handOver();
+			startActivityForResult(intent, Constants.OPEN_EDIT_ACTIVITY);
 		}
 	}
 

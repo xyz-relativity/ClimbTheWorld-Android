@@ -43,6 +43,7 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector2d;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.ar.core.Anchor;
 import com.google.ar.core.ArCoreApk;
 import com.google.ar.core.Config;
 import com.google.ar.core.Session;
@@ -81,6 +82,11 @@ import java.util.function.Supplier;
  * ARCore runs on Google Play Services for AR, which not every phone can run. The first time, it
  * tells the user about ARCore; it asks for the camera, and has ARCore installed or updated, when
  * needed. The host is told when it does not come to run.
+ * <p>
+ * The world, with the routes aligned on, can be handed over to the next A.R. of the app to open,
+ * see handOver and ArWorldHandoff, which takes it in place of a new session, see openSession: the
+ * A.R. view hands it to the node editor's A.R. placement, opened from the view, and the editor
+ * hands it back as it closes, see setHandsWorldBack.
  */
 class ArCoreSession {
 	private static final String TAG = ArCoreSession.class.getSimpleName();
@@ -162,6 +168,9 @@ class ArCoreSession {
 	private Session session;
 	// Whether the session measures depth.
 	private boolean depthEnabled;
+	// Whether to hand the world over as the activity closes, or is made again, see
+	// setHandsWorldBack.
+	private boolean handsWorldBack;
 	private AlertDialog noticeDialog;
 	// ARCore's install screen is showing; starting goes on when the activity resumes.
 	private boolean installRequested;
@@ -657,6 +666,10 @@ class ArCoreSession {
 	void onPause() {
 		resumed = false;
 		apply();
+		// Before the A.R. that takes it opens, which the activity's end, told later, may follow.
+		if (handsWorldBack && activity.isFinishing()) {
+			handOver();
+		}
 	}
 
 	void onDestroy() {
@@ -666,10 +679,74 @@ class ArCoreSession {
 		alignmentPicker.dismiss();
 		shown = false;
 		apply();
+		// Made again, as when the screen turns, the activity takes the world back.
+		if (handsWorldBack) {
+			handOver();
+		}
 		if (session != null) {
 			session.close();
 			session = null;
 		}
+	}
+
+	/**
+	 * @param handsBack whether to hand the world over, see handOver, as the activity closes, to
+	 *                  the A.R. that opens next, or is made again, to the activity made again: the
+	 *                  node editor's A.R. placement opened from the A.R. view, which starts over
+	 *                  as the editor closes and takes the world back
+	 */
+	void setHandsWorldBack(boolean handsBack) {
+		handsWorldBack = handsBack;
+	}
+
+	/**
+	 * Hands the session, with its world and the routes aligned on, over to the next A.R. of the
+	 * app to open, see ArWorldHandoff, and goes on without one: the A.R. is stopped, see stop,
+	 * and starting it again makes a new session, unless the world is handed back by then. The
+	 * routes aligned on whose anchor ARCore has not made yet, as it was not tracking, are left
+	 * behind.
+	 *
+	 * @return whether there was a session to hand over, which measures depth, as the node
+	 * editor's A.R. placement needs, else the session stays
+	 */
+	boolean handOver() {
+		if (session == null || !depthEnabled) {
+			return false;
+		}
+		stop();
+		Set<String> keys = new HashSet<>();
+		for (AlignedRoute aligned : alignedRoutes) {
+			keys.add(aligned.anchorKey());
+		}
+		Map<String, Anchor> anchors = renderer.takeAnchors(keys);
+		List<GeoNode> routes = new ArrayList<>();
+		for (AlignedRoute aligned : alignedRoutes) {
+			if (anchors.containsKey(aligned.anchorKey())) {
+				routes.add(aligned.route());
+			}
+		}
+		ArWorldHandoff.offer(new ArWorldHandoff.World(session, depthEnabled, anchors, routes));
+		session = null;
+		alignedRoutes.clear();
+		trackedAnchors = Collections.emptySet();
+		registration.reset();
+		updateStatus();
+		return true;
+	}
+
+	/**
+	 * Takes a world handed over in place of a new session, see handOver.
+	 */
+	private void adopt(ArWorldHandoff.World world) {
+		session = world.session();
+		depthEnabled = world.depth();
+		renderer.adoptAnchors(world.anchors());
+		alignedRoutes.clear();
+		for (GeoNode route : world.alignedRoutes()) {
+			alignedRoutes.add(new AlignedRoute(route));
+		}
+		Log.i(TAG, "ARCore's world taken over, aligned on " + alignedRoutes.size()
+				+ " route(s)");
 	}
 
 	/**
@@ -745,6 +822,18 @@ class ArCoreSession {
 	 */
 	private void openSession() {
 		if (session == null) {
+			// A world handed over, as from the A.R. view, is taken in place of a new one, as
+			// ARCore is installed then.
+			ArWorldHandoff.World handed = ArWorldHandoff.take();
+			if (handed != null && !handed.depth() && depthRequired) {
+				handed.session().close();
+				handed = null;
+			}
+			if (handed != null) {
+				adopt(handed);
+			}
+		}
+		if (session == null) {
 			try {
 				if (ArCoreApk.getInstance().requestInstall(activity, !installRequested)
 						== ArCoreApk.InstallStatus.INSTALL_REQUESTED) {
@@ -752,7 +841,9 @@ class ArCoreSession {
 					return;
 				}
 				installRequested = false;
-				Session created = new Session(activity);
+				// The application's context, as the session may outlive the activity, handed
+				// over to the next A.R. to open.
+				Session created = new Session(activity.getApplicationContext());
 				// The cursor is placed on the depth ARCore measures, where it can.
 				boolean depth = created.isDepthModeSupported(Config.DepthMode.AUTOMATIC);
 				if (!depth && depthRequired) {

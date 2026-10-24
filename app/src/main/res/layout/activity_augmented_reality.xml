@@ -264,19 +264,38 @@
                 app:srcCompat="@drawable/ic_filter" />
         </LinearLayout>
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/arSettingsButton"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
-            android:background="?android:selectableItemBackground"
-            android:onClick="onClick"
-            android:contentDescription="@string/hint_ar_settings"
-            android:cropToPadding="true"
-            android:scaleType="fitXY"
-            android:layout_margin="5dip"
-            app:srcCompat="@drawable/ic_menu" />
+            android:layout_alignParentEnd="true">
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/arSettingsButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?android:selectableItemBackground"
+                android:onClick="onClick"
+                android:contentDescription="@string/hint_ar_settings"
+                android:cropToPadding="true"
+                android:scaleType="fitXY"
+                android:layout_margin="5dip"
+                app:srcCompat="@drawable/ic_menu" />
+
+            <!-- Opens the node editor on a new node, placed in the A.R., with ARCore's world as
+                 the view has it tied to the map; see ArViewTracking.handOver. The same icon as
+                 the map's. -->
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/createButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?android:selectableItemBackground"
+                android:onClick="onClick"
+                android:contentDescription="@string/hint_create_new_route"
+                android:layout_margin="5dip"
+                app:srcCompat="@drawable/ic_add" />
+        </LinearLayout>
 
         <!-- Hides ARCore's aiming tools, or shows them again, near mapped routes, where they show
              by themselves; see ArViewTracking. At the bottom right, as the node editor's A.R.

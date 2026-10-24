@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -236,6 +237,38 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 	 */
 	Map<String, double[]> getAnchorPositions() {
 		return anchorPositions;
+	}
+
+	/**
+	 * Gives some of the anchors away, for another renderer on the same session to keep, see
+	 * adoptAnchors and ArWorldHandoff, and lets go of the rest: those are detached, and the
+	 * anchors asked for and not made yet are forgotten. Only while the view is paused, as the GL
+	 * thread has the anchors otherwise.
+	 *
+	 * @param keys the keys of the anchors to give away
+	 * @return the anchors given away, by key, leaving out the ones not made yet
+	 */
+	Map<String, Anchor> takeAnchors(Set<String> keys) {
+		Map<String, Anchor> taken = new HashMap<>();
+		for (Map.Entry<String, Anchor> entry : anchors.entrySet()) {
+			if (keys.contains(entry.getKey())) {
+				taken.put(entry.getKey(), entry.getValue());
+			} else {
+				entry.getValue().detach();
+			}
+		}
+		anchors.clear();
+		anchorRequests.clear();
+		anchorPositions = Collections.emptyMap();
+		return taken;
+	}
+
+	/**
+	 * Keeps anchors another renderer made on the session, see takeAnchors, where they are told
+	 * once the session runs here. Only while the view is paused.
+	 */
+	void adoptAnchors(Map<String, Anchor> adopted) {
+		anchors.putAll(adopted);
 	}
 
 	/**

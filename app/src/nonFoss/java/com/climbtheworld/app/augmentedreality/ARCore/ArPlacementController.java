@@ -38,9 +38,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * <p>
  * ARCore is optional: the button only shows on phones ARCore supports, and is taken away when
  * ARCore turns out not to run or not to measure depth there.
+ * <p>
+ * Opened from the A.R. view, see show, the A.R. shows from the start, on ARCore's world as the
+ * view had it tied to the map, with the routes aligned on, when the view handed it over, and
+ * hands it back as the editor closes, see ArWorldHandoff.
  */
 public class ArPlacementController implements ArPlacement {
 	private static final String STATE_SHOWN = "arPlacementShown";
+	private static final String STATE_HANDS_WORLD_BACK = "arPlacementHandsWorldBack";
 	// How far the observer moves before the data around them is loaded again.
 	private static final double SCENE_RELOAD_METERS = 10;
 	private static final long TOGGLE_TURN_MS = 400;
@@ -66,8 +71,15 @@ public class ArPlacementController implements ArPlacement {
 
 	// ARCore turned out not to run, or not to measure depth, on this phone.
 	private boolean unavailable;
-	// The A.R. was showing before the activity was made again; it starts when the activity resumes.
+	// The A.R. was showing before the activity was made again, or the editor was opened from the
+	// A.R. view, see show; it starts when the activity resumes, once ARCore is known to support
+	// the phone.
 	private boolean startOnResume;
+	// Whether ARCore supports this phone, as far as it knows before trying; null until it answers.
+	private Boolean supported;
+	private boolean resumed;
+	// The editor was opened from the A.R. view, which takes ARCore's world back, see show.
+	private boolean handsWorldBack;
 	// The node was placed in the A.R. since the editor opened, so the user knows to tap.
 	private boolean placed;
 	// The last toast, which the next one replaces rather than queueing behind it.
@@ -175,10 +187,12 @@ public class ArPlacementController implements ArPlacement {
 		placeButton.setOnClickListener(view -> place(arCore.getCursor()));
 		toggleButton.setOnClickListener(view -> toggle());
 		toggleButton.setVisibility(View.GONE);
-		arCore.checkSupported(supported -> {
-			if (supported && !unavailable) {
+		arCore.checkSupported(answer -> {
+			supported = answer;
+			if (answer && !unavailable) {
 				toggleButton.setVisibility(View.VISIBLE);
 			}
+			startIfWanted();
 		});
 		arCore.updateStatus();
 	}
@@ -201,24 +215,56 @@ public class ArPlacementController implements ArPlacement {
 	@Override
 	public void restore(Bundle savedInstanceState) {
 		startOnResume = savedInstanceState != null && savedInstanceState.getBoolean(STATE_SHOWN);
+		if (savedInstanceState != null && savedInstanceState.getBoolean(STATE_HANDS_WORLD_BACK)) {
+			setHandsWorldBack();
+		}
 	}
 
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		outState.putBoolean(STATE_SHOWN, arCore.isShown() || startOnResume);
+		outState.putBoolean(STATE_HANDS_WORLD_BACK, handsWorldBack);
+	}
+
+	/**
+	 * Shows the A.R. once the activity resumes, where ARCore runs, as when the editor is opened
+	 * from the A.R. view, whose world it takes over, and hands back as the editor closes.
+	 */
+	@Override
+	public void show() {
+		startOnResume = true;
+		setHandsWorldBack();
+	}
+
+	private void setHandsWorldBack() {
+		handsWorldBack = true;
+		arCore.setHandsWorldBack(true);
 	}
 
 	@Override
 	public void onResume() {
+		resumed = true;
 		arCore.onResume();
-		if (startOnResume) {
-			startOnResume = false;
+		startIfWanted();
+	}
+
+	/**
+	 * Starts the A.R. that is to show, once the activity is resumed and ARCore is known to
+	 * support the phone: where it does not, the toggle never shows, and the map stays.
+	 */
+	private void startIfWanted() {
+		if (!startOnResume || !resumed || supported == null) {
+			return;
+		}
+		startOnResume = false;
+		if (supported) {
 			arCore.start();
 		}
 	}
 
 	@Override
 	public void onPause() {
+		resumed = false;
 		arCore.onPause();
 	}
 
@@ -304,8 +350,10 @@ public class ArPlacementController implements ArPlacement {
 		if (!arCore.isRunning() || aligning) {
 			pin.setVisibility(View.GONE);
 		}
-		ArCoreSession.setIconEnabled(placeButton,
-				!aligning && arCore.isAiming() && arCore.isReady());
+		// Place goes while the user aligns, as the cursor is the route's then, see
+		// ArCoreSession.align, and Align drops it.
+		placeButton.setVisibility(aligning ? View.GONE : View.VISIBLE);
+		ArCoreSession.setIconEnabled(placeButton, arCore.isAiming() && arCore.isReady());
 	}
 
 	/**

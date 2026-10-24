@@ -37,6 +37,10 @@ import java.util.function.Supplier;
  * view goes on with CameraX and the sensors. Once refused, ARCore is left alone until the app
  * starts again, which asks once more; refused twice in a row, the setting is turned off, until the
  * user turns it on again.
+ * <p>
+ * To add a node from the view, ARCore's world is handed over to the node editor's A.R. placement
+ * as the view is paused for it, see handOver, and taken back, with the routes aligned on there
+ * too, when the view starts over once the editor closes, see ArWorldHandoff.
  */
 public class ArViewController implements ArViewTracking {
 	private static final String TAG = ArViewController.class.getSimpleName();
@@ -64,6 +68,8 @@ public class ArViewController implements ArViewTracking {
 	private boolean gaveUp;
 	// Whether ARCore moves and turns the camera, see Listener.onMovesCameraChanged.
 	private boolean movesCamera;
+	// The world is to be handed over as the view is paused, see handOver.
+	private boolean handOverOnPause;
 	// As the listener was last told, see Listener.onAligningChanged.
 	private Set<Long> shownWhileAligning;
 	private Long seeThroughNodeId;
@@ -161,11 +167,13 @@ public class ArViewController implements ArViewTracking {
 		if (!configs.getBoolean(Configs.ConfigKey.useArCore)) {
 			Log.i(TAG, "Not trying ARCore: the Use ARCore setting is off");
 			gaveUp = true;
+			ArWorldHandoff.discard();
 			return false;
 		}
 		if (configs.getBoolean(Configs.ConfigKey.arCoreViewRefusedThisRun)) {
 			Log.i(TAG, "Not trying ARCore: refused since the app started");
 			gaveUp = true;
+			ArWorldHandoff.discard();
 			return false;
 		}
 		Log.i(TAG, "Trying ARCore once the view is resumed");
@@ -184,7 +192,21 @@ public class ArViewController implements ArViewTracking {
 	@Override
 	public void onPause() {
 		resumed = false;
+		// While the view still shows, up to here, as the editor comes over it.
+		if (handOverOnPause) {
+			handOverOnPause = false;
+			if (arCore.handOver()) {
+				Log.i(TAG, "ARCore's world handed to the node editor");
+				setMovesCamera(false);
+				updateTools();
+			}
+		}
 		arCore.onPause();
+	}
+
+	@Override
+	public void handOver() {
+		handOverOnPause = true;
 	}
 
 	@Override
@@ -296,6 +318,8 @@ public class ArViewController implements ArViewTracking {
 		}
 		gaveUp = true;
 		starting = false;
+		// A world handed back from the editor would go untaken.
+		ArWorldHandoff.discard();
 		arCore.stop();
 		setMovesCamera(false);
 		surfaceView.setVisibility(View.GONE);

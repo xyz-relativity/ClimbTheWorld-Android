@@ -99,6 +99,11 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 	private Intent intent;
 	private long editNodeID;
 
+	/**
+	 * A boolean extra: whether to open on the A.R. placement rather than the map, as from the A.R.
+	 * view, which hands ARCore's world over for it; see ArPlacement.show.
+	 */
+	public static final String EXTRA_AR_PLACEMENT = "arPlacement";
 	private final static int locationUpdate = 5000;
 	private static final int REQUEST_ADVANCED_EDITOR = 0;
 	private static final int REQUEST_CRAG_EDITOR = 1;
@@ -140,6 +145,10 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 							editNode.elevationMeters), MAP_EDIT_ZOOM_LEVEL);
 				});
 		arPlacement.restore(savedInstanceState);
+		// Opened from the A.R. view; made again, it goes by what it showed.
+		if (savedInstanceState == null && intent.getBooleanExtra(EXTRA_AR_PLACEMENT, false)) {
+			arPlacement.show();
+		}
 		mapWidget.setOnTouchListener(EditorMapSizer.holdScrollWhileTouched());
 
 		buildPopupMenu();

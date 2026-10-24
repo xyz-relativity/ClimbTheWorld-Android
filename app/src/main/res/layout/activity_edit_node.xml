@@ -215,7 +215,7 @@
                         android:visibility="gone" />
 
                     <!-- Places the node where the cursor is, which a tap elsewhere does where
-                         it is. -->
+                         it is. Hidden while the user aligns, see ArPlacementController. -->
                     <com.google.android.material.floatingactionbutton.FloatingActionButton
                         android:id="@+id/arPlaceButton"
                         android:layout_width="wrap_content"

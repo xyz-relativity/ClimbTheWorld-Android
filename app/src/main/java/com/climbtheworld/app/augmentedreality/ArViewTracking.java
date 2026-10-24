@@ -39,6 +39,16 @@ public interface ArViewTracking {
 	}
 
 	/**
+	 * Hands ARCore's world, with the routes aligned on, over to the node editor's A.R. placement
+	 * about to open, see ArPlacement.show, as the view is paused for it, so that it need not be
+	 * aligned again; nothing where ARCore does not run, or cannot measure depth, which the
+	 * placement needs. The view is to start over once the editor closes: it runs without ARCore
+	 * until then.
+	 */
+	default void handOver() {
+	}
+
+	/**
 	 * Takes a compass reading.
 	 */
 	default void onOrientation(OrientationManager.OrientationEvent event) {

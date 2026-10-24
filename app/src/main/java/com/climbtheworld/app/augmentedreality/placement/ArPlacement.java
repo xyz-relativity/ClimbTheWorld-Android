@@ -23,6 +23,15 @@ public interface ArPlacement {
 	default void onSaveInstanceState(Bundle outState) {
 	}
 
+	/**
+	 * Shows the A.R. once the activity resumes, where ARCore runs, as when the editor is opened
+	 * from the A.R. view: it takes ARCore's world over from the view, with the routes aligned on,
+	 * when the view handed it over, see ArViewTracking.handOver, and hands it back as the editor
+	 * closes, for the view, which starts over then, to take back.
+	 */
+	default void show() {
+	}
+
 	default void onStart() {
 	}
 
