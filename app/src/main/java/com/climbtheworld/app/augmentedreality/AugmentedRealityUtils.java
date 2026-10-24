@@ -11,6 +11,11 @@ import com.climbtheworld.app.utils.Vector4d;
  */
 
 public class AugmentedRealityUtils {
+	// Past this angle from the camera axis, near the camera's plane or behind it, the pinhole
+	// projection puts a point anywhere, so getXYPosition lays it out along its direction from the
+	// view centre instead, as far out as a point at this angle: off the view, the way to turn to
+	// it. Nothing in view is that far from the axis.
+	public static final double MAX_PROJECTED_DEGREES = 80;
 
 	private AugmentedRealityUtils() {
 		//hide constructor
@@ -29,7 +34,8 @@ public class AugmentedRealityUtils {
 	 * @param viewSize          size in pixel of the camera view, which the field of view spans
 	 * @param containerSize     size in pixel of the container the object is placed in, centred on
 	 *                          the camera view
-	 * @return returns the position of the object.
+	 * @return returns the position of the object, off the view in its direction when it is too far
+	 * from the camera axis to project, see MAX_PROJECTED_DEGREES
 	 */
 	public static Vector4d getXYPosition(double yawDegAngle, double elevationDegAngle, double pitch, double pRoll, double screenRot, Vector2d objSize, Vector2d fov, Vector2d viewSize, Vector2d containerSize) {
 		double roll = (pRoll + screenRot);
@@ -43,9 +49,23 @@ public class AugmentedRealityUtils {
 		double down = Math.cos(elevation) * Math.cos(yaw) * Math.sin(cameraPitch)
 				- Math.sin(elevation) * Math.cos(cameraPitch);
 		double forward = forwardComponent(yaw, elevation, cameraPitch);
+		// How far out along (right, down) the point is: tan of its angle from the axis, held at
+		// MAX_PROJECTED_DEGREES.
+		double stretch;
+		double lateral = Math.hypot(right, down);
+		if (forward > Math.cos(Math.toRadians(MAX_PROJECTED_DEGREES))) {
+			stretch = 1 / forward;
+		} else if (lateral > 1e-9) {
+			stretch = Math.tan(Math.toRadians(MAX_PROJECTED_DEGREES)) / lateral;
+		} else {
+			// Right behind the camera: to the right, as well as any other way.
+			right = 1;
+			stretch = Math.tan(Math.toRadians(MAX_PROJECTED_DEGREES));
+		}
 
-		Vector2d point = new Vector2d(containerSize.x / 2 + focalLength(fov.x, viewSize.x) * right / forward,
-				containerSize.y / 2 + focalLength(fov.y, viewSize.y) * down / forward);
+		Vector2d point = new Vector2d(
+				containerSize.x / 2 + focalLength(fov.x, viewSize.x) * right * stretch,
+				containerSize.y / 2 + focalLength(fov.y, viewSize.y) * down * stretch);
 
 		// Roll pivots horizontally around the screen centre, but vertically around the point itself.
 		Vector2d origin = new Vector2d(containerSize.x / 2, point.y);

@@ -101,6 +101,8 @@ public class AugmentedRealityScene {
 	private boolean showClimbingHulls;
 	// While set, only the pins of these nodes show, see showOnly; null for all.
 	private Set<Long> shownOnly;
+	// Along with them, the pin of this node, see-through; null for none.
+	private Long seeThroughNodeId;
 	// A node whose pin is left out, null for none.
 	private Long leftOutNodeId;
 
@@ -286,22 +288,63 @@ public class AugmentedRealityScene {
 
 	/**
 	 * Shows only the pins of some nodes, as those of the routes aligned on while the user aligns
-	 * the A.R. on another, each where and when it shows the rest of the time; the other pins, the
-	 * route lines and the crag and area outlines hide. The terrain and the horizon stay.
+	 * the A.R. on another, each where and when it shows the rest of the time, and along with them
+	 * the pin of one more node see-through, letting taps through it, as that of the route being
+	 * aligned on, where the A.R. has it until it is dropped, see getSeeThroughPin, laid out even
+	 * out of view, for a line to it to show the way to it; the other pins, the route lines and
+	 * the crag and area outlines hide. The terrain and the horizon stay.
 	 *
-	 * @param nodeIds null to show everything again, from the next draw on
+	 * @param nodeIds          null to show everything again, from the next draw on
+	 * @param seeThroughNodeId null for no see-through pin
 	 */
-	public void showOnly(Set<Long> nodeIds) {
-		if (Objects.equals(nodeIds, shownOnly)) {
+	public void showOnly(Set<Long> nodeIds, Long seeThroughNodeId) {
+		Long seeThrough = nodeIds == null ? null : seeThroughNodeId;
+		if (Objects.equals(nodeIds, shownOnly)
+				&& Objects.equals(seeThrough, this.seeThroughNodeId)) {
 			return;
 		}
 		shownOnly = nodeIds == null ? null : new HashSet<>(nodeIds);
+		this.seeThroughNodeId = seeThrough;
+		arViewManager.setSeeThrough(activity, seeThrough);
 		boolean all = shownOnly == null;
 		climbingHullView.setVisibility(showClimbingHulls && all ? View.VISIBLE : View.INVISIBLE);
 		routeLineView.setVisibility(all ? View.VISIBLE : View.INVISIBLE);
 		if (!all) {
-			removePinsExcept(shownOnly);
+			Set<Long> kept = new HashSet<>(shownOnly);
+			if (seeThrough != null) {
+				kept.add(seeThrough);
+			}
+			removePinsExcept(kept);
 		}
+	}
+
+	/**
+	 * @return the view of the see-through pin, see showOnly, null while it is not on display;
+	 * its tip is on the node, see AugmentedRealityViewManager.placePin, off the view when the
+	 * node is out of it, see AugmentedRealityUtils.MAX_PROJECTED_DEGREES
+	 */
+	public View getSeeThroughPin() {
+		return arViewManager.getSeeThroughPin();
+	}
+
+	/**
+	 * @return whether a node's pin shows while only some do, see showOnly: as one of them, or
+	 * see-through
+	 */
+	private static boolean isShownAmongOnly(Set<Long> only, Long seeThrough, long nodeId) {
+		return only == null || only.contains(nodeId) || isSeeThrough(seeThrough, nodeId);
+	}
+
+	private static boolean isSeeThrough(Long seeThrough, long nodeId) {
+		return seeThrough != null && seeThrough == nodeId;
+	}
+
+	/**
+	 * @return how far from the camera axis a node's pin is laid out: the see-through pin wherever
+	 * it is, even out of view, for the line to it, see showOnly; the others only in view
+	 */
+	private static double maxViewAngleFor(Long seeThrough, long nodeId, double maxViewAngle) {
+		return isSeeThrough(seeThrough, nodeId) ? Double.POSITIVE_INFINITY : maxViewAngle;
 	}
 
 	/**
@@ -531,6 +574,7 @@ public class AugmentedRealityScene {
 	 */
 	public void draw(EyeElevation eye) {
 		Set<Long> only = shownOnly;
+		Long seeThrough = seeThroughNodeId;
 		boolean useTerrain = useElevation && eye.onTerrain();
 		double observerElevation = useElevation ? eye.meters() : Double.NaN;
 		updateHulls(useTerrain, observerElevation);
@@ -553,12 +597,12 @@ public class AugmentedRealityScene {
 					// Route tops only show on the terrain, those of the routes mapped as a way
 					// along with their line, below.
 					if (!entry.getKey().equals(leftOutNodeId)
-							&& (only == null || only.contains(entry.getKey()))
+							&& isShownAmongOnly(only, seeThrough, entry.getKey())
 							&& !climbingHulls.isHidden(entry.getKey())
 							&& !(poi.isRouteTop()
 							&& (!useTerrain || routeLines.isTop(entry.getKey())))
 							&& placeInView(poi, true, useTerrain, observerElevation,
-							maxViewAngle)) {
+							maxViewAngleFor(seeThrough, entry.getKey(), maxViewAngle))) {
 						visible.add(poi);
 					} else {
 						arViewManager.removePOIFromView(poi);
@@ -582,9 +626,9 @@ public class AugmentedRealityScene {
 				// top, as the routes mapped as a way do.
 				for (RouteRelation relation : routeRelations) {
 					boolean shown = isRouteShown(relation.start);
-					if (shown && (only == null || only.contains(relation.start.getID()))
+					if (shown && isShownAmongOnly(only, seeThrough, relation.start.getID())
 							&& placeInView(relation.start, false, useTerrain, observerElevation,
-							maxViewAngle)) {
+							maxViewAngleFor(seeThrough, relation.start.getID(), maxViewAngle))) {
 						visible.add(relation.start);
 					} else {
 						arViewManager.removePOIFromView(relation.start);

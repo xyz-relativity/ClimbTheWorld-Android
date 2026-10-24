@@ -120,7 +120,7 @@ public final class RouteWay {
 	/**
 	 * @return the colour of the grade in the tags, as the pins of the route
 	 */
-	static int gradeColor(JSONObject gradeTags) {
+	public static int gradeColor(JSONObject gradeTags) {
 		return Globals.gradeToColorState(GeoNode.getLevelId(gradeTags,
 				ClimbingTags.KEY_GRADE_TAG)).getDefaultColor();
 	}

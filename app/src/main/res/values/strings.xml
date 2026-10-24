@@ -483,7 +483,7 @@
     <string name="ar_placement_align_count">Align (%1$d)</string>
     <string name="ar_placement_align_title">Which route will you align on?</string>
     <string name="ar_placement_align_drop">Drop the route here</string>
-    <string name="ar_placement_align_drag">Bring %1$s onto where it starts, then tap there, or the button, to drop it. Back cancels.</string>
+    <string name="ar_placement_align_drag">Bring %1$s from its faint pin, where the A.R. has it now, onto where it starts, then tap there, or the button, to drop it. Back cancels.</string>
     <string name="ar_placement_align_too_far">Too far to align on precisely: aim where the depth reaches, or triangulate the spot.</string>
     <string name="ar_view_align_too_far">Too far to align on precisely: aim where the depth reaches.</string>
     <string name="ar_placement_align_none">No mapped route near here.</string>
@@ -494,7 +494,7 @@
     <string name="ar_align_help_title">How to Align</string>
     <string name="ar_align_help_message">Aligning on mapped routes ties the A.R. to the map.</string>
     <string name="ar_align_help_pick">Tap Align and pick a mapped route you can see.</string>
-    <string name="ar_align_help_drop">Aim the crosshair at where that route starts, then tap Align again to drop it there.</string>
+    <string name="ar_align_help_drop">Aim the crosshair at where that route starts, then tap Align again to drop it there. A faint pin and a dashed line show where the A.R. has it until then.</string>
     <string name="ar_align_help_second_route">Then align on a second route, away from the first, to set the heading.</string>
     <string name="ar_placement_aligned">Aligned on %1$s.</string>
     <string name="ar_placement_on_wall_plane">Past the depth, the cursor follows the wall below. Triangulate the spot to be sure.</string>

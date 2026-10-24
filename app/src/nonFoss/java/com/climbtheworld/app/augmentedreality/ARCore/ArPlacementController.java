@@ -166,6 +166,8 @@ public class ArPlacementController implements ArPlacement {
 		GestureDetector taps = arCore.tapDetector(activity);
 		// The height of the routes aligned on, as the scene stands their pins.
 		arCore.setPinElevations(scene::getPinElevation);
+		// For the line from where the A.R. has the route being aligned on to the cursor.
+		arCore.setSeeThroughPin(scene::getSeeThroughPin);
 		container.findViewById(R.id.arSurfaceView).setOnTouchListener((view, event) -> {
 			holdForm(view, event);
 			return taps.onTouchEvent(event);
@@ -296,9 +298,9 @@ public class ArPlacementController implements ArPlacement {
 		toggleButton.setContentDescription(activity.getString(
 				shown ? R.string.ar_placement_hide : R.string.ar_placement_show));
 		boolean aligning = arCore.isAligning();
-		// While the user aligns on a route, besides its pin riding on the cursor, only those of
-		// the routes aligned on show.
-		scene.showOnly(arCore.getShownWhileAligning());
+		// While the user aligns on a route, only the pins of the routes aligned on show, and the
+		// route's own see-through, where the A.R. has it, besides the one riding on the cursor.
+		scene.showOnly(arCore.getShownWhileAligning(), arCore.getSeeThroughNodeId());
 		if (!arCore.isRunning() || aligning) {
 			pin.setVisibility(View.GONE);
 		}

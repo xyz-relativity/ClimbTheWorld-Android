@@ -18,6 +18,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * The A.R. view on ARCore, on the phones it runs on: ARCore's camera image, with the rock as its
@@ -65,6 +66,7 @@ public class ArViewController implements ArViewTracking {
 	private boolean movesCamera;
 	// As the listener was last told, see Listener.onAligningChanged.
 	private Set<Long> shownWhileAligning;
+	private Long seeThroughNodeId;
 
 	/**
 	 * To be made in the activity's onCreate, as it registers for the camera permission result.
@@ -132,9 +134,12 @@ public class ArViewController implements ArViewTracking {
 					setMovesCamera(false);
 				}
 				Set<Long> shown = arCore.getShownWhileAligning();
-				if (!Objects.equals(shown, shownWhileAligning)) {
+				Long seeThrough = arCore.getSeeThroughNodeId();
+				if (!Objects.equals(shown, shownWhileAligning)
+						|| !Objects.equals(seeThrough, seeThroughNodeId)) {
 					shownWhileAligning = shown;
-					listener.onAligningChanged(shown);
+					seeThroughNodeId = seeThrough;
+					listener.onAligningChanged(shown, seeThrough);
 				}
 			}
 		});
@@ -201,6 +206,11 @@ public class ArViewController implements ArViewTracking {
 	@Override
 	public void setPinElevations(AugmentedRealityScene.PinElevations pinElevations) {
 		arCore.setPinElevations(pinElevations);
+	}
+
+	@Override
+	public void setSeeThroughPin(Supplier<View> pin) {
+		arCore.setSeeThroughPin(pin);
 	}
 
 	@Override

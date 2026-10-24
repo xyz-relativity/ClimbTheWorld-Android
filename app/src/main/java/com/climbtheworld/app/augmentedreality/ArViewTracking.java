@@ -1,8 +1,11 @@
 package com.climbtheworld.app.augmentedreality;
 
+import android.view.View;
+
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
 
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * ARCore's tracking for the A.R. view, as the A.R. view sees it: once the camera may be used, it
@@ -62,6 +65,14 @@ public interface ArViewTracking {
 	}
 
 	/**
+	 * Gives where the scene draws the pin of the route being aligned on, see-through, where the
+	 * A.R. has it until it is dropped, for the line from it to the pin riding on the cursor, see
+	 * AugmentedRealityScene.getSeeThroughPin.
+	 */
+	default void setSeeThroughPin(Supplier<View> pin) {
+	}
+
+	/**
 	 * Told on the main thread.
 	 */
 	interface Listener {
@@ -89,10 +100,12 @@ public interface ArViewTracking {
 		void onCameraMoved();
 
 		/**
-		 * @param shownNodeIds while the user aligns on a route, the routes aligned on so far, by
-		 *                     OSM ID, whose pins alone are to show, see
-		 *                     AugmentedRealityScene.showOnly; null when not aligning
+		 * @param shownNodeIds     while the user aligns on a route, the routes aligned on so far,
+		 *                         by OSM ID, whose pins alone are to show, see
+		 *                         AugmentedRealityScene.showOnly; null when not aligning
+		 * @param seeThroughNodeId the OSM ID of the route riding on the cursor, whose pin is to
+		 *                         show see-through where the A.R. has it; null while none does
 		 */
-		void onAligningChanged(Set<Long> shownNodeIds);
+		void onAligningChanged(Set<Long> shownNodeIds, Long seeThroughNodeId);
 	}
 }

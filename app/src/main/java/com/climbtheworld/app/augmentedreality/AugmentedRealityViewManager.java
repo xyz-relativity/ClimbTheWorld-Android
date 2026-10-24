@@ -29,6 +29,7 @@ import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Created by xyz on 12/27/17.
@@ -37,6 +38,9 @@ import java.util.Map;
 public class AugmentedRealityViewManager {
 	private final Map<GeoNode, View> toDisplay = new HashMap<>(); //Visible POIs
 	private Map<Long, Integer> routeNumbers = Collections.emptyMap();
+	// The node whose pin is drawn see-through, and lets taps through, null for none, see
+	// setSeeThrough.
+	private Long seeThroughNodeId;
 	private final ViewGroup container;
 	// Where the observer is and looks.
 	private final VirtualCamera camera;
@@ -109,9 +113,59 @@ public class AugmentedRealityViewManager {
 				NodeDialogBuilder.showNodeInfoDialog(parent, poi);
 			}
 		});
-		setIcon((ImageButton) newViewElement, createIcon(parent, poi));
+		style(parent, newViewElement, poi);
 
 		return newViewElement;
+	}
+
+	/**
+	 * Gives a pin its icon, and whether it takes taps: the see-through pin lets them through, to
+	 * what is under it.
+	 */
+	private void style(AppCompatActivity parent, View pin, GeoNode poi) {
+		setIcon((ImageButton) pin, createIcon(parent, poi));
+		pin.setClickable(!isSeeThrough(poi));
+	}
+
+	private boolean isSeeThrough(GeoNode poi) {
+		return seeThroughNodeId != null && seeThroughNodeId == poi.getID();
+	}
+
+	/**
+	 * Draws the pin of a node see-through, and lets taps through it, as the pin of the route being
+	 * aligned on is drawn where the A.R. has it until it is dropped, see
+	 * AugmentedRealityScene.showOnly, and redraws the pins on display this changes.
+	 *
+	 * @param nodeId null for none
+	 */
+	public void setSeeThrough(AppCompatActivity parent, Long nodeId) {
+		Long previous = seeThroughNodeId;
+		if (Objects.equals(previous, nodeId)) {
+			return;
+		}
+		seeThroughNodeId = nodeId;
+		for (Map.Entry<GeoNode, View> entry : toDisplay.entrySet()) {
+			long id = entry.getKey().getID();
+			if ((previous != null && previous == id) || (nodeId != null && nodeId == id)) {
+				style(parent, entry.getValue(), entry.getKey());
+			}
+		}
+	}
+
+	/**
+	 * @return the view of the see-through pin, null while it is not on display; its tip is on the
+	 * node, see placePin
+	 */
+	public View getSeeThroughPin() {
+		if (seeThroughNodeId == null) {
+			return null;
+		}
+		for (Map.Entry<GeoNode, View> entry : toDisplay.entrySet()) {
+			if (entry.getKey().getID() == seeThroughNodeId) {
+				return entry.getValue();
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -129,15 +183,26 @@ public class AugmentedRealityViewManager {
 	private Drawable createIcon(AppCompatActivity parent, GeoNode poi) {
 		DisplayableGeoNode displayable = new DisplayableGeoNode(poi);
 		displayable.setRouteNumber(getRouteNumber(routeNumbers, poi));
-		return createIcon(parent, displayable);
+		return createIcon(parent, displayable, isSeeThrough(poi)
+				? DisplayableGeoNode.POI_ICON_ALPHA_SEE_THROUGH
+				: DisplayableGeoNode.POI_ICON_ALPHA_VISIBLE);
 	}
 
 	/**
 	 * The icon of a pin, as the A.R. views draw them.
 	 */
 	public static Drawable createIcon(AppCompatActivity parent, DisplayableGeoNode poi) {
-		return new PoiMarkerDrawable(parent, poi, DisplayableGeoNode.POI_ICON_ALPHA_VISIBLE,
-				PoiMarkerDrawable.PinShape.slim).getDrawable();
+		return createIcon(parent, poi, DisplayableGeoNode.POI_ICON_ALPHA_VISIBLE);
+	}
+
+	/**
+	 * The icon of a pin, as the A.R. views draw them, with an alpha of its own: see-through for
+	 * the route being aligned on, where the A.R. has it until it is dropped.
+	 */
+	public static Drawable createIcon(AppCompatActivity parent, DisplayableGeoNode poi,
+	                                  int alpha) {
+		return new PoiMarkerDrawable(parent, poi, alpha, PoiMarkerDrawable.PinShape.slim)
+				.getDrawable();
 	}
 
 	/**

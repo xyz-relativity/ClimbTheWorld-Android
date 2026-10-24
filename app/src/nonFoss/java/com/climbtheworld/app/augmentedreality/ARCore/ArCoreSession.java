@@ -26,6 +26,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.augmentedreality.AlignmentLinkView;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityScene;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityViewManager;
 import com.climbtheworld.app.augmentedreality.placement.AlignedElevations;
@@ -35,6 +36,7 @@ import com.climbtheworld.app.augmentedreality.placement.GeoRegistration;
 import com.climbtheworld.app.augmentedreality.placement.ViewRay;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.map.DisplayableGeoNode;
+import com.climbtheworld.app.map.widget.climbing.RouteWay;
 import com.climbtheworld.app.sensors.camera.VirtualCamera;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.storage.database.GeoNode;
@@ -59,6 +61,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * An ARCore session drawn in a view of the app and tied to the map, which both the A.R. placement
@@ -67,8 +70,10 @@ import java.util.function.Consumer;
  * ArSessionRenderer, with the tools to aim with.
  * <p>
  * GPS and the compass tie ARCore's world to the map, see GeoRegistration. Align ties it to mapped
- * routes instead: the user picks a route, brings its pin, riding on the cursor, onto where the
- * route starts, and drops it there, and what is placed or shown then lands right next to it. Past the depth, the cursor follows the wall below. In the node editor,
+ * routes instead: the user picks a route, brings its pin, riding on the cursor, from where the
+ * A.R. has the route until then, which its pin drawn see-through shows, with a line between the
+ * two, onto where the route starts, and drops it there, and what is placed or shown then lands
+ * right next to it. Past the depth, the cursor follows the wall below. In the node editor,
  * Triangulation fixes a spot too far for the depth: a first sighting of it, then a second from a
  * few meters to the side, the spot being where the two cross, as ARCore measures the step between
  * them. On a phone that cannot measure depth, that is the only cursor there.
@@ -104,6 +109,11 @@ class ArCoreSession {
 	private final TextView alignedCount;
 	// The pin of the route being aligned on, riding on the cursor, see align.
 	private final ImageView alignPin;
+	// The line from the route's pin where the A.R. has the route, which the scene draws
+	// see-through, to the one riding on the cursor, see align.
+	private final AlignmentLinkView alignLink;
+	// Where the scene draws the see-through pin, see setSeeThroughPin.
+	private Supplier<View> seeThroughPin = () -> null;
 	// Whether moving the align pin is already posted to the main thread, which reads where it is
 	// then.
 	private final AtomicBoolean alignPinMovePosted = new AtomicBoolean();
@@ -185,8 +195,9 @@ class ArCoreSession {
 	 *
 	 * @param container     holds the R.id.arSurfaceView the session draws in, and its
 	 *                      R.id.arStatusHint, R.id.arCrosshair, R.id.arCursorDistance,
-	 *                      R.id.arAlignButton, R.id.arAlignNotice, R.id.arAlignedCount and
-	 *                      R.id.arAlignPin, and with triangulation, R.id.arTriangulateButton
+	 *                      R.id.arAlignButton, R.id.arAlignNotice, R.id.arAlignedCount,
+	 *                      R.id.arAlignLink and R.id.arAlignPin, and with triangulation,
+	 *                      R.id.arTriangulateButton
 	 * @param depthRequired whether it only runs where ARCore can measure depth
 	 * @param triangulation whether the user can triangulate a spot too far for the depth, see
 	 *                      triangulate
@@ -204,6 +215,7 @@ class ArCoreSession {
 		this.alignNotice = container.findViewById(R.id.arAlignNotice);
 		this.alignedCount = container.findViewById(R.id.arAlignedCount);
 		this.alignPin = container.findViewById(R.id.arAlignPin);
+		this.alignLink = container.findViewById(R.id.arAlignLink);
 		this.triangulateButton = triangulation
 				? container.findViewById(R.id.arTriangulateButton) : null;
 		this.alignmentPicker = new AlignmentPicker(activity);
@@ -406,6 +418,24 @@ class ArCoreSession {
 			shown.remove(aligningRoute.osmID);
 		}
 		return shown;
+	}
+
+	/**
+	 * @return while the user aligns, the OSM ID of the route riding on the cursor, whose pin the
+	 * scene is to draw see-through where it has the route, see AugmentedRealityScene.showOnly;
+	 * null while none does
+	 */
+	Long getSeeThroughNodeId() {
+		return aligningRoute == null ? null : aligningRoute.osmID;
+	}
+
+	/**
+	 * Gives where the scene draws the pin of the route being aligned on, see-through, where the
+	 * A.R. has the route until it is dropped, for the line from it to the pin riding on the
+	 * cursor, see align and AugmentedRealityScene.getSeeThroughPin.
+	 */
+	void setSeeThroughPin(Supplier<View> pin) {
+		seeThroughPin = pin;
 	}
 
 	/**
@@ -803,6 +833,8 @@ class ArCoreSession {
 			updateStatus();
 		}
 		host.onCameraMoved();
+		// The host drew the scene, with the see-through pin where the A.R. has the route now.
+		alignLink.update();
 	}
 
 	/**
@@ -986,8 +1018,10 @@ class ArCoreSession {
 	/**
 	 * Align, a step per tap: the list of the routes around opens, the pins hiding but those of the
 	 * routes aligned on, see getShownWhileAligning; the route picked rides on the cursor, for the
-	 * user to bring it onto where the route starts; a tap on the button, or on that spot, drops it
-	 * there, which ties ARCore's world to the route. Back puts it away.
+	 * user to bring it onto where the route starts, from where the A.R. has it until then, which
+	 * the scene shows with its pin drawn see-through, see getSeeThroughNodeId, a line going from
+	 * that pin to the one on the cursor, see AlignmentLinkView; a tap on the button, or on that
+	 * spot, drops it there, which ties ARCore's world to the route. Back puts it away.
 	 */
 	private void align() {
 		if (aligningRoute != null) {
@@ -1038,6 +1072,7 @@ class ArCoreSession {
 		aligningRoute = route;
 		AugmentedRealityViewManager.setIcon(alignPin,
 				AugmentedRealityViewManager.createIcon(activity, new DisplayableGeoNode(route)));
+		alignLink.show(seeThroughPin, alignPin, RouteWay.gradeColor(route.getTags()));
 		renderer.setCursorPinShown(true);
 		cancelAlignment.setEnabled(true);
 		updateStatus();
@@ -1069,6 +1104,7 @@ class ArCoreSession {
 		aligningRoute = null;
 		renderer.setCursorPinShown(false);
 		alignPin.setVisibility(View.GONE);
+		alignLink.hide();
 		cancelAlignment.setEnabled(false);
 		updateStatus();
 	}
@@ -1078,11 +1114,13 @@ class ArCoreSession {
 		ArSessionRenderer.PinOnScreen onScreen = renderer.getCursorPinOnScreen();
 		if (!running || aligningRoute == null || onScreen == null) {
 			alignPin.setVisibility(View.GONE);
+			alignLink.update();
 			return;
 		}
 		alignPin.setVisibility(View.VISIBLE);
 		AugmentedRealityViewManager.placePin(alignPin, onScreen.x(), onScreen.y(),
 				onScreen.distanceMeters(), onScreen.rotationDegrees());
+		alignLink.update();
 	}
 
 	private void alignOn(GeoNode route, double[] aimed) {

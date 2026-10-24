@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityViewManager;
 import com.climbtheworld.app.map.DisplayableGeoNode;
+import com.climbtheworld.app.map.widget.climbing.RouteWay;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmEntity;
@@ -48,6 +49,12 @@ final class AlignmentHelp {
 			pins[route] = AugmentedRealityViewManager.createIcon(activity,
 					sampleRoute(ROUTE_GRADES[route]));
 		}
+		// The first route, where the A.R. has it before it is dropped.
+		DisplayableGeoNode dropped = sampleRoute(ROUTE_GRADES[0]);
+		AlignmentDiagramView.SeeThroughPin seeThrough = new AlignmentDiagramView.SeeThroughPin(
+				AugmentedRealityViewManager.createIcon(activity, dropped,
+						DisplayableGeoNode.POI_ICON_ALPHA_SEE_THROUGH),
+				RouteWay.gradeColor(dropped.getGeoNode().getTags()));
 
 		LinearLayout content = new LinearLayout(context);
 		content.setOrientation(LinearLayout.VERTICAL);
@@ -58,7 +65,7 @@ final class AlignmentHelp {
 		for (int step = 0; step < steps.length; step++) {
 			LinearLayout row = new LinearLayout(context);
 			row.setGravity(Gravity.CENTER_VERTICAL);
-			row.addView(new AlignmentDiagramView(context, steps[step], pins));
+			row.addView(new AlignmentDiagramView(context, steps[step], pins, seeThrough));
 			LinearLayout.LayoutParams textParams =
 					new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1);
 			textParams.setMarginStart(Math.round(STEP_SPACING * density));

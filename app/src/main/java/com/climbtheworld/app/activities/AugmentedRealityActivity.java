@@ -182,13 +182,16 @@ public class AugmentedRealityActivity extends MapWidgetActivity
 					}
 
 					@Override
-					public void onAligningChanged(Set<Long> shownNodeIds) {
-						// Besides the route riding on the cursor, only those aligned on show.
-						scene.showOnly(shownNodeIds);
+					public void onAligningChanged(Set<Long> shownNodeIds, Long seeThroughNodeId) {
+						// Only the routes aligned on show, and the one riding on the cursor
+						// see-through, where the A.R. has it.
+						scene.showOnly(shownNodeIds, seeThroughNodeId);
 					}
 				});
 		// The height of the routes aligned on, as the scene stands their pins.
 		arCore.setPinElevations(scene::getPinElevation);
+		// For the line from where the A.R. has the route being aligned on to the cursor.
+		arCore.setSeeThroughPin(scene::getSeeThroughPin);
 
 		// Asked once what it starts is made.
 		Ask.on(this)

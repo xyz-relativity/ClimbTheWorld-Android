@@ -55,6 +55,54 @@ public class AugmentedRealityUtilsTest {
 		assertEquals("Top edge of the view", 250, topEdge.y, 1e-6);
 	}
 
+	/**
+	 * Out of view, the point is laid out along its direction from the centre, as far out as a
+	 * point MAX_PROJECTED_DEGREES from the axis, where the pinhole projection would put a point
+	 * at the camera's side at infinity, and one behind it on the wrong side.
+	 */
+	@Test
+	public void getXYPositionLaysOutPointsPastTheCameraSideTheWayToTurn() {
+		Vector2d objSize = new Vector2d(0, 0);
+		Vector2d fieldOfViewDeg = new Vector2d(60, 60);
+		Vector2d viewSize = new Vector2d(1000, 1000);
+		Vector2d containerSize = new Vector2d(2000, 2000);
+		double reach = 500 / Math.tan(Math.toRadians(30))
+				* Math.tan(Math.toRadians(AugmentedRealityUtils.MAX_PROJECTED_DEGREES));
+
+		Vector4d limit = AugmentedRealityUtils.getXYPosition(
+				AugmentedRealityUtils.MAX_PROJECTED_DEGREES, 0, 0, 0, 0, objSize,
+				fieldOfViewDeg, viewSize, containerSize);
+		assertEquals("At the limit, projected", 1000 + reach, limit.x, 1e-6);
+		assertEquals("At the limit, on the horizon", 1000, limit.y, 1e-6);
+
+		Vector4d side = AugmentedRealityUtils.getXYPosition(90, 0, 0, 0, 0, objSize,
+				fieldOfViewDeg, viewSize, containerSize);
+		assertEquals("To the right, as far as the limit", 1000 + reach, side.x, 1e-6);
+		assertEquals("To the right, on the horizon", 1000, side.y, 1e-6);
+
+		Vector4d behindRight = AugmentedRealityUtils.getXYPosition(135, 0, 0, 0, 0, objSize,
+				fieldOfViewDeg, viewSize, containerSize);
+		assertEquals("Behind to the right, to the right", 1000 + reach, behindRight.x, 1e-6);
+		Vector4d behindLeft = AugmentedRealityUtils.getXYPosition(-135, 0, 0, 0, 0, objSize,
+				fieldOfViewDeg, viewSize, containerSize);
+		assertEquals("Behind to the left, to the left", 1000 - reach, behindLeft.x, 1e-6);
+
+		Vector4d behind = AugmentedRealityUtils.getXYPosition(180, 0, 0, 0, 0, objSize,
+				fieldOfViewDeg, viewSize, containerSize);
+		assertEquals("Right behind, to the right", 1000 + reach, behind.x, 1e-6);
+		assertEquals("Right behind, on the horizon", 1000, behind.y, 1e-6);
+
+		Vector4d belowBehind = AugmentedRealityUtils.getXYPosition(180, -45, 0, 0, 0, objSize,
+				fieldOfViewDeg, viewSize, containerSize);
+		assertEquals("Below and behind, straight down", 1000, belowBehind.x, 1e-6);
+		assertEquals("Below and behind, as far as the limit", 1000 + reach, belowBehind.y, 1e-6);
+
+		Vector4d rolled = AugmentedRealityUtils.getXYPosition(90, 0, 0, 90, 0, objSize,
+				fieldOfViewDeg, viewSize, containerSize);
+		assertEquals("Rolled a quarter turn, turned with the view", 1000, rolled.x, 1e-6);
+		assertEquals("Rolled a quarter turn, below", 1000 + reach, rolled.y, 1e-6);
+	}
+
 	@Test
 	public void getXYPositionFollowsCameraPitch() {
 		Vector2d objSize = new Vector2d(0, 0);

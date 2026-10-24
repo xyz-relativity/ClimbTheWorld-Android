@@ -3,6 +3,7 @@ package com.climbtheworld.app.augmentedreality.ARCore;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
@@ -12,8 +13,10 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.ColorUtils;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.map.DisplayableGeoNode;
 
 /**
  * A step of aligning the A.R. on mapped routes, see AlignmentHelp, drawn as the A.R. shows it
@@ -25,7 +28,8 @@ class AlignmentDiagramView extends View {
 		// Align is tapped, and the list of the routes around opens.
 		PICK,
 		// The route picked rides on the crosshair, aimed at where the route starts, and a tap on
-		// Align drops it there.
+		// Align drops it there; its pin where the A.R. has it until then shows see-through, with
+		// a line to the one on the crosshair.
 		DROP,
 		// A second route, away from the first, sets the heading.
 		SECOND_ROUTE
@@ -81,10 +85,18 @@ class AlignmentDiagramView extends View {
 	private static final float ARROW_HEAD = 5;
 	private static final float ARROW_OUTLINE_WIDTH = 3.4f;
 	private static final float ARROW_WIDTH = 1.6f;
+	// The line from the see-through pin to the one on the crosshair, as AlignmentLinkView draws
+	// it, with dashes to the diagram's scale.
+	private static final float SEE_THROUGH_X = 24;
+	private static final float SEE_THROUGH_Y = 92;
+	private static final float[] LINK_DASHES = {4, 3};
 
 	private final Step step;
 	// The pins of routes of different grades, as the A.R. draws them.
 	private final Drawable[] pins;
+	// The first route's, see-through, where the A.R. has it before it is dropped.
+	private final SeeThroughPin seeThrough;
+	private final DashPathEffect linkDashes = new DashPathEffect(LINK_DASHES, 0);
 	private final Drawable align;
 	private final Drawable drop;
 	private final Drawable crosshair;
@@ -95,12 +107,14 @@ class AlignmentDiagramView extends View {
 	private final Path path = new Path();
 
 	/**
-	 * @param pins at least as many as the list of routes shows, see LIST_NAME_WIDTHS
+	 * @param pins       at least as many as the list of routes shows, see LIST_NAME_WIDTHS
+	 * @param seeThrough the first route's pin see-through, with its grade colour
 	 */
-	AlignmentDiagramView(Context context, Step step, Drawable[] pins) {
+	AlignmentDiagramView(Context context, Step step, Drawable[] pins, SeeThroughPin seeThrough) {
 		super(context);
 		this.step = step;
 		this.pins = pins;
+		this.seeThrough = seeThrough;
 		density = getResources().getDisplayMetrics().density;
 		align = ContextCompat.getDrawable(context, R.drawable.ic_ar_align);
 		drop = ContextCompat.getDrawable(context, R.drawable.ic_ar_align_drop);
@@ -140,6 +154,8 @@ class AlignmentDiagramView extends View {
 				break;
 			case DROP:
 				drawBolts(canvas, 50, 70, 44, 14, 6);
+				drawPin(canvas, seeThrough.pin(), SEE_THROUGH_X, SEE_THROUGH_Y, PIN_HEIGHT);
+				drawLink(canvas, SEE_THROUGH_X, SEE_THROUGH_Y, 50, 70);
 				drawIcon(canvas, crosshair, 50, 70, CROSSHAIR_SIZE);
 				drawPin(canvas, pins[0], 50, 70, PIN_HEIGHT);
 				drawButton(canvas, drop);
@@ -229,6 +245,25 @@ class AlignmentDiagramView extends View {
 	}
 
 	/**
+	 * The dashed line from the see-through pin to the one on the crosshair, in the route's grade
+	 * colour along a dark edge, as AlignmentLinkView draws it.
+	 */
+	private void drawLink(Canvas canvas, float fromX, float fromY, float toX, float toY) {
+		path.reset();
+		path.moveTo(fromX, fromY);
+		path.lineTo(toX, toY);
+		stroke.setPathEffect(linkDashes);
+		stroke.setColor(DisplayableGeoNode.LINE_CASING_COLOR);
+		stroke.setStrokeWidth(DisplayableGeoNode.LINE_CASING_WIDTH_DP);
+		canvas.drawPath(path, stroke);
+		stroke.setColor(ColorUtils.setAlphaComponent(seeThrough.color(),
+				DisplayableGeoNode.LINE_ALPHA));
+		stroke.setStrokeWidth(DisplayableGeoNode.LINE_WIDTH_DP);
+		canvas.drawPath(path, stroke);
+		stroke.setPathEffect(null);
+	}
+
+	/**
 	 * A white arrow with a dark edge and a head at both ends, for how far apart two routes are.
 	 */
 	private void drawArrow(Canvas canvas, float fromX, float fromY, float toX, float toY) {
@@ -295,5 +330,11 @@ class AlignmentDiagramView extends View {
 		for (int point = 2; point < points.length; point += 2) {
 			path.lineTo(points[point], points[point + 1]);
 		}
+	}
+
+	/**
+	 * A route's pin drawn see-through, and the colour of its grade, for the line from it.
+	 */
+	record SeeThroughPin(Drawable pin, int color) {
 	}
 }
