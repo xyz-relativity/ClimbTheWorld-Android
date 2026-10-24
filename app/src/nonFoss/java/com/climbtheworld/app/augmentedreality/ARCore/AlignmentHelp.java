@@ -78,10 +78,14 @@ final class AlignmentHelp {
 		ScrollView scroll = new ScrollView(context);
 		scroll.addView(content);
 
-		builder.setTitle(R.string.ar_align_help_title)
+		AlertDialog dialog = builder.setTitle(R.string.ar_align_help_title)
 				.setView(scroll)
 				.setPositiveButton(android.R.string.ok, null)
 				.show();
+		// A tap anywhere on it closes it, as it only explains: on the steps, which a drag still
+		// scrolls, and on the rest, such as the title.
+		content.setOnClickListener(view -> dialog.dismiss());
+		dialog.getWindow().getDecorView().setOnClickListener(view -> dialog.dismiss());
 	}
 
 	private static TextView text(Context context, int text) {
