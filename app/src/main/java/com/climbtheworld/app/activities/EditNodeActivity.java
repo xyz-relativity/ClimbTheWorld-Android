@@ -45,7 +45,6 @@ import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
 import com.climbtheworld.app.storage.edit.FormChanges;
 import com.climbtheworld.app.storage.edit.OsmEditStore;
-import com.climbtheworld.app.storage.edit.RelationMembers;
 import com.climbtheworld.app.storage.upload.OsmElements;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector4d;
@@ -504,15 +503,14 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 	}
 
 	/**
-	 * Starts the form over on a new node where the saved one is, of its type and at the end of its
-	 * crags, for the next route of the crag. The map and the A.R. stay as they are, the A.R. still
+	 * Starts the form over on a new node where the saved one is, of its type, in no crag: the user
+	 * picks its crags, as for any new node. The map and the A.R. stay as they are, the A.R. still
 	 * tied to the map, so that it need not be aligned again.
 	 */
 	private void addAnother() {
 		final double latitude = editNode.decimalLatitude;
 		final double longitude = editNode.decimalLongitude;
 		final OsmEntity.EntityClimbingType type = editNode.getNodeType();
-		final long[] cragIds = cragMembership.parentIds();
 		// Loading again until the new node is in.
 		editNode = null;
 		editNodeID = 0;
@@ -522,28 +520,17 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 		arPlacement.nextNode();
 		Constants.DB_EXECUTOR
 				.execute(new UiRelatedTask<GeoNode>() {
-					/** The stored crags, listing the new node. */
-					private final List<OsmCollectionEntity> crags = new ArrayList<>();
-
 					@Override
 					protected GeoNode doWork() {
 						OsmEditStore store = new OsmEditStore(EditNodeActivity.this);
 						GeoNode node = new GeoNode(store.newNode(latitude, longitude).jsonNodeInfo);
 						node.setClimbingType(type);
-						for (long cragId : cragIds) {
-							OsmEntity crag = store.load(OsmEntity.EntityOsmType.relation, cragId);
-							if (crag instanceof OsmCollectionEntity) {
-								RelationMembers.append(((OsmCollectionEntity) crag).getMembers(),
-										OsmEntity.EntityOsmType.node.name(), node.osmID, "");
-								crags.add((OsmCollectionEntity) crag);
-							}
-						}
 						return node;
 					}
 
 					@Override
 					protected void thenDoUiRelatedWork(GeoNode node) {
-						startEditing(node, crags);
+						startEditing(node, Collections.emptyList());
 						// Back to the map, to place it.
 						((ScrollView) findViewById(R.id.geoNodeEditView)).smoothScrollTo(0, 0);
 					}
