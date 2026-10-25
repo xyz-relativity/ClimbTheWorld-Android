@@ -116,6 +116,29 @@ jobs:
             exit 1
           fi
 
+          # Prints a link adding the app to Obtainium or ObtainX with an APK filter set, as the
+          # README's: the app's settings as JSON, their additionalSettings a JSON string in it, as
+          # Obtainium's exports have them, the ones left out taking their defaults. It goes
+          # through Obtainium's redirect page, as GitHub drops obtainium:// links.
+          install_link() {
+            local SETTINGS APP
+            SETTINGS=$(jq -cn --arg filter "$1" '{apkFilterRegEx: $filter}')
+            APP=$(jq -cn --arg url "https://github.com/$GITHUB_REPOSITORY" \
+              --arg author "$GITHUB_REPOSITORY_OWNER" --arg settings "$SETTINGS" \
+              '{id: "com.climbtheworld.app", url: $url, author: $author, name: "ClimbTheWorld",
+                preferredApkIndex: 0, additionalSettings: $settings}')
+            echo "https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/$(jq -rn --arg app "$APP" '$app | @uri')"
+          }
+          cat >> "$RUNNER_TEMP/release_notes.md" <<EOF
+
+          ### Install with Obtainium or ObtainX
+
+          Open the link of the build you want on the phone, to add ClimbTheWorld to [Obtainium](https://github.com/ImranR98/Obtainium) or [ObtainX](https://github.com/bikram-agarwal/ObtainX) with its updates kept to that build:
+
+          - [Default build]($(install_link ClimbTheWorld-Release)), ClimbTheWorld-Release.apk
+          - [Free software build]($(install_link foss)), ClimbTheWorld-foss-Release.apk
+          EOF
+
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           if [[ -z "$TAG_SHA" ]]; then
             echo "target=$SHA" >> $GITHUB_OUTPUT

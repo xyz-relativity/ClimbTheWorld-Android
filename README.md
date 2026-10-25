@@ -33,14 +33,19 @@ releases, and let you know when a new version is out. The steps are the same in 
    [F-Droid](https://f-droid.org/packages/dev.imranr.obtainium.fdroid/)) or ObtainX (from
    [GitHub](https://github.com/bikram-agarwal/ObtainX/releases/latest) or
    [F-Droid](https://f-droid.org/packages/dev.bikram.obtainx/)).
-2. On the phone, open
-   [this link](https://apps.obtainium.imranr.dev/redirect?r=obtainium://add/https://github.com/xyz-relativity/ClimbTheWorld-Android):
-   it opens the **Add app** screen with ClimbTheWorld filled in. Or open **Add app** yourself, and
-   enter `https://github.com/xyz-relativity/ClimbTheWorld-Android` as the **App source URL**.
-3. Pick the build in **Filter links by regular expression** (**Filter APKs by regular expression**
-   in older versions): `ClimbTheWorld-Release` for the default one, or `foss` for the free
-   software one. Keep the other options as they are, and tap **Add**.
-4. Tap **Install** on the app's page, and allow Obtainium or ObtainX to install apps when Android
+2. On the phone, open the link of the build you want:
+   [default build](https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22com.climbtheworld.app%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2Fxyz-relativity%2FClimbTheWorld-Android%22%2C%22author%22%3A%22xyz-relativity%22%2C%22name%22%3A%22ClimbTheWorld%22%2C%22preferredApkIndex%22%3A0%2C%22additionalSettings%22%3A%22%7B%5C%22apkFilterRegEx%5C%22%3A%5C%22ClimbTheWorld-Release%5C%22%7D%22%7D)
+   or
+   [free software build](https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22com.climbtheworld.app%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2Fxyz-relativity%2FClimbTheWorld-Android%22%2C%22author%22%3A%22xyz-relativity%22%2C%22name%22%3A%22ClimbTheWorld%22%2C%22preferredApkIndex%22%3A0%2C%22additionalSettings%22%3A%22%7B%5C%22apkFilterRegEx%5C%22%3A%5C%22foss%5C%22%7D%22%7D).
+   It opens Obtainium or ObtainX with ClimbTheWorld ready to import, its updates kept to that
+   build. Confirm the import.
+
+   Or add it yourself: open **Add app**, enter
+   `https://github.com/xyz-relativity/ClimbTheWorld-Android` as the **App source URL**, and pick
+   the build in **Filter links by regular expression** (**Filter APKs by regular expression** in
+   older versions): `ClimbTheWorld-Release` for the default one, or `foss` for the free software
+   one. Keep the other options as they are, and tap **Add**.
+3. Tap **Install** on the app's page, and allow Obtainium or ObtainX to install apps when Android
    asks.
 
 From then on, Obtainium or ObtainX checks for new releases in the background and notifies you of
