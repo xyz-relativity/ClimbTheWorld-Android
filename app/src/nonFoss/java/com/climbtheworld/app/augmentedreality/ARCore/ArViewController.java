@@ -12,6 +12,7 @@ import com.climbtheworld.app.augmentedreality.AlignmentRange;
 import com.climbtheworld.app.augmentedreality.ArViewTracking;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityScene;
 import com.climbtheworld.app.configs.Configs;
+import com.climbtheworld.app.map.widget.MapLibreMapWidget;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.utils.Globals;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -259,8 +260,12 @@ public class ArViewController implements ArViewTracking {
 			arCore.cancelAligning();
 		}
 		toolsButton.setVisibility(near ? View.VISIBLE : View.GONE);
-		// Greyed out while they are hidden.
-		toolsButton.setImageResource(shown ? R.drawable.ic_ar_tools : R.drawable.ic_ar_tools_off);
+		// Washed out while they are hidden, as the GPS centering button.
+		if (shown) {
+			toolsButton.clearColorFilter();
+		} else {
+			toolsButton.setColorFilter(MapLibreMapWidget.BUTTON_OFF_TINT);
+		}
 		CharSequence description = activity.getString(shown ? R.string.ar_view_hide_tools
 				: R.string.ar_view_show_tools);
 		toolsButton.setContentDescription(description);

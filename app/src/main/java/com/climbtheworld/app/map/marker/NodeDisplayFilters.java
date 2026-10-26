@@ -1,13 +1,11 @@
 package com.climbtheworld.app.map.marker;
 
-import android.graphics.drawable.LayerDrawable;
-
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.res.ResourcesCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
+import com.climbtheworld.app.map.widget.MapLibreMapWidget;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmEntity;
@@ -19,18 +17,17 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 public class NodeDisplayFilters {
-	/** Shows on the activity's filter button whether any filter is on. */
+	/**
+	 * Shows on the activity's filter button whether any filter is on: in colour while one is,
+	 * washed out while none is, as the GPS centering button.
+	 */
 	public static void showFilterState(AppCompatActivity activity, Configs configs) {
-		LayerDrawable icon = (LayerDrawable) ResourcesCompat.getDrawable(activity.getResources(),
-				R.drawable.ic_filter_checkable, null);
-		if (icon == null) {
-			return;
+		FloatingActionButton button = activity.findViewById(R.id.filterButton);
+		if (hasFilters(configs)) {
+			button.clearColorFilter();
+		} else {
+			button.setColorFilter(MapLibreMapWidget.BUTTON_OFF_TINT);
 		}
-		// The layers share ConstantState with every other use of the same drawables (e.g.
-		// ic_done); mutate so the alpha change stays local to this FAB icon.
-		icon.mutate();
-		icon.findDrawableByLayerId(R.id.icon_notification).setAlpha(hasFilters(configs) ? 255 : 0);
-		((FloatingActionButton) activity.findViewById(R.id.filterButton)).setImageDrawable(icon);
 	}
 
 	private static final int styleCount = GeoNode.ClimbingStyle.values().length;

@@ -114,6 +114,11 @@ import needle.UiRelatedTask;
  * MapLibre implementation for the primary map screen.
  */
 public class MapLibreMapWidget {
+	/**
+	 * Washes out a button whose mode is off: GPS centering here, and the filter and ARCore's aiming
+	 * tools buttons.
+	 */
+	public static final int BUTTON_OFF_TINT = Color.parseColor("#aaffffff");
 	private static final double DEFAULT_ZOOM_LEVEL = 16;
 	private static final long AMBIENT_CACHE_SIZE_BYTES = 300L * 1024L * 1024L;
 	private static final double CENTER_ON_LOCATION_ZOOM_LEVEL = 24;
@@ -1691,7 +1696,7 @@ public class MapLibreMapWidget {
 			if (followObserver) {
 				button.clearColorFilter();
 			} else {
-				button.setColorFilter(Color.parseColor("#aaffffff"));
+				button.setColorFilter(BUTTON_OFF_TINT);
 			}
 		}
 	}
