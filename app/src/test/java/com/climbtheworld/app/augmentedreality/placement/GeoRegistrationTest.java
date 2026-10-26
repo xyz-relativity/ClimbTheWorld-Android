@@ -273,18 +273,41 @@ public class GeoRegistrationTest {
 	}
 
 	@Test
-	public void holdsTheCompassOnceReadyWithALandmark() {
+	public void isReadyFromTheFirstReadingWithALandmark() {
 		GeoRegistration registration = new GeoRegistration();
 		registration.setLandmarks(Collections.singletonList(landmark(3, -8)));
+		assertFalse(registration.hasHeading());
 		assertFalse(registration.isReady());
 
-		addCompass(registration, OFFSET_DEGREES, 5);
+		registration.addHeading(OFFSET_DEGREES, 0, 5);
+
+		assertTrue(registration.hasHeading());
 		assertTrue(registration.isReady());
+		assertAt(truth(5, -9), registration.toLatLon(5, -9));
+	}
+
+	@Test
+	public void holdsTheCompassFromTheFirstReadingWithALandmark() {
+		GeoRegistration registration = new GeoRegistration();
+		registration.setLandmarks(Collections.singletonList(landmark(3, -8)));
+		registration.addHeading(OFFSET_DEGREES, 0, 5);
 		for (int i = 0; i < GeoRegistration.MAX_HEADING_READINGS; i++) {
 			registration.addHeading(OFFSET_DEGREES + 20, 0, 5);
 		}
 
 		assertEquals(OFFSET_DEGREES, registration.getHeadingOffsetDegrees(), 1e-3);
+	}
+
+	@Test
+	public void stillWaitsForEnoughReadingsOnceTheLandmarksAreGone() {
+		GeoRegistration registration = new GeoRegistration();
+		addFix(registration, 0, 0, 0, 5);
+		registration.setLandmarks(Collections.singletonList(landmark(3, -8)));
+		registration.addHeading(OFFSET_DEGREES, 0, 5);
+		registration.setLandmarks(Collections.emptyList());
+
+		assertFalse(registration.hasHeading());
+		assertFalse(registration.isReady());
 	}
 
 	@Test

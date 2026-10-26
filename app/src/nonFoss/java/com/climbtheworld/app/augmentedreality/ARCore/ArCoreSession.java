@@ -983,10 +983,12 @@ class ArCoreSession {
 			// Aligning is what ties the world to the map, which may not be done yet.
 			hintText = activity.getString(R.string.ar_placement_align_drag,
 					aligningRoute.getName());
+		} else if (tracking && !registration.hasHeading()) {
+			// Before the location, which the hint offers to align for: without a heading a
+			// route aligned on would not tie the world, so Align waits for the compass.
+			hint = R.string.ar_placement_waiting_heading;
 		} else if (tracking && !registration.hasLocation()) {
 			hint = R.string.ar_placement_waiting_location;
-		} else if (tracking && !registration.hasHeading()) {
-			hint = R.string.ar_placement_waiting_heading;
 		} else if (tracking && triangulationStep == TriangulationStep.FIRST) {
 			// The cursor shows once the crosshair crosses the first sighting.
 			hint = cursor == null ? R.string.ar_placement_triangulate_move
@@ -1027,7 +1029,9 @@ class ArCoreSession {
 			describe(alignButton, counted.isEmpty()
 					? activity.getString(R.string.ar_placement_align)
 					: activity.getString(R.string.ar_placement_align_count, counted.size()));
-			setIconEnabled(alignButton, tracking && !pickingRoute);
+			// Not before the compass has told the heading: a single route aligned on fixes the
+			// position only, and would not tie the world until it does, see GeoRegistration.
+			setIconEnabled(alignButton, canAlign());
 		}
 		// The info icon draws the eye to Align while it can be tapped and aligning on more routes
 		// would help: orange until the A.R. is aligned on a route, green until the routes aligned
@@ -1035,8 +1039,7 @@ class ArCoreSession {
 		alignNotice.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(activity,
 				counted.isEmpty() ? android.R.color.holo_orange_dark
 						: android.R.color.holo_green_light)));
-		setAnimating(alignNotice, aligningRoute == null && tracking && !pickingRoute
-				&& !isHeadingGood(counted));
+		setAnimating(alignNotice, aligningRoute == null && canAlign() && !isHeadingGood(counted));
 		alignedCount.setVisibility(counted.isEmpty() ? View.GONE : View.VISIBLE);
 		alignedCount.setText(String.valueOf(counted.size()));
 		if (triangulateButton != null) {
@@ -1123,6 +1126,9 @@ class ArCoreSession {
 			drop(renderer.getCursor());
 			return;
 		}
+		if (!canAlign()) {
+			return;
+		}
 		refreshLandmarks();
 		// Around where the user is, who aims once they have picked the route.
 		ArSessionRenderer.SessionCamera camera = renderer.getSessionCamera();
@@ -1158,6 +1164,15 @@ class ArCoreSession {
 						endAligning();
 					}
 				});
+	}
+
+	/**
+	 * @return whether the user can start aligning: ARCore tracks, the list of the routes is not
+	 * open, and the compass has told the heading, without which a route aligned on would not
+	 * tie the world, see GeoRegistration.hasHeading
+	 */
+	private boolean canAlign() {
+		return isTracking() && !pickingRoute && registration.hasHeading();
 	}
 
 	/**

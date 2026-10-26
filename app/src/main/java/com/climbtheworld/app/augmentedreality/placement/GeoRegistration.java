@@ -48,7 +48,9 @@ public class GeoRegistration {
 	// About a minute of compass readings, as the editor gets them, and of GPS fixes.
 	static final int MAX_HEADING_READINGS = 300;
 	static final int MAX_LOCATION_READINGS = 60;
-	// A couple of seconds of compass readings, before the offset is trusted.
+	// A couple of seconds of compass readings, before the offset is trusted. With a landmark, one
+	// is enough: the reading is already steadied against the gyroscope, and the landmark holds
+	// it, see holdCompass.
 	static final int MIN_HEADING_READINGS = 10;
 	// How far off a mapped node may be from where it really is.
 	static final double LANDMARK_ACCURACY_METERS = 2;
@@ -158,8 +160,7 @@ public class GeoRegistration {
 	 * unless it is held already.
 	 */
 	private void holdCompass() {
-		if (landmarks.isEmpty() || !Double.isNaN(heldCompassOffset)
-				|| headings.size() < MIN_HEADING_READINGS) {
+		if (landmarks.isEmpty() || !Double.isNaN(heldCompassOffset) || headings.isEmpty()) {
 			return;
 		}
 		heldCompassOffset = averageCompassHeading();
@@ -185,7 +186,8 @@ public class GeoRegistration {
 	 * @return whether which way north is in the session's world is known
 	 */
 	public boolean hasHeading() {
-		return headings.size() >= MIN_HEADING_READINGS || !Double.isNaN(landmarkHeading());
+		return headings.size() >= (landmarks.isEmpty() ? MIN_HEADING_READINGS : 1)
+				|| !Double.isNaN(landmarkHeading());
 	}
 
 	/**
