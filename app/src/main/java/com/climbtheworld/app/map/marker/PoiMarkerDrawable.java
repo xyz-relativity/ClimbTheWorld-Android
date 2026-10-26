@@ -70,6 +70,9 @@ public class PoiMarkerDrawable extends Drawable {
 	private TextPaint nameTextPaint;
 	private TextPaint routeCountTextPaint;
 	private String routeCountString;
+	// Whether the pin wears the filter badge, its count covering only the routes matching the
+	// display filters, see GeoNode.routeCountFiltered.
+	private boolean filterBadge;
 	private ArrayList<String> nameSplit;
 	private ColorStateList color;
 	ColorFilter colorFilter = null;
@@ -100,6 +103,9 @@ public class PoiMarkerDrawable extends Drawable {
 	private final static float PIN_VIEWPORT_WIDTH = 33.86667f;
 	private final static float PIN_VIEWPORT_HEIGHT = 52.916664f;
 	private final static float PIN_BIG_CIRCLE_BOTTOM = 17.3249f + 16.6627f;
+	private final static float PIN_BIG_CIRCLE_CENTER_Y = 17.3249f;
+	private final static float PIN_BIG_CIRCLE_RADIUS_X = 16.2727f;
+	private final static float PIN_BIG_CIRCLE_RADIUS_Y = 16.6627f;
 	private final static float PIN_SECOND_CIRCLE_CENTER_Y = 39.5418f;
 	private final static float PIN_SECOND_CIRCLE_RADIUS_X = 5.4242f;
 	private final static int[] NAME_HORIZONTAL_MARGIN = new int[]{
@@ -112,6 +118,8 @@ public class PoiMarkerDrawable extends Drawable {
 	private final static float ROUTE_COUNT_FONT_SIZE = Globals.convertDpToPixel(9).floatValue();
 	private final static float ROUTE_COUNT_OUTLINE_STRENGTH =
 			Globals.convertDpToPixel(DisplayableGeoNode.MARKER_TEXT_OUTLINE_DP).floatValue();
+	private final static float FILTER_BADGE_SIZE =
+			Globals.convertDpToPixel(DisplayableGeoNode.FILTER_BADGE_DP).floatValue();
 
 	private final static int STYLE_TOP_OFFSET = Globals.convertDpToPixel(57).intValue();
 	private final static float STYLE_ICON_SIZE = Globals.convertDpToPixel(10).floatValue();
@@ -250,6 +258,17 @@ public class PoiMarkerDrawable extends Drawable {
 						styleCenterY - (styleIcon.getHeight() / 2f), styleIconPaint);
 			}
 
+			// Over the rest, on the bottom right of the main circle.
+			AppCompatActivity parent = parentRef.get();
+			if (filterBadge && parent != null) {
+				double diagonal = Math.sqrt(0.5);
+				MarkerUtils.drawFilterBadge(parent, canvas, (float) (centerX + diagonal
+								* IntrinsicWidth * PIN_BIG_CIRCLE_RADIUS_X / PIN_VIEWPORT_WIDTH),
+						(float) (IntrinsicHeight * (PIN_BIG_CIRCLE_CENTER_Y
+								+ diagonal * PIN_BIG_CIRCLE_RADIUS_Y) / PIN_VIEWPORT_HEIGHT),
+						FILTER_BADGE_SIZE, alpha);
+			}
+
 			//done
 			canvas.restore();
 		} else {
@@ -374,6 +393,7 @@ public class PoiMarkerDrawable extends Drawable {
 		if (routeCountString == null) {
 			routeCountString = "";
 		}
+		filterBadge = !routeCountString.isEmpty() && poi.getGeoNode().routeCountFiltered;
 		routeCountTextPaint = new TextPaint();
 		routeCountTextPaint.setAntiAlias(true);
 		routeCountTextPaint.setSubpixelText(true);

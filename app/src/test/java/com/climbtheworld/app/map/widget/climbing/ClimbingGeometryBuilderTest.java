@@ -96,7 +96,7 @@ public class ClimbingGeometryBuilderTest {
 	}
 
 	@Test
-	public void filteredRouteCountShowsEvenZeroOnTheLabelAndThePin() throws Exception {
+	public void filteredRouteCountMarksTheLabelAndThePin() throws Exception {
 		OsmCollectionEntity area = new OsmCollectionEntity(new JSONObject()
 				.put("id", 458L)
 				.put("type", "relation")
@@ -120,8 +120,10 @@ public class ClimbingGeometryBuilderTest {
 		assertNotEquals(unfiltered.get(0).getLabelImageId(), geometry.getLabelImageId());
 		GeoNode pin = geometry.pin(geometry.labelCoordinate);
 		assertEquals("0", pin.getKey(ClimbingTags.KEY_ROUTES));
+		assertTrue(pin.routeCountFiltered);
 		GeoNode unfilteredPin = unfiltered.get(0).pin(unfiltered.get(0).labelCoordinate);
 		assertEquals("", unfilteredPin.getKey(ClimbingTags.KEY_ROUTES));
+		assertFalse(unfilteredPin.routeCountFiltered);
 	}
 
 	@Test

@@ -317,6 +317,7 @@ public class ClimbingRouteCounterTest {
 
 		GeoNode pin = sportOnly().pin(crag, new MapCoordinate(45, 24));
 		assertEquals("2", pin.getKey(ClimbingTags.KEY_ROUTES));
+		assertTrue(pin.routeCountFiltered);
 		assertEquals("12", crag.getTags().optString(ClimbingTags.KEY_ROUTES));
 	}
 
@@ -330,6 +331,7 @@ public class ClimbingRouteCounterTest {
 		GeoNode pin = sportOnly().pin(crag, new MapCoordinate(45, 24));
 
 		assertEquals("0", pin.getKey(ClimbingTags.KEY_ROUTES));
+		assertTrue(pin.routeCountFiltered);
 	}
 
 	@Test
@@ -342,6 +344,7 @@ public class ClimbingRouteCounterTest {
 		assertFalse(summary.isFiltered());
 		GeoNode pin = sportOnly().pin(tagged, new MapCoordinate(45, 24));
 		assertEquals("12", pin.getKey(ClimbingTags.KEY_ROUTES));
+		assertFalse(pin.routeCountFiltered);
 	}
 
 	@Test
@@ -365,7 +368,7 @@ public class ClimbingRouteCounterTest {
 	}
 
 	@Test
-	public void unfilteredCountCountsAllRoutes() throws JSONException {
+	public void unfilteredCountCountsAllRoutesUnmarked() throws JSONException {
 		addNode(10, route());
 		OsmCollectionEntity crag = addCollection(2, "relation", site("crag"),
 				members("node", 10));
@@ -374,6 +377,7 @@ public class ClimbingRouteCounterTest {
 		ClimbingRouteCounter.RouteSummary summary = counter.summarize(crag);
 		assertFalse(summary.isFiltered());
 		assertEquals(1, summary.getMatchingRouteCount());
+		assertFalse(counter.pin(crag, new MapCoordinate(45, 24)).routeCountFiltered);
 	}
 
 	@Test

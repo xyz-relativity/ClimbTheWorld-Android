@@ -87,6 +87,7 @@ import org.maplibre.android.maps.Style;
 import org.maplibre.android.offline.OfflineManager;
 import org.maplibre.android.style.expressions.Expression;
 import org.maplibre.android.style.layers.FillLayer;
+import org.maplibre.android.style.layers.Layer;
 import org.maplibre.android.style.layers.LineLayer;
 import org.maplibre.android.style.layers.Property;
 import org.maplibre.android.style.layers.SymbolLayer;
@@ -169,6 +170,8 @@ public class MapLibreMapWidget {
 	private static final String CLUSTER_SOURCE_ID = "ctw-cluster-source";
 	private static final String CLUSTER_LAYER_ID = "ctw-cluster-layer";
 	private static final String CLUSTER_IMAGE_ID = "ctw-cluster-image";
+	// With the filter badge, while the clusters count only the POIs matching the display filters.
+	private static final String CLUSTER_FILTERED_IMAGE_ID = "ctw-cluster-filtered-image";
 	private static final String TERRAIN_SOURCE_ID = "ctw-terrain-source";
 	private static final String CLUSTER_COUNT_PROPERTY = "point_count";
 	private static final String CLUSTER_COUNT_LABEL_PROPERTY = "point_count_abbreviated";
@@ -218,6 +221,9 @@ public class MapLibreMapWidget {
 	private String pendingClusterGeoJson = EMPTY_FEATURE_COLLECTION;
 	// The POIs in the cluster source, by the marker id each cluster leaf carries.
 	private Map<Long, DisplayableGeoNode> pendingClusterPois = Collections.emptyMap();
+	// Whether the clusters count only the POIs matching the display filters, and wear the filter
+	// badge for it.
+	private boolean pendingClusterFiltered;
 	private Map<Long, DisplayableGeoNode> renderedClusterPois = Collections.emptyMap();
 	private double pendingClimbingZoom;
 	private MapLibreMap map;
@@ -520,6 +526,9 @@ public class MapLibreMapWidget {
 		style.addImage(CLUSTER_IMAGE_ID, bitmapFromDrawable(MarkerUtils.getClusterIcon(parent,
 				DisplayableGeoNode.CLUSTER_DEFAULT_COLOR,
 				DisplayableGeoNode.CLUSTER_ICON_ALPHA)));
+		style.addImage(CLUSTER_FILTERED_IMAGE_ID, bitmapFromDrawable(MarkerUtils.getClusterIcon(
+				parent, DisplayableGeoNode.CLUSTER_DEFAULT_COLOR,
+				DisplayableGeoNode.CLUSTER_ICON_ALPHA, true)));
 
 		style.addSource(new GeoJsonSource(HULL_FILL_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
 		style.addSource(new GeoJsonSource(HULL_OUTLINE_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
@@ -1037,7 +1046,7 @@ public class MapLibreMapWidget {
 	/**
 	 * Also fills {@link #pendingClusterPois}, so a tapped cluster's leaves can be resolved back to
 	 * their POIs. The POIs a display filter fades out are left out, so the clusters count only
-	 * those that match.
+	 * those that match, and wear the filter badge for it.
 	 */
 	private String buildClusterGeoJson(double zoom) {
 		Map<Long, DisplayableGeoNode> clusterPois = new HashMap<>();
@@ -1060,6 +1069,7 @@ public class MapLibreMapWidget {
 			}
 		}
 		pendingClusterPois = clusterPois;
+		pendingClusterFiltered = !forceGhostPois && NodeDisplayFilters.hasFilters(configs);
 		return ClimbingGeometryBuilder.featureCollection(features);
 	}
 
@@ -1071,6 +1081,11 @@ public class MapLibreMapWidget {
 		if (source != null) {
 			source.setGeoJson(pendingClusterGeoJson);
 			renderedClusterPois = pendingClusterPois;
+		}
+		Layer clusterLayer = map.getStyle().getLayer(CLUSTER_LAYER_ID);
+		if (clusterLayer != null) {
+			clusterLayer.setProperties(iconImage(pendingClusterFiltered
+					? CLUSTER_FILTERED_IMAGE_ID : CLUSTER_IMAGE_ID));
 		}
 	}
 
@@ -1302,6 +1317,7 @@ public class MapLibreMapWidget {
 				+ "|" + poi.geoNode.getNodeType().name() + "|" + poi.geoNode.isRouteTop()
 				+ "|" + styles
 				+ "|" + poi.geoNode.getKey(ClimbingTags.KEY_ROUTES)
+				+ "|" + poi.geoNode.routeCountFiltered
 				+ "|" + poi.geoNode.getKey(ClimbingTags.KEY_LENGTH)
 				+ "|" + poi.geoNode.getLevelId(ClimbingTags.KEY_GRADE_TAG);
 	}

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?><!-- Filter badge, in the style of the compass status badges: a funnel, as on the filter button,
+on blue grey. It sits on the pins that group nodes, crags, areas and map clusters, while their
+count covers only what matches the display filters, see MarkerUtils.drawFilterBadge. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="22dp"
+    android:height="22dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#455a64"
+        android:pathData="M1,12a11,11 0,1 0,22 0a11,11 0,1 0,-22 0z"
+        android:strokeWidth="1.5"
+        android:strokeColor="#ffffff" />
+    <path
+        android:fillColor="#ffffff"
+        android:pathData="M6,7L18,7L13.4,12.6L13.4,17.2L10.6,15.8L10.6,12.6Z"
+        android:strokeLineJoin="round"
+        android:strokeWidth="1"
+        android:strokeColor="#ffffff" />
+</vector>

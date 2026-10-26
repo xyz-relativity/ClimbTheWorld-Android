@@ -92,7 +92,7 @@ public final class ClimbingRouteCounter {
 
 		/**
 		 * @return whether only some routes may match: a route filter is on, and there are routes
-		 * for it to sort. A pin then shows the matching count, even 0.
+		 * for it to sort. A pin then shows the matching count, even 0, with the filter badge.
 		 */
 		public boolean isFiltered() {
 			return filtered;
@@ -283,7 +283,8 @@ public final class ClimbingRouteCounter {
 	/**
 	 * @param filtered whether the count is that of the routes matching the display filters, see
 	 *                 RouteSummary.isFiltered: it shows even when 0, rather than the collection's
-	 *                 own climbing:routes tag
+	 *                 own climbing:routes tag, and the pin wears the filter badge, see
+	 *                 GeoNode.routeCountFiltered
 	 */
 	public static GeoNode pin(OsmCollectionEntity collection, MapCoordinate location,
 	                          int routeCount, boolean filtered) {
@@ -298,6 +299,7 @@ public final class ClimbingRouteCounter {
 		if (routeCount > 0 || filtered) {
 			result.setKey(ClimbingTags.KEY_ROUTES, Integer.toString(routeCount));
 		}
+		result.routeCountFiltered = filtered;
 		return result;
 	}
 

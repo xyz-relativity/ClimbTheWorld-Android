@@ -45,6 +45,11 @@ public class DisplayableGeoNode {
 	// White outline drawn around the labels on every marker, so the text stays readable over the
 	// marker tint and the map underneath.
 	public static final float MARKER_TEXT_OUTLINE_DP = 2;
+	// The filter badge, on the bottom right of the main circle of the pins that group nodes while
+	// their count covers only what matches the display filters: crag and area pins, and map
+	// clusters, see MarkerUtils.drawFilterBadge.
+	public static final float FILTER_BADGE_DP = 14;
+	public static final float CLUSTER_FILTER_BADGE_DP = 22;
 	public final GeoNode geoNode;
 	private int alpha = POI_ICON_ALPHA_VISIBLE;
 	// Position of the route in its crag, or 0 when it is not numbered.

@@ -30,9 +30,22 @@ public class MarkerUtils {
 	public final static int DEFAULT_STYLE_ICON_SIZE = Globals.convertDpToPixel(20).intValue();
 
 	private static final HashMap<String, Drawable> iconCache = new HashMap<>();
+	// The bottom right of ic_clusters' main circle, as a share of its size, where the filter badge
+	// goes.
+	private static final float CLUSTER_BADGE_CENTER_X = 0.71f;
+	private static final float CLUSTER_BADGE_CENTER_Y = 0.69f;
 
 	public static Drawable getClusterIcon(AppCompatActivity parent, int color, int alpha) {
-		final String cacheKey = "cluster" + "|" + color + "|" + alpha;
+		return getClusterIcon(parent, color, alpha, false);
+	}
+
+	/**
+	 * @param filtered whether the cluster counts only the POIs matching the display filters, which
+	 *                 the filter badge marks, see drawFilterBadge
+	 */
+	public static Drawable getClusterIcon(AppCompatActivity parent, int color, int alpha,
+	                                      boolean filtered) {
+		final String cacheKey = "cluster" + "|" + color + "|" + alpha + "|" + filtered;
 
 		if (!iconCache.containsKey(cacheKey)) {
 			synchronized (iconCache) {
@@ -50,12 +63,40 @@ public class MarkerUtils {
 							Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG));
 					nodeIcon.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
 					nodeIcon.draw(canvas);
+					if (filtered) {
+						drawFilterBadge(parent, canvas,
+								canvas.getWidth() * CLUSTER_BADGE_CENTER_X,
+								canvas.getHeight() * CLUSTER_BADGE_CENTER_Y,
+								Globals.convertDpToPixel(
+										DisplayableGeoNode.CLUSTER_FILTER_BADGE_DP).floatValue(),
+								255);
+					}
 					iconCache.put(cacheKey, new BitmapDrawable(parent.getResources(), bitmap));
 				}
 			}
 		}
 
 		return iconCache.get(cacheKey);
+	}
+
+	/**
+	 * Draws the filter badge, as the compass status badges, see ic_filter_badge: it marks the
+	 * count of a pin that groups nodes as covering only what matches the display filters.
+	 *
+	 * @param size the badge's width and height, in pixels
+	 */
+	public static void drawFilterBadge(AppCompatActivity parent, Canvas canvas, float centerX,
+	                                   float centerY, float size, int alpha) {
+		Drawable badge = ResourcesCompat.getDrawable(parent.getResources(),
+				R.drawable.ic_filter_badge, null);
+		if (badge == null) {
+			return;
+		}
+		badge = badge.mutate();
+		badge.setAlpha(alpha);
+		badge.setBounds(Math.round(centerX - size / 2), Math.round(centerY - size / 2),
+				Math.round(centerX + size / 2), Math.round(centerY + size / 2));
+		badge.draw(canvas);
 	}
 
 	public static Drawable getStyleIcon(AppCompatActivity parent,

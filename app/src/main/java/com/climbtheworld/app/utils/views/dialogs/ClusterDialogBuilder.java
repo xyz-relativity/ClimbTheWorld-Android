@@ -13,8 +13,10 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.MarkerUtils;
+import com.climbtheworld.app.map.marker.NodeDisplayFilters;
 import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.map.widget.climbing.ClimbingParent;
 import com.climbtheworld.app.map.widget.climbing.ClimbingRouteCounter;
@@ -94,9 +96,12 @@ public class ClusterDialogBuilder {
 
 		((TextView) result.findViewById(R.id.textTitle)).setText(
 				parent.getResources().getString(R.string.points_of_interest_value, poiCount));
+		// As on the map, with the filter badge while the cluster holds only what matches the
+		// display filters.
 		((ImageView) result.findViewById(R.id.imageIcon)).setImageDrawable(
 				MarkerUtils.getClusterIcon(parent, DisplayableGeoNode.CLUSTER_DEFAULT_COLOR,
-						DisplayableGeoNode.POI_ICON_ALPHA_VISIBLE));
+						DisplayableGeoNode.POI_ICON_ALPHA_VISIBLE,
+						NodeDisplayFilters.hasFilters(Configs.instance(parent))));
 		// A cluster has no OSM element to share, edit or navigate to.
 		result.findViewById(R.id.menu).setVisibility(View.GONE);
 

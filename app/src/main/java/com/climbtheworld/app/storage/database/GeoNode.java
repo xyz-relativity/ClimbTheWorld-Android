@@ -32,6 +32,9 @@ public class GeoNode implements Comparable {
 	private static final Pattern ELEVATION_NUMBER = Pattern.compile("-?\\d+(?:\\.\\d+)?");
 	public long osmID;
 	public String countryIso;
+	// Whether a crag's or area's pin counts only the routes matching the display filters, see
+	// ClimbingRouteCounter.pin; the pin then wears the filter badge, see MarkerUtils.
+	public boolean routeCountFiltered;
 	public JSONObject jsonNodeInfo;
 	//This are kept as variables since they are accessed often during AR rendering.
 	public double decimalLatitude = 0;
