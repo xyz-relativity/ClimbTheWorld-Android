@@ -851,11 +851,15 @@ class ArCoreSession {
 					host.onFailed(Failure.NO_DEPTH);
 					return;
 				}
+				Config config = created.getConfig();
+				// ARCore's planes go unused: the cursor fits the wall from the depth itself. Found
+				// anyway, they pile up over a walk around a crag, and each frame refits them all,
+				// which slows ARCore down more and more.
+				config.setPlaneFindingMode(Config.PlaneFindingMode.DISABLED);
 				if (depth) {
-					Config config = created.getConfig();
 					config.setDepthMode(Config.DepthMode.AUTOMATIC);
-					created.configure(config);
 				}
+				created.configure(config);
 				session = created;
 				depthEnabled = depth;
 			} catch (UnavailableUserDeclinedInstallationException e) {
