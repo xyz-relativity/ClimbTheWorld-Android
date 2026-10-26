@@ -12,8 +12,10 @@ import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
 public class DisplayableGeoNode {
 	public static final int CLUSTER_DEFAULT_COLOR = Color.parseColor("#ff0088ff");
 	public static final int POI_DEFAULT_COLOR = Color.parseColor("#ffeeeeee");
-	// Translucency shared by every convex hull fill, on the map and in the AR view.
-	public static final int HULL_FILL_ALPHA = 0x60;
+	// Translucency shared by every convex hull fill, on the map and in the AR view: light, so the
+	// map and the rock show through, and a crag inside its area stays readable where the two fills
+	// stack.
+	public static final int HULL_FILL_ALPHA = 0x20;
 	// Translucent fills of the area and crag convex hulls.
 	public static final int AREA_HULL_COLOR = ColorUtils.setAlphaComponent(
 			Color.parseColor("#00ffff"), HULL_FILL_ALPHA); //#20cdffd8  #20e6ffed
@@ -33,7 +35,8 @@ public class DisplayableGeoNode {
 	public static final float LINE_CASING_WIDTH_DP = 5;
 	public static final int POI_ICON_ALPHA_VISIBLE = 255;
 	public static final int POI_ICON_ALPHA_HIDDEN = 30;
-	// A pin drawn see-through: in the A.R., the route being aligned on, where the A.R. has it until
+	// A pin drawn see-through: in the A.R., the route being aligned on, where the A.R. has it
+	// until
 	// it is dropped, see AugmentedRealityScene.showOnly.
 	public static final int POI_ICON_ALPHA_SEE_THROUGH = 100;
 	public static final int CLUSTER_ICON_ALPHA = 200;
