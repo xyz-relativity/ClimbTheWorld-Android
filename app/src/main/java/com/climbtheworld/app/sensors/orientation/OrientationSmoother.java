@@ -16,8 +16,11 @@ class OrientationSmoother {
 
 	// x, y, z, w, as in the rotation vector.
 	private final float[] smoothed = new float[4];
+	// The previous reading, as it came, to tell how fast the device turns.
+	private final double[] lastReading = new double[4];
 	private boolean started;
 	private long lastTimestampNanos;
+	private double turnRateDegreesPerSecond = Double.NaN;
 
 	/**
 	 * Adds a reading of the rotation vector.
@@ -37,6 +40,10 @@ class OrientationSmoother {
 
 		double weight = 1;
 		if (started) {
+			double elapsedSeconds = Math.max(0, timestampNanos - lastTimestampNanos) / 1e9;
+			if (elapsedSeconds > 0) {
+				turnRateDegreesPerSecond = angleDegrees(lastReading, x, y, z, w) / elapsedSeconds;
+			}
 			double dot = smoothed[0] * x + smoothed[1] * y + smoothed[2] * z + smoothed[3] * w;
 			// A quaternion and its opposite are the same rotation, so the reading is turned to
 			// whichever of the two is nearer.
@@ -52,11 +59,14 @@ class OrientationSmoother {
 			double smoothingSeconds = STILL_SMOOTHING_SECONDS / (1 + jitters * jitters);
 			// Weighted by the time since the previous reading rather than counted, so that the
 			// smoothing does not depend on how often the sensor is read.
-			double elapsedSeconds = Math.max(0, timestampNanos - lastTimestampNanos) / 1e9;
 			weight = 1 - Math.exp(-elapsedSeconds / smoothingSeconds);
 		}
 		started = true;
 		lastTimestampNanos = timestampNanos;
+		lastReading[0] = x;
+		lastReading[1] = y;
+		lastReading[2] = z;
+		lastReading[3] = w;
 
 		// Blending the components and normalising the result stays close enough to the exact
 		// interpolation for the small steps in between readings.
@@ -74,9 +84,37 @@ class OrientationSmoother {
 	}
 
 	/**
+	 * @return how fast the device turns, in degrees per second, from the last two readings as
+	 * they came, NaN until there are two
+	 */
+	double turnRateDegreesPerSecond() {
+		return turnRateDegreesPerSecond;
+	}
+
+	/**
+	 * The angle of the rotation between a quaternion and another one: from the product of the
+	 * inverse of the first with the second, whose vector part stays accurate for the small angles
+	 * between two readings, where the arc cosine of the dot product alone does not.
+	 */
+	private static double angleDegrees(double[] quaternion, double x, double y, double z,
+	                                   double w) {
+		double qx = quaternion[0];
+		double qy = quaternion[1];
+		double qz = quaternion[2];
+		double qw = quaternion[3];
+		double betweenW = qw * w + qx * x + qy * y + qz * z;
+		double betweenX = qw * x - qx * w - (qy * z - qz * y);
+		double betweenY = qw * y - qy * w - (qz * x - qx * z);
+		double betweenZ = qw * z - qz * w - (qx * y - qy * x);
+		double vector = Math.sqrt(betweenX * betweenX + betweenY * betweenY + betweenZ * betweenZ);
+		return Math.toDegrees(2 * Math.atan2(vector, Math.abs(betweenW)));
+	}
+
+	/**
 	 * Starts over, from the next reading as it is.
 	 */
 	void reset() {
 		started = false;
+		turnRateDegreesPerSecond = Double.NaN;
 	}
 }

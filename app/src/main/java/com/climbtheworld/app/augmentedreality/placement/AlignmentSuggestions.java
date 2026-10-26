@@ -22,8 +22,10 @@ public final class AlignmentSuggestions {
 	public static final double WORST_SUGGESTED_DEGREES =
 			GeoRegistration.DEFAULT_HEADING_ACCURACY_DEGREES;
 	// A heading this sure is good enough to stop prompting the user to align on more routes: two
-	// routes about 16 m apart, as they may be mapped a couple of meters off.
-	public static final double GOOD_HEADING_DEGREES = 10;
+	// routes about 16 m apart, as they may be mapped a couple of meters off. It is also where
+	// the routes' heading takes over from the compass, however sure the device says that is.
+	public static final double GOOD_HEADING_DEGREES =
+			GeoRegistration.MAX_COMPARED_COMPASS_ACCURACY_DEGREES;
 	public static final int MAX_SUGGESTED = 3;
 	private static final double METERS_PER_DEGREE = 6378137 * Math.PI / 180;
 

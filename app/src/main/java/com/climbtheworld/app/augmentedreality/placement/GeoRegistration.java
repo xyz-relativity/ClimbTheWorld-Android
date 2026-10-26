@@ -22,10 +22,13 @@ import java.util.List;
  * <p>
  * Landmarks, mapped nodes the user aimed at, take over from GPS: the session's world is moved to
  * put them where the map has them, so that what is placed lands right next to them, whatever GPS
- * says. Two or more landmarks far enough apart also tell the heading, which then takes over from
- * the compass: next to rock the compass is steady but off, and the landmarks are what the user
- * wants things lined up with. The farther apart they are, the less their own mapping errors turn
- * the heading, see landmarkHeadingAccuracyDegrees.
+ * says. With a landmark, the compass's offset is held as it was when the landmark came, or when
+ * the compass became ready, rather than followed: following it would slide the phone around the
+ * landmark as the field bends, and the session barely drifts. Two or more landmarks far enough
+ * apart also tell the heading, and it takes over from the compass once it is the surer of the
+ * two: next to rock the compass is steady but off, and the landmarks are what the user wants
+ * things lined up with. The farther apart they are, the less their own mapping errors turn the
+ * heading, see landmarkHeadingAccuracyDegrees.
  * <p>
  * Positions are worked out on a plane tangent to the Earth at the first fix or landmark, which is
  * exact enough over the few hundred meters a session covers.
@@ -38,6 +41,10 @@ public class GeoRegistration {
 	static final double MIN_HEADING_ACCURACY_DEGREES = 3;
 	// How accurate a compass reading counts as when the device does not tell.
 	static final double DEFAULT_HEADING_ACCURACY_DEGREES = 15;
+	// Against the landmarks' heading, the compass counts as no surer than this, however sure the
+	// device says it is: it does not know of the rock bending the field. Landmarks about 16 m
+	// apart are then the surer.
+	public static final double MAX_COMPARED_COMPASS_ACCURACY_DEGREES = 10;
 	// About a minute of compass readings, as the editor gets them, and of GPS fixes.
 	static final int MAX_HEADING_READINGS = 300;
 	static final int MAX_LOCATION_READINGS = 60;
@@ -56,6 +63,10 @@ public class GeoRegistration {
 	// phone.
 	private final ArrayDeque<double[]> locations = new ArrayDeque<>();
 	private List<Landmark> landmarks = Collections.emptyList();
+	// The compass's offset, in radians, and its accuracy, in degrees, held while there are
+	// landmarks; NaN while following the compass.
+	private double heldCompassOffset = Double.NaN;
+	private double heldCompassAccuracyDegrees;
 	private boolean referenceSet;
 	private double referenceLatitude;
 	private double referenceLongitude;
@@ -92,6 +103,7 @@ public class GeoRegistration {
 		headings.clear();
 		locations.clear();
 		landmarks = Collections.emptyList();
+		heldCompassOffset = Double.NaN;
 		referenceSet = false;
 	}
 
@@ -108,6 +120,7 @@ public class GeoRegistration {
 		double offset = Math.toRadians(compassAzimuthDegrees - sessionAzimuthDegrees);
 		add(headings, new double[]{Math.sin(offset), Math.cos(offset), 1 / (accuracy * accuracy)},
 				MAX_HEADING_READINGS);
+		holdCompass();
 	}
 
 	/**
@@ -132,9 +145,25 @@ public class GeoRegistration {
 	 */
 	public void setLandmarks(List<Landmark> landmarks) {
 		this.landmarks = new ArrayList<>(landmarks);
-		if (!landmarks.isEmpty()) {
-			setReference(landmarks.get(0).latitude(), landmarks.get(0).longitude());
+		if (landmarks.isEmpty()) {
+			heldCompassOffset = Double.NaN;
+			return;
 		}
+		setReference(landmarks.get(0).latitude(), landmarks.get(0).longitude());
+		holdCompass();
+	}
+
+	/**
+	 * Holds the compass's offset as it is now, with landmarks and once the compass is ready,
+	 * unless it is held already.
+	 */
+	private void holdCompass() {
+		if (landmarks.isEmpty() || !Double.isNaN(heldCompassOffset)
+				|| headings.size() < MIN_HEADING_READINGS) {
+			return;
+		}
+		heldCompassOffset = averageCompassHeading();
+		heldCompassAccuracyDegrees = averageCompassAccuracyDegrees();
 	}
 
 	private void setReference(double latitude, double longitude) {
@@ -172,22 +201,46 @@ public class GeoRegistration {
 
 	/**
 	 * @return the clockwise angle from the session's north to true north, in degrees: as the
-	 * landmarks tell it when they can, else as the compass does, NaN until there is any compass
-	 * reading
+	 * landmarks tell it when they can and are surer than the compass, see
+	 * MAX_COMPARED_COMPASS_ACCURACY_DEGREES, else as the compass does, NaN until there is any
+	 * compass reading
 	 */
 	public double getHeadingOffsetDegrees() {
 		double fromLandmarks = landmarkHeading();
 		if (!Double.isNaN(fromLandmarks)) {
-			return Math.toDegrees(fromLandmarks);
+			double compassAccuracy = Math.max(compassAccuracyDegrees(),
+					MAX_COMPARED_COMPASS_ACCURACY_DEGREES);
+			if (Double.isNaN(compassAccuracy)
+					|| landmarkHeadingAccuracyDegrees(landmarkEastNorth()) <= compassAccuracy) {
+				return Math.toDegrees(fromLandmarks);
+			}
 		}
 		return Math.toDegrees(compassHeading());
 	}
 
 	/**
-	 * @return the offset the compass tells, in radians, NaN without any reading. Averaging does
-	 * not make it any less off, as a compass near rock is mostly off the same way for a while.
+	 * @return the offset the compass tells, in radians, held while there are landmarks, NaN
+	 * without any reading
 	 */
 	private double compassHeading() {
+		return Double.isNaN(heldCompassOffset) ? averageCompassHeading() : heldCompassOffset;
+	}
+
+	/**
+	 * @return how far off the offset the compass tells may be, in degrees, held while there are
+	 * landmarks, NaN without any reading
+	 */
+	public double compassAccuracyDegrees() {
+		return Double.isNaN(heldCompassOffset) ? averageCompassAccuracyDegrees()
+				: heldCompassAccuracyDegrees;
+	}
+
+	/**
+	 * @return the offset the latest readings tell, in radians, NaN without any reading.
+	 * Averaging does not make it any less off, as a compass near rock is mostly off the same way
+	 * for a while.
+	 */
+	private double averageCompassHeading() {
 		if (headings.isEmpty()) {
 			return Double.NaN;
 		}
@@ -198,6 +251,22 @@ public class GeoRegistration {
 			cos += heading[1] * heading[2];
 		}
 		return Math.atan2(sin, cos);
+	}
+
+	/**
+	 * @return the accuracy of the latest readings taken together, in degrees: that of a reading
+	 * of the mean weight, as averaging a compass that is off the same way for a while does not
+	 * make it surer; NaN without any reading
+	 */
+	private double averageCompassAccuracyDegrees() {
+		if (headings.isEmpty()) {
+			return Double.NaN;
+		}
+		double weights = 0;
+		for (double[] heading : headings) {
+			weights += heading[2];
+		}
+		return Math.sqrt(headings.size() / weights);
 	}
 
 	/**
@@ -255,11 +324,10 @@ public class GeoRegistration {
 	 */
 	private double landmarkHeading() {
 		List<double[]> session = new ArrayList<>(landmarks.size());
-		List<double[]> map = new ArrayList<>(landmarks.size());
 		for (Landmark landmark : landmarks) {
 			session.add(new double[]{landmark.sessionX(), -landmark.sessionZ()});
-			map.add(toReference(landmark.latitude(), landmark.longitude()));
 		}
+		List<double[]> map = landmarkEastNorth();
 		if (!tellsHeading(session)) {
 			return Double.NaN;
 		}
@@ -282,6 +350,17 @@ public class GeoRegistration {
 			cos += mapEast * sessionEast + mapNorth * sessionNorth;
 		}
 		return Math.atan2(sin, cos);
+	}
+
+	/**
+	 * Where the map has the landmarks, in meters east and north of the reference.
+	 */
+	private List<double[]> landmarkEastNorth() {
+		List<double[]> map = new ArrayList<>(landmarks.size());
+		for (Landmark landmark : landmarks) {
+			map.add(toReference(landmark.latitude(), landmark.longitude()));
+		}
+		return map;
 	}
 
 	/**

@@ -17,9 +17,18 @@ import com.climbtheworld.app.utils.Vector4d;
 import java.lang.ref.WeakReference;
 
 /**
- * Created by xyz on 11/24/17.
+ * Which way the device faces, from its sensors, as azimuth, pitch and roll of the top of the
+ * screen and of the camera, see OrientationEvent.
+ * <p>
+ * The orientation comes from the game rotation vector, which fuses the gyroscope and the
+ * accelerometer only, so it is steady and quick but knows nothing of north. The rotation vector,
+ * which adds the magnetometer, only tells where north is in that world, averaged slowly and
+ * ignored while the compass is not to be trusted, see HeadingOffset: the field bending around
+ * steel or rock then no longer swings the whole view with it. On a device without a game rotation
+ * vector, the rotation vector gives the orientation directly, as it always did. The magnetometer
+ * is read as well, for its calibration and for whether the field is disturbed, see
+ * MagneticInterferenceDetector.
  */
-
 public class OrientationManager implements SensorEventListener {
 	// Over tens of kilometres, the earth's field turns by a fraction of a degree and changes its
 	// strength by a fraction of a percent, so it is only recomputed once the observer moved about
@@ -62,8 +71,16 @@ public class OrientationManager implements SensorEventListener {
 				}
 			};
 
-	// Holds sensor data
+	// Holds sensor data: the rotation vector's matrix, with the magnetometer, ...
 	private final float[] originRotationMatrix = new float[16];
+	// ... and the game rotation vector's, without, the one the orientation is read from when the
+	// device has it, see HeadingOffset.
+	private final float[] gameRotationMatrix = new float[16];
+	// Whether gameRotationMatrix holds a reading since the updates were requested.
+	private boolean gameRotationKnown;
+	// Whether the device has a game rotation vector, and so the orientation is read from it.
+	private boolean onGameRotation;
+	private final HeadingOffset headingOffset = new HeadingOffset();
 	private final float[] remappedRotationMatrix = new float[16];
 	private final float[] screenRotationMatrix = new float[16];
 	private final float[] orientationVector = new float[3];
@@ -148,6 +165,19 @@ public class OrientationManager implements SensorEventListener {
 		return sensor;
 	}
 
+	/**
+	 * The sensor the orientation is read from, at the rate asked for: the game rotation vector,
+	 * or the rotation vector on a device without one.
+	 */
+	private Sensor getOrientationSensor() {
+		Sensor sensor = getGameRotationSensor();
+		return sensor != null ? sensor : getRotationSensor(sensorManager);
+	}
+
+	private Sensor getGameRotationSensor() {
+		return sensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR);
+	}
+
 	public void requestUpdates(IOrientationListener orientationListener) {
 		this.orientationListener = orientationListener;
 		Sensor rotationSensor = getRotationSensor(sensorManager);
@@ -157,9 +187,21 @@ public class OrientationManager implements SensorEventListener {
 
 		updateDisplayRotation();
 		displayManager.registerDisplayListener(displayListener, null);
-		// The device may have turned any way while the updates were stopped.
+		// The device may have turned any way while the updates were stopped, and the game
+		// rotation vector's world drifted.
 		smoother.reset();
-		sensorManager.registerListener(this, rotationSensor, samplingPeriodUs);
+		headingOffset.reset();
+		gameRotationKnown = false;
+		Sensor gameRotationSensor = getGameRotationSensor();
+		onGameRotation = gameRotationSensor != null;
+		if (onGameRotation) {
+			sensorManager.registerListener(this, gameRotationSensor, samplingPeriodUs);
+			// The compass only sets where north is, slowly: the rate the screen asked for is
+			// enough for it, whatever the orientation is read at.
+			sensorManager.registerListener(this, rotationSensor, slowSamplingPeriodUs);
+		} else {
+			sensorManager.registerListener(this, rotationSensor, samplingPeriodUs);
+		}
 
 		// The rotation vector's own accuracy does not reliably reflect the magnetometer
 		// calibration, and says nothing of a disturbed field, so the magnetometer is listened to
@@ -189,10 +231,10 @@ public class OrientationManager implements SensorEventListener {
 		}
 		samplingPeriodUs = period;
 
-		Sensor rotationSensor = getRotationSensor(sensorManager);
-		if (orientationListener != null && rotationSensor != null) {
-			sensorManager.unregisterListener(this, rotationSensor);
-			sensorManager.registerListener(this, rotationSensor, samplingPeriodUs);
+		Sensor orientationSensor = getOrientationSensor();
+		if (orientationListener != null && orientationSensor != null) {
+			sensorManager.unregisterListener(this, orientationSensor);
+			sensorManager.registerListener(this, orientationSensor, samplingPeriodUs);
 		}
 	}
 
@@ -229,14 +271,18 @@ public class OrientationManager implements SensorEventListener {
 				lastMagnetometerAccuracy = event.accuracy;
 			}
 			updateInterferenceDetector(event);
+		} else if (event.sensor.getType() == Sensor.TYPE_GAME_ROTATION_VECTOR) {
+			SensorManager.getRotationMatrixFromVector(gameRotationMatrix,
+					smoother.update(event.values, event.timestamp));
+			gameRotationKnown = true;
+			// Nothing is known of north until the compass has been read against this world.
+			if (headingOffset.isKnown()) {
+				report(gameRotationMatrix, headingOffset.getDegrees() + getDeclination());
+			}
 		} else if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR
 				|| event.sensor.getType() == Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR) {
-			// The rotation vector points to magnetic north, while maps and bearings use true north.
-			// The declination is the angle between them, positive when magnetic north is east of
-			// true north.
-			double declination = getGeomagneticField().getDeclination();
-			SensorManager.getRotationMatrixFromVector(originRotationMatrix,
-					smoother.update(event.values, event.timestamp));
+			SensorManager.getRotationMatrixFromVector(originRotationMatrix, onGameRotation
+					? event.values : smoother.update(event.values, event.timestamp));
 			// Up, in device coordinates, is the third row of the rotation matrix. Turning around
 			// it leaves it as it is, so only tilting counts.
 			System.arraycopy(originRotationMatrix, 8, up, 0, up.length);
@@ -245,34 +291,59 @@ public class OrientationManager implements SensorEventListener {
 			System.arraycopy(up, 0, lastUp, 0, up.length);
 			lastUpTimestampNanos = event.timestamp;
 			rotationKnown = true;
-
-			// The screen azimuth follows the top of the screen, which is another side of the
-			// device once the screen is turned.
-			remapToDisplay(originRotationMatrix, displayRotation, screenRotationMatrix);
-			SensorManager.getOrientation(screenRotationMatrix, orientationVector);
-			orientation.screen.x = toTrueAzimuth(Math.toDegrees(orientationVector[0]), declination);  // yah, azimuth
-			orientation.screen.y = Math.toDegrees(orientationVector[1]);// pitch
-			orientation.screen.z = Math.toDegrees(orientationVector[2]);// roll
-
-			//align coordinates with the camera (for AR)
-			SensorManager.remapCoordinateSystem(originRotationMatrix, SensorManager.AXIS_X, SensorManager.AXIS_Z, remappedRotationMatrix);
-			SensorManager.getOrientation(remappedRotationMatrix, orientationVector);
-			orientation.camera.x = toTrueAzimuth(Math.toDegrees(orientationVector[0]), declination);  // yah, azimuth
-			orientation.camera.y = Math.toDegrees(orientationVector[1]);
-			orientation.camera.z = Math.toDegrees(orientationVector[2]);
-			orientation.followsCamera =
-					followsCamera(orientation.screen.y, orientation.followsCamera);
 			orientation.headingAccuracyDegrees = headingAccuracyDegrees(event.values);
 			orientation.compassStatus =
 					compassStatus(lastMagnetometerAccuracy, interferenceDetector.isDisturbed());
 
-			if (turnsCamera) {
-				Globals.virtualCamera.updateOrientation(orientation);
-			}
-			if (orientationListener != null) {
-				orientationListener.updateOrientation(orientation);
+			if (!onGameRotation) {
+				report(originRotationMatrix, getDeclination());
+			} else if (gameRotationKnown && (!headingOffset.isKnown() || HeadingOffset.canTake(
+					orientation.compassStatus, smoother.turnRateDegreesPerSecond()))) {
+				headingOffset.add(HeadingOffset.yawDegrees(originRotationMatrix, gameRotationMatrix),
+						orientation.headingAccuracyDegrees, event.timestamp);
 			}
 		}
+	}
+
+	/**
+	 * Tells the listener, and the camera, which way the device faces.
+	 *
+	 * @param rotationMatrix the device's orientation, see
+	 *                       SensorManager.getRotationMatrixFromVector()
+	 * @param northDegrees   what to add to the matrix's azimuths to count them from true north
+	 */
+	private void report(float[] rotationMatrix, double northDegrees) {
+		// The screen azimuth follows the top of the screen, which is another side of the device
+		// once the screen is turned.
+		remapToDisplay(rotationMatrix, displayRotation, screenRotationMatrix);
+		SensorManager.getOrientation(screenRotationMatrix, orientationVector);
+		orientation.screen.x = toTrueAzimuth(Math.toDegrees(orientationVector[0]), northDegrees);
+		orientation.screen.y = Math.toDegrees(orientationVector[1]);// pitch
+		orientation.screen.z = Math.toDegrees(orientationVector[2]);// roll
+
+		//align coordinates with the camera (for AR)
+		SensorManager.remapCoordinateSystem(rotationMatrix, SensorManager.AXIS_X,
+				SensorManager.AXIS_Z, remappedRotationMatrix);
+		SensorManager.getOrientation(remappedRotationMatrix, orientationVector);
+		orientation.camera.x = toTrueAzimuth(Math.toDegrees(orientationVector[0]), northDegrees);
+		orientation.camera.y = Math.toDegrees(orientationVector[1]);
+		orientation.camera.z = Math.toDegrees(orientationVector[2]);
+		orientation.followsCamera = followsCamera(orientation.screen.y, orientation.followsCamera);
+
+		if (turnsCamera) {
+			Globals.virtualCamera.updateOrientation(orientation);
+		}
+		if (orientationListener != null) {
+			orientationListener.updateOrientation(orientation);
+		}
+	}
+
+	/**
+	 * The rotation vector points to magnetic north, while maps and bearings use true north. The
+	 * declination is the angle between them, positive when magnetic north is east of true north.
+	 */
+	private double getDeclination() {
+		return getGeomagneticField().getDeclination();
 	}
 
 	/**
@@ -361,6 +432,9 @@ public class OrientationManager implements SensorEventListener {
 	/**
 	 * Turns an azimuth measured from magnetic north into one measured from true north, between 0
 	 * and 360 degrees.
+	 *
+	 * @param declination what to add: the declination, and, for an azimuth of the game rotation
+	 *                    vector's world, where magnetic north is in it, see HeadingOffset
 	 */
 	static double toTrueAzimuth(double magneticAzimuth, double declination) {
 		return (((magneticAzimuth + declination) % 360) + 360) % 360;

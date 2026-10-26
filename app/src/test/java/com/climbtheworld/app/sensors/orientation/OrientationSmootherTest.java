@@ -72,6 +72,23 @@ public class OrientationSmootherTest {
 		smoother.reset();
 
 		assertEquals(0, angleDegrees(read(5), 5), 1e-3);
+		assertTrue(Double.isNaN(smoother.turnRateDegreesPerSecond()));
+	}
+
+	@Test
+	public void turnRateIsHowFastTheReadingsTurn() {
+		assertTrue(Double.isNaN(smoother.turnRateDegreesPerSecond()));
+		read(0);
+		assertTrue(Double.isNaN(smoother.turnRateDegreesPerSecond()));
+
+		// A degree per reading, at 50 readings a second.
+		read(1);
+		assertEquals(50, smoother.turnRateDegreesPerSecond(), 0.01);
+		read(1);
+		assertEquals(0, smoother.turnRateDegreesPerSecond(), 0.01);
+		// Whichever way, and whichever of the two quaternions of a rotation the sensor gives.
+		read(-1);
+		assertEquals(100, smoother.turnRateDegreesPerSecond(), 0.01);
 	}
 
 	/**
