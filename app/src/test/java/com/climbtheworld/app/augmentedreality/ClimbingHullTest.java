@@ -41,6 +41,21 @@ public class ClimbingHullTest {
 		return ClimbingHull.GEOMETRY_FACTORY.createPoint(new Coordinate(0, 0)).buffer(meters, 16);
 	}
 
+	/**
+	 * The ground a mesh covers, in square meters: the areas of its triangles.
+	 */
+	private static double area(ClimbingHull.GroundMesh mesh) {
+		double area = 0;
+		for (int triangle = 0; triangle < mesh.triangleCount; triangle++) {
+			int a = mesh.triangles[triangle * 3];
+			int b = mesh.triangles[triangle * 3 + 1];
+			int c = mesh.triangles[triangle * 3 + 2];
+			area += Math.abs((mesh.east[b] - mesh.east[a]) * (mesh.north[c] - mesh.north[a])
+					- (mesh.east[c] - mesh.east[a]) * (mesh.north[b] - mesh.north[a])) / 2;
+		}
+		return area;
+	}
+
 	@Test
 	public void distanceIsToTheNearestEdge() {
 		double[] east = {100, 100, 200, 200, 100};
@@ -148,19 +163,56 @@ public class ClimbingHullTest {
 	}
 
 	@Test
-	public void fromInsideOnlyTheOutlineIsDrawn() {
+	public void fromInsideTheGroundAroundIsFilled() {
 		ClimbingHull hull = rectangle(-300, -200, 400, 100);
 		hull.build(LATITUDE, LONGITUDE, range(2500), null);
 		assertTrue(hull.isShowingRoutes());
-		assertNull(hull.getFill());
+		ClimbingHull.GroundMesh fill = hull.getFill();
+		assertNotNull(fill);
+		// The whole hull, the observer in it, in cells no wider than the outline's steps there.
+		assertEquals(700 * 300, area(fill), 1e-3);
+		for (int index = 0; index < fill.size; index++) {
+			assertTrue(fill.east[index] >= -300 - 1e-6 && fill.east[index] <= 400 + 1e-6);
+			assertTrue(fill.north[index] >= -200 - 1e-6 && fill.north[index] <= 100 + 1e-6);
+		}
 		assertEquals(1, hull.getOutline().size());
+	}
+
+	@Test
+	public void fillFollowsTheTerrain() {
+		ClimbingHull hull = rectangle(-50, 20, 50, 40);
+		hull.build(LATITUDE, LONGITUDE, range(1000),
+				(latitude, longitude, distance) -> 100 + distance);
+		ClimbingHull.GroundMesh fill = hull.getFill();
+		assertNotNull(fill);
+		assertEquals(100 * 20, area(fill), 1e-3);
+		// Cut as the outline is, in steps of MIN_STEP_METERS this close.
+		assertTrue(fill.triangleCount >= 2 * (100 / ClimbingHull.MIN_STEP_METERS)
+				* (20 / ClimbingHull.MIN_STEP_METERS));
+		for (int index = 0; index < fill.size; index++) {
+			double distance = Math.hypot(fill.east[index], fill.north[index]);
+			assertEquals("Elevation looked up where the corner is", 100 + distance,
+					fill.elevation[index], 1e-6);
+		}
+	}
+
+	@Test
+	public void fillOfAWideHullIsCutInFewCells() {
+		ClimbingHull hull = rectangle(-3000, -3000, 3000, 3000);
+		Geometry range = range(2500);
+		hull.build(LATITUDE, LONGITUDE, range, null);
+		ClimbingHull.GroundMesh fill = hull.getFill();
+		assertNotNull(fill);
+		// The range, cut to it, in cells wide enough to be few, whose edge cells are cut to it.
+		assertEquals(range.getArea(), area(fill), 1e-3);
+		assertTrue(fill.triangleCount <= 8 * ClimbingHull.MAX_FILL_CELLS);
 	}
 
 	@Test
 	public void withoutElevationsTheyAreUnknown() {
 		ClimbingHull hull = rectangle(-50, 20, 50, 40);
 		hull.build(LATITUDE, LONGITUDE, range(1000), null);
-		ClimbingHull.GroundLine fill = hull.getFill();
+		ClimbingHull.GroundMesh fill = hull.getFill();
 		assertNotNull(fill);
 		for (int index = 0; index < fill.size; index++) {
 			assertTrue(Double.isNaN(fill.elevation[index]));

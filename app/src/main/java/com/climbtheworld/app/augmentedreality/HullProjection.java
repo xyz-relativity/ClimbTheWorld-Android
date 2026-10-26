@@ -6,10 +6,11 @@ import com.climbtheworld.app.utils.Vector2d;
 import java.util.Arrays;
 
 /**
- * Projects {@link ClimbingHull.GroundLine}s into the AR view the way
- * {@link TerrainWireframe#project} projects the terrain, leaving the roll to the caller. Unlike
- * the terrain samples, a hull edge can run behind the camera, so the lines are cut to what is in
- * front of it, and to a little beyond the view, so they do not run off towards infinity.
+ * Projects {@link ClimbingHull.GroundLine}s and {@link ClimbingHull.GroundMesh}es into the AR
+ * view the way {@link TerrainWireframe#project} projects the terrain, leaving the roll to the
+ * caller. Unlike the terrain samples, a hull edge can run behind the camera, so the lines and the
+ * triangles are cut to what is in front of it, and to a little beyond the view, so they do not
+ * run off towards infinity.
  */
 final class HullProjection {
 	// Closer to the plane of the camera, in meters, the lines are cut.
@@ -34,7 +35,15 @@ final class HullProjection {
 	private double[] clippedRight = new double[64];
 	private double[] clippedDown = new double[64];
 	private double[] clippedForward = new double[64];
-	private float[] polygon = new float[128];
+	// The corners of a mesh in camera space, which the triangles are cut from.
+	private double[] meshRight = new double[64];
+	private double[] meshDown = new double[64];
+	private double[] meshForward = new double[64];
+	// The polygons of the last projected mesh, see getPolygons.
+	private float[] polygons = new float[256];
+	private int[] polygonSizes = new int[64];
+	private int polygonCount;
+	private int polygonFloats;
 	private float[] lines = new float[128];
 	private int lineCount;
 
@@ -85,39 +94,102 @@ final class HullProjection {
 	}
 
 	/**
-	 * Projects a closed line as a polygon, read with {@link #getPolygon}.
+	 * Projects a mesh, a triangle at a time, each cut to the view, as polygons read with
+	 * {@link #getPolygons}. All are wound the same way on screen, so that drawn together, where
+	 * the ground folds and they overlap, they still fill.
 	 *
-	 * @param observerEast   position of the observer, in meters east of the origin of the line
-	 * @param observerNorth  position of the observer, in meters north of the origin of the line
+	 * @param observerEast   position of the observer, in meters east of the origin of the mesh
+	 * @param observerNorth  position of the observer, in meters north of the origin of the mesh
 	 * @param eyeElevation   elevation of the observer's eye above sea level, NaN when unknown
 	 * @param groundBelowEye how far the ground is below the eye, where an elevation is unknown
-	 * @return the number of corners of the polygon, 0 when none of it is in view
+	 * @return the number of polygons, 0 when none of the mesh is in view
 	 */
-	int projectPolygon(ClimbingHull.GroundLine line, double observerEast, double observerNorth,
-	                   double eyeElevation, double groundBelowEye) {
-		int count = toCamera(line, observerEast, observerNorth, eyeElevation, groundBelowEye);
-		for (double[] plane : planes) {
-			count = clip(plane, count);
-			if (count == 0) {
-				return 0;
-			}
+	int projectMesh(ClimbingHull.GroundMesh mesh, double observerEast, double observerNorth,
+	                double eyeElevation, double groundBelowEye) {
+		if (meshRight.length < mesh.size) {
+			meshRight = new double[mesh.size];
+			meshDown = new double[mesh.size];
+			meshForward = new double[mesh.size];
+		}
+		for (int index = 0; index < mesh.size; index++) {
+			toCamera(mesh.east[index], mesh.north[index], mesh.elevation[index], observerEast,
+					observerNorth, eyeElevation, groundBelowEye, meshRight, meshDown, meshForward,
+					index);
 		}
 
-		if (polygon.length < count * 2) {
-			polygon = new float[count * 2];
+		polygonCount = 0;
+		polygonFloats = 0;
+		for (int triangle = 0; triangle < mesh.triangleCount; triangle++) {
+			for (int corner = 0; corner < 3; corner++) {
+				int index = mesh.triangles[triangle * 3 + corner];
+				right[corner] = meshRight[index];
+				down[corner] = meshDown[index];
+				forward[corner] = meshForward[index];
+			}
+			int count = 3;
+			for (double[] plane : planes) {
+				count = clip(plane, count);
+				if (count == 0) {
+					break;
+				}
+			}
+			if (count >= 3) {
+				addPolygon(count);
+			}
 		}
-		for (int index = 0; index < count; index++) {
-			polygon[index * 2] = screenX(right[index], forward[index]);
-			polygon[index * 2 + 1] = screenY(down[index], forward[index]);
-		}
-		return count;
+		return polygonCount;
 	}
 
 	/**
-	 * @return the corners of the last projected polygon, as x, y pairs
+	 * @return the polygons of the last projected mesh, one after the other, each as x, y pairs
+	 * of its corners, as many as {@link #getPolygonSizes} says
 	 */
-	float[] getPolygon() {
-		return polygon;
+	float[] getPolygons() {
+		return polygons;
+	}
+
+	/**
+	 * @return how many corners each polygon of the last projected mesh has
+	 */
+	int[] getPolygonSizes() {
+		return polygonSizes;
+	}
+
+	/**
+	 * Adds the first count corners in camera space to the polygons, wound clockwise on screen.
+	 */
+	private void addPolygon(int count) {
+		if (polygons.length < polygonFloats + count * 2) {
+			polygons = Arrays.copyOf(polygons, Math.max(polygons.length * 2,
+					polygonFloats + count * 2));
+		}
+		if (polygonSizes.length == polygonCount) {
+			polygonSizes = Arrays.copyOf(polygonSizes, polygonCount * 2);
+		}
+		int start = polygonFloats;
+		for (int index = 0; index < count; index++) {
+			polygons[start + index * 2] = screenX(right[index], forward[index]);
+			polygons[start + index * 2 + 1] = screenY(down[index], forward[index]);
+		}
+		// Twice the signed area, positive clockwise as y runs down the screen.
+		double area = 0;
+		for (int index = 0; index < count; index++) {
+			int next = (index + 1) % count;
+			area += polygons[start + index * 2] * polygons[start + next * 2 + 1]
+					- polygons[start + next * 2] * polygons[start + index * 2 + 1];
+		}
+		if (area < 0) {
+			for (int low = 0, high = count - 1; low < high; low++, high--) {
+				float x = polygons[start + low * 2];
+				float y = polygons[start + low * 2 + 1];
+				polygons[start + low * 2] = polygons[start + high * 2];
+				polygons[start + low * 2 + 1] = polygons[start + high * 2 + 1];
+				polygons[start + high * 2] = x;
+				polygons[start + high * 2 + 1] = y;
+			}
+		}
+		polygonSizes[polygonCount++] = count;
+		polygonFloats += count * 2;
 	}
 
 	void clearLines() {
@@ -156,17 +228,31 @@ final class HullProjection {
 	                     double observerNorth, double eyeElevation, double groundBelowEye) {
 		ensureCapacity(line.size);
 		for (int index = 0; index < line.size; index++) {
-			double east = line.east[index] - observerEast;
-			double north = line.north[index] - observerNorth;
-			// Without both elevations, the ground is level with the observer, as for the POIs.
-			double up = Double.isNaN(eyeElevation) || Double.isNaN(line.elevation[index])
-					? -groundBelowEye : line.elevation[index] - eyeElevation;
-			double along = north * cosAzimuth + east * sinAzimuth;
-			right[index] = east * cosAzimuth - north * sinAzimuth;
-			forward[index] = along * cosPitch + up * sinPitch;
-			down[index] = along * sinPitch - up * cosPitch;
+			toCamera(line.east[index], line.north[index], line.elevation[index], observerEast,
+					observerNorth, eyeElevation, groundBelowEye, right, down, forward, index);
 		}
 		return line.size;
+	}
+
+	/**
+	 * Puts a point of the ground in camera space, at an index of the right, down and forward
+	 * arrays given.
+	 *
+	 * @param elevation the ground elevation at the point, NaN when unknown
+	 */
+	private void toCamera(double pointEast, double pointNorth, double elevation,
+	                      double observerEast, double observerNorth, double eyeElevation,
+	                      double groundBelowEye, double[] right, double[] down,
+	                      double[] forward, int index) {
+		double east = pointEast - observerEast;
+		double north = pointNorth - observerNorth;
+		// Without both elevations, the ground is level with the observer, as for the POIs.
+		double up = Double.isNaN(eyeElevation) || Double.isNaN(elevation)
+				? -groundBelowEye : elevation - eyeElevation;
+		double along = north * cosAzimuth + east * sinAzimuth;
+		right[index] = east * cosAzimuth - north * sinAzimuth;
+		forward[index] = along * cosPitch + up * sinPitch;
+		down[index] = along * sinPitch - up * cosPitch;
 	}
 
 	/**

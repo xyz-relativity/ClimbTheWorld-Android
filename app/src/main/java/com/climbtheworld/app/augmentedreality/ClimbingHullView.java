@@ -95,18 +95,26 @@ public class ClimbingHullView extends View {
 
 		for (ClimbingHull hull : hulls.getHulls()) {
 			boolean crag = hull.type == OsmEntity.EntityClimbingType.crag;
-			ClimbingHull.GroundLine fill = hull.getFill();
+			ClimbingHull.GroundMesh fill = hull.getFill();
 			if (fill != null) {
-				int corners = projection.projectPolygon(fill, observerEast, observerNorth,
+				int count = projection.projectMesh(fill, observerEast, observerNorth,
 						eyeElevation, eyeHeight);
-				if (corners > 2) {
-					float[] polygon = projection.getPolygon();
+				if (count > 0) {
+					// All the triangles in one path, so that they fill as one, with no seam
+					// between them, and no darker where they overlap.
+					float[] polygons = projection.getPolygons();
+					int[] sizes = projection.getPolygonSizes();
 					fillPath.rewind();
-					fillPath.moveTo(polygon[0], polygon[1]);
-					for (int corner = 1; corner < corners; corner++) {
-						fillPath.lineTo(polygon[corner * 2], polygon[corner * 2 + 1]);
+					int offset = 0;
+					for (int polygon = 0; polygon < count; polygon++) {
+						fillPath.moveTo(polygons[offset], polygons[offset + 1]);
+						for (int corner = 1; corner < sizes[polygon]; corner++) {
+							fillPath.lineTo(polygons[offset + corner * 2],
+									polygons[offset + corner * 2 + 1]);
+						}
+						fillPath.close();
+						offset += sizes[polygon] * 2;
 					}
-					fillPath.close();
 					canvas.drawPath(fillPath, crag ? cragFillPaint : areaFillPaint);
 				}
 			}

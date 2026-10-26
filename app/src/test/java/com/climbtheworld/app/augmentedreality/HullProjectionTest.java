@@ -116,21 +116,52 @@ public class HullProjectionTest {
 		assertTrue(farY > horizonY && farY < horizonY + 30);
 	}
 
+	/**
+	 * The ground over a rectangle, in meters east and north, with elevations unknown.
+	 */
+	private static ClimbingHull.GroundMesh ground(double west, double south, double east,
+	                                              double north) {
+		Coordinate[] ring = {new Coordinate(west, south), new Coordinate(west, north),
+				new Coordinate(east, north), new Coordinate(east, south),
+				new Coordinate(west, south)};
+		return ClimbingHull.GroundMesh.over(ClimbingHull.GEOMETRY_FACTORY.createPolygon(ring),
+				0, 0, ClimbingHull.METERS_PER_DEGREE, null);
+	}
+
 	@Test
 	public void groundAroundTheObserverFillsTheBottomOfTheView() {
 		HullProjection projection = projection(0, -20);
-		ClimbingHull.GroundLine square = line(-500, -500, -500, 500, 500, 500, 500, -500,
-				-500, -500);
-		int corners = projection.projectPolygon(square, 0, 0, Double.NaN, EYE_HEIGHT);
-		assertTrue(corners >= 3);
+		int count = projection.projectMesh(ground(-500, -500, 500, 500), 0, 0, Double.NaN,
+				EYE_HEIGHT);
+		assertTrue(count > 0);
 
-		float[] polygon = projection.getPolygon();
+		float[] polygons = projection.getPolygons();
+		int[] sizes = projection.getPolygonSizes();
 		float lowest = Float.NEGATIVE_INFINITY;
-		for (int corner = 0; corner < corners; corner++) {
-			assertWithinCut(polygon[corner * 2], polygon[corner * 2 + 1]);
-			lowest = Math.max(lowest, polygon[corner * 2 + 1]);
+		int offset = 0;
+		for (int polygon = 0; polygon < count; polygon++) {
+			assertTrue(sizes[polygon] >= 3);
+			double area = 0;
+			for (int corner = 0; corner < sizes[polygon]; corner++) {
+				float x = polygons[offset + corner * 2];
+				float y = polygons[offset + corner * 2 + 1];
+				assertWithinCut(x, y);
+				lowest = Math.max(lowest, y);
+				int next = (corner + 1) % sizes[polygon];
+				area += x * polygons[offset + next * 2 + 1] - polygons[offset + next * 2] * y;
+			}
+			// All wound the same way, so that they fill as one where they overlap.
+			assertTrue("Clockwise on screen", area >= 0);
+			offset += sizes[polygon] * 2;
 		}
 		// Cut along the bottom of the view, and beyond, rather than running off to infinity.
 		assertEquals(CONTAINER_SIZE.y / 2 * 2.2, lowest, 1);
+	}
+
+	@Test
+	public void groundBehindTheObserverIsLeftOut() {
+		HullProjection projection = projection(0, -20);
+		assertEquals(0, projection.projectMesh(ground(-50, -200, 50, -100), 0, 0, Double.NaN,
+				EYE_HEIGHT));
 	}
 }
