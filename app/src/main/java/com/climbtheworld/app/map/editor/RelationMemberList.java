@@ -41,7 +41,7 @@ public class RelationMemberList {
 	private final AppCompatActivity parent;
 	private final JSONArray members;
 	private final Map<String, OsmEntity> resolved;
-	private final Map<String, Integer> routeCounts;
+	private final Map<String, ClimbingRouteCounter.RouteSummary> routes;
 	private final String highlightedKey;
 	private final OnMembersChangedListener listener;
 	private final RecyclerView list;
@@ -50,20 +50,21 @@ public class RelationMemberList {
 	/**
 	 * @param resolved       the stored members by RelationMembers.key, as OsmEditStore.loadMembers
 	 *                       gives them; members added here are put in it too.
-	 * @param routeCounts    the route counts of the crags among them by RelationMembers.key,
-	 *                       which their pins show, see ClimbingRouteCounter.pin; members added
+	 * @param routes         the routes of the crags among them by RelationMembers.key, whose
+	 *                       count their pins show, see ClimbingRouteCounter.pin; members added
 	 *                       here bring theirs.
 	 * @param highlightedKey the member to outline, the element whose editor opened this one, or
 	 *                       null.
 	 */
 	public RelationMemberList(AppCompatActivity parent, ViewGroup container, boolean area,
 	                          JSONArray members, Map<String, OsmEntity> resolved,
-	                          Map<String, Integer> routeCounts, String highlightedKey,
+	                          Map<String, ClimbingRouteCounter.RouteSummary> routes,
+	                          String highlightedKey,
 	                          OnMembersChangedListener listener) {
 		this.parent = parent;
 		this.members = members;
 		this.resolved = resolved;
-		this.routeCounts = routeCounts;
+		this.routes = routes;
 		this.highlightedKey = highlightedKey;
 		this.listener = listener;
 
@@ -127,11 +128,17 @@ public class RelationMemberList {
 		return RelationMembers.contains(members, entity.osmType.name(), entity.osmID);
 	}
 
-	/** Adds the entity at the end, with its route count for a crag, see the constructor. */
-	public void add(OsmEntity entity, int routeCount) {
+	/**
+	 * Adds the entity at the end, with its routes for a crag, see the constructor.
+	 *
+	 * @param entityRoutes null for a route
+	 */
+	public void add(OsmEntity entity, ClimbingRouteCounter.RouteSummary entityRoutes) {
 		String key = RelationMembers.key(entity.osmType.name(), entity.osmID);
 		resolved.put(key, entity);
-		routeCounts.put(key, routeCount);
+		if (entityRoutes != null) {
+			routes.put(key, entityRoutes);
+		}
 		RelationMembers.append(members, entity.osmType.name(), entity.osmID, "");
 		adapter.notifyItemInserted(members.length() - 1);
 		list.scrollToPosition(members.length() - 1);
@@ -170,9 +177,10 @@ public class RelationMemberList {
 			return DataManager.toDisplayableNode((OsmNode) member);
 		}
 		if (member instanceof OsmCollectionEntity) {
-			Integer routeCount = routeCounts.get(keyAt(index));
-			return DataManager.toDisplayableNode((OsmCollectionEntity) member,
-					routeCount != null ? routeCount : 0);
+			ClimbingRouteCounter.RouteSummary memberRoutes = routes.get(keyAt(index));
+			return memberRoutes != null
+					? DataManager.toDisplayableNode((OsmCollectionEntity) member, memberRoutes)
+					: DataManager.toDisplayableNode((OsmCollectionEntity) member);
 		}
 		return null;
 	}

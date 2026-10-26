@@ -54,7 +54,6 @@ import com.climbtheworld.app.map.model.MapZoomLevels;
 import com.climbtheworld.app.map.style.MapStyleDefinition;
 import com.climbtheworld.app.map.style.MapStyleRegistry;
 import com.climbtheworld.app.map.widget.climbing.ClimbingGeometryBuilder;
-import com.climbtheworld.app.map.widget.climbing.ClimbingRouteCounter;
 import com.climbtheworld.app.map.widget.climbing.RouteNumbers;
 import com.climbtheworld.app.map.widget.climbing.RouteRelation;
 import com.climbtheworld.app.map.widget.climbing.RouteStandIn;
@@ -1032,7 +1031,8 @@ public class MapLibreMapWidget {
 
 	/**
 	 * Also fills {@link #pendingClusterPois}, so a tapped cluster's leaves can be resolved back to
-	 * their POIs.
+	 * their POIs. The POIs a display filter fades out are left out, so the clusters count only
+	 * those that match.
 	 */
 	private String buildClusterGeoJson(double zoom) {
 		Map<Long, DisplayableGeoNode> clusterPois = new HashMap<>();
@@ -1043,7 +1043,8 @@ public class MapLibreMapWidget {
 				if (poi.geoNode instanceof RouteWay.Top) {
 					continue;
 				}
-				if (!forceGhostPois && !NodeDisplayFilters.matchFilters(configs, poi.geoNode)) {
+				// The start of a route relation goes with the route, as its pin does.
+				if (!forceGhostPois && isGhost(poi.geoNode)) {
 					continue;
 				}
 				long markerId = markerId(poi.geoNode);
@@ -1180,8 +1181,7 @@ public class MapLibreMapWidget {
 
 	private Bitmap createRelationLabelBitmap(
 			ClimbingGeometryBuilder.GeometrySpec geometry) {
-		GeoNode relation = ClimbingRouteCounter.pin(geometry.collection,
-				geometry.labelCoordinate, geometry.relationElementCount);
+		GeoNode relation = geometry.pin(geometry.labelCoordinate);
 		return bitmapFromDrawable(new PoiMarkerDrawable(
 				parent, new DisplayableGeoNode(relation)).getDrawable());
 	}

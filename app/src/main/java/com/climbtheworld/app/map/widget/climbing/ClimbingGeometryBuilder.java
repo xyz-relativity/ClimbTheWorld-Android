@@ -11,6 +11,7 @@ import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.map.model.MapZoomLevels;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.ClimbingTags;
+import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
@@ -50,6 +51,9 @@ public final class ClimbingGeometryBuilder {
 		public final MapCoordinate labelCoordinate;
 		public final String labelName;
 		public final int relationElementCount;
+		// Whether relationElementCount counts only the routes matching the display filters, see
+		// ClimbingRouteCounter.RouteSummary.isFiltered.
+		public final boolean routeCountFiltered;
 		public final float labelMaxZoom;
 		public final OsmCollectionEntity collection;
 		// The route a climbing=route way is drawn as, null for anything else.
@@ -57,8 +61,8 @@ public final class ClimbingGeometryBuilder {
 
 		GeometrySpec(String key, List<MapCoordinate> coordinates, boolean polygon, int fillColor,
 		             int strokeColor, float minZoom, float maxZoom, MapCoordinate labelCoordinate,
-		             String labelName, int relationElementCount, float labelMaxZoom,
-		             OsmCollectionEntity collection, RouteWay route) {
+		             String labelName, int relationElementCount, boolean routeCountFiltered,
+		             float labelMaxZoom, OsmCollectionEntity collection, RouteWay route) {
 			this.key = key;
 			this.coordinates = coordinates;
 			this.polygon = polygon;
@@ -69,13 +73,24 @@ public final class ClimbingGeometryBuilder {
 			this.labelCoordinate = labelCoordinate;
 			this.labelName = labelName;
 			this.relationElementCount = relationElementCount;
+			this.routeCountFiltered = routeCountFiltered;
 			this.labelMaxZoom = labelMaxZoom;
 			this.collection = collection;
 			this.route = route;
 		}
 
 		public String getLabelImageId() {
-			return LABEL_IMAGE_PREFIX + key.replace('|', '-') + "-" + relationElementCount;
+			return LABEL_IMAGE_PREFIX + key.replace('|', '-') + "-" + relationElementCount
+					+ (routeCountFiltered ? "-filtered" : "");
+		}
+
+		/**
+		 * The pin of the crag or area relation at the location, with its route count, as the map
+		 * labels the hull and the A.R. view pins it; see ClimbingRouteCounter.pin.
+		 */
+		public GeoNode pin(MapCoordinate location) {
+			return ClimbingRouteCounter.pin(collection, location, relationElementCount,
+					routeCountFiltered);
 		}
 
 		public boolean isLabelVisibleAt(double zoom) {
@@ -122,11 +137,15 @@ public final class ClimbingGeometryBuilder {
 					continue;
 				}
 				int routeCount = -1;
+				boolean routeCountFiltered = false;
 				if (collection.entityClimbingType == OsmEntity.EntityClimbingType.area
 						|| collection.entityClimbingType == OsmEntity.EntityClimbingType.crag) {
-					routeCount = routeCounter.summarize(collection, nodes).getRouteCount();
+					ClimbingRouteCounter.RouteSummary routes =
+							routeCounter.summarize(collection, nodes);
+					routeCount = routes.getMatchingRouteCount();
+					routeCountFiltered = routes.isFiltered();
 				}
-				addGeometry(result, collection, coordinates, routeCount,
+				addGeometry(result, collection, coordinates, routeCount, routeCountFiltered,
 						toRouteWay(collection, nodes));
 			}
 		}
@@ -336,7 +355,7 @@ public final class ClimbingGeometryBuilder {
 	private GeometrySpec wayLine(OsmCollectionEntity collection, List<MapCoordinate> coordinates,
 	                             int color, RouteWay route) {
 		return new GeometrySpec(geometryKey(collection), coordinates, false, 0, color,
-				wayMinZoom(collection), 0, null, null, 0, 0, collection, route);
+				wayMinZoom(collection), 0, null, null, 0, false, 0, collection, route);
 	}
 
 	private static int toGhost(int color) {
@@ -357,12 +376,21 @@ public final class ClimbingGeometryBuilder {
 		addGeometry(result, collection, coordinates, -1, null);
 	}
 
-	/**
-	 * @param route the route a climbing=route way is drawn as, see {@link #toRouteWay}
-	 */
 	void addGeometry(List<GeometrySpec> result, OsmCollectionEntity collection,
 	                 List<MapCoordinate> coordinates, int relationElementCountOverride,
 	                 RouteWay route) {
+		addGeometry(result, collection, coordinates, relationElementCountOverride, false, route);
+	}
+
+	/**
+	 * @param routeCountFiltered whether relationElementCountOverride counts only the routes
+	 *                           matching the display filters
+	 * @param route              the route a climbing=route way is drawn as, see
+	 *                           {@link #toRouteWay}
+	 */
+	void addGeometry(List<GeometrySpec> result, OsmCollectionEntity collection,
+	                 List<MapCoordinate> coordinates, int relationElementCountOverride,
+	                 boolean routeCountFiltered, RouteWay route) {
 		// Route relations, such as the pitches of a multi-pitch route, get no hull, as in the AR
 		// view.
 		if (isRouteRelation(collection)) {
@@ -372,7 +400,7 @@ public final class ClimbingGeometryBuilder {
 			case area:
 				addHullPolygon(result, collection, coordinates, AREA_FILL_COLOR, HULL_OUTLINE_COLOR,
 						AREA_PADDING_DEGREES, MapZoomLevels.AREA_MIN, 0, MapZoomLevels.CRAG_MIN,
-						relationElementCountOverride);
+						relationElementCountOverride, routeCountFiltered);
 				break;
 			case route:
 				if (collection.osmType == OsmEntity.EntityOsmType.way) {
@@ -388,7 +416,8 @@ public final class ClimbingGeometryBuilder {
 				} else {
 					addHullPolygon(result, collection, coordinates, CRAG_FILL_COLOR,
 							HULL_OUTLINE_COLOR, CRAG_PADDING_DEGREES, MapZoomLevels.CRAG_MIN, 0,
-							MapZoomLevels.POI_AND_ROUTE_MIN, relationElementCountOverride);
+							MapZoomLevels.POI_AND_ROUTE_MIN, relationElementCountOverride,
+							routeCountFiltered);
 				}
 				break;
 			case artificial:
@@ -396,7 +425,8 @@ public final class ClimbingGeometryBuilder {
 					result.add(wayLine(collection, coordinates, WAY_COLOR, null));
 				} else {
 					addHullPolygon(result, collection, coordinates, YELLOW_FILL_COLOR,
-							HULL_OUTLINE_COLOR, OTHER_PADDING_DEGREES, MapZoomLevels.AREA_MIN, 0, 0, -1);
+							HULL_OUTLINE_COLOR, OTHER_PADDING_DEGREES, MapZoomLevels.AREA_MIN, 0, 0, -1,
+							false);
 				}
 				break;
 			default:
@@ -416,7 +446,8 @@ public final class ClimbingGeometryBuilder {
 	private void addHullPolygon(List<GeometrySpec> result, OsmCollectionEntity collection,
 	                            List<MapCoordinate> coordinates, int fillColor, int strokeColor,
 	                            double paddingDegrees, float minZoom, float maxZoom,
-	                            float labelMaxZoom, int relationElementCountOverride) {
+	                            float labelMaxZoom, int relationElementCountOverride,
+	                            boolean routeCountFiltered) {
 		// One or two points are enough: their hull is a point or a line, which the padding buffers
 		// into a polygon.
 		if (coordinates.isEmpty()) {
@@ -451,7 +482,8 @@ public final class ClimbingGeometryBuilder {
 			}
 			result.add(new GeometrySpec(geometryKey(collection), hullCoordinates, true, fillColor,
 					strokeColor, minZoom, maxZoom, labelCoordinate, labelName,
-					relationElementCount, labelMaxZoom, collection, null));
+					relationElementCount, routeCountFiltered && relationElementCountOverride >= 0,
+					labelMaxZoom, collection, null));
 		}
 	}
 

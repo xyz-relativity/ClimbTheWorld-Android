@@ -112,16 +112,16 @@ public class EditRelationActivity extends MapWidgetActivity {
 	private static final class Loaded {
 		final OsmCollectionEntity relation;
 		final Map<String, OsmEntity> members;
-		final Map<String, Integer> routeCounts;
+		final Map<String, ClimbingRouteCounter.RouteSummary> routes;
 		final String highlightedKey;
 		final List<OsmCollectionEntity> editedParents;
 
 		Loaded(OsmCollectionEntity relation, Map<String, OsmEntity> members,
-		       Map<String, Integer> routeCounts, String highlightedKey,
+		       Map<String, ClimbingRouteCounter.RouteSummary> routes, String highlightedKey,
 		       List<OsmCollectionEntity> editedParents) {
 			this.relation = relation;
 			this.members = members;
-			this.routeCounts = routeCounts;
+			this.routes = routes;
 			this.highlightedKey = highlightedKey;
 			this.editedParents = editedParents;
 		}
@@ -197,17 +197,18 @@ public class EditRelationActivity extends MapWidgetActivity {
 								new JSONObject(intent.getStringExtra(EXTRA_RELATION_JSON)));
 						Map<String, OsmEntity> members = store.loadMembers(loaded.getMembers());
 						// As stored, before the member whose editor opened this one stands in.
-						Map<String, Integer> routeCounts = countRoutes(members);
+						Map<String, ClimbingRouteCounter.RouteSummary> routes =
+								countRoutes(members);
 						List<OsmCollectionEntity> editedParents = parents(intent);
 						String memberJson = intent.getStringExtra(EXTRA_MEMBER_JSON);
 						if (memberJson == null) {
-							return new Loaded(loaded, members, routeCounts, null, editedParents);
+							return new Loaded(loaded, members, routes, null, editedParents);
 						}
 						// The member as its editor has it, which may not be stored yet.
 						OsmEntity member = fromJson(new JSONObject(memberJson));
 						String key = RelationMembers.key(member.osmType.name(), member.osmID);
 						members.put(key, member);
-						return new Loaded(loaded, members, routeCounts, key, editedParents);
+						return new Loaded(loaded, members, routes, key, editedParents);
 					}
 					OsmEntity stored = store.load(EntityOsmType.relation,
 							intent.getLongExtra(EXTRA_RELATION_ID, 0));
@@ -245,7 +246,7 @@ public class EditRelationActivity extends MapWidgetActivity {
 		((TextView) findViewById(R.id.textRelationType)).setText(area ? R.string.area : R.string.crag);
 
 		memberList = new RelationMemberList(this, findViewById(R.id.containerMembers), area,
-				relation.getMembers(), loaded.members, loaded.routeCounts, loaded.highlightedKey,
+				relation.getMembers(), loaded.members, loaded.routes, loaded.highlightedKey,
 				this::updateMapMarkers);
 		if (!area) {
 			areaMembership = new ParentMembership(this, findViewById(R.id.containerParents),
@@ -413,12 +414,12 @@ public class EditRelationActivity extends MapWidgetActivity {
 
 	private void addTapped(EntityOsmType osmType, long osmId) {
 		Constants.DB_EXECUTOR.execute(new UiRelatedTask<OsmEntity>() {
-			private int routeCount;
+			private ClimbingRouteCounter.RouteSummary routes;
 
 			@Override
 			protected OsmEntity doWork() {
 				OsmEntity member = store.load(osmType, osmId);
-				routeCount = countRoutes(ClimbingRouteCounter.forDatabase(EditRelationActivity.this),
+				routes = countRoutes(ClimbingRouteCounter.forDatabase(EditRelationActivity.this),
 						member);
 				return member;
 			}
@@ -434,7 +435,7 @@ public class EditRelationActivity extends MapWidgetActivity {
 							getString(R.string.member_already_added, name), Toast.LENGTH_SHORT).show();
 					return;
 				}
-				memberList.add(member, routeCount);
+				memberList.add(member, routes);
 				Toast.makeText(EditRelationActivity.this,
 						getString(R.string.member_added, name), Toast.LENGTH_SHORT).show();
 			}
@@ -587,19 +588,26 @@ public class EditRelationActivity extends MapWidgetActivity {
 	 * The route counts of the crags among the members, by the same keys, which their pins show;
 	 * runs off the UI thread.
 	 */
-	private Map<String, Integer> countRoutes(Map<String, OsmEntity> members) {
+	private Map<String, ClimbingRouteCounter.RouteSummary> countRoutes(
+			Map<String, OsmEntity> members) {
 		ClimbingRouteCounter routeCounter = ClimbingRouteCounter.forDatabase(this);
-		Map<String, Integer> result = new HashMap<>();
+		Map<String, ClimbingRouteCounter.RouteSummary> result = new HashMap<>();
 		for (Map.Entry<String, OsmEntity> member : members.entrySet()) {
-			result.put(member.getKey(), countRoutes(routeCounter, member.getValue()));
+			ClimbingRouteCounter.RouteSummary routes = countRoutes(routeCounter, member.getValue());
+			if (routes != null) {
+				result.put(member.getKey(), routes);
+			}
 		}
 		return result;
 	}
 
-	/** The routes of a crag, which its pin shows; 0 for a route, whose pin shows none. */
-	private static int countRoutes(ClimbingRouteCounter routeCounter, OsmEntity member) {
+	/**
+	 * The routes of a crag, whose count its pin shows; null for a route, whose pin shows none.
+	 */
+	private static ClimbingRouteCounter.RouteSummary countRoutes(
+			ClimbingRouteCounter routeCounter, OsmEntity member) {
 		return member instanceof OsmCollectionEntity
-				? routeCounter.summarize((OsmCollectionEntity) member).getRouteCount() : 0;
+				? routeCounter.summarize((OsmCollectionEntity) member) : null;
 	}
 
 	private static OsmEntity fromJson(JSONObject json) {

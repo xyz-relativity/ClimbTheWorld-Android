@@ -359,7 +359,7 @@ public class NodeDialogBuilder {
 				if (child != null) {
 					MapCoordinate coordinate = DataManager.collectionCenter(child);
 					ClimbingRouteCounter.RouteSummary routes = routeCounter.summarize(child);
-					GeoNode poi = ClimbingRouteCounter.pin(child, coordinate, routes.getRouteCount());
+					GeoNode poi = ClimbingRouteCounter.pin(child, coordinate, routes);
 					result.add(new CollectionMember(poi, child, coordinate, routes));
 				}
 			}
@@ -629,7 +629,7 @@ public class NodeDialogBuilder {
 					ClimbingRouteCounter.RouteSummary routes =
 							ClimbingRouteCounter.forDatabase(parent).summarize(collection);
 					GeoNode relation = ClimbingRouteCounter.pin(collection, labelCoordinate,
-							routes.getRouteCount());
+							routes);
 					List<CollectionMember> members = loadCollectionMembers(parent, collection);
 					dialogueView = buildCollectionDialog(parent, alertDialog.getListView(),
 							new CollectionMember(relation, collection, labelCoordinate, routes),

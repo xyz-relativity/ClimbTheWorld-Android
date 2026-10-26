@@ -22,6 +22,7 @@ import org.robolectric.RobolectricTestRunner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -297,6 +298,85 @@ public class ClimbingRouteCounterTest {
 	}
 
 	@Test
+	public void filteredPinCountsOnlyTheMatchingRoutesWhileTheSummaryKeepsAll()
+			throws JSONException {
+		addNode(10, route("climbing:sport", "yes"));
+		addNode(11, route("climbing:trad", "yes"));
+		addNode(12, route("climbing:sport", "yes", "climbing:trad", "yes"));
+		OsmCollectionEntity crag = addCollection(2, "relation",
+				site("crag").put(ClimbingTags.KEY_ROUTES, "12"),
+				members("node", 10, "node", 11, "node", 12));
+		crag.osmNodes = Arrays.asList(10L, 11L, 12L);
+
+		ClimbingRouteCounter.RouteSummary summary = sportOnly().summarize(crag);
+		assertEquals(3, summary.getRouteCount());
+		assertEquals(2, summary.getMatchingRouteCount());
+		assertTrue(summary.isFiltered());
+		assertEquals(Integer.valueOf(2),
+				summary.getStyleCounts().get(GeoNode.ClimbingStyle.trad));
+
+		GeoNode pin = sportOnly().pin(crag, new MapCoordinate(45, 24));
+		assertEquals("2", pin.getKey(ClimbingTags.KEY_ROUTES));
+		assertEquals("12", crag.getTags().optString(ClimbingTags.KEY_ROUTES));
+	}
+
+	@Test
+	public void filteredPinShowsZeroWhenNoRouteMatches() throws JSONException {
+		addNode(11, route("climbing:trad", "yes"));
+		OsmCollectionEntity crag = addCollection(2, "relation", site("crag"),
+				members("node", 11));
+		crag.osmNodes = Collections.singletonList(11L);
+
+		GeoNode pin = sportOnly().pin(crag, new MapCoordinate(45, 24));
+
+		assertEquals("0", pin.getKey(ClimbingTags.KEY_ROUTES));
+	}
+
+	@Test
+	public void filteredPinWithoutMappedRoutesShowsTheCragsOwnCountUnfiltered()
+			throws JSONException {
+		OsmCollectionEntity tagged = addCollection(2, "relation",
+				site("crag").put(ClimbingTags.KEY_ROUTES, "12"), new JSONArray());
+
+		ClimbingRouteCounter.RouteSummary summary = sportOnly().summarize(tagged);
+		assertFalse(summary.isFiltered());
+		GeoNode pin = sportOnly().pin(tagged, new MapCoordinate(45, 24));
+		assertEquals("12", pin.getKey(ClimbingTags.KEY_ROUTES));
+	}
+
+	@Test
+	public void filteredCountTakesARouteRelationAndARouteWayWithItsEndsOnce()
+			throws JSONException {
+		OsmCollectionEntity crag = cragWithAMultiPitch();
+		addNode(50, route("name", "Corner"));
+		addNode(51, routeTop("name", "Corner"));
+		addCollection(60, "way", route("climbing:sport", "yes", "name", "Corner")
+				.put("climbing", "route"), new JSONArray()).osmNodes = Arrays.asList(50L, 51L);
+		crag.jsonNodeInfo.getJSONArray("members").put(new JSONObject()
+				.put("type", "way").put("ref", 60));
+		List<Long> cragNodes = new ArrayList<>(crag.osmNodes);
+		cragNodes.addAll(Arrays.asList(50L, 51L));
+		crag.osmNodes = cragNodes;
+
+		ClimbingRouteCounter.RouteSummary summary = sportOnly().summarize(crag);
+
+		assertEquals(4, summary.getRouteCount());
+		assertEquals(4, summary.getMatchingRouteCount());
+	}
+
+	@Test
+	public void unfilteredCountCountsAllRoutes() throws JSONException {
+		addNode(10, route());
+		OsmCollectionEntity crag = addCollection(2, "relation", site("crag"),
+				members("node", 10));
+		crag.osmNodes = Collections.singletonList(10L);
+
+		ClimbingRouteCounter.RouteSummary summary = counter.summarize(crag);
+		assertFalse(summary.isFiltered());
+		assertEquals(1, summary.getMatchingRouteCount());
+	}
+
+	@Test
 	public void numbersARouteRelationAtItsStart() throws JSONException {
 		OsmCollectionEntity crag = cragWithAMultiPitch();
 
@@ -328,6 +408,21 @@ public class ClimbingRouteCounterTest {
 				members("node", 40, "relation", 30, "node", 41));
 		crag.osmNodes = Arrays.asList(40L, 10L, 11L, 11L, 12L, 41L);
 		return crag;
+	}
+
+	/** A counter of the same data that counts apart the sport routes, as a style filter would. */
+	private ClimbingRouteCounter sportOnly() {
+		return new ClimbingRouteCounter(new ClimbingRouteCounter.EntitySource() {
+			@Override
+			public Map<Long, OsmNode> loadNodes(List<Long> ids) {
+				return select(nodes, ids);
+			}
+
+			@Override
+			public Map<String, OsmCollectionEntity> loadCollections(List<Long> ids) {
+				return selectCollections(ids);
+			}
+		}, route -> route.getClimbingStyles().contains(GeoNode.ClimbingStyle.sport));
 	}
 
 	private Map<String, OsmCollectionEntity> selectCollections(List<Long> ids) {

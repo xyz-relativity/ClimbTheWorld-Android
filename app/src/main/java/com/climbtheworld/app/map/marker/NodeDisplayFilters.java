@@ -16,6 +16,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.Collections;
 import java.util.Set;
+import java.util.function.Predicate;
 
 public class NodeDisplayFilters {
 	/** Shows on the activity's filter button whether any filter is on. */
@@ -48,6 +49,16 @@ public class NodeDisplayFilters {
 		}
 
 		return matchTypeFilter(configs, poi);
+	}
+
+	/**
+	 * The routes a crag's or area's pin counts while any filter is on, see
+	 * ClimbingRouteCounter.forDatabase: those the map and the A.R. view show unfiltered.
+	 *
+	 * @return null while no filter is on
+	 */
+	public static Predicate<GeoNode> routeFilter(Configs configs) {
+		return hasFilters(configs) ? route -> matchFilters(configs, route) : null;
 	}
 
 	public static boolean hasFilters(Configs configs) {

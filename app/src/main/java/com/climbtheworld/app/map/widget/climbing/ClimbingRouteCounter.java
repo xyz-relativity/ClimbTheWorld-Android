@@ -2,6 +2,8 @@ package com.climbtheworld.app.map.widget.climbing;
 
 import android.content.Context;
 
+import com.climbtheworld.app.configs.Configs;
+import com.climbtheworld.app.map.marker.NodeDisplayFilters;
 import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.ClimbingTags;
@@ -26,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.function.Predicate;
 
 /**
  * Counts the unique climbing routes contained in an OSM entity, recursively through nested
@@ -33,6 +36,9 @@ import java.util.TreeMap;
  * towards each of them. A route mapped with several elements (a route way and its bottom and
  * top nodes, or a bottom and a top node with the same name) counts once. Must run off the UI
  * thread when backed by the database.
+ * <p>
+ * With a route filter, such as the display filters, it also counts the routes that match it,
+ * which a crag's or area's pin shows instead of all of them, see {@link #pin}.
  */
 public final class ClimbingRouteCounter {
 
@@ -44,6 +50,8 @@ public final class ClimbingRouteCounter {
 
 	public static final class RouteSummary {
 		private final int routeCount;
+		private final int matchingRouteCount;
+		private final boolean filtered;
 		private final Map<GeoNode.ClimbingStyle, Integer> styleCounts;
 		private final Map<GeoNode.ClimbingStyle, SortedMap<Integer, Integer>> styleGradeCounts;
 		private final double minLength;
@@ -52,11 +60,14 @@ public final class ClimbingRouteCounter {
 		private final int maxGrade;
 		private final List<String> routeNames;
 
-		private RouteSummary(int routeCount, Map<GeoNode.ClimbingStyle, Integer> styleCounts,
+		private RouteSummary(int routeCount, int matchingRouteCount, boolean filtered,
+		                     Map<GeoNode.ClimbingStyle, Integer> styleCounts,
 		                     Map<GeoNode.ClimbingStyle, SortedMap<Integer, Integer>> styleGradeCounts,
 		                     double minLength, double maxLength, int minGrade, int maxGrade,
 		                     List<String> routeNames) {
 			this.routeCount = routeCount;
+			this.matchingRouteCount = matchingRouteCount;
+			this.filtered = filtered;
 			this.styleCounts = Collections.unmodifiableMap(styleCounts);
 			this.styleGradeCounts = Collections.unmodifiableMap(styleGradeCounts);
 			this.minLength = minLength;
@@ -66,8 +77,25 @@ public final class ClimbingRouteCounter {
 			this.routeNames = Collections.unmodifiableList(routeNames);
 		}
 
+		/** The count of all the routes, whatever the route filter; the rest of it covers them all. */
 		public int getRouteCount() {
 			return routeCount;
+		}
+
+		/**
+		 * The count of the routes that match the route filter, or of all of them when it is not
+		 * filtered; see isFiltered.
+		 */
+		public int getMatchingRouteCount() {
+			return filtered ? matchingRouteCount : routeCount;
+		}
+
+		/**
+		 * @return whether only some routes may match: a route filter is on, and there are routes
+		 * for it to sort. A pin then shows the matching count, even 0.
+		 */
+		public boolean isFiltered() {
+			return filtered;
 		}
 
 		/**
@@ -127,7 +155,10 @@ public final class ClimbingRouteCounter {
 	public static final int UNKNOWN_GRADE = -1;
 
 	private static final class Accumulator {
+		// Null for none.
+		private final Predicate<GeoNode> routeFilter;
 		private int routeCount = 0;
+		private int matchingRouteCount = 0;
 		private final Map<GeoNode.ClimbingStyle, Integer> styleCounts =
 				new EnumMap<>(GeoNode.ClimbingStyle.class);
 		private final Map<GeoNode.ClimbingStyle, SortedMap<Integer, Integer>> styleGradeCounts =
@@ -138,8 +169,16 @@ public final class ClimbingRouteCounter {
 		private int maxGrade = UNKNOWN_GRADE;
 		private final List<String> routeNames = new ArrayList<>();
 
-		private void addRoute(JSONObject tags) {
+		private Accumulator(Predicate<GeoNode> routeFilter) {
+			this.routeFilter = routeFilter;
+		}
+
+		private void addRoute(OsmEntity route) {
+			JSONObject tags = route.getTags();
 			routeCount++;
+			if (routeFilter != null && routeFilter.test(new GeoNode(route.jsonNodeInfo))) {
+				matchingRouteCount++;
+			}
 			String name = tags.optString(ClimbingTags.KEY_NAME).trim();
 			if (!name.isEmpty()) {
 				routeNames.add(name);
@@ -171,8 +210,9 @@ public final class ClimbingRouteCounter {
 		}
 
 		private RouteSummary build() {
-			return new RouteSummary(routeCount, styleCounts, styleGradeCounts, minLength,
-					maxLength, minGrade, maxGrade, routeNames);
+			return new RouteSummary(routeCount, matchingRouteCount,
+					routeFilter != null && routeCount > 0, styleCounts, styleGradeCounts,
+					minLength, maxLength, minGrade, maxGrade, routeNames);
 		}
 	}
 
@@ -191,13 +231,29 @@ public final class ClimbingRouteCounter {
 	};
 
 	private final EntitySource source;
+	// Null for none.
+	private final Predicate<GeoNode> routeFilter;
 
 	public ClimbingRouteCounter(EntitySource source) {
-		this.source = source;
+		this(source, null);
 	}
 
+	/**
+	 * @param routeFilter the routes to count apart, see RouteSummary.getMatchingRouteCount; null
+	 *                    for none
+	 */
+	public ClimbingRouteCounter(EntitySource source, Predicate<GeoNode> routeFilter) {
+		this.source = source;
+		this.routeFilter = routeFilter;
+	}
+
+	/**
+	 * Counts apart the routes that match the display filters, while any is on, wherever a crag or
+	 * area is drawn, see NodeDisplayFilters.routeFilter.
+	 */
 	public static ClimbingRouteCounter forDatabase(Context context) {
 		DataManager dataManager = new DataManager();
+		Predicate<GeoNode> routeFilter = NodeDisplayFilters.routeFilter(Configs.instance(context));
 		return new ClimbingRouteCounter(new EntitySource() {
 			@Override
 			public Map<Long, OsmNode> loadNodes(List<Long> ids) {
@@ -210,7 +266,7 @@ public final class ClimbingRouteCounter {
 				return ids.isEmpty() ? Collections.emptyMap()
 						: dataManager.loadCollectionData(context, ids);
 			}
-		});
+		}, routeFilter);
 	}
 
 	/**
@@ -221,6 +277,16 @@ public final class ClimbingRouteCounter {
 	 */
 	public static GeoNode pin(OsmCollectionEntity collection, MapCoordinate location,
 	                          int routeCount) {
+		return pin(collection, location, routeCount, false);
+	}
+
+	/**
+	 * @param filtered whether the count is that of the routes matching the display filters, see
+	 *                 RouteSummary.isFiltered: it shows even when 0, rather than the collection's
+	 *                 own climbing:routes tag
+	 */
+	public static GeoNode pin(OsmCollectionEntity collection, MapCoordinate location,
+	                          int routeCount, boolean filtered) {
 		GeoNode result;
 		try {
 			result = new GeoNode(new JSONObject(collection.jsonNodeInfo.toString()));
@@ -229,21 +295,27 @@ public final class ClimbingRouteCounter {
 		}
 		result.updatePOILocation(location.getLatitude(), location.getLongitude(),
 				location.getAltitudeMeters());
-		if (routeCount > 0) {
+		if (routeCount > 0 || filtered) {
 			result.setKey(ClimbingTags.KEY_ROUTES, Integer.toString(routeCount));
 		}
 		return result;
 	}
 
+	/** The collection's pin with the count it shows, see the static pin. */
+	public static GeoNode pin(OsmCollectionEntity collection, MapCoordinate location,
+	                          RouteSummary routes) {
+		return pin(collection, location, routes.getMatchingRouteCount(), routes.isFiltered());
+	}
+
 	/** The collection's pin at the location, with its routes counted; see the static pin. */
 	public GeoNode pin(OsmCollectionEntity collection, MapCoordinate location) {
-		return pin(collection, location, summarize(collection).getRouteCount());
+		return pin(collection, location, summarize(collection));
 	}
 
 	public RouteSummary summarize(OsmNode node) {
-		Accumulator accumulator = new Accumulator();
+		Accumulator accumulator = new Accumulator(routeFilter);
 		if (node.entityClimbingType == OsmEntity.EntityClimbingType.route) {
-			accumulator.addRoute(node.getTags());
+			accumulator.addRoute(node);
 		}
 		return accumulator.build();
 	}
@@ -258,7 +330,7 @@ public final class ClimbingRouteCounter {
 	 */
 	public RouteSummary summarize(OsmCollectionEntity collection,
 	                              Map<Long, OsmNode> collectionNodes) {
-		Accumulator accumulator = new Accumulator();
+		Accumulator accumulator = new Accumulator(routeFilter);
 		Set<String> visited = new HashSet<>();
 		visited.add(entityKey(collection.osmType.name(), collection.osmID));
 		// Nodes of a route way or relation, such as its tagged bottom and top, are part of that
@@ -266,7 +338,7 @@ public final class ClimbingRouteCounter {
 		Set<Long> routePartNodes = new HashSet<>();
 		if (collection.entityClimbingType == OsmEntity.EntityClimbingType.route) {
 			// The pitches of a route relation are part of it rather than routes of their own.
-			accumulator.addRoute(collection.getTags());
+			accumulator.addRoute(collection);
 			routePartNodes.addAll(collection.osmNodes);
 		} else {
 			addContainedRouteCollections(collection, visited, accumulator, routePartNodes);
@@ -285,7 +357,7 @@ public final class ClimbingRouteCounter {
 					node.getTags().optString(ClimbingTags.KEY_CLIMBING))) {
 				routeTops.add(node);
 			} else {
-				accumulator.addRoute(node.getTags());
+				accumulator.addRoute(node);
 			}
 		}
 
@@ -300,7 +372,7 @@ public final class ClimbingRouteCounter {
 			String name = LogBookFilter.normalize(
 					routeTop.getTags().optString(ClimbingTags.KEY_NAME).trim());
 			if (!name.isEmpty() && !routeNames.contains(name)) {
-				accumulator.addRoute(routeTop.getTags());
+				accumulator.addRoute(routeTop);
 			}
 		}
 		return accumulator.build();
@@ -391,7 +463,7 @@ public final class ClimbingRouteCounter {
 			}
 			if (collection.entityClimbingType == OsmEntity.EntityClimbingType.route) {
 				// The pitches of a route relation are part of it rather than routes of their own.
-				accumulator.addRoute(collection.getTags());
+				accumulator.addRoute(collection);
 				routePartNodes.addAll(collection.osmNodes);
 			} else if (collection.osmType == OsmEntity.EntityOsmType.relation) {
 				addContainedRouteCollections(collection, visited, accumulator, routePartNodes);

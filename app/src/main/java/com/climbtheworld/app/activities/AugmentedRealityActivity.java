@@ -614,6 +614,11 @@ public class AugmentedRealityActivity extends MapWidgetActivity
 		mapWidget.invalidateData();
 
 		updateView(true);
+		// The crag and area pins count only the routes matching the display filters, and a
+		// longer view distance needs the POIs beyond the ones loaded so far.
+		scene.dataChanged();
+		scene.refreshAround(new Vector4d(Globals.virtualCamera.decimalLatitude,
+				Globals.virtualCamera.decimalLongitude, Globals.virtualCamera.elevationMeters, 0));
 	}
 
 	/**
@@ -623,9 +628,6 @@ public class AugmentedRealityActivity extends MapWidgetActivity
 		scene.loadSettings();
 		applyHorizonMode(configs.getHorizonMode());
 		onConfigChange();
-		// A longer view distance needs the POIs beyond the ones loaded so far.
-		scene.refreshAround(new Vector4d(Globals.virtualCamera.decimalLatitude,
-				Globals.virtualCamera.decimalLongitude, Globals.virtualCamera.elevationMeters, 0));
 	}
 
 	private void updateFilterIcon() {

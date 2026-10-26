@@ -13,7 +13,6 @@ import com.climbtheworld.app.map.marker.NodeDisplayFilters;
 import com.climbtheworld.app.map.model.MapBounds;
 import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.map.widget.climbing.ClimbingGeometryBuilder;
-import com.climbtheworld.app.map.widget.climbing.ClimbingRouteCounter;
 import com.climbtheworld.app.map.widget.climbing.RouteNumbers;
 import com.climbtheworld.app.map.widget.climbing.RouteRelation;
 import com.climbtheworld.app.sensors.camera.VirtualCamera;
@@ -153,7 +152,7 @@ public class AugmentedRealityScene {
 		// Unnamed relations have no label on the map to place it at.
 		MapCoordinate centre = geometry.labelCoordinate != null
 				? geometry.labelCoordinate : DataManager.collectionCenter(collection);
-		GeoNode pin = ClimbingRouteCounter.pin(collection, centre, geometry.relationElementCount);
+		GeoNode pin = geometry.pin(centre);
 
 		double[] latitudes = new double[geometry.coordinates.size()];
 		double[] longitudes = new double[geometry.coordinates.size()];
@@ -170,6 +169,11 @@ public class AugmentedRealityScene {
 				collection.entityClimbingType == OsmEntity.EntityClimbingType.crag
 						? OsmEntity.EntityClimbingType.crag : OsmEntity.EntityClimbingType.area,
 				pin, latitudes, longitudes, nodeIds);
+	}
+
+	/** @return whether two pins of the same crag or area draw alike */
+	private static boolean drawsAlike(GeoNode earlier, GeoNode loaded) {
+		return earlier.toJSONString().equals(loaded.toJSONString());
 	}
 
 	/**
@@ -426,8 +430,20 @@ public class AugmentedRealityScene {
 						hullsLatitude = center.x;
 						hullsLongitude = center.y;
 						hullsDistance = distance;
+						Map<String, GeoNode> earlierPins = new HashMap<>();
+						for (ClimbingHull earlier : climbingHulls.getHulls()) {
+							earlierPins.put(earlier.key, earlier.pin);
+						}
 						for (ClimbingHull removed : climbingHulls.setHulls(hulls)) {
 							arViewManager.removePOIFromView(removed.pin);
+						}
+						// A pin on view keeps its drawing, so one that changed, as its route count
+						// with the display filters, is put on the view again.
+						for (ClimbingHull hull : hulls) {
+							GeoNode earlier = earlierPins.get(hull.key);
+							if (earlier != null && !drawsAlike(earlier, hull.pin)) {
+								arViewManager.removePOIFromView(earlier);
+							}
 						}
 						arViewManager.setRouteNumbers(activity, routeNumbers);
 						for (RouteLine removed : routeLines.setRoutes(routes)) {

@@ -2,6 +2,7 @@ package com.climbtheworld.app.map.widget.climbing;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
@@ -14,6 +15,7 @@ import androidx.core.graphics.ColorUtils;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.map.model.MapZoomLevels;
+import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
@@ -91,6 +93,35 @@ public class ClimbingGeometryBuilderTest {
 				new GeoNode(new JSONObject(area.jsonNodeInfo.toString())).getNodeType());
 		assertEquals(27, geometries.get(0).relationElementCount);
 		assertTrue(geometries.get(0).getLabelImageId().endsWith("-27"));
+	}
+
+	@Test
+	public void filteredRouteCountShowsEvenZeroOnTheLabelAndThePin() throws Exception {
+		OsmCollectionEntity area = new OsmCollectionEntity(new JSONObject()
+				.put("id", 458L)
+				.put("type", "relation")
+				.put("tags", new JSONObject()
+						.put("type", "site")
+						.put("sport", "climbing")
+						.put("climbing", "area")
+						.put("name", "Grand Area")));
+		List<MapCoordinate> triangle = Arrays.asList(
+				new MapCoordinate(45, 24),
+				new MapCoordinate(46, 24),
+				new MapCoordinate(45, 25));
+		List<ClimbingGeometryBuilder.GeometrySpec> filtered = new ArrayList<>();
+		List<ClimbingGeometryBuilder.GeometrySpec> unfiltered = new ArrayList<>();
+
+		builder.addGeometry(filtered, area, triangle, 0, true, null);
+		builder.addGeometry(unfiltered, area, triangle, 0, false, null);
+
+		ClimbingGeometryBuilder.GeometrySpec geometry = filtered.get(0);
+		assertTrue(geometry.routeCountFiltered);
+		assertNotEquals(unfiltered.get(0).getLabelImageId(), geometry.getLabelImageId());
+		GeoNode pin = geometry.pin(geometry.labelCoordinate);
+		assertEquals("0", pin.getKey(ClimbingTags.KEY_ROUTES));
+		GeoNode unfilteredPin = unfiltered.get(0).pin(unfiltered.get(0).labelCoordinate);
+		assertEquals("", unfilteredPin.getKey(ClimbingTags.KEY_ROUTES));
 	}
 
 	@Test
@@ -474,6 +505,6 @@ public class ClimbingGeometryBuilderTest {
 				new MapCoordinate(45, 24),
 				new MapCoordinate(46, 24),
 				new MapCoordinate(45, 25)), true, 0, 0, minZoom, 0,
-				new MapCoordinate(45.5, 24.5), name, elementCount, labelMaxZoom, null, null);
+				new MapCoordinate(45.5, 24.5), name, elementCount, false, labelMaxZoom, null, null);
 	}
 }
