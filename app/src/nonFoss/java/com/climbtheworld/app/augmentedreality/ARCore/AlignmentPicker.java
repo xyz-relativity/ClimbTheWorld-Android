@@ -12,6 +12,7 @@ import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -56,7 +57,9 @@ import needle.UiRelatedTask;
  * AlignmentChoices. The list opens with the closest route in its middle, its neighbours along
  * the wall around it, and so it does again for what the user types in the filter. The routes
  * already aligned on are listed wherever they are, outlined, each with a button to delete its
- * alignment, and one under the strip deletes them all, the dialog staying open.
+ * alignment, and one under the strip deletes them all, the dialog staying open. The route best
+ * to align on next, see AlignmentSuggestions, is outlined too, with a button to align on it,
+ * and a button beside the one deleting them all scrolls to it, then to the next ones.
  */
 class AlignmentPicker {
 	// How far around where the user seems to be routes are looked for, as GPS can be that far
@@ -221,9 +224,11 @@ class AlignmentPicker {
 		dialog = builder.create();
 		// In the dialog rather than among its buttons, which would close it.
 		View clear = content.findViewById(R.id.buttonClearAlignments);
+		View suggest = content.findViewById(R.id.buttonSuggestAlignment);
 		if (around.routes.isEmpty()) {
 			content.findViewById(R.id.filterContainer).setVisibility(View.GONE);
 			content.findViewById(R.id.scrollAlignRoutes).setVisibility(View.GONE);
+			suggest.setVisibility(View.GONE);
 			TextView none = content.findViewById(R.id.textNoMatchingRoutes);
 			none.setText(R.string.ar_placement_align_none);
 			none.setVisibility(View.VISIBLE);
@@ -247,6 +252,7 @@ class AlignmentPicker {
 			// For the delete buttons, and this one, to go.
 			strip.refresh();
 		});
+		suggest.setOnClickListener(clicked -> strip.suggest());
 		filter.addTextChangedListener(TextWatchers.afterTextChanged(typed -> {
 			strip.refresh();
 			strip.centreOnClosest();
@@ -296,6 +302,14 @@ class AlignmentPicker {
 		private final List<GeoNode> shown = new ArrayList<>();
 		// Waiting for the strip's next layout to centre it, see centreOnClosest; null for none.
 		private ViewTreeObserver.OnGlobalLayoutListener pendingCentre;
+		// The routes best to align on next, on the strip, see suggestions.
+		private List<GeoNode> suggestions = new ArrayList<>();
+		// The OSM ID of the one outlined, the best until the suggest button goes to the next,
+		// see suggest; null for none.
+		private Long suggestedId;
+		// How many times the suggest button was tapped since the strip was laid out, for each
+		// tap to go to the next suggestion.
+		private int suggestTaps;
 
 		RouteStrip(View content, Around around, double latitude, double longitude,
 		           Set<Long> aligned, EditText filter, Listener listener) {
@@ -323,9 +337,18 @@ class AlignmentPicker {
 
 			groups.removeAllViews();
 			shown.clear();
+			suggestedId = null;
+			suggestTaps = 0;
 			for (AlignmentOrder.Group<GeoNode> group : AlignmentOrder.regrouped(listed,
 					route -> around.cragOf.getOrDefault(route.osmID, AlignmentOrder.NO_CRAG))) {
 				addGroup(group.crag, group.routes);
+			}
+			// The suggestions follow what is on the strip and the routes aligned on; the best is
+			// always outlined.
+			suggestions = suggestions();
+			if (!suggestions.isEmpty()) {
+				suggestedId = suggestions.get(0).osmID;
+				outline(suggestedId);
 			}
 			noMatch.setVisibility(shown.isEmpty() ? View.VISIBLE : View.GONE);
 			clear.setVisibility(aligned.isEmpty() ? View.GONE : View.VISIBLE);
@@ -355,19 +378,97 @@ class AlignmentPicker {
 					}
 					scroll.getViewTreeObserver().removeOnGlobalLayoutListener(this);
 					pendingCentre = null;
-					int left = 0;
-					for (View view = card; view != groups; view = (View) view.getParent()) {
-						if (!(view.getParent() instanceof View)) {
-							// Taken off the strip by a refresh since.
-							return;
-						}
-						left += view.getLeft();
-					}
-					// Clamped to the strip's ends.
-					scroll.scrollTo(left + (card.getWidth() - scroll.getWidth()) / 2, 0);
+					centre(card, false);
 				}
 			};
 			observer.addOnGlobalLayoutListener(pendingCentre);
+		}
+
+		/**
+		 * Scrolls to the route outlined as best to align on next, see suggestions; each tap
+		 * after goes to the next suggestion and outlines it, back to the first after the last.
+		 */
+		void suggest() {
+			if (suggestions.isEmpty()) {
+				Toast.makeText(activity, R.string.ar_placement_align_no_suggestion,
+						Toast.LENGTH_SHORT).show();
+				return;
+			}
+			GeoNode route = suggestions.get(suggestTaps++ % suggestions.size());
+			Long previous = suggestedId;
+			suggestedId = route.osmID;
+			if (previous != null) {
+				outline(previous);
+			}
+			outline(route.osmID);
+			centre(cards.get(route.osmID), true);
+		}
+
+		/**
+		 * @return the routes best to align on next, see AlignmentSuggestions, among those on
+		 * the strip, best first: until a route is aligned on, the closest, as good as any
+		 */
+		private List<GeoNode> suggestions() {
+			List<GeoNode> candidates = new ArrayList<>();
+			for (GeoNode route : shown) {
+				if (!aligned.contains(route.osmID)) {
+					candidates.add(route);
+				}
+			}
+			// All the routes aligned on set the heading, the ones the filter hides too.
+			List<double[]> alignedEastNorth = new ArrayList<>();
+			for (GeoNode route : around.routes) {
+				if (aligned.contains(route.osmID)) {
+					alignedEastNorth.add(eastNorthMeters(route, latitude, longitude));
+				}
+			}
+			if (alignedEastNorth.isEmpty()) {
+				int closest = AlignmentChoices.closest(candidates, this::distance);
+				return closest < 0 ? List.of() : List.of(candidates.get(closest));
+			}
+			return AlignmentSuggestions.suggested(candidates,
+					route -> eastNorthMeters(route, latitude, longitude), alignedEastNorth);
+		}
+
+		/**
+		 * Scrolls the strip, laid out, for a card on it to be in its middle, or as near as the
+		 * strip's ends let it.
+		 */
+		private void centre(View card, boolean smoothly) {
+			int left = 0;
+			for (View view = card; view != groups; view = (View) view.getParent()) {
+				if (!(view.getParent() instanceof View)) {
+					// Taken off the strip by a refresh since.
+					return;
+				}
+				left += view.getLeft();
+			}
+			// Both clamped to the strip's ends.
+			int x = left + (card.getWidth() - scroll.getWidth()) / 2;
+			if (smoothly) {
+				scroll.smoothScrollTo(x, 0);
+			} else {
+				scroll.scrollTo(x, 0);
+			}
+		}
+
+		/**
+		 * Outlines a route's card for being aligned on, with the button deleting its alignment
+		 * under it, else for being suggested, with the button aligning on it.
+		 */
+		private void outline(long osmId) {
+			View view = cards.get(osmId);
+			if (view == null) {
+				return;
+			}
+			boolean isAligned = aligned.contains(osmId);
+			boolean isSuggested = !isAligned && Long.valueOf(osmId).equals(suggestedId);
+			view.setBackgroundResource(isAligned ? R.drawable.bg_align_route_aligned
+					: isSuggested ? R.drawable.bg_align_route_suggested : 0);
+			view.findViewById(R.id.buttonDeleteAlignment)
+					.setVisibility(isAligned ? View.VISIBLE : View.GONE);
+			view.findViewById(R.id.buttonPickAlignment)
+					.setVisibility(isSuggested ? View.VISIBLE : View.GONE);
 		}
 
 		/**
@@ -415,10 +516,12 @@ class AlignmentPicker {
 				// As the lists of climbing POIs show it, see DialogueUtils.setDistance.
 				((TextView) view.findViewById(R.id.alignRouteDistance)).setText(
 						Globals.getDistanceString(GeoUtils.calculateDistance(user, route)));
-				card.setOnClickListener(clicked -> {
+				View.OnClickListener pick = clicked -> {
 					dialog.dismiss();
 					listener.onPicked(route);
-				});
+				};
+				card.setOnClickListener(pick);
+				view.findViewById(R.id.buttonPickAlignment).setOnClickListener(pick);
 				view.findViewById(R.id.buttonDeleteAlignment).setOnClickListener(clicked -> {
 					aligned.remove(route.osmID);
 					listener.onDeleted(route);
@@ -429,10 +532,7 @@ class AlignmentPicker {
 			} else if (view.getParent() != null) {
 				((ViewGroup) view.getParent()).removeView(view);
 			}
-			boolean isAligned = aligned.contains(route.osmID);
-			view.findViewById(R.id.buttonDeleteAlignment)
-					.setVisibility(isAligned ? View.VISIBLE : View.GONE);
-			view.setBackgroundResource(isAligned ? R.drawable.bg_align_route_aligned : 0);
+			outline(route.osmID);
 			return view;
 		}
 
