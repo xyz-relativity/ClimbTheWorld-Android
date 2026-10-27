@@ -489,8 +489,7 @@
     <string name="ar_placement_align_none">No mapped route near here.</string>
     <string name="ar_placement_align_clear">Clear alignment</string>
     <string name="ar_placement_align_delete">Delete this alignment</string>
-    <string name="ar_placement_align_suggested">Suggested, to set the heading</string>
-    <string name="ar_placement_align_by_crag">By crag, as it lists them</string>
+    <string name="ar_placement_align_no_crag">In no crag</string>
     <string name="ar_align_help_title">How to Align</string>
     <string name="ar_align_help_message">Aligning on mapped routes ties the A.R. to the map.</string>
     <string name="ar_align_help_pick">Tap Align and pick a mapped route you can see.</string>

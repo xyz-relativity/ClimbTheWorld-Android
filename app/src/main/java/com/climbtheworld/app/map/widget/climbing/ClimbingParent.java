@@ -86,11 +86,18 @@ public final class ClimbingParent {
 	 */
 	public String getName(Context context) {
 		if (relation != null) {
-			String name = relation.getTags().optString(ClimbingTags.KEY_NAME, "").trim();
-			return !name.isEmpty() ? name
-					: context.getString(relation.entityClimbingType.getNameId());
+			return nameOf(context, relation);
 		}
 		return countryNames(countries);
+	}
+
+	/**
+	 * A relation's name, or its kind when it has none.
+	 */
+	public static String nameOf(Context context, OsmCollectionEntity relation) {
+		String name = relation.getTags().optString(ClimbingTags.KEY_NAME, "").trim();
+		return !name.isEmpty() ? name
+				: context.getString(relation.entityClimbingType.getNameId());
 	}
 
 	/**

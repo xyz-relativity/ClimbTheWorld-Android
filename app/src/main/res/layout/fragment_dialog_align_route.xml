@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The A.R. align dialog: the quick filter over the routes, which take what height is left, so a
-     long list scrolls with the filter still showing. -->
+<!-- The A.R. align dialog: the quick filter over the routes, side by side as they stand along the
+     wall, grouped by crag, see list_item_alignment_group, left to right whatever the language, as
+     the wall is. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -8,9 +9,26 @@
 
     <include layout="@layout/layout_filter" />
 
-    <ListView
-        android:id="@+id/listAlignRoutes"
+    <HorizontalScrollView
+        android:id="@+id/scrollAlignRoutes"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_height="wrap_content"
+        android:layoutDirection="ltr"
+        android:scrollbars="horizontal">
+
+        <LinearLayout
+            android:id="@+id/listAlignRoutes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="8dp" />
+    </HorizontalScrollView>
+
+    <TextView
+        android:id="@+id/textNoMatchingRoutes"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:text="@string/no_match"
+        android:visibility="gone" />
 </LinearLayout>

@@ -3,10 +3,11 @@ package com.climbtheworld.app.augmentedreality.ARCore;
 import android.app.AlertDialog;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
-import android.widget.BaseAdapter;
 import android.widget.EditText;
-import android.widget.ListView;
+import android.widget.HorizontalScrollView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,9 +25,11 @@ import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
 import com.climbtheworld.app.storage.edit.RelationMembers;
+import com.climbtheworld.app.utils.GeoUtils;
+import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.constants.Constants;
-import com.climbtheworld.app.utils.views.ClimbingPoiRow;
+import com.climbtheworld.app.utils.views.MemberIconCard;
 import com.climbtheworld.app.utils.views.TextWatchers;
 
 import java.util.ArrayList;
@@ -40,15 +43,15 @@ import java.util.Set;
 import needle.UiRelatedTask;
 
 /**
- * Asks which mapped route to align on, from the routes around the user, as their crags list them,
- * see AlignmentOrder, in the rows of the lists of climbing POIs, see ClimbingPoiRow, each name
- * after the route's number in its crag, as the map's pins show it, see
- * ClimbingRouteCounter.numberRoutes, with a quick filter on their names over them, see
- * AlignmentChoices. The list opens with the closest route in its middle, its neighbours along
- * the wall around it, and so it does again for what the user types in the filter. Once a route
- * is aligned on, the routes that would best set the heading come first, under a title of their
- * own, see AlignmentSuggestions, and the rest under another. The routes already aligned on are
- * listed wherever they are, each with a button to delete its alignment.
+ * Asks which mapped route to align on, from the routes around the user, side by side as their
+ * crags list them, see AlignmentOrder, which is how they stand along the wall, each crag's under
+ * its name, each route on its card as the crag dialog shows its routes, see MemberIconCard, its
+ * name after its number in its crag, as the map's pins show it, see
+ * ClimbingRouteCounter.numberRoutes, and its distance from the user under it, with a quick
+ * filter on their names over them, see AlignmentChoices. The list opens with the closest route in
+ * its middle, its neighbours along the wall around it, and so it does again for what the user
+ * types in the filter. The routes already aligned on are listed wherever they are, each with a
+ * button to delete its alignment.
  */
 class AlignmentPicker {
 	// How far around where the user seems to be routes are looked for, as GPS can be that far
@@ -57,15 +60,26 @@ class AlignmentPicker {
 	// How many routes are listed, around the closest in order; the filter looks through all of
 	// them.
 	private static final int MAX_ROUTES = 40;
-	// The list's rows: a section title, or a route.
-	private static final int TYPE_TITLE = 0;
-	private static final int TYPE_ROUTE = 1;
 
 	private final AppCompatActivity activity;
 	private AlertDialog dialog;
 
 	AlignmentPicker(AppCompatActivity activity) {
 		this.activity = activity;
+	}
+
+	/**
+	 * The routes around, as loadRoutes finds them.
+	 */
+	private static final class Around {
+		// In the order to list them, see AlignmentOrder.
+		final List<GeoNode> routes = new ArrayList<>();
+		// The crag each route is listed with, by OSM ID, see AlignmentOrder.Group.crag.
+		final Map<Long, Integer> cragOf = new HashMap<>();
+		// The names of the crags around, by their index.
+		final List<String> cragNames = new ArrayList<>();
+		// Each route's number in its crag, by OSM ID.
+		final Map<Long, Integer> routeNumbers = new HashMap<>();
 	}
 
 	/**
@@ -82,34 +96,12 @@ class AlignmentPicker {
 	}
 
 	/**
-	 * The routes that would best set the heading, aligned on next, see AlignmentSuggestions.
-	 *
-	 * @param aligned the OSM IDs of the routes aligned on now
+	 * The routes around a point, by crag, see AlignmentOrder: only nodes, which are at one spot,
+	 * and with a pin of their own, as the A.R. view shows them, all of them, for the filter to
+	 * look through. The routes aligned on are among them, however far.
 	 */
-	private static List<GeoNode> suggested(List<GeoNode> routes, double latitude,
-	                                       double longitude, Set<Long> aligned) {
-		List<GeoNode> candidates = new ArrayList<>();
-		List<double[]> alignedEastNorth = new ArrayList<>();
-		for (GeoNode route : routes) {
-			if (aligned.contains(route.osmID)) {
-				alignedEastNorth.add(eastNorthMeters(route, latitude, longitude));
-			} else {
-				candidates.add(route);
-			}
-		}
-		return AlignmentSuggestions.suggested(candidates,
-				route -> eastNorthMeters(route, latitude, longitude), alignedEastNorth);
-	}
-
-	/**
-	 * The routes around a point, as their crags list them, see AlignmentOrder: only nodes, which
-	 * are at one spot, and with a pin of their own, as the A.R. view shows them, all of them, for
-	 * the filter to look through. The routes aligned on are among them, however far.
-	 *
-	 * @param routeNumbers filled with the routes' numbers in their crags, by OSM ID
-	 */
-	private List<GeoNode> loadRoutes(double latitude, double longitude, long excludedId,
-	                                 Set<Long> aligned, Map<Long, Integer> routeNumbers) {
+	private Around loadRoutes(double latitude, double longitude, long excludedId,
+	                          Set<Long> aligned) {
 		DataManager dataManager = new DataManager();
 		Map<Long, DisplayableGeoNode> found = new HashMap<>();
 		dataManager.loadAround(activity, new Vector4d(latitude, longitude, 0, 0), SEARCH_METERS,
@@ -134,19 +126,26 @@ class AlignmentPicker {
 			}
 		}
 		routes.sort(Comparator.comparingDouble(node -> distanceMeters(node, latitude, longitude)));
-		return AlignmentOrder.ordered(routes,
-				loadCragOrders(dataManager, latitude, longitude, routeNumbers), node -> node.osmID);
+		Around around = new Around();
+		for (AlignmentOrder.Group<GeoNode> group : AlignmentOrder.grouped(routes,
+				loadCragOrders(dataManager, latitude, longitude, around), node -> node.osmID)) {
+			for (GeoNode route : group.routes) {
+				around.routes.add(route);
+				around.cragOf.put(route.osmID, group.crag);
+			}
+		}
+		return around;
 	}
 
 	/**
 	 * Per crag relation around a point, the OSM IDs of its member nodes in the relation's order.
 	 * Any crag with a route around reaches the point, as its bounding box holds the route.
 	 *
-	 * @param routeNumbers filled with the routes' numbers in these crags, by OSM ID, the first
-	 *                     crag's for a route of several
+	 * @param around filled with the crags' names, and the routes' numbers in these crags, the
+	 *               first crag's for a route of several
 	 */
 	private List<List<Long>> loadCragOrders(DataManager dataManager, double latitude,
-	                                        double longitude, Map<Long, Integer> routeNumbers) {
+	                                        double longitude, Around around) {
 		ClimbingRouteCounter routeCounter = ClimbingRouteCounter.forDatabase(activity);
 		List<List<Long>> crags = new ArrayList<>();
 		for (OsmCollectionEntity relation : dataManager.loadRelationsBBox(activity,
@@ -154,7 +153,8 @@ class AlignmentPicker {
 						SEARCH_METERS))) {
 			if (relation.entityClimbingType == OsmEntity.EntityClimbingType.crag) {
 				crags.add(RelationMembers.nodeRefs(RelationMembers.list(relation.getMembers())));
-				routeCounter.numberRoutes(relation).forEach(routeNumbers::putIfAbsent);
+				around.cragNames.add(ClimbingParent.nameOf(activity, relation));
+				routeCounter.numberRoutes(relation).forEach(around.routeNumbers::putIfAbsent);
 			}
 		}
 		return crags;
@@ -170,29 +170,18 @@ class AlignmentPicker {
 	          Listener listener) {
 		// Kept up to date as the user deletes alignments in the dialog.
 		Set<Long> alignedLeft = new HashSet<>(aligned);
-		Constants.DB_EXECUTOR.execute(new UiRelatedTask<List<GeoNode>>() {
-			// What each route is part of, by OSM ID, see ClimbingParent.
-			private final Map<Long, String> parentLabels = new HashMap<>();
-			// Each route's number in its crag, by OSM ID.
-			private final Map<Long, Integer> routeNumbers = new HashMap<>();
-
+		Constants.DB_EXECUTOR.execute(new UiRelatedTask<Around>() {
 			@Override
-			protected List<GeoNode> doWork() {
-				List<GeoNode> routes = loadRoutes(latitude, longitude, excludedId, alignedLeft,
-						routeNumbers);
-				for (GeoNode route : routes) {
-					parentLabels.put(route.osmID, ClimbingParent.labelOf(activity, route));
-				}
-				return routes;
+			protected Around doWork() {
+				return loadRoutes(latitude, longitude, excludedId, alignedLeft);
 			}
 
 			@Override
-			protected void thenDoUiRelatedWork(List<GeoNode> routes) {
+			protected void thenDoUiRelatedWork(Around around) {
 				if (activity.isFinishing() || activity.isDestroyed()) {
 					return;
 				}
-				showDialog(routes, parentLabels, routeNumbers, latitude, longitude, alignedLeft,
-						listener);
+				showDialog(around, latitude, longitude, alignedLeft, listener);
 			}
 		});
 	}
@@ -204,27 +193,26 @@ class AlignmentPicker {
 	}
 
 	/**
-	 * @param routes       the routes around, in the order to list them, see loadRoutes
-	 * @param parentLabels what each route is part of, by OSM ID
-	 * @param routeNumbers each route's number in its crag, by OSM ID
-	 * @param aligned      the OSM IDs of the routes aligned on, which deleting an alignment
-	 *                     updates
+	 * @param aligned the OSM IDs of the routes aligned on, which deleting an alignment updates
 	 */
-	private void showDialog(List<GeoNode> routes, Map<Long, String> parentLabels,
-	                        Map<Long, Integer> routeNumbers, double latitude, double longitude,
-	                        Set<Long> aligned, Listener listener) {
+	private void showDialog(Around around, double latitude, double longitude, Set<Long> aligned,
+	                        Listener listener) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(activity)
 				.setTitle(R.string.ar_placement_align_title)
-				.setNegativeButton(android.R.string.cancel,
+				// The buttons' slots for their places: help on the left, set once shown, see
+				// openHelpFromButton, then clearing, then cancel on the right.
+				.setNeutralButton(R.string.ar_align_help_title, null)
+				.setPositiveButton(android.R.string.cancel,
 						(cancelled, which) -> listener.onCancelled())
 				.setOnCancelListener(cancelled -> listener.onCancelled());
 		if (!aligned.isEmpty()) {
-			builder.setNeutralButton(R.string.ar_placement_align_clear,
+			builder.setNegativeButton(R.string.ar_placement_align_clear,
 					(clicked, which) -> listener.onCleared());
 		}
-		if (routes.isEmpty()) {
+		if (around.routes.isEmpty()) {
 			builder.setMessage(R.string.ar_placement_align_none);
 			dialog = builder.show();
+			openHelpFromButton();
 			return;
 		}
 
@@ -233,72 +221,65 @@ class AlignmentPicker {
 		builder.setView(content);
 		dialog = builder.create();
 		EditText filter = content.findViewById(R.id.editFind);
-		RowsAdapter adapter = new RowsAdapter(routes, parentLabels, routeNumbers, latitude,
-				longitude, aligned, filter, listener);
-		ListView list = content.findViewById(R.id.listAlignRoutes);
+		RouteStrip strip = new RouteStrip(content, around, latitude, longitude, aligned, filter,
+				listener);
 		filter.addTextChangedListener(TextWatchers.afterTextChanged(typed -> {
-			adapter.refresh();
-			centre(list, adapter, adapter.closestRow());
+			strip.refresh();
+			strip.centreOnClosest();
 		}));
-		adapter.refresh();
-		list.setAdapter(adapter);
+		strip.refresh();
 		// The filter field takes the focus, but most of the time the route is the closest or one
-		// of its neighbours, in the list's middle rows.
+		// of its neighbours, in the strip's middle.
 		dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 		dialog.show();
-		// Once the list is laid out, for its height.
-		list.post(() -> centre(list, adapter, adapter.closestRow()));
+		openHelpFromButton();
+		strip.centreOnClosest();
 	}
 
 	/**
-	 * Scrolls a list for a row to be in its middle, or as near as the list's ends let it.
-	 *
-	 * @param row the row's position, none for -1
+	 * Has the help button show how to align, see AlignmentHelp, over the dialog, which stays
+	 * open under it for the user to pick a route once they have read it.
 	 */
-	private static void centre(ListView list, BaseAdapter adapter, int row) {
-		if (row < 0) {
-			return;
-		}
-		View view = adapter.getView(row, null, list);
-		view.measure(View.MeasureSpec.makeMeasureSpec(list.getWidth(), View.MeasureSpec.EXACTLY),
-				View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
-		list.setSelectionFromTop(row, (list.getHeight() - view.getMeasuredHeight()) / 2);
+	private void openHelpFromButton() {
+		dialog.getButton(AlertDialog.BUTTON_NEUTRAL)
+				.setOnClickListener(clicked -> AlignmentHelp.show(activity));
 	}
 
 	/**
-	 * The list's rows: the routes the filter lets through, see AlignmentChoices, the suggested
-	 * ones first under a title of their own, when there are any, and the rest under another.
+	 * The strip of routes: the routes the filter lets through, see AlignmentChoices, under their
+	 * crag's name, see AlignmentOrder.regrouped.
 	 */
-	private class RowsAdapter extends BaseAdapter {
-		private final List<GeoNode> routes;
-		// What each route is part of, by OSM ID.
-		private final Map<Long, String> parentLabels;
-		// Each route's number in its crag, by OSM ID.
-		private final Map<Long, Integer> routeNumbers;
-		// From where the user is, as the routes were looked for around; the map shown from a row
-		// closes the dialog as the back button does.
-		private final ClimbingPoiRow poiRows;
+	private class RouteStrip {
+		private final HorizontalScrollView scroll;
+		private final LinearLayout groups;
+		private final View noMatch;
+		private final Around around;
 		private final double latitude;
 		private final double longitude;
+		// Where the user is, for the distances on the cards.
+		private final GeoNode user;
 		// The OSM IDs of the routes aligned on, which deleting an alignment updates.
 		private final Set<Long> aligned;
 		// Listed wherever they are as the list opens, even once their alignment is deleted.
 		private final Set<Long> alignedAtOpen;
 		private final EditText filter;
 		private final Listener listener;
-		// A string resource ID for a title, or a GeoNode.
-		private final List<Object> rows = new ArrayList<>();
+		// Each route's card, by OSM ID, made once, as the filter shows them again.
+		private final Map<Long, View> cards = new HashMap<>();
+		// The routes on the strip now, in its order.
+		private final List<GeoNode> shown = new ArrayList<>();
+		// Waiting for the strip's next layout to centre it, see centreOnClosest; null for none.
+		private ViewTreeObserver.OnGlobalLayoutListener pendingCentre;
 
-		RowsAdapter(List<GeoNode> routes, Map<Long, String> parentLabels,
-		            Map<Long, Integer> routeNumbers, double latitude, double longitude,
-		            Set<Long> aligned, EditText filter, Listener listener) {
-			this.routes = routes;
-			this.parentLabels = parentLabels;
-			this.routeNumbers = routeNumbers;
-			this.poiRows = new ClimbingPoiRow(activity, () -> dialog.cancel(), latitude,
-					longitude);
+		RouteStrip(View content, Around around, double latitude, double longitude,
+		           Set<Long> aligned, EditText filter, Listener listener) {
+			this.scroll = content.findViewById(R.id.scrollAlignRoutes);
+			this.groups = content.findViewById(R.id.listAlignRoutes);
+			this.noMatch = content.findViewById(R.id.textNoMatchingRoutes);
+			this.around = around;
 			this.latitude = latitude;
 			this.longitude = longitude;
+			this.user = new GeoNode(latitude, longitude, 0);
 			this.aligned = aligned;
 			this.alignedAtOpen = new HashSet<>(aligned);
 			this.filter = filter;
@@ -306,112 +287,116 @@ class AlignmentPicker {
 		}
 
 		/**
-		 * Lists the rows again, for what the filter holds and the routes aligned on now.
+		 * Lays out the strip again, for what the filter holds and the routes aligned on now.
 		 */
 		void refresh() {
 			String text = filter.getText().toString();
-			List<GeoNode> suggested = suggested(routes, latitude, longitude, aligned);
-			suggested = AlignmentChoices.listed(suggested, text, GeoNode::getName,
-					route -> false, this::distance, suggested.size());
-			List<GeoNode> others = new ArrayList<>(routes);
-			others.removeAll(suggested);
-			List<GeoNode> listed = AlignmentChoices.listed(others, text, GeoNode::getName,
+			List<GeoNode> listed = AlignmentChoices.listed(around.routes, text, GeoNode::getName,
 					route -> alignedAtOpen.contains(route.osmID), this::distance, MAX_ROUTES);
-			rows.clear();
-			if (!suggested.isEmpty()) {
-				rows.add(R.string.ar_placement_align_suggested);
-				rows.addAll(suggested);
-				if (!listed.isEmpty()) {
-					rows.add(R.string.ar_placement_align_by_crag);
-				}
+
+			groups.removeAllViews();
+			shown.clear();
+			for (AlignmentOrder.Group<GeoNode> group : AlignmentOrder.regrouped(listed,
+					route -> around.cragOf.getOrDefault(route.osmID, AlignmentOrder.NO_CRAG))) {
+				addGroup(group.crag == AlignmentOrder.NO_CRAG
+								? activity.getString(R.string.ar_placement_align_no_crag)
+								: around.cragNames.get(group.crag),
+						group.routes);
 			}
-			rows.addAll(listed);
-			notifyDataSetChanged();
+			noMatch.setVisibility(shown.isEmpty() ? View.VISIBLE : View.GONE);
 		}
 
 		/**
-		 * @return the row of the closest route listed, -1 for none
+		 * Scrolls the strip for the closest route on it to be in its middle, or as near as the
+		 * strip's ends let it, once the strip is laid out with it: a post would come before the
+		 * layout that places the cards a refresh just put on the strip.
 		 */
-		int closestRow() {
-			return AlignmentChoices.closest(rows, row -> row instanceof GeoNode
-					? distance((GeoNode) row) : Double.POSITIVE_INFINITY);
+		void centreOnClosest() {
+			ViewTreeObserver observer = scroll.getViewTreeObserver();
+			if (pendingCentre != null) {
+				observer.removeOnGlobalLayoutListener(pendingCentre);
+				pendingCentre = null;
+			}
+			int closest = AlignmentChoices.closest(shown, this::distance);
+			if (closest < 0) {
+				return;
+			}
+			View card = cards.get(shown.get(closest).osmID);
+			pendingCentre = new ViewTreeObserver.OnGlobalLayoutListener() {
+				@Override
+				public void onGlobalLayout() {
+					if (scroll.getWidth() <= 0 || card.getWidth() <= 0) {
+						return;
+					}
+					scroll.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+					pendingCentre = null;
+					int left = 0;
+					for (View view = card; view != groups; view = (View) view.getParent()) {
+						if (!(view.getParent() instanceof View)) {
+							// Taken off the strip by a refresh since.
+							return;
+						}
+						left += view.getLeft();
+					}
+					// Clamped to the strip's ends.
+					scroll.scrollTo(left + (card.getWidth() - scroll.getWidth()) / 2, 0);
+				}
+			};
+			observer.addOnGlobalLayoutListener(pendingCentre);
+		}
+
+		private void addGroup(String title, List<GeoNode> routes) {
+			View group = activity.getLayoutInflater()
+					.inflate(R.layout.list_item_alignment_group, groups, false);
+			((TextView) group.findViewById(R.id.alignGroupTitle)).setText(title);
+			ViewGroup routeCards = group.findViewById(R.id.alignGroupRoutes);
+			for (GeoNode route : routes) {
+				routeCards.addView(card(route, routeCards));
+				shown.add(route);
+			}
+			groups.addView(group);
+		}
+
+		/**
+		 * @param container the group the card goes in, which it is taken off its last one for
+		 */
+		private View card(GeoNode route, ViewGroup container) {
+			View view = cards.get(route.osmID);
+			if (view == null) {
+				view = activity.getLayoutInflater()
+						.inflate(R.layout.list_item_alignment_route, container, false);
+				View card = view.findViewById(R.id.alignRouteCard);
+				// The number by the name rather than on the pin, as the relation editor's
+				// members show it.
+				MemberIconCard.show(activity, card, new DisplayableGeoNode(route),
+						route.getName(), around.routeNumbers.getOrDefault(route.osmID, 0));
+				// As the lists of climbing POIs show it, see DialogueUtils.setDistance.
+				((TextView) view.findViewById(R.id.alignRouteDistance)).setText(
+						Globals.getDistanceString(GeoUtils.calculateDistance(user, route)));
+				card.setOnClickListener(clicked -> {
+					dialog.dismiss();
+					listener.onPicked(route);
+				});
+				view.findViewById(R.id.buttonDeleteAlignment).setOnClickListener(clicked -> {
+					aligned.remove(route.osmID);
+					listener.onDeleted(route);
+					// For its delete button to go.
+					refresh();
+					if (aligned.isEmpty()) {
+						dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setVisibility(View.GONE);
+					}
+				});
+				cards.put(route.osmID, view);
+			} else if (view.getParent() != null) {
+				((ViewGroup) view.getParent()).removeView(view);
+			}
+			view.findViewById(R.id.buttonDeleteAlignment)
+					.setVisibility(aligned.contains(route.osmID) ? View.VISIBLE : View.GONE);
+			return view;
 		}
 
 		private double distance(GeoNode route) {
 			return distanceMeters(route, latitude, longitude);
-		}
-
-		@Override
-		public int getCount() {
-			return rows.size();
-		}
-
-		@Override
-		public Object getItem(int i) {
-			return rows.get(i);
-		}
-
-		@Override
-		public long getItemId(int i) {
-			return i;
-		}
-
-		@Override
-		public int getViewTypeCount() {
-			return 2;
-		}
-
-		@Override
-		public int getItemViewType(int i) {
-			return rows.get(i) instanceof Integer ? TYPE_TITLE : TYPE_ROUTE;
-		}
-
-		@Override
-		public boolean areAllItemsEnabled() {
-			return false;
-		}
-
-		@Override
-		public boolean isEnabled(int i) {
-			return getItemViewType(i) == TYPE_ROUTE;
-		}
-
-		@Override
-		public View getView(int i, View view, ViewGroup viewGroup) {
-			if (getItemViewType(i) == TYPE_TITLE) {
-				TextView title = view != null ? (TextView) view
-						: (TextView) activity.getLayoutInflater().inflate(
-						R.layout.list_item_section_title, viewGroup, false);
-				title.setText((Integer) rows.get(i));
-				return title;
-			}
-			GeoNode route = (GeoNode) rows.get(i);
-			if (view == null) {
-				view = View.inflate(activity, R.layout.list_item_alignment_route, null);
-			}
-			// The number by the name rather than on the pin, as the relation editor's members
-			// show it, see MemberIconCard.
-			Integer routeNumber = routeNumbers.get(route.osmID);
-			String name = routeNumber != null ? routeNumber + ". " + route.getName()
-					: route.getName();
-			view = poiRows.build(view, new DisplayableGeoNode(route), name,
-					parentLabels.getOrDefault(route.osmID, ""));
-			view.setOnClickListener(clicked -> {
-				dialog.dismiss();
-				listener.onPicked(route);
-			});
-			View delete = view.findViewById(R.id.buttonDeleteAlignment);
-			delete.setVisibility(aligned.contains(route.osmID) ? View.VISIBLE : View.GONE);
-			delete.setOnClickListener(clicked -> {
-				aligned.remove(route.osmID);
-				listener.onDeleted(route);
-				// The suggestions follow the routes aligned on.
-				refresh();
-				if (aligned.isEmpty()) {
-					dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setVisibility(View.GONE);
-				}
-			});
-			return view;
 		}
 	}
 

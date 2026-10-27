@@ -23,7 +23,8 @@ import java.util.Locale;
 
 /**
  * How to align the A.R. on mapped routes, see ArCoreSession.align, in a dialog with a diagram of
- * each step, opened from the info icon on Align.
+ * each step, opened from the info icon on Align and from the align dialog's button, see
+ * AlignmentPicker.
  */
 final class AlignmentHelp {
 	// The grades of the routes in the diagrams, in the standard system, for pins of different

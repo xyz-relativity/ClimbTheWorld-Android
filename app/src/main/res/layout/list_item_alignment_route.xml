@@ -1,27 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A route of the A.R. align dialog: a row of the lists of climbing POIs, see ClimbingPoiRow,
-     with a button to delete the alignment on the route, shown once it is aligned on. -->
+<!-- A route of the A.R. align dialog: its card as the crag dialog and the relation editor show
+     their members, see MemberIconCard, with under it the straight line distance from the user,
+     as the lists of climbing POIs show it, and a button to delete the alignment on the route,
+     shown once it is aligned on. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    style="?android:imageButtonStyle"
-    android:layout_width="match_parent"
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:background="?android:selectableItemBackground"
-    android:gravity="center_vertical"
-    android:orientation="horizontal">
+    android:gravity="center_horizontal"
+    android:orientation="vertical">
 
     <include
-        layout="@layout/list_item_climbing_poi_content"
-        android:layout_width="0dp"
+        android:id="@+id/alignRouteCard"
+        layout="@layout/list_item_climbing_member_icon" />
+
+    <TextView
+        android:id="@+id/alignRouteDistance"
+        style="@style/DistanceFromUser"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_weight="1" />
+        android:maxLines="1" />
 
     <!-- Same as the delete button of the download manager's country list. -->
     <ImageView
         android:id="@+id/buttonDeleteAlignment"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginStart="5dp"
         android:adjustViewBounds="true"
         android:background="?android:selectableItemBackground"
         android:clickable="true"
