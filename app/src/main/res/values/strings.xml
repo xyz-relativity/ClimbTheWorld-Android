@@ -235,6 +235,7 @@
     <string name="revert_confirmation">Revert local changes?</string>
     <string name="revert_confirmation_message">Continuing this operation will revert all selected local changes.</string>
     <string name="done">DONE</string>
+    <string name="close">Close</string>
 
     <!-- Tutorial -->
     <string name="next">NEXT</string>

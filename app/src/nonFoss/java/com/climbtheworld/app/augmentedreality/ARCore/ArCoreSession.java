@@ -1156,7 +1156,6 @@ class ArCoreSession {
 					@Override
 					public void onCleared() {
 						clearAlignment();
-						endAligning();
 					}
 
 					@Override

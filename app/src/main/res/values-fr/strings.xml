@@ -232,6 +232,7 @@
     <string name="revert_confirmation">Annuler les modifications locales ?</string>
     <string name="revert_confirmation_message">Poursuivre cette opération annulera toutes les modifications locales sélectionnées.</string>
     <string name="done">TERMINÉ</string>
+    <string name="close">Fermer</string>
 
     <!-- Tutorial -->
     <string name="next">SUIVANT</string>

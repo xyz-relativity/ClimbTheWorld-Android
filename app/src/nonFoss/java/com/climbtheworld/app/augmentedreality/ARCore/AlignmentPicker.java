@@ -1,12 +1,15 @@
 package com.climbtheworld.app.augmentedreality.ARCore;
 
 import android.app.AlertDialog;
+import android.content.res.ColorStateList;
+import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.HorizontalScrollView;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -17,6 +20,7 @@ import com.climbtheworld.app.augmentedreality.placement.AlignmentChoices;
 import com.climbtheworld.app.augmentedreality.placement.AlignmentOrder;
 import com.climbtheworld.app.augmentedreality.placement.AlignmentSuggestions;
 import com.climbtheworld.app.map.DisplayableGeoNode;
+import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.map.widget.climbing.ClimbingParent;
 import com.climbtheworld.app.map.widget.climbing.ClimbingRouteCounter;
 import com.climbtheworld.app.storage.DataManager;
@@ -44,14 +48,15 @@ import needle.UiRelatedTask;
 
 /**
  * Asks which mapped route to align on, from the routes around the user, side by side as their
- * crags list them, see AlignmentOrder, which is how they stand along the wall, each crag's under
- * its name, each route on its card as the crag dialog shows its routes, see MemberIconCard, its
- * name after its number in its crag, as the map's pins show it, see
- * ClimbingRouteCounter.numberRoutes, and its distance from the user under it, with a quick
- * filter on their names over them, see AlignmentChoices. The list opens with the closest route in
- * its middle, its neighbours along the wall around it, and so it does again for what the user
- * types in the filter. The routes already aligned on are listed wherever they are, each with a
- * button to delete its alignment.
+ * crags list them, see AlignmentOrder, which is how they stand along the wall, each crag's
+ * outlined in the crag pins' colour under its name, after its pin as the info dialogs show it.
+ * Each route is on its card as the crag dialog shows its routes, see MemberIconCard, its name
+ * after its number in its crag, as the map's pins show it, see ClimbingRouteCounter.numberRoutes,
+ * and its distance from the user under it, with a quick filter on their names over them, see
+ * AlignmentChoices. The list opens with the closest route in its middle, its neighbours along
+ * the wall around it, and so it does again for what the user types in the filter. The routes
+ * already aligned on are listed wherever they are, outlined, each with a button to delete its
+ * alignment, and one under the strip deletes them all, the dialog staying open.
  */
 class AlignmentPicker {
 	// How far around where the user seems to be routes are looked for, as GPS can be that far
@@ -78,6 +83,8 @@ class AlignmentPicker {
 		final Map<Long, Integer> cragOf = new HashMap<>();
 		// The names of the crags around, by their index.
 		final List<String> cragNames = new ArrayList<>();
+		// The crags' pins, as the info dialogs show them by their names, by their index.
+		final List<Drawable> cragIcons = new ArrayList<>();
 		// Each route's number in its crag, by OSM ID.
 		final Map<Long, Integer> routeNumbers = new HashMap<>();
 	}
@@ -141,8 +148,8 @@ class AlignmentPicker {
 	 * Per crag relation around a point, the OSM IDs of its member nodes in the relation's order.
 	 * Any crag with a route around reaches the point, as its bounding box holds the route.
 	 *
-	 * @param around filled with the crags' names, and the routes' numbers in these crags, the
-	 *               first crag's for a route of several
+	 * @param around filled with the crags' names and pins, and the routes' numbers in these
+	 *               crags, the first crag's for a route of several
 	 */
 	private List<List<Long>> loadCragOrders(DataManager dataManager, double latitude,
 	                                        double longitude, Around around) {
@@ -154,6 +161,9 @@ class AlignmentPicker {
 			if (relation.entityClimbingType == OsmEntity.EntityClimbingType.crag) {
 				crags.add(RelationMembers.nodeRefs(RelationMembers.list(relation.getMembers())));
 				around.cragNames.add(ClimbingParent.nameOf(activity, relation));
+				// With the route count, as the map shows it.
+				around.cragIcons.add(new PoiMarkerDrawable(activity,
+						DataManager.toDisplayableNode(relation, routeCounter)).getDrawable());
 				routeCounter.numberRoutes(relation).forEach(around.routeNumbers::putIfAbsent);
 			}
 		}
@@ -200,29 +210,43 @@ class AlignmentPicker {
 		AlertDialog.Builder builder = new AlertDialog.Builder(activity)
 				.setTitle(R.string.ar_placement_align_title)
 				// The buttons' slots for their places: help on the left, set once shown, see
-				// openHelpFromButton, then clearing, then cancel on the right.
+				// openHelpFromButton, and close on the right.
 				.setNeutralButton(R.string.ar_align_help_title, null)
-				.setPositiveButton(android.R.string.cancel,
-						(cancelled, which) -> listener.onCancelled())
+				.setPositiveButton(R.string.close,
+						(closed, which) -> listener.onCancelled())
 				.setOnCancelListener(cancelled -> listener.onCancelled());
-		if (!aligned.isEmpty()) {
-			builder.setNegativeButton(R.string.ar_placement_align_clear,
-					(clicked, which) -> listener.onCleared());
-		}
-		if (around.routes.isEmpty()) {
-			builder.setMessage(R.string.ar_placement_align_none);
-			dialog = builder.show();
-			openHelpFromButton();
-			return;
-		}
-
 		View content = activity.getLayoutInflater()
 				.inflate(R.layout.fragment_dialog_align_route, null);
 		builder.setView(content);
 		dialog = builder.create();
+		// In the dialog rather than among its buttons, which would close it.
+		View clear = content.findViewById(R.id.buttonClearAlignments);
+		if (around.routes.isEmpty()) {
+			content.findViewById(R.id.filterContainer).setVisibility(View.GONE);
+			content.findViewById(R.id.scrollAlignRoutes).setVisibility(View.GONE);
+			TextView none = content.findViewById(R.id.textNoMatchingRoutes);
+			none.setText(R.string.ar_placement_align_none);
+			none.setVisibility(View.VISIBLE);
+			clear.setVisibility(aligned.isEmpty() ? View.GONE : View.VISIBLE);
+			clear.setOnClickListener(clicked -> {
+				aligned.clear();
+				listener.onCleared();
+				clear.setVisibility(View.GONE);
+			});
+			dialog.show();
+			openHelpFromButton();
+			return;
+		}
+
 		EditText filter = content.findViewById(R.id.editFind);
 		RouteStrip strip = new RouteStrip(content, around, latitude, longitude, aligned, filter,
 				listener);
+		clear.setOnClickListener(clicked -> {
+			aligned.clear();
+			listener.onCleared();
+			// For the delete buttons, and this one, to go.
+			strip.refresh();
+		});
 		filter.addTextChangedListener(TextWatchers.afterTextChanged(typed -> {
 			strip.refresh();
 			strip.centreOnClosest();
@@ -253,6 +277,8 @@ class AlignmentPicker {
 		private final HorizontalScrollView scroll;
 		private final LinearLayout groups;
 		private final View noMatch;
+		// Shown while any route is aligned on.
+		private final View clear;
 		private final Around around;
 		private final double latitude;
 		private final double longitude;
@@ -276,6 +302,7 @@ class AlignmentPicker {
 			this.scroll = content.findViewById(R.id.scrollAlignRoutes);
 			this.groups = content.findViewById(R.id.listAlignRoutes);
 			this.noMatch = content.findViewById(R.id.textNoMatchingRoutes);
+			this.clear = content.findViewById(R.id.buttonClearAlignments);
 			this.around = around;
 			this.latitude = latitude;
 			this.longitude = longitude;
@@ -298,12 +325,10 @@ class AlignmentPicker {
 			shown.clear();
 			for (AlignmentOrder.Group<GeoNode> group : AlignmentOrder.regrouped(listed,
 					route -> around.cragOf.getOrDefault(route.osmID, AlignmentOrder.NO_CRAG))) {
-				addGroup(group.crag == AlignmentOrder.NO_CRAG
-								? activity.getString(R.string.ar_placement_align_no_crag)
-								: around.cragNames.get(group.crag),
-						group.routes);
+				addGroup(group.crag, group.routes);
 			}
 			noMatch.setVisibility(shown.isEmpty() ? View.VISIBLE : View.GONE);
+			clear.setVisibility(aligned.isEmpty() ? View.GONE : View.VISIBLE);
 		}
 
 		/**
@@ -345,10 +370,27 @@ class AlignmentPicker {
 			observer.addOnGlobalLayoutListener(pendingCentre);
 		}
 
-		private void addGroup(String title, List<GeoNode> routes) {
+		/**
+		 * @param crag the routes' crag, see AlignmentOrder.Group.crag: its name, after its pin,
+		 *             over them, outlined in the crag pins' colour; for the routes of no crag,
+		 *             only a title
+		 */
+		private void addGroup(int crag, List<GeoNode> routes) {
 			View group = activity.getLayoutInflater()
 					.inflate(R.layout.list_item_alignment_group, groups, false);
-			((TextView) group.findViewById(R.id.alignGroupTitle)).setText(title);
+			TextView title = group.findViewById(R.id.alignGroupTitle);
+			if (crag == AlignmentOrder.NO_CRAG) {
+				title.setText(R.string.ar_placement_align_no_crag);
+			} else {
+				title.setText(around.cragNames.get(crag));
+				ImageView icon = group.findViewById(R.id.alignGroupIcon);
+				icon.setImageDrawable(around.cragIcons.get(crag));
+				icon.setVisibility(View.VISIBLE);
+				int color = DisplayableGeoNode.getHullPinColor(OsmEntity.EntityClimbingType.crag);
+				group.setBackgroundResource(R.drawable.bg_align_crag_group);
+				group.setBackgroundTintList(ColorStateList.valueOf(color));
+				group.findViewById(R.id.alignGroupDivider).setBackgroundColor(color);
+			}
 			ViewGroup routeCards = group.findViewById(R.id.alignGroupRoutes);
 			for (GeoNode route : routes) {
 				routeCards.addView(card(route, routeCards));
@@ -380,18 +422,17 @@ class AlignmentPicker {
 				view.findViewById(R.id.buttonDeleteAlignment).setOnClickListener(clicked -> {
 					aligned.remove(route.osmID);
 					listener.onDeleted(route);
-					// For its delete button to go.
+					// For its delete button to go, and the clear button with the last one.
 					refresh();
-					if (aligned.isEmpty()) {
-						dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setVisibility(View.GONE);
-					}
 				});
 				cards.put(route.osmID, view);
 			} else if (view.getParent() != null) {
 				((ViewGroup) view.getParent()).removeView(view);
 			}
+			boolean isAligned = aligned.contains(route.osmID);
 			view.findViewById(R.id.buttonDeleteAlignment)
-					.setVisibility(aligned.contains(route.osmID) ? View.VISIBLE : View.GONE);
+					.setVisibility(isAligned ? View.VISIBLE : View.GONE);
+			view.setBackgroundResource(isAligned ? R.drawable.bg_align_route_aligned : 0);
 			return view;
 		}
 
@@ -408,6 +449,9 @@ class AlignmentPicker {
 		 */
 		void onDeleted(GeoNode route);
 
+		/**
+		 * The user deleted all the alignments; the dialog stays open.
+		 */
 		void onCleared();
 
 		/**

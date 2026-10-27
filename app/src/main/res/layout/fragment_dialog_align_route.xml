@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- The A.R. align dialog: the quick filter over the routes, side by side as they stand along the
      wall, grouped by crag, see list_item_alignment_group, left to right whatever the language, as
-     the wall is. -->
+     the wall is, and under them the button deleting all the alignments, shown while there are
+     any, here rather than among the dialog's buttons as it leaves the dialog open. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -30,5 +31,14 @@
         android:layout_height="wrap_content"
         android:padding="8dp"
         android:text="@string/no_match"
+        android:visibility="gone" />
+
+    <Button
+        android:id="@+id/buttonClearAlignments"
+        style="?android:attr/borderlessButtonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:text="@string/ar_placement_align_clear"
         android:visibility="gone" />
 </LinearLayout>

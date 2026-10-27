@@ -1,22 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A group of the A.R. align dialog: a crag's name over its routes side by side, see
-     list_item_alignment_route. -->
+<!-- A group of the A.R. align dialog: a crag's name, after its pin as the info dialogs show it,
+     over its routes side by side, see list_item_alignment_route, outlined in the crag pins'
+     colour, see bg_align_crag_group. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_marginEnd="12dp"
+    android:layout_marginEnd="8dp"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/alignGroupTitle"
-        style="@style/ItemSectionTitles"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:ellipsize="end"
-        android:maxWidth="240dp"
-        android:maxLines="1" />
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <!-- As fragment_info_climbing_title's imageClimbingParent. -->
+        <ImageView
+            android:id="@+id/alignGroupIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:layout_marginEnd="4dp"
+            android:adjustViewBounds="true"
+            android:importantForAccessibility="no"
+            android:padding="2dp"
+            android:scaleType="fitCenter"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/alignGroupTitle"
+            style="@style/ItemSectionTitles"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxWidth="240dp"
+            android:maxLines="1" />
+    </LinearLayout>
 
     <View
+        android:id="@+id/alignGroupDivider"
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="@android:color/darker_gray" />

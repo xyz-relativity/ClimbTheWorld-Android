@@ -2,12 +2,14 @@
 <!-- A route of the A.R. align dialog: its card as the crag dialog and the relation editor show
      their members, see MemberIconCard, with under it the straight line distance from the user,
      as the lists of climbing POIs show it, and a button to delete the alignment on the route,
-     shown once it is aligned on. -->
+     shown once it is aligned on, as it is then all outlined, see bg_align_route_aligned. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    android:layout_marginHorizontal="2dp"
     android:gravity="center_horizontal"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:padding="2dp">
 
     <include
         android:id="@+id/alignRouteCard"
@@ -20,18 +22,18 @@
         android:layout_height="wrap_content"
         android:maxLines="1" />
 
-    <!-- Same as the delete button of the download manager's country list. -->
+    <!-- The download manager's country list's delete icon, smaller, 26dp, so it does not take
+         much more room than the distance. -->
     <ImageView
         android:id="@+id/buttonDeleteAlignment"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:adjustViewBounds="true"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
         android:background="?android:selectableItemBackground"
         android:clickable="true"
         android:contentDescription="@string/ar_placement_align_delete"
-        android:cropToPadding="true"
         android:focusable="true"
-        android:scaleType="fitXY"
+        android:padding="3dp"
+        android:scaleType="fitCenter"
         android:src="@drawable/ic_delete"
         android:tooltipText="@string/ar_placement_align_delete" />
 </LinearLayout>

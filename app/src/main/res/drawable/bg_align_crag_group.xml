@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The outline of a crag's routes in the A.R. align dialog, tinted in the crag pins' colour,
+     see AlignmentPicker. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@android:color/transparent" />
+    <corners android:radius="8dp" />
+    <stroke
+        android:width="2dp"
+        android:color="@android:color/white" />
+    <padding
+        android:bottom="4dp"
+        android:left="4dp"
+        android:right="4dp"
+        android:top="4dp" />
+</shape>
