@@ -488,9 +488,7 @@
     <string name="ar_placement_align_none">Aucune voie cartographiée à proximité.</string>
     <string name="ar_placement_align_clear">Effacer l’alignement</string>
     <string name="ar_placement_align_delete">Supprimer cet alignement</string>
-    <string name="ar_placement_align_suggest">Suggérer une voie</string>
     <string name="ar_placement_align_pick">S’aligner sur cette voie</string>
-    <string name="ar_placement_align_no_suggestion">Aucune voie assez proche ne rendrait l’orientation plus sûre.</string>
     <string name="ar_placement_align_no_crag">Hors secteur</string>
     <string name="ar_align_help_title">Comment aligner</string>
     <string name="ar_align_help_message">S’aligner sur des voies cartographiées relie la réalité augmentée à la carte.</string>

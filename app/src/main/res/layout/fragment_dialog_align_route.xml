@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- The A.R. align dialog: the quick filter over the routes, side by side as they stand along the
      wall, grouped by crag, see list_item_alignment_group, left to right whatever the language, as
-     the wall is, and under them the button scrolling to the route best to align on next, on the
-     left, and the one deleting all the alignments, shown while there are any, on the right, here
-     rather than among the dialog's buttons as they leave the dialog open. -->
+     the wall is, with a bar over its scroll indicator marking where the suggested routes are,
+     which the nonFoss AlignmentPicker adds, see SuggestionBar, and
+     under them the button deleting all the alignments, shown while there are any, here rather
+     than among the dialog's buttons as it leaves the dialog open. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -11,20 +12,30 @@
 
     <include layout="@layout/layout_filter" />
 
-    <HorizontalScrollView
-        android:id="@+id/scrollAlignRoutes"
+    <FrameLayout
+        android:id="@+id/frameAlignRoutes"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layoutDirection="ltr"
-        android:scrollbars="horizontal">
+        android:layoutDirection="ltr">
 
-        <LinearLayout
-            android:id="@+id/listAlignRoutes"
-            android:layout_width="wrap_content"
+        <HorizontalScrollView
+            android:id="@+id/scrollAlignRoutes"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="8dp" />
-    </HorizontalScrollView>
+            android:fadeScrollbars="false"
+            android:scrollbars="horizontal">
+
+            <LinearLayout
+                android:id="@+id/listAlignRoutes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingLeft="8dp"
+                android:paddingTop="8dp"
+                android:paddingRight="8dp"
+                android:paddingBottom="14dp" />
+        </HorizontalScrollView>
+    </FrameLayout>
 
     <TextView
         android:id="@+id/textNoMatchingRoutes"
@@ -34,30 +45,12 @@
         android:text="@string/no_match"
         android:visibility="gone" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <Button
+        android:id="@+id/buttonClearAlignments"
+        style="?android:attr/borderlessButtonStyle"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/buttonSuggestAlignment"
-            style="?android:attr/borderlessButtonStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/ar_placement_align_suggest" />
-
-        <!-- Keeps the suggest button on the left whether the clear button shows or not. -->
-        <Space
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-
-        <Button
-            android:id="@+id/buttonClearAlignments"
-            style="?android:attr/borderlessButtonStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/ar_placement_align_clear"
-            android:visibility="gone" />
-    </LinearLayout>
+        android:layout_gravity="end"
+        android:text="@string/ar_placement_align_clear"
+        android:visibility="gone" />
 </LinearLayout>

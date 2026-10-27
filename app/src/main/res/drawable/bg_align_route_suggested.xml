@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- bg_align_route_aligned, in the accent colour, for the route the A.R. align dialog suggests
+<!-- bg_align_route_aligned, in the accent colour, for the routes the A.R. align dialog suggests
      aligning on next, see AlignmentPicker. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">

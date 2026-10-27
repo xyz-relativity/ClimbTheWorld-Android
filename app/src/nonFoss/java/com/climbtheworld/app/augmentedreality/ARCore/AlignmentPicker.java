@@ -3,16 +3,17 @@ package com.climbtheworld.app.augmentedreality.ARCore;
 import android.app.AlertDialog;
 import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -57,9 +58,10 @@ import needle.UiRelatedTask;
  * AlignmentChoices. The list opens with the closest route in its middle, its neighbours along
  * the wall around it, and so it does again for what the user types in the filter. The routes
  * already aligned on are listed wherever they are, outlined, each with a button to delete its
- * alignment, and one under the strip deletes them all, the dialog staying open. The route best
- * to align on next, see AlignmentSuggestions, is outlined too, with a button to align on it,
- * and a button beside the one deleting them all scrolls to it, then to the next ones.
+ * alignment, and one under the strip deletes them all, the dialog staying open. The routes best
+ * to align on next, see AlignmentSuggestions, are outlined too, each with a button to align on
+ * it, and a bar above the scroll indicator shows where along the strip they are, see
+ * SuggestionBar.
  */
 class AlignmentPicker {
 	// How far around where the user seems to be routes are looked for, as GPS can be that far
@@ -68,6 +70,8 @@ class AlignmentPicker {
 	// How many routes are listed, around the closest in order; the filter looks through all of
 	// them.
 	private static final int MAX_ROUTES = 40;
+	// The suggestion bar's room under it, for the scroll indicator, see SuggestionBar.
+	private static final int BAR_MARGIN_DP = 6;
 
 	private final AppCompatActivity activity;
 	private AlertDialog dialog;
@@ -224,11 +228,9 @@ class AlignmentPicker {
 		dialog = builder.create();
 		// In the dialog rather than among its buttons, which would close it.
 		View clear = content.findViewById(R.id.buttonClearAlignments);
-		View suggest = content.findViewById(R.id.buttonSuggestAlignment);
 		if (around.routes.isEmpty()) {
 			content.findViewById(R.id.filterContainer).setVisibility(View.GONE);
-			content.findViewById(R.id.scrollAlignRoutes).setVisibility(View.GONE);
-			suggest.setVisibility(View.GONE);
+			content.findViewById(R.id.frameAlignRoutes).setVisibility(View.GONE);
 			TextView none = content.findViewById(R.id.textNoMatchingRoutes);
 			none.setText(R.string.ar_placement_align_none);
 			none.setVisibility(View.VISIBLE);
@@ -252,7 +254,6 @@ class AlignmentPicker {
 			// For the delete buttons, and this one, to go.
 			strip.refresh();
 		});
-		suggest.setOnClickListener(clicked -> strip.suggest());
 		filter.addTextChangedListener(TextWatchers.afterTextChanged(typed -> {
 			strip.refresh();
 			strip.centreOnClosest();
@@ -285,6 +286,8 @@ class AlignmentPicker {
 		private final View noMatch;
 		// Shown while any route is aligned on.
 		private final View clear;
+		// Where along the strip the suggested routes are, see updateBar.
+		private final SuggestionBar bar;
 		private final Around around;
 		private final double latitude;
 		private final double longitude;
@@ -302,14 +305,8 @@ class AlignmentPicker {
 		private final List<GeoNode> shown = new ArrayList<>();
 		// Waiting for the strip's next layout to centre it, see centreOnClosest; null for none.
 		private ViewTreeObserver.OnGlobalLayoutListener pendingCentre;
-		// The routes best to align on next, on the strip, see suggestions.
-		private List<GeoNode> suggestions = new ArrayList<>();
-		// The OSM ID of the one outlined, the best until the suggest button goes to the next,
-		// see suggest; null for none.
-		private Long suggestedId;
-		// How many times the suggest button was tapped since the strip was laid out, for each
-		// tap to go to the next suggestion.
-		private int suggestTaps;
+		// The OSM IDs of the routes best to align on next, outlined, see suggestions.
+		private final Set<Long> suggestedIds = new HashSet<>();
 
 		RouteStrip(View content, Around around, double latitude, double longitude,
 		           Set<Long> aligned, EditText filter, Listener listener) {
@@ -317,6 +314,18 @@ class AlignmentPicker {
 			this.groups = content.findViewById(R.id.listAlignRoutes);
 			this.noMatch = content.findViewById(R.id.textNoMatchingRoutes);
 			this.clear = content.findViewById(R.id.buttonClearAlignments);
+			// Just above the scroll indicator, at the bottom of the strip, in its padding. Made
+			// here, as only this flavor has the class, see fragment_dialog_align_route.
+			this.bar = new SuggestionBar(content.getContext());
+			float density = content.getResources().getDisplayMetrics().density;
+			FrameLayout.LayoutParams barParams = new FrameLayout.LayoutParams(
+					FrameLayout.LayoutParams.MATCH_PARENT,
+					Math.round(SuggestionBar.HEIGHT_DP * density), Gravity.BOTTOM);
+			barParams.bottomMargin = Math.round(BAR_MARGIN_DP * density);
+			((FrameLayout) content.findViewById(R.id.frameAlignRoutes)).addView(bar, barParams);
+			// The cards are where they are once a refresh has laid out the strip again.
+			scroll.addOnLayoutChangeListener((view, left, top, right, bottom, oldLeft, oldTop,
+			                                  oldRight, oldBottom) -> updateBar());
 			this.around = around;
 			this.latitude = latitude;
 			this.longitude = longitude;
@@ -337,18 +346,16 @@ class AlignmentPicker {
 
 			groups.removeAllViews();
 			shown.clear();
-			suggestedId = null;
-			suggestTaps = 0;
+			suggestedIds.clear();
 			for (AlignmentOrder.Group<GeoNode> group : AlignmentOrder.regrouped(listed,
 					route -> around.cragOf.getOrDefault(route.osmID, AlignmentOrder.NO_CRAG))) {
 				addGroup(group.crag, group.routes);
 			}
-			// The suggestions follow what is on the strip and the routes aligned on; the best is
+			// The suggestions follow what is on the strip and the routes aligned on; they are
 			// always outlined.
-			suggestions = suggestions();
-			if (!suggestions.isEmpty()) {
-				suggestedId = suggestions.get(0).osmID;
-				outline(suggestedId);
+			for (GeoNode route : suggestions()) {
+				suggestedIds.add(route.osmID);
+				outline(route.osmID);
 			}
 			noMatch.setVisibility(shown.isEmpty() ? View.VISIBLE : View.GONE);
 			clear.setVisibility(aligned.isEmpty() ? View.GONE : View.VISIBLE);
@@ -378,30 +385,36 @@ class AlignmentPicker {
 					}
 					scroll.getViewTreeObserver().removeOnGlobalLayoutListener(this);
 					pendingCentre = null;
-					centre(card, false);
+					centre(card);
 				}
 			};
 			observer.addOnGlobalLayoutListener(pendingCentre);
 		}
 
 		/**
-		 * Scrolls to the route outlined as best to align on next, see suggestions; each tap
-		 * after goes to the next suggestion and outlines it, back to the first after the last.
+		 * Marks on the bar where along the strip the suggested routes are, at the scale of the
+		 * scroll indicator, which spans the strip as the bar does; hidden while the strip needs
+		 * no scrolling, or nothing is suggested.
 		 */
-		void suggest() {
-			if (suggestions.isEmpty()) {
-				Toast.makeText(activity, R.string.ar_placement_align_no_suggestion,
-						Toast.LENGTH_SHORT).show();
-				return;
+		private void updateBar() {
+			int width = groups.getWidth();
+			List<Float> marks = new ArrayList<>();
+			if (width > scroll.getWidth()) {
+				for (Long osmId : suggestedIds) {
+					View card = cards.get(osmId);
+					int left = card != null ? leftOnStrip(card) : Integer.MIN_VALUE;
+					if (left != Integer.MIN_VALUE) {
+						marks.add((float) left / width);
+						marks.add((float) (left + card.getWidth()) / width);
+					}
+				}
 			}
-			GeoNode route = suggestions.get(suggestTaps++ % suggestions.size());
-			Long previous = suggestedId;
-			suggestedId = route.osmID;
-			if (previous != null) {
-				outline(previous);
+			float[] spans = new float[marks.size()];
+			for (int i = 0; i < spans.length; i++) {
+				spans[i] = marks.get(i);
 			}
-			outline(route.osmID);
-			centre(cards.get(route.osmID), true);
+			bar.setMarks(spans);
+			bar.setVisibility(spans.length > 0 ? View.VISIBLE : View.GONE);
 		}
 
 		/**
@@ -434,22 +447,28 @@ class AlignmentPicker {
 		 * Scrolls the strip, laid out, for a card on it to be in its middle, or as near as the
 		 * strip's ends let it.
 		 */
-		private void centre(View card, boolean smoothly) {
+		private void centre(View card) {
+			int left = leftOnStrip(card);
+			if (left == Integer.MIN_VALUE) {
+				return;
+			}
+			// Clamped to the strip's ends.
+			scroll.scrollTo(left + (card.getWidth() - scroll.getWidth()) / 2, 0);
+		}
+
+		/**
+		 * @return where a card is along the strip, from its start, as last laid out;
+		 * Integer.MIN_VALUE when it is no longer on it, taken off by a refresh
+		 */
+		private int leftOnStrip(View card) {
 			int left = 0;
 			for (View view = card; view != groups; view = (View) view.getParent()) {
 				if (!(view.getParent() instanceof View)) {
-					// Taken off the strip by a refresh since.
-					return;
+					return Integer.MIN_VALUE;
 				}
 				left += view.getLeft();
 			}
-			// Both clamped to the strip's ends.
-			int x = left + (card.getWidth() - scroll.getWidth()) / 2;
-			if (smoothly) {
-				scroll.smoothScrollTo(x, 0);
-			} else {
-				scroll.scrollTo(x, 0);
-			}
+			return left;
 		}
 
 		/**
@@ -462,7 +481,7 @@ class AlignmentPicker {
 				return;
 			}
 			boolean isAligned = aligned.contains(osmId);
-			boolean isSuggested = !isAligned && Long.valueOf(osmId).equals(suggestedId);
+			boolean isSuggested = !isAligned && suggestedIds.contains(osmId);
 			view.setBackgroundResource(isAligned ? R.drawable.bg_align_route_aligned
 					: isSuggested ? R.drawable.bg_align_route_suggested : 0);
 			view.findViewById(R.id.buttonDeleteAlignment)
