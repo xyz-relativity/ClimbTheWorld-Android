@@ -60,8 +60,8 @@ import needle.UiRelatedTask;
  * already aligned on are listed wherever they are, outlined, each with a button to delete its
  * alignment, and one under the strip deletes them all, the dialog staying open. The routes best
  * to align on next, see AlignmentSuggestions, are outlined too, each with a button to align on
- * it, and a bar above the scroll indicator shows where along the strip they are, see
- * SuggestionBar.
+ * it, and a bar above the scroll indicator shows where along the strip they are, a tap on it
+ * scrolling to the nearest, see SuggestionBar.
  */
 class AlignmentPicker {
 	// How far around where the user seems to be routes are looked for, as GPS can be that far
@@ -70,8 +70,6 @@ class AlignmentPicker {
 	// How many routes are listed, around the closest in order; the filter looks through all of
 	// them.
 	private static final int MAX_ROUTES = 40;
-	// The suggestion bar's room under it, for the scroll indicator, see SuggestionBar.
-	private static final int BAR_MARGIN_DP = 6;
 
 	private final AppCompatActivity activity;
 	private AlertDialog dialog;
@@ -288,6 +286,8 @@ class AlignmentPicker {
 		private final View clear;
 		// Where along the strip the suggested routes are, see updateBar.
 		private final SuggestionBar bar;
+		// The cards of the suggested routes the bar marks, in the order of its marks.
+		private final List<View> markedCards = new ArrayList<>();
 		private final Around around;
 		private final double latitude;
 		private final double longitude;
@@ -314,15 +314,15 @@ class AlignmentPicker {
 			this.groups = content.findViewById(R.id.listAlignRoutes);
 			this.noMatch = content.findViewById(R.id.textNoMatchingRoutes);
 			this.clear = content.findViewById(R.id.buttonClearAlignments);
-			// Just above the scroll indicator, at the bottom of the strip, in its padding. Made
-			// here, as only this flavor has the class, see fragment_dialog_align_route.
-			this.bar = new SuggestionBar(content.getContext());
+			// Over the strip's bottom padding and its scroll indicator. Made here, as only this
+			// flavor has the class, see fragment_dialog_align_route.
+			this.bar = new SuggestionBar(content.getContext(),
+					mark -> centre(markedCards.get(mark), true));
 			float density = content.getResources().getDisplayMetrics().density;
-			FrameLayout.LayoutParams barParams = new FrameLayout.LayoutParams(
-					FrameLayout.LayoutParams.MATCH_PARENT,
-					Math.round(SuggestionBar.HEIGHT_DP * density), Gravity.BOTTOM);
-			barParams.bottomMargin = Math.round(BAR_MARGIN_DP * density);
-			((FrameLayout) content.findViewById(R.id.frameAlignRoutes)).addView(bar, barParams);
+			((FrameLayout) content.findViewById(R.id.frameAlignRoutes)).addView(bar,
+					new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
+							Math.round(SuggestionBar.TOUCH_HEIGHT_DP * density),
+							Gravity.BOTTOM));
 			// The cards are where they are once a refresh has laid out the strip again.
 			scroll.addOnLayoutChangeListener((view, left, top, right, bottom, oldLeft, oldTop,
 			                                  oldRight, oldBottom) -> updateBar());
@@ -385,7 +385,7 @@ class AlignmentPicker {
 					}
 					scroll.getViewTreeObserver().removeOnGlobalLayoutListener(this);
 					pendingCentre = null;
-					centre(card);
+					centre(card, false);
 				}
 			};
 			observer.addOnGlobalLayoutListener(pendingCentre);
@@ -399,6 +399,7 @@ class AlignmentPicker {
 		private void updateBar() {
 			int width = groups.getWidth();
 			List<Float> marks = new ArrayList<>();
+			markedCards.clear();
 			if (width > scroll.getWidth()) {
 				for (Long osmId : suggestedIds) {
 					View card = cards.get(osmId);
@@ -406,6 +407,7 @@ class AlignmentPicker {
 					if (left != Integer.MIN_VALUE) {
 						marks.add((float) left / width);
 						marks.add((float) (left + card.getWidth()) / width);
+						markedCards.add(card);
 					}
 				}
 			}
@@ -447,13 +449,18 @@ class AlignmentPicker {
 		 * Scrolls the strip, laid out, for a card on it to be in its middle, or as near as the
 		 * strip's ends let it.
 		 */
-		private void centre(View card) {
+		private void centre(View card, boolean smoothly) {
 			int left = leftOnStrip(card);
 			if (left == Integer.MIN_VALUE) {
 				return;
 			}
-			// Clamped to the strip's ends.
-			scroll.scrollTo(left + (card.getWidth() - scroll.getWidth()) / 2, 0);
+			// Both clamped to the strip's ends.
+			int x = left + (card.getWidth() - scroll.getWidth()) / 2;
+			if (smoothly) {
+				scroll.smoothScrollTo(x, 0);
+			} else {
+				scroll.scrollTo(x, 0);
+			}
 		}
 
 		/**
