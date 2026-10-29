@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
@@ -13,18 +14,24 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 
+import com.climbtheworld.app.R;
+
 /**
  * The bar just above the A.R. align dialog's scroll indicator, see AlignmentPicker: where along
  * the strip of routes the suggested ones are, at the indicator's scale, so the user sees how far
- * the indicator's thumb is from them, and which way to scroll. A tap on it goes to the
- * suggestion whose mark is nearest, see Listener.
+ * the indicator's thumb is from them, and which way to scroll. Over each mark stands the icon of
+ * dropping a route onto its spot, which aligning on it ends with, see ic_ar_align_drop, small,
+ * the mark its spot. A tap on the bar goes to the suggestion whose mark is nearest, see Listener.
  */
 class SuggestionBar extends View {
 	// The view, over the strip's bottom padding and its scroll indicator, for the bar to be
-	// tapped easily: the bar itself is drawn as thin as the indicator, just above it.
-	static final int TOUCH_HEIGHT_DP = 14;
+	// tapped easily, and tall enough for the icons: the bar itself is drawn as thin as the
+	// indicator, just above it.
+	static final int TOUCH_HEIGHT_DP = 24;
 	private static final int BAR_HEIGHT_DP = 4;
-	private static final int BAR_BOTTOM_DP = 6;
+	private static final int BAR_BOTTOM_DP = 4;
+	// The icon over a mark, standing on it: about a third of the button it was, on the cards.
+	private static final int ICON_DP = 14;
 	// So a route's mark shows on a long strip, where its card is narrower than this.
 	private static final float MIN_MARK_DP = 6;
 	private static final int TRACK_COLOR = Color.argb(0x40, 0x80, 0x80, 0x80);
@@ -40,6 +47,7 @@ class SuggestionBar extends View {
 	private final Paint track = new Paint(Paint.ANTI_ALIAS_FLAG);
 	private final Paint mark = new Paint(Paint.ANTI_ALIAS_FLAG);
 	private final RectF rect = new RectF();
+	private final Drawable icon;
 	private final Listener listener;
 	// Each mark's start and end along the strip, from 0 to 1, in pairs.
 	private float[] marks = new float[0];
@@ -51,6 +59,7 @@ class SuggestionBar extends View {
 		this.listener = listener;
 		density = getResources().getDisplayMetrics().density;
 		track.setColor(TRACK_COLOR);
+		icon = ContextCompat.getDrawable(context, R.drawable.ic_ar_align_drop);
 		// The colour of the suggested routes' outline, see bg_align_route_suggested.
 		TypedValue accent = new TypedValue();
 		context.getTheme().resolveAttribute(android.R.attr.colorAccent, accent, true);
@@ -119,6 +128,18 @@ class SuggestionBar extends View {
 			}
 			rect.set(Math.max(0, start), top, Math.min(getWidth(), end), bottom);
 			canvas.drawRoundRect(rect, radius, radius, mark);
+		}
+		if (icon == null) {
+			return;
+		}
+		// Over the marks, standing on them, the whole icon on the view wherever the mark is.
+		int size = Math.round(ICON_DP * density);
+		int iconBottom = Math.round(top);
+		for (int i = 0; i + 1 < marks.length; i += 2) {
+			float middle = (marks[i] + marks[i + 1]) / 2 * getWidth();
+			int left = Math.round(Math.max(0, Math.min(getWidth() - size, middle - size / 2f)));
+			icon.setBounds(left, iconBottom - size, left + size, iconBottom);
+			icon.draw(canvas);
 		}
 	}
 }

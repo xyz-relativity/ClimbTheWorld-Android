@@ -2,9 +2,10 @@
 <!-- The A.R. align dialog: the quick filter over the routes, side by side as they stand along the
      wall, grouped by crag, see list_item_alignment_group, left to right whatever the language, as
      the wall is, with a bar over its scroll indicator marking where the suggested routes are,
-     which the nonFoss AlignmentPicker adds, see SuggestionBar, and
-     under them the button deleting all the alignments, shown while there are any, here rather
-     than among the dialog's buttons as it leaves the dialog open. -->
+     which the nonFoss AlignmentPicker adds, see SuggestionBar, in the strip's bottom padding,
+     which leaves it the room for the icon over each mark, and under them the button deleting all
+     the alignments, shown while there are any, here rather than among the dialog's buttons as it
+     leaves the dialog open. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -33,7 +34,7 @@
                 android:paddingLeft="8dp"
                 android:paddingTop="8dp"
                 android:paddingRight="8dp"
-                android:paddingBottom="14dp" />
+                android:paddingBottom="24dp" />
         </HorizontalScrollView>
     </FrameLayout>
 

@@ -59,9 +59,9 @@ import needle.UiRelatedTask;
  * the wall around it, and so it does again for what the user types in the filter. The routes
  * already aligned on are listed wherever they are, outlined, each with a button to delete its
  * alignment, and one under the strip deletes them all, the dialog staying open. The routes best
- * to align on next, see AlignmentSuggestions, are outlined too, each with a button to align on
- * it, and a bar above the scroll indicator shows where along the strip they are, a tap on it
- * scrolling to the nearest, see SuggestionBar.
+ * to align on next, see AlignmentSuggestions, are outlined too, and a bar above the scroll
+ * indicator shows where along the strip they are, each under the icon of dropping a route onto
+ * its spot, a tap on it scrolling to the nearest, see SuggestionBar.
  */
 class AlignmentPicker {
 	// How far around where the user seems to be routes are looked for, as GPS can be that far
@@ -480,7 +480,7 @@ class AlignmentPicker {
 
 		/**
 		 * Outlines a route's card for being aligned on, with the button deleting its alignment
-		 * under it, else for being suggested, with the button aligning on it.
+		 * under it, else for being suggested.
 		 */
 		private void outline(long osmId) {
 			View view = cards.get(osmId);
@@ -493,8 +493,6 @@ class AlignmentPicker {
 					: isSuggested ? R.drawable.bg_align_route_suggested : 0);
 			view.findViewById(R.id.buttonDeleteAlignment)
 					.setVisibility(isAligned ? View.VISIBLE : View.GONE);
-			view.findViewById(R.id.buttonPickAlignment)
-					.setVisibility(isSuggested ? View.VISIBLE : View.GONE);
 		}
 
 		/**
@@ -542,12 +540,10 @@ class AlignmentPicker {
 				// As the lists of climbing POIs show it, see DialogueUtils.setDistance.
 				((TextView) view.findViewById(R.id.alignRouteDistance)).setText(
 						Globals.getDistanceString(GeoUtils.calculateDistance(user, route)));
-				View.OnClickListener pick = clicked -> {
+				card.setOnClickListener(clicked -> {
 					dialog.dismiss();
 					listener.onPicked(route);
-				};
-				card.setOnClickListener(pick);
-				view.findViewById(R.id.buttonPickAlignment).setOnClickListener(pick);
+				});
 				view.findViewById(R.id.buttonDeleteAlignment).setOnClickListener(clicked -> {
 					aligned.remove(route.osmID);
 					listener.onDeleted(route);

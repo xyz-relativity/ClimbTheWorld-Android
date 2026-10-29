@@ -2,9 +2,9 @@
 <!-- A route of the A.R. align dialog: its card as the crag dialog and the relation editor show
      their members, see MemberIconCard, with under it the straight line distance from the user,
      as the lists of climbing POIs show it, and a button to delete the alignment on the route,
-     shown once it is aligned on, as it is then all outlined, see bg_align_route_aligned; or,
-     for the route suggested, outlined in its own colour, see bg_align_route_suggested, one to
-     align on it, as a tap on the card does. -->
+     shown once it is aligned on, as it is then all outlined, see bg_align_route_aligned. A
+     route suggested is outlined in its own colour, see bg_align_route_suggested, and marked on
+     the bar under the strip, see SuggestionBar; a tap on the card aligns on it. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
@@ -38,20 +38,4 @@
         android:scaleType="fitCenter"
         android:src="@drawable/ic_delete"
         android:tooltipText="@string/ar_placement_align_delete" />
-
-    <!-- As the delete button, with the icon of dropping the route onto its spot, which aligning
-         on it ends with. -->
-    <ImageView
-        android:id="@+id/buttonPickAlignment"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:background="?android:selectableItemBackground"
-        android:clickable="true"
-        android:contentDescription="@string/ar_placement_align_pick"
-        android:focusable="true"
-        android:padding="3dp"
-        android:scaleType="fitCenter"
-        android:src="@drawable/ic_ar_align_drop"
-        android:tooltipText="@string/ar_placement_align_pick"
-        android:visibility="gone" />
 </LinearLayout>
