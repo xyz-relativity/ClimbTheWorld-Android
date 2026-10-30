@@ -45,7 +45,11 @@ public class GeoRegistration {
 	// device says it is: it does not know of the rock bending the field. Landmarks about 16 m
 	// apart are then the surer.
 	public static final double MAX_COMPARED_COMPASS_ACCURACY_DEGREES = 10;
-	// About a minute of compass readings, as the editor gets them, and of GPS fixes.
+	// Compass readings come at the sensors' rate, dozens a second: only one every this long is
+	// kept, so that the window of readings spans a walk rather than a glance, and the bends of
+	// the field at one spot are averaged against those at others.
+	static final double MIN_HEADING_INTERVAL_SECONDS = 0.2;
+	// About a minute of compass readings, see MIN_HEADING_INTERVAL_SECONDS, and of GPS fixes.
 	static final int MAX_HEADING_READINGS = 300;
 	static final int MAX_LOCATION_READINGS = 60;
 	// A couple of seconds of compass readings, before the offset is trusted. With a landmark, one
@@ -61,6 +65,8 @@ public class GeoRegistration {
 
 	// Per reading: sine and cosine of the offset it tells, and its weight.
 	private final ArrayDeque<double[]> headings = new ArrayDeque<>();
+	// When the latest compass reading kept was taken, see MIN_HEADING_INTERVAL_SECONDS.
+	private long lastHeadingTimestampNanos;
 	// Per fix: its east and north of the reference, its weight, and the session's x and z of the
 	// phone.
 	private final ArrayDeque<double[]> locations = new ArrayDeque<>();
@@ -114,9 +120,17 @@ public class GeoRegistration {
 	 * @param sessionAzimuthDegrees the camera's azimuth in the session's world, see
 	 *                              sessionAzimuthDegrees
 	 * @param accuracyDegrees       how far off the compass may be, NaN when unknown
+	 * @param timestampNanos        when the reading was taken, on any steady clock: readings
+	 *                              closer than MIN_HEADING_INTERVAL_SECONDS to the last one
+	 *                              kept are left out
 	 */
 	public void addHeading(double compassAzimuthDegrees, double sessionAzimuthDegrees,
-	                       double accuracyDegrees) {
+	                       double accuracyDegrees, long timestampNanos) {
+		if (!headings.isEmpty()
+				&& timestampNanos - lastHeadingTimestampNanos < MIN_HEADING_INTERVAL_SECONDS * 1e9) {
+			return;
+		}
+		lastHeadingTimestampNanos = timestampNanos;
 		double accuracy = Double.isNaN(accuracyDegrees) ? DEFAULT_HEADING_ACCURACY_DEGREES
 				: Math.max(accuracyDegrees, MIN_HEADING_ACCURACY_DEGREES);
 		double offset = Math.toRadians(compassAzimuthDegrees - sessionAzimuthDegrees);
@@ -208,16 +222,31 @@ public class GeoRegistration {
 	 * compass reading
 	 */
 	public double getHeadingOffsetDegrees() {
-		double fromLandmarks = landmarkHeading();
-		if (!Double.isNaN(fromLandmarks)) {
-			double compassAccuracy = Math.max(compassAccuracyDegrees(),
-					MAX_COMPARED_COMPASS_ACCURACY_DEGREES);
-			if (Double.isNaN(compassAccuracy)
-					|| landmarkHeadingAccuracyDegrees(landmarkEastNorth()) <= compassAccuracy) {
-				return Math.toDegrees(fromLandmarks);
-			}
+		return Math.toDegrees(landmarksSetHeading() ? landmarkHeading() : compassHeading());
+	}
+
+	/**
+	 * @return whether the landmarks set the heading rather than the compass, see
+	 * getHeadingOffsetDegrees
+	 */
+	public boolean landmarksSetHeading() {
+		if (Double.isNaN(landmarkHeading())) {
+			return false;
 		}
-		return Math.toDegrees(compassHeading());
+		double compassAccuracy = Math.max(compassAccuracyDegrees(),
+				MAX_COMPARED_COMPASS_ACCURACY_DEGREES);
+		return Double.isNaN(compassAccuracy)
+				|| landmarkHeadingAccuracyDegrees(landmarkEastNorth()) <= compassAccuracy;
+	}
+
+	/**
+	 * @return how far off getHeadingOffsetDegrees may be, in degrees: as the landmarks' spread
+	 * tells when they set it, see landmarkHeadingAccuracyDegrees, else as the compass's readings
+	 * do, see compassAccuracyDegrees; NaN without any reading
+	 */
+	public double headingAccuracyDegrees() {
+		return landmarksSetHeading() ? landmarkHeadingAccuracyDegrees(landmarkEastNorth())
+				: compassAccuracyDegrees();
 	}
 
 	/**

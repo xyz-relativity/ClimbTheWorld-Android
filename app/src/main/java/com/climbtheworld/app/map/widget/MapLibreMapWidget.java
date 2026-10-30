@@ -58,7 +58,9 @@ import com.climbtheworld.app.map.widget.climbing.RouteNumbers;
 import com.climbtheworld.app.map.widget.climbing.RouteRelation;
 import com.climbtheworld.app.map.widget.climbing.RouteStandIn;
 import com.climbtheworld.app.map.widget.climbing.RouteWay;
+import com.climbtheworld.app.navigate.widgets.CompassBlur;
 import com.climbtheworld.app.navigate.widgets.CompassStatusBadge;
+import com.climbtheworld.app.sensors.orientation.HeadingConfidence;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.TerrainElevation;
@@ -239,6 +241,9 @@ public class MapLibreMapWidget {
 	// Null in containers whose compass button has no badge.
 	private CompassStatusBadge compassStatusBadge;
 	private CompassAccuracyArcDrawable compassAccuracyArc;
+	// Blurs the compass button's icon while the heading is not to be trusted, as each
+	// orientation reading tells, see onOrientationChange and CompassBlur.
+	private CompassBlur compassBlur;
 	private double viewConeFieldOfViewDegrees;
 	private double viewConeRangeMeters;
 	private double initialFitRadiusMeters;
@@ -479,6 +484,7 @@ public class MapLibreMapWidget {
 			});
 			compassAccuracyArc = new CompassAccuracyArcDrawable();
 			compassButton.setForeground(compassAccuracyArc);
+			compassBlur = new CompassBlur(compassButton);
 		}
 
 		ImageView badge = container.findViewById(R.id.compassStatusBadge);
@@ -800,6 +806,10 @@ public class MapLibreMapWidget {
 		lastHeadingAccuracyDegrees = event.headingAccuracyDegrees;
 		if (compassStatusBadge != null) {
 			compassStatusBadge.setStatus(event.compassStatus);
+		}
+		if (compassBlur != null) {
+			compassBlur.setConfidence(HeadingConfidence.of(event.headingUncertaintyDegrees,
+					compassBlur.getConfidence()));
 		}
 		updateCompassAccuracyArc();
 		if (rotationMode == RotationMode.AUTO && map != null) {
@@ -1724,7 +1734,7 @@ public class MapLibreMapWidget {
 		}
 		int icon = rotationMode == RotationMode.USER ? R.drawable.ic_compass_user :
 				R.drawable.ic_compass;
-		button.setImageDrawable(ResourcesCompat.getDrawable(parent.getResources(), icon, null));
+		compassBlur.setIcon(ResourcesCompat.getDrawable(parent.getResources(), icon, null));
 		if (rotationMode == RotationMode.STATIC) {
 			button.setRotation(0);
 		} else if (rotationMode == RotationMode.USER && map != null) {

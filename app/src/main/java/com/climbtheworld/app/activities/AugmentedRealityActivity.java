@@ -452,6 +452,9 @@ public class AugmentedRealityActivity extends MapWidgetActivity
 		arCore.onOrientation(event);
 		// ARCore turns the camera, see ArViewTracking.Listener.onCameraMoved.
 		if (onArCore) {
+			// The minimap, which ARCore's camera turns, still shows how far the heading is to
+			// be trusted: ARCore's now, rather than the sensors'.
+			cameraMinimap.setHeadingUncertaintyDegrees(arCore.headingUncertaintyDegrees(event));
 			return;
 		}
 		mapWidget.onOrientationChange(event.camera, event);

@@ -27,6 +27,15 @@ public class CameraMinimap {
 	}
 
 	/**
+	 * @param degrees how far off the heading the camera is turned by may be, see
+	 *                OrientationManager.OrientationEvent's headingUncertaintyDegrees, for the
+	 *                minimap's compass button to blur by; NaN when nothing tells
+	 */
+	public void setHeadingUncertaintyDegrees(double degrees) {
+		orientation.headingUncertaintyDegrees = degrees;
+	}
+
+	/**
 	 * @param maxDistanceMeters how far the A.R. shows, which the view cone reaches
 	 */
 	public void show(VirtualCamera camera, double maxDistanceMeters) {

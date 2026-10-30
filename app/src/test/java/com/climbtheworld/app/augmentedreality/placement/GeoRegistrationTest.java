@@ -32,10 +32,24 @@ public class GeoRegistrationTest {
 				+ east / (METERS_PER_DEGREE * Math.cos(Math.toRadians(ORIGIN_LATITUDE)))};
 	}
 
+	// Readings a kept interval apart, so that none is left out, see
+	// GeoRegistration.MIN_HEADING_INTERVAL_SECONDS.
+	private static final long READING_INTERVAL_NANOS =
+			(long) (GeoRegistration.MIN_HEADING_INTERVAL_SECONDS * 1e9);
+	private static long clockNanos;
+
+	/**
+	 * @return when the next reading is taken, a reading interval on from the last
+	 */
+	private static long tick() {
+		clockNanos += READING_INTERVAL_NANOS;
+		return clockNanos;
+	}
+
 	private static void addHeadings(GeoRegistration registration, int count) {
 		for (int i = 0; i < count; i++) {
 			double sessionAzimuth = 10 * i;
-			registration.addHeading(sessionAzimuth + OFFSET_DEGREES, sessionAzimuth, 5);
+			registration.addHeading(sessionAzimuth + OFFSET_DEGREES, sessionAzimuth, 5, tick());
 		}
 	}
 
@@ -50,7 +64,7 @@ public class GeoRegistrationTest {
 	                               double accuracy) {
 		for (int i = 0; i < GeoRegistration.MIN_HEADING_READINGS; i++) {
 			double sessionAzimuth = 10 * i;
-			registration.addHeading(sessionAzimuth + offsetDegrees, sessionAzimuth, accuracy);
+			registration.addHeading(sessionAzimuth + offsetDegrees, sessionAzimuth, accuracy, tick());
 		}
 	}
 
@@ -96,8 +110,8 @@ public class GeoRegistrationTest {
 	@Test
 	public void averagesTheHeadingAcrossNorth() {
 		GeoRegistration registration = new GeoRegistration();
-		registration.addHeading(359, 0, 5);
-		registration.addHeading(1, 0, 5);
+		registration.addHeading(359, 0, 5, tick());
+		registration.addHeading(1, 0, 5, tick());
 
 		assertEquals(0, registration.getHeadingOffsetDegrees(), 1e-9);
 	}
@@ -105,8 +119,8 @@ public class GeoRegistrationTest {
 	@Test
 	public void weighsTheHeadingByAccuracy() {
 		GeoRegistration registration = new GeoRegistration();
-		registration.addHeading(10, 0, 5);
-		registration.addHeading(40, 0, 50);
+		registration.addHeading(10, 0, 5, tick());
+		registration.addHeading(40, 0, 50, tick());
 
 		assertTrue(registration.getHeadingOffsetDegrees() < 11);
 	}
@@ -243,6 +257,46 @@ public class GeoRegistrationTest {
 	}
 
 	@Test
+	public void headingAccuracyIsTheCompassesUntilLandmarksSetTheHeading() {
+		GeoRegistration registration = new GeoRegistration();
+		assertFalse(registration.landmarksSetHeading());
+		assertTrue(Double.isNaN(registration.headingAccuracyDegrees()));
+
+		addCompass(registration, OFFSET_DEGREES + 10, 5);
+		assertFalse(registration.landmarksSetHeading());
+		assertEquals(5, registration.headingAccuracyDegrees(), 1e-9);
+
+		// Landmarks 10 m apart, about 16 degrees off: the compass stays the surer.
+		registration.setLandmarks(List.of(landmark(-5, -8), landmark(5, -8)));
+		assertFalse(registration.landmarksSetHeading());
+		assertEquals(5, registration.headingAccuracyDegrees(), 1e-9);
+
+		// Landmarks 40 m apart, about 4 degrees off, take over, their accuracy with them.
+		registration.setLandmarks(List.of(landmark(-20, -8), landmark(20, -8)));
+		assertTrue(registration.landmarksSetHeading());
+		double fromLandmarks = registration.headingAccuracyDegrees();
+		assertTrue(fromLandmarks > 3 && fromLandmarks < 5);
+		assertEquals(OFFSET_DEGREES, registration.getHeadingOffsetDegrees(), 1e-3);
+	}
+
+	@Test
+	public void keepsOnlyOneCompassReadingPerInterval() {
+		GeoRegistration registration = new GeoRegistration();
+		long time = tick();
+		registration.addHeading(OFFSET_DEGREES, 0, 5, time);
+		// Readings coming at the sensors' rate: left out until an interval has passed.
+		for (int i = 1; i < 10; i++) {
+			registration.addHeading(OFFSET_DEGREES, 0, 5, time + i * READING_INTERVAL_NANOS / 10);
+		}
+		assertFalse(registration.hasHeading());
+
+		for (int i = 1; i < GeoRegistration.MIN_HEADING_READINGS; i++) {
+			registration.addHeading(OFFSET_DEGREES, 0, 5, time + i * READING_INTERVAL_NANOS);
+		}
+		assertTrue(registration.hasHeading());
+	}
+
+	@Test
 	public void compassAccuracyIsThatOfItsReadings() {
 		GeoRegistration registration = new GeoRegistration();
 		assertTrue(Double.isNaN(registration.compassAccuracyDegrees()));
@@ -264,7 +318,7 @@ public class GeoRegistrationTest {
 		registration.setLandmarks(Collections.singletonList(landmark(3, -8)));
 		// The field bends: enough readings to replace every earlier one.
 		for (int i = 0; i < GeoRegistration.MAX_HEADING_READINGS; i++) {
-			registration.addHeading(OFFSET_DEGREES + 20, 0, 5);
+			registration.addHeading(OFFSET_DEGREES + 20, 0, 5, tick());
 		}
 
 		assertEquals(OFFSET_DEGREES, registration.getHeadingOffsetDegrees(), 1e-3);
@@ -279,7 +333,7 @@ public class GeoRegistrationTest {
 		assertFalse(registration.hasHeading());
 		assertFalse(registration.isReady());
 
-		registration.addHeading(OFFSET_DEGREES, 0, 5);
+		registration.addHeading(OFFSET_DEGREES, 0, 5, tick());
 
 		assertTrue(registration.hasHeading());
 		assertTrue(registration.isReady());
@@ -290,9 +344,9 @@ public class GeoRegistrationTest {
 	public void holdsTheCompassFromTheFirstReadingWithALandmark() {
 		GeoRegistration registration = new GeoRegistration();
 		registration.setLandmarks(Collections.singletonList(landmark(3, -8)));
-		registration.addHeading(OFFSET_DEGREES, 0, 5);
+		registration.addHeading(OFFSET_DEGREES, 0, 5, tick());
 		for (int i = 0; i < GeoRegistration.MAX_HEADING_READINGS; i++) {
-			registration.addHeading(OFFSET_DEGREES + 20, 0, 5);
+			registration.addHeading(OFFSET_DEGREES + 20, 0, 5, tick());
 		}
 
 		assertEquals(OFFSET_DEGREES, registration.getHeadingOffsetDegrees(), 1e-3);
@@ -303,7 +357,7 @@ public class GeoRegistrationTest {
 		GeoRegistration registration = new GeoRegistration();
 		addFix(registration, 0, 0, 0, 5);
 		registration.setLandmarks(Collections.singletonList(landmark(3, -8)));
-		registration.addHeading(OFFSET_DEGREES, 0, 5);
+		registration.addHeading(OFFSET_DEGREES, 0, 5, tick());
 		registration.setLandmarks(Collections.emptyList());
 
 		assertFalse(registration.hasHeading());
@@ -316,7 +370,7 @@ public class GeoRegistrationTest {
 		addCompass(registration, OFFSET_DEGREES, 5);
 		registration.setLandmarks(Collections.singletonList(landmark(3, -8)));
 		for (int i = 0; i < GeoRegistration.MAX_HEADING_READINGS; i++) {
-			registration.addHeading(OFFSET_DEGREES + 20, 0, 5);
+			registration.addHeading(OFFSET_DEGREES + 20, 0, 5, tick());
 		}
 		// Another landmark, too close to the first to tell the heading.
 		registration.setLandmarks(List.of(landmark(3, -8), landmark(4, -8)));
@@ -330,7 +384,7 @@ public class GeoRegistrationTest {
 		addCompass(registration, OFFSET_DEGREES, 5);
 		registration.setLandmarks(Collections.singletonList(landmark(3, -8)));
 		for (int i = 0; i < GeoRegistration.MAX_HEADING_READINGS; i++) {
-			registration.addHeading(OFFSET_DEGREES + 20, 0, 5);
+			registration.addHeading(OFFSET_DEGREES + 20, 0, 5, tick());
 		}
 		registration.setLandmarks(Collections.emptyList());
 

@@ -222,4 +222,99 @@ public class HeadingOffsetTest {
 		add(50, 5);
 		assertEquals(50, offset.getDegrees(), 1e-9);
 	}
+
+	@Test
+	public void spreadIsUnknownUntilReadingsHaveBeenComingForAWhile() {
+		assertTrue(Double.isNaN(offset.spreadDegrees()));
+		addFor(HeadingOffset.SPREAD_KNOWN_SECONDS / 2, 20, 5);
+		assertTrue(Double.isNaN(offset.spreadDegrees()));
+		assertEquals(HeadingOffset.UNKNOWN_DEGREES, offset.uncertaintyDegrees(timestampNanos),
+				1e-9);
+
+		addFor(HeadingOffset.SPREAD_KNOWN_SECONDS / 2 + 0.5, 20, 5);
+		assertFalse(Double.isNaN(offset.spreadDegrees()));
+	}
+
+	@Test
+	public void gapsBetweenReadingsDoNotCountAsReadingsComing() {
+		// One reading, then nothing for a minute, as while the compass is disturbed.
+		add(20, 5);
+		timestampNanos += 60_000_000_000L;
+		add(20, 5);
+
+		assertTrue(Double.isNaN(offset.spreadDegrees()));
+	}
+
+	@Test
+	public void readingsThatAgreeSpreadLittle() {
+		addFor(2 * HeadingOffset.SPREAD_KNOWN_SECONDS, 20, 5);
+
+		assertEquals(0, offset.spreadDegrees(), 1e-6);
+		assertEquals(0, offset.uncertaintyDegrees(timestampNanos), 1e-6);
+	}
+
+	@Test
+	public void spreadIsHowFarTheReadingsScatter() {
+		// Readings 10 degrees either side of the offset, in turn: a standard deviation of 10.
+		for (int reading = 0; reading < 4 * HeadingOffset.SMOOTHING_SECONDS * READINGS_PER_SECOND;
+		     reading++) {
+			add(reading % 2 == 0 ? 10 : 30, 5);
+		}
+
+		assertEquals(10, offset.spreadDegrees(), 0.5);
+		assertEquals(20, offset.getDegrees(), 0.5);
+	}
+
+	@Test
+	public void spreadIsLargeWhileTheReadingsSwingAbout() {
+		// Readings 60 degrees either side of the offset, in turn: a standard deviation of 60
+		// would be, but the circular one grows faster, still well past ROUGH.
+		for (int reading = 0; reading < 4 * HeadingOffset.SMOOTHING_SECONDS * READINGS_PER_SECOND;
+		     reading++) {
+			add(reading % 2 == 0 ? -40 : 80, 5);
+		}
+
+		assertTrue(offset.spreadDegrees() > 60);
+		assertTrue(offset.spreadDegrees() <= HeadingOffset.UNKNOWN_DEGREES);
+	}
+
+	@Test
+	public void spreadSettlesAsTheReadingsDo() {
+		for (int reading = 0; reading < HeadingOffset.SMOOTHING_SECONDS * READINGS_PER_SECOND;
+		     reading++) {
+			add(reading % 2 == 0 ? -10 : 50, 5);
+		}
+		double swinging = offset.spreadDegrees();
+		assertTrue(swinging > 25);
+
+		// Four times the smoothing: a couple of percent of the swinging is left in the average.
+		addFor(4 * HeadingOffset.SMOOTHING_SECONDS, 20, 5);
+
+		assertTrue(offset.spreadDegrees() < 5);
+		assertTrue(offset.spreadDegrees() < swinging);
+	}
+
+	@Test
+	public void uncertaintyGrowsWhileTheCompassIsNotRead() {
+		addFor(2 * HeadingOffset.SPREAD_KNOWN_SECONDS, 20, 5);
+		long later = timestampNanos + 60_000_000_000L;
+
+		assertEquals(60 * HeadingOffset.DRIFT_DEGREES_PER_SECOND, offset.uncertaintyDegrees(later),
+				1e-6);
+		// Never past as far as can be.
+		assertEquals(HeadingOffset.UNKNOWN_DEGREES,
+				offset.uncertaintyDegrees(later + 100_000_000_000_000L), 1e-9);
+	}
+
+	@Test
+	public void resetForgetsTheSpread() {
+		addFor(2 * HeadingOffset.SPREAD_KNOWN_SECONDS, 20, 5);
+		offset.reset();
+
+		assertTrue(Double.isNaN(offset.spreadDegrees()));
+		assertEquals(HeadingOffset.UNKNOWN_DEGREES, offset.uncertaintyDegrees(timestampNanos),
+				1e-9);
+		addFor(2 * HeadingOffset.SPREAD_KNOWN_SECONDS, 50, 5);
+		assertEquals(0, offset.spreadDegrees(), 1e-6);
+	}
 }

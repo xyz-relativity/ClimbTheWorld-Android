@@ -2,6 +2,7 @@ package com.climbtheworld.app.augmentedreality.ARCore;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.os.SystemClock;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
@@ -762,10 +763,29 @@ class ArCoreSession {
 		}
 		boolean hadHeading = registration.hasHeading();
 		registration.addHeading(event.camera.x, camera.azimuthDegrees(),
-				event.headingAccuracyDegrees);
+				event.headingAccuracyDegrees, SystemClock.elapsedRealtimeNanos());
 		if (registration.hasHeading() != hadHeading) {
 			updateStatus();
 		}
+	}
+
+	/**
+	 * How far off the heading the camera is turned by may be, see poseCamera: as the landmarks
+	 * tell it when they set the heading, see GeoRegistration.landmarksSetHeading, else as the
+	 * compass readings taken have been sure lately, see OrientationManager.OrientationEvent's
+	 * headingUncertaintyDegrees, whatever the compass's momentary state: ARCore holds the
+	 * heading, the compass only sets it.
+	 *
+	 * @param event the latest compass reading
+	 * @return in degrees, NaN when nothing tells
+	 */
+	double headingUncertaintyDegrees(OrientationManager.OrientationEvent event) {
+		double uncertainty = registration.headingAccuracyDegrees();
+		if (!registration.landmarksSetHeading()) {
+			uncertainty = OrientationManager.worseUncertaintyDegrees(uncertainty,
+					event.headingUncertaintyDegrees);
+		}
+		return uncertainty;
 	}
 
 	/**

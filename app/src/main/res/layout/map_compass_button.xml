@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?><!-- Shared by every map container: the compass button, with a badge on its bottom corner while
 the compass cannot be trusted, away from the accuracy arc that starts at the top of the button.
-The badge is a sibling so that it stays upright while the button turns. -->
+The badge is a sibling so that it stays upright while the button turns. The icon is not cropped
+to the button's padding, as it spills a little past it while it is blurred, see CompassBlur. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/compassButtonContainer"
@@ -13,7 +14,6 @@ The badge is a sibling so that it stays upright while the button turns. -->
         android:layout_height="wrap_content"
         android:background="?android:selectableItemBackground"
         android:contentDescription="@string/hint_compass"
-        android:cropToPadding="true"
         android:scaleType="fitXY"
         android:layout_margin="5dip"
         app:srcCompat="@drawable/ic_compass" />

@@ -121,6 +121,13 @@ public class OrientationManager implements SensorEventListener {
 		public Vector4d camera = new Vector4d();
 		// How far off the azimuths may be, in degrees, NaN when the device does not tell.
 		public double headingAccuracyDegrees = Double.NaN;
+		// How far off the azimuths may be, in degrees, taking in the device's estimate and how
+		// much the compass has scattered against the gyroscope lately, see
+		// HeadingOffset.uncertaintyDegrees: as far as can be (HeadingOffset.UNKNOWN_DEGREES)
+		// until that is known, and on a device without a game rotation vector while the compass
+		// is not to be trusted; NaN when nothing tells. For the views to blur a compass by, see
+		// HeadingConfidence.
+		public double headingUncertaintyDegrees = Double.NaN;
 		public CompassStatus compassStatus = CompassStatus.OK;
 		private boolean followsCamera;
 
@@ -277,6 +284,9 @@ public class OrientationManager implements SensorEventListener {
 			gameRotationKnown = true;
 			// Nothing is known of north until the compass has been read against this world.
 			if (headingOffset.isKnown()) {
+				orientation.headingUncertaintyDegrees = worseUncertaintyDegrees(
+						headingOffset.uncertaintyDegrees(event.timestamp),
+						orientation.headingAccuracyDegrees);
 				report(gameRotationMatrix, headingOffset.getDegrees() + getDeclination());
 			}
 		} else if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR
@@ -296,6 +306,11 @@ public class OrientationManager implements SensorEventListener {
 					compassStatus(lastMagnetometerAccuracy, interferenceDetector.isDisturbed());
 
 			if (!onGameRotation) {
+				// The orientation follows the compass as it is, so a compass not to be trusted
+				// is a heading not to be trusted.
+				orientation.headingUncertaintyDegrees =
+						orientation.compassStatus == CompassStatus.OK
+								? orientation.headingAccuracyDegrees : HeadingOffset.UNKNOWN_DEGREES;
 				report(originRotationMatrix, getDeclination());
 			} else if (gameRotationKnown && (!headingOffset.isKnown() || HeadingOffset.canTake(
 					orientation.compassStatus, smoother.turnRateDegreesPerSecond()))) {
@@ -362,6 +377,20 @@ public class OrientationManager implements SensorEventListener {
 			return false;
 		}
 		return followedCamera;
+	}
+
+	/**
+	 * @return the larger of two uncertainties, in degrees, the other when one is NaN, NaN when
+	 * both are
+	 */
+	public static double worseUncertaintyDegrees(double a, double b) {
+		if (Double.isNaN(a)) {
+			return b;
+		}
+		if (Double.isNaN(b)) {
+			return a;
+		}
+		return Math.max(a, b);
 	}
 
 	/**

@@ -38,6 +38,16 @@ public class OrientationManagerTest {
 			0, 0, 0, 1};
 
 	@Test
+	public void worseUncertaintyIsTheLargerKnownOne() {
+		assertEquals(15, OrientationManager.worseUncertaintyDegrees(5, 15), 1e-9);
+		assertEquals(15, OrientationManager.worseUncertaintyDegrees(15, 5), 1e-9);
+		assertEquals(5, OrientationManager.worseUncertaintyDegrees(5, Double.NaN), 1e-9);
+		assertEquals(5, OrientationManager.worseUncertaintyDegrees(Double.NaN, 5), 1e-9);
+		assertTrue(Double.isNaN(
+				OrientationManager.worseUncertaintyDegrees(Double.NaN, Double.NaN)));
+	}
+
+	@Test
 	public void toTrueAzimuthAddsDeclination() {
 		assertEquals(110, OrientationManager.toTrueAzimuth(100, 10), 1e-9);
 		assertEquals(86, OrientationManager.toTrueAzimuth(100, -14), 1e-9);

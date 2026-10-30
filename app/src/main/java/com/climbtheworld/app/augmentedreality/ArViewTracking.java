@@ -55,6 +55,18 @@ public interface ArViewTracking {
 	}
 
 	/**
+	 * How far off the heading ARCore turns the camera by may be, as
+	 * OrientationManager.OrientationEvent's headingUncertaintyDegrees has it for the sensors'.
+	 *
+	 * @param event the latest compass reading, see onOrientation
+	 * @return in degrees; NaN while ARCore does not turn the camera, see
+	 * Listener.onMovesCameraChanged, when the heading is the sensors', with their own
+	 */
+	default double headingUncertaintyDegrees(OrientationManager.OrientationEvent event) {
+		return Double.NaN;
+	}
+
+	/**
 	 * Takes a GPS fix.
 	 */
 	default void onLocation(double latitude, double longitude, double altitudeMeters,

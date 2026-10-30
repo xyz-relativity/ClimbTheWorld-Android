@@ -221,6 +221,11 @@ public class ArViewController implements ArViewTracking {
 	}
 
 	@Override
+	public double headingUncertaintyDegrees(OrientationManager.OrientationEvent event) {
+		return movesCamera ? arCore.headingUncertaintyDegrees(event) : Double.NaN;
+	}
+
+	@Override
 	public void onLocation(double latitude, double longitude, double altitudeMeters,
 	                       double accuracyMeters) {
 		arCore.onLocation(latitude, longitude, altitudeMeters, accuracyMeters);
