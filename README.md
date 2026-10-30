@@ -68,6 +68,22 @@ New versions then have to be downloaded and installed the same way.
 
 Point the camera at the rock to see the crags and routes from OpenStreetMap where they are.
 
-| <img src="pics/ar-cliff-from-approach.png" width="120" alt="A.R. view of a cliff from the approach"> | <img src="pics/ar-cliff-from-road.png" width="120" alt="A.R. view of the same cliff from the road"> | <img src="pics/ar-crag-routes.png" width="120" alt="A.R. view close to a crag"> | <img src="pics/ar-forest-terrain.png" width="120" alt="A.R. view in the forest with the virtual terrain"> | <img src="pics/ar-forest-no-horizon.png" width="120" alt="A.R. view in the forest with the horizon off"> |
+| <img src="pics/ar-cliff-from-approach.png" width="120" alt="A.R. view of a cliff from the approach"> | <img src="pics/ar-cliff-from-road.png" width="120" alt="A.R. view of the same cliff from the road"> | <img src="pics/ar-crag-routes.png" width="120" alt="A.R. view close to a crag, with its routes' pins"> | <img src="pics/ar-forest-terrain.png" width="120" alt="A.R. view in the forest with the virtual terrain"> | <img src="pics/ar-forest-no-horizon.png" width="120" alt="A.R. view in the forest with the horizon off"> |
 |:---:|:---:|:---:|:---:|:---:|
 | From the approach | From the road | Close to a crag | Virtual terrain | No horizon |
+
+### Map
+
+Browse the crags and routes mapped in OpenStreetMap, from the whole world down to a single wall.
+
+| <img src="pics/map-world.png" width="120" alt="Map of North America with the counts of climbing places"> | <img src="pics/map-crags-areas.png" width="120" alt="Map of a region with its climbing areas, crags and gyms"> | <img src="pics/map-crag-outlines.png" width="120" alt="Map of a climbing area with the outlines of its crags"> | <img src="pics/map-routes.png" width="120" alt="Map of a crag with its routes"> |
+|:---:|:---:|:---:|:---:|
+| Around the world | Areas and crags | Crag outlines | Routes |
+
+### Crags and routes
+
+See what a crag or an area holds, and find the climbs you want.
+
+| <img src="pics/area-crags.png" width="120" alt="An area with the grades of its crags"> | <img src="pics/crag-routes.png" width="120" alt="A crag with its routes, their length and bolts"> | <img src="pics/climbing-info.png" width="120" alt="The grades of an area by climbing style"> | <img src="pics/search.png" width="120" alt="Search results"> | <img src="pics/filter.png" width="120" alt="The display filters"> |
+|:---:|:---:|:---:|:---:|:---:|
+| An area's crags | A crag's routes | Grades by style | Search | Filters |
