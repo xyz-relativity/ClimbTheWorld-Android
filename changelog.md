@@ -1,3 +1,17 @@
+=2026.10-7=
+========
+- Count only the routes matching the display filters on crag and area pins and on the map's cluster bubbles while a filter is on, and mark those pins with a filter badge. The filter button shows in colour while a filter is on.
+- Blur the compass button while the heading is uncertain, on the map and on the A.R. minimap.
+- Add a new node button to the A.R. view. In the non-FOSS build, it opens the node editor's A.R. placement, keeping the routes already aligned on.
+- Add a button at the bottom right of the map and of the A.R. view to switch from one to the other, as the node editor has.
+- In the non-FOSS A.R. views, once aligned on two routes far enough apart, take the heading from them rather than from the compass, which rock often throws off. Align waits until the compass has given a first heading.
+- While aligning, show where the A.R. has the route now with a faint pin and a dashed line to the cursor.
+- List the routes to align on side by side, under the name of their crag, each with its number in the crag. Outline the routes already aligned on, and those best to align on next, with marks above the scroll bar showing where they are: tap one to go to it.
+- Close the alignment help with a tap anywhere on it.
+- Keep ARCore from slowing down over a long walk around a crag.
+- Drape the crag and area outlines over the terrain in the A.R. view, and make them more see-through, there and on the map.
+- Start the next node of Save & new in no crag, to pick its crags as for any new node.
+
 =2026.10-6=
 ========
 - Upload your pending changes before updating: this update clears the downloaded countries again, along with any change not uploaded yet. Download the countries again afterwards.

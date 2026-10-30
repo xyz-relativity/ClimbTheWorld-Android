@@ -98,13 +98,7 @@ public class MainActivity extends AppCompatActivity {
 		findViewById(R.id.ButtonAR).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				// The A.R. view places everything by the way the device is facing.
-				if (!OrientationManager.hasCompass(MainActivity.this)) {
-					new AlertDialog.Builder(MainActivity.this)
-							.setTitle(R.string.compass_missing)
-							.setMessage(R.string.compass_missing_message)
-							.setPositiveButton(android.R.string.ok, null)
-							.show();
+				if (!AugmentedRealityActivity.checkCompass(MainActivity.this)) {
 					return;
 				}
 				Intent intent = new Intent(MainActivity.this, AugmentedRealityActivity.class);

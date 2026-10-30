@@ -1,17 +1,23 @@
-package com.climbtheworld.app.augmentedreality.ARCore;
+package com.climbtheworld.app.utils.views;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.view.animation.AccelerateDecelerateInterpolator;
 
 /**
  * The icon of the button switching between the map and the A.R.: the unit converter's arrows and
  * circles, ic_view_switch_frame, with an icon in each circle. It turns as the arrows go, the
- * circles trading places, while the icons in them stay upright, see setTurn.
+ * circles trading places, while the icons in them stay upright, see setTurn. The node editor's
+ * switch to the A.R. placement, and the map's and the A.R. view's to each other, have it.
  */
-class ViewSwitchDrawable extends Drawable {
+public class ViewSwitchDrawable extends Drawable {
+	private static final long TURN_MS = 400;
 	// In the frame's viewport: where the circles are, and how big they are.
 	private static final float VIEWPORT = 48f;
 	private static final float TOP_CIRCLE_X = 25.287f;
@@ -26,28 +32,71 @@ class ViewSwitchDrawable extends Drawable {
 	private final Drawable topIcon;
 	private final Drawable bottomIcon;
 	private float turnDegrees;
+	private ValueAnimator turn;
 
 	/**
 	 * @param topIcon    in the top circle when not turned
 	 * @param bottomIcon in the bottom circle when not turned
 	 */
-	ViewSwitchDrawable(Drawable frame, Drawable topIcon, Drawable bottomIcon) {
+	public ViewSwitchDrawable(Drawable frame, Drawable topIcon, Drawable bottomIcon) {
 		this.frame = frame.mutate();
 		this.topIcon = topIcon.mutate();
 		this.bottomIcon = bottomIcon.mutate();
 	}
 
-	float getTurn() {
-		return turnDegrees;
+	public boolean isTurning() {
+		return turn != null && turn.isRunning();
 	}
 
 	/**
 	 * Turns the arrows and circles clockwise around the middle between the circles: half a turn
 	 * has them trade places.
 	 */
-	void setTurn(float degrees) {
+	public void setTurn(float degrees) {
+		if (turn != null) {
+			turn.cancel();
+		}
 		turnDegrees = degrees;
 		invalidateSelf();
+	}
+
+	/**
+	 * Turns the arrows and circles, the way the arrows go, until the icons are in their circles
+	 * when not turned, or have traded places.
+	 *
+	 * @param traded whether the icons end up having traded places
+	 * @param onEnd  run once turned, unless turned elsewhere before; may be null
+	 */
+	public void turnTo(boolean traded, Runnable onEnd) {
+		if (turn != null) {
+			turn.cancel();
+		}
+		float from = turnDegrees;
+		float target = traded ? 180 : 0;
+		float to = from + (((target - from) % 360) + 360) % 360;
+		turn = ValueAnimator.ofFloat(from, to);
+		turn.setDuration(TURN_MS);
+		turn.setInterpolator(new AccelerateDecelerateInterpolator());
+		turn.addUpdateListener(animation -> {
+			turnDegrees = (float) animation.getAnimatedValue() % 360;
+			invalidateSelf();
+		});
+		turn.addListener(new AnimatorListenerAdapter() {
+			private boolean cancelled;
+
+			@Override
+			public void onAnimationCancel(Animator animation) {
+				cancelled = true;
+			}
+
+			@Override
+			public void onAnimationEnd(Animator animation) {
+				if (!cancelled && onEnd != null) {
+					onEnd.run();
+				}
+			}
+		});
+		turn.start();
 	}
 
 	@Override

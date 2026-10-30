@@ -1,12 +1,10 @@
 package com.climbtheworld.app.augmentedreality.ARCore;
 
-import android.animation.ValueAnimator;
 import android.os.Bundle;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -23,6 +21,7 @@ import com.climbtheworld.app.sensors.camera.VirtualCamera;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
 import com.climbtheworld.app.utils.GeoUtils;
 import com.climbtheworld.app.utils.Vector4d;
+import com.climbtheworld.app.utils.views.ViewSwitchDrawable;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -48,7 +47,6 @@ public class ArPlacementController implements ArPlacement {
 	private static final String STATE_HANDS_WORLD_BACK = "arPlacementHandsWorldBack";
 	// How far the observer moves before the data around them is loaded again.
 	private static final double SCENE_RELOAD_METERS = 10;
-	private static final long TOGGLE_TURN_MS = 400;
 
 	private final AppCompatActivity activity;
 	private final PlaceListener placeListener;
@@ -86,7 +84,6 @@ public class ArPlacementController implements ArPlacement {
 	private Toast lastToast;
 	// Whether the toggle's icon is turned to show the A.R. as on, see turnToggleIcon.
 	private boolean toggleIconShown;
-	private ValueAnimator toggleTurn;
 	// Where the scene last loaded the data around, NaN before it did.
 	private double sceneLatitude = Double.NaN;
 	private double sceneLongitude = Double.NaN;
@@ -366,18 +363,7 @@ public class ArPlacementController implements ArPlacement {
 			return;
 		}
 		toggleIconShown = shown;
-		if (toggleTurn != null) {
-			toggleTurn.cancel();
-		}
-		float from = toggleIcon.getTurn();
-		float target = shown ? 180 : 0;
-		float to = from + (((target - from) % 360) + 360) % 360;
-		toggleTurn = ValueAnimator.ofFloat(from, to);
-		toggleTurn.setDuration(TOGGLE_TURN_MS);
-		toggleTurn.setInterpolator(new AccelerateDecelerateInterpolator());
-		toggleTurn.addUpdateListener(animation ->
-				toggleIcon.setTurn((float) animation.getAnimatedValue() % 360));
-		toggleTurn.start();
+		toggleIcon.turnTo(shown, null);
 	}
 
 	/**

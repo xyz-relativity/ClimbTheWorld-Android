@@ -116,4 +116,17 @@
 
     <include layout="@layout/map_zoom_controls" />
 
+    <!-- Switches to the A.R. view, see MapArSwitch. At the bottom right, as the node editor's
+         switch to the A.R. placement. -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/mapArSwitchButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="5dip"
+        android:background="?android:selectableItemBackground"
+        android:contentDescription="@string/hint_switch_to_ar"
+        app:srcCompat="@drawable/ic_view_switch_frame" />
+
 </RelativeLayout>

@@ -36,6 +36,8 @@
     <string name="hint_settings">Ouvrir les paramètres.</string>
     <string name="hint_filter">Filtrer les éléments visibles selon différents critères.</string>
     <string name="hint_ar_settings">Ouvrir les paramètres de réalité augmentée.</string>
+    <string name="hint_switch_to_ar">Passer à la vue en réalité augmentée.</string>
+    <string name="hint_switch_to_map">Passer à la carte.</string>
     <string name="hint_download">Ouvrir le gestionnaire de téléchargements.</string>
     <string name="hint_layer">Afficher ou masquer les calques de la carte.</string>
     <string name="hint_zoom_in">Zoom avant.</string>

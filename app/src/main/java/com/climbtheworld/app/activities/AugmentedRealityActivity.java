@@ -1,6 +1,7 @@
 package com.climbtheworld.app.activities;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -104,6 +105,24 @@ public class AugmentedRealityActivity extends MapWidgetActivity
 	private Preview cameraPreview;
 	private View compassBazel;
 
+	/**
+	 * Tells the user the A.R. view needs a compass, when the device has none: it places everything
+	 * by the way the device is facing.
+	 *
+	 * @return whether the A.R. view can open
+	 */
+	static boolean checkCompass(Activity activity) {
+		if (OrientationManager.hasCompass(activity)) {
+			return true;
+		}
+		new AlertDialog.Builder(activity)
+				.setTitle(R.string.compass_missing)
+				.setMessage(R.string.compass_missing_message)
+				.setPositiveButton(android.R.string.ok, null)
+				.show();
+		return false;
+	}
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -119,6 +138,8 @@ public class AugmentedRealityActivity extends MapWidgetActivity
 						EnvironmentActivity.class));
 			}
 		});
+
+		MapArSwitch.setUp(this, findViewById(R.id.mapArSwitchButton), true);
 
 		// As the map's new node button.
 		((FloatingActionButton) findViewById(R.id.createButton)).setImageDrawable(

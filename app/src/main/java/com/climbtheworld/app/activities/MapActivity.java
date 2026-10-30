@@ -105,6 +105,8 @@ public class MapActivity extends MapWidgetActivity implements ConfigFragment.OnC
 			}
 		});
 
+		MapArSwitch.setUp(this, findViewById(R.id.mapArSwitchButton), false);
+
 		updateFilterIcon();
 		initSearch();
 	}
