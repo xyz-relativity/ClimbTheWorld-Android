@@ -200,6 +200,7 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 						startEditing(result, Collections.emptyList());
 						centerOnNode();
 						if (editNodeID == 0) {
+							dropdownType.setPrompt(getString(R.string.set_new_node_type));
 							dropdownType.performClick();
 						}
 					}

@@ -63,6 +63,7 @@
     <string name="type">Type</string>
     <string name="climb_style">Climbing Styles</string>
     <string name="node_type">Node Type</string>
+    <string name="set_new_node_type">Set new node type</string>
     <string name="description">Description</string>
     <string name="description_num_characters">Description (%d of 255 characters)</string>
     <string name="website">Website</string>

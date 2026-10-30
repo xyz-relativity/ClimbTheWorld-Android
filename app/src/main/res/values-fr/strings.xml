@@ -61,6 +61,7 @@
     <string name="type">Type</string>
     <string name="climb_style">Styles d’escalade</string>
     <string name="node_type">Type d’élément</string>
+    <string name="set_new_node_type">Définir le type du nouvel élément</string>
     <string name="description">Description</string>
     <string name="description_num_characters">Description (%d sur 255 caractères)</string>
     <string name="website">Site web</string>
