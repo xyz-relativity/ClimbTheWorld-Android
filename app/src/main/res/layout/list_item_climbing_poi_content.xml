@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- A row of the lists of climbing POIs, see ClimbingPoiRow: the pin, the name with what the POI
-     is part of under it, the straight line distance over the compass point, each after its
-     icon, and the button centering the map on the POI, the distance part as in the info dialogs'
-     fragment_info_geoloc, under the same ids and styles. -->
+     is part of under it and the straight line distance and the compass point under that, each
+     after its icon, and the button centering the map on the POI, the distance part as in the info
+     dialogs' fragment_info_geoloc, under the same ids and styles. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -35,32 +35,28 @@
             android:id="@+id/climbingPoiParent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
-    </LinearLayout>
 
-    <!-- On two lines, centred as the button beside them, the icons in a column and the values
-         lined up on the right. -->
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:gravity="end"
-        android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/editDistance"
-            style="@style/DistanceFromUser"
+        <!-- On their own line, so they leave the name the row's width. -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="end|center_vertical"
-            android:maxLines="1" />
+            android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/editBearings"
-            style="@style/DirectionFromUser"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="end|center_vertical"
-            android:maxLines="1" />
+            <TextView
+                android:id="@+id/editDistance"
+                style="@style/DistanceFromUser"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="1" />
+
+            <TextView
+                android:id="@+id/editBearings"
+                style="@style/DirectionFromUser"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:maxLines="1" />
+        </LinearLayout>
     </LinearLayout>
 
     <ImageView

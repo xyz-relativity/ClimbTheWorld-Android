@@ -18,9 +18,9 @@ import com.climbtheworld.app.utils.views.dialogs.DialogueUtils;
  * The rows of the lists of climbing POIs: the search results, on the map and on their own page,
  * the map's cluster list and the editors' crag and area picker. Each shows
  * the pin as the map draws it, smaller, the name with what the POI is part of under it, see
- * ClimbingParent, the straight line distance from the user over the compass point, each after its
- * icon, and the button centering the map on the POI, the distance part as the info dialogs show
- * it, see DialogueUtils.setDistance.
+ * ClimbingParent and the straight line distance from the user and the compass point under that,
+ * each after its icon, and the button centering the map on the POI, the distance part as the info
+ * dialogs show it, see DialogueUtils.setDistance.
  */
 public final class ClimbingPoiRow {
 	/** The size of the pins, against the map's. */
