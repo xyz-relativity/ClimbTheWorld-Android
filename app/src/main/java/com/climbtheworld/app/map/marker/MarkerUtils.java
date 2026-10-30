@@ -280,11 +280,6 @@ public class MarkerUtils {
 		return height;
 	}
 
-	public static Drawable getLayoutIcon(AppCompatActivity parent, int layoutID) {
-		return new BitmapDrawable(parent.getResources(),
-				createBitmapFromLayout(View.inflate(parent, layoutID, null)));
-	}
-
 	public static String stylesToString(AppCompatActivity parent,
 	                                    List<GeoNode.ClimbingStyle> styles) {
 		if (styles == null)

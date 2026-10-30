@@ -111,7 +111,7 @@
                             android:layout_centerVertical="true"
                             android:cropToPadding="true"
                             android:padding="5dip"
-                            android:src="@drawable/ic_new_topo"
+                            android:src="@drawable/ic_new_node"
                             android:adjustViewBounds="true" />
 
                         <TextView

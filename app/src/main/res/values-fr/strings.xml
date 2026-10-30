@@ -32,7 +32,6 @@
     <string name="hint_compass">Afficher les coordonnées.</string>
     <string name="hint_center_gps">Centrer sur la position GPS.</string>
     <string name="hint_create_new_route">Créer un nouvel élément.</string>
-    <string name="new_node_marker">NOUVEAU</string>
     <string name="hint_settings">Ouvrir les paramètres.</string>
     <string name="hint_filter">Filtrer les éléments visibles selon différents critères.</string>
     <string name="hint_ar_settings">Ouvrir les paramètres de réalité augmentée.</string>

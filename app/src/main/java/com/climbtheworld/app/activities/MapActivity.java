@@ -16,7 +16,6 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
 import com.climbtheworld.app.configs.ConfigFragment;
 import com.climbtheworld.app.configs.Configs;
-import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.map.marker.NodeDisplayFilters;
 import com.climbtheworld.app.map.model.MapBounds;
 import com.climbtheworld.app.map.model.MapCoordinate;
@@ -93,7 +92,6 @@ public class MapActivity extends MapWidgetActivity implements ConfigFragment.OnC
 		mapWidget.setOnFollowCompassChangeListener(orientationManager::setFastUpdates);
 
 		FloatingActionButton createNew = findViewById(R.id.createButton);
-		createNew.setImageDrawable(MarkerUtils.getLayoutIcon(this, R.layout.icon_climbing_add_display));
 		createNew.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {

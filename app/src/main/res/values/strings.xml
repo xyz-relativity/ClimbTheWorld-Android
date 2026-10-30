@@ -34,7 +34,6 @@
     <string name="hint_compass">Show coordinates.</string>
     <string name="hint_center_gps">Center on GPS.</string>
     <string name="hint_create_new_route">Create new node.</string>
-    <string name="new_node_marker">NEW</string>
     <string name="hint_settings">Open settings view.</string>
     <string name="hint_filter">Filter visible nodes based on different criteria.</string>
     <string name="hint_ar_settings">Open augmented reality settings.</string>

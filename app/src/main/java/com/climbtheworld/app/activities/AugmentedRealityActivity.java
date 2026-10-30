@@ -42,7 +42,6 @@ import com.climbtheworld.app.augmentedreality.TerrainWireframe;
 import com.climbtheworld.app.augmentedreality.TerrainWireframeView;
 import com.climbtheworld.app.configs.ConfigFragment;
 import com.climbtheworld.app.configs.Configs;
-import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.map.marker.NodeDisplayFilters;
 import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.map.widget.MapLibreMapWidget;
@@ -140,10 +139,6 @@ public class AugmentedRealityActivity extends MapWidgetActivity
 		});
 
 		MapArSwitch.setUp(this, findViewById(R.id.mapArSwitchButton), true);
-
-		// As the map's new node button.
-		((FloatingActionButton) findViewById(R.id.createButton)).setImageDrawable(
-				MarkerUtils.getLayoutIcon(this, R.layout.icon_climbing_add_display));
 
 		configs = Configs.instance(this);
 		scene = new AugmentedRealityScene(this, Globals.virtualCamera,

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- New node: the round pin (ic_poi_info) with a plus in its head, going down onto the amber
+     cursor ring of the A.R. placement (ic_ar_place_cursor). For the map's and the A.R. view's new
+     node buttons. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+    <path
+        android:pathData="M50,86m-26,0a26,9 0,1 1,52 0a26,9 0,1 1,-52 0"
+        android:strokeWidth="8"
+        android:strokeColor="#000000" />
+    <path
+        android:pathData="M50,86m-26,0a26,9 0,1 1,52 0a26,9 0,1 1,-52 0"
+        android:strokeWidth="4"
+        android:strokeColor="#ffbf1a" />
+
+    <!-- The pin's tip on the ring's centre. -->
+    <group
+        android:translateX="23.75"
+        android:translateY="4.6"
+        android:scaleX="1.55"
+        android:scaleY="1.55">
+        <path
+            android:pathData="M15.1253,44.7784L15.1253,47.688l1.8081,4.8137 1.8081,-4.8137l0,-2.9096"
+            android:strokeLineJoin="round"
+            android:strokeWidth="1.9"
+            android:fillColor="#ffffff"
+            android:strokeColor="#000000"
+            android:fillAlpha="0.95"
+            android:strokeLineCap="round" />
+        <path
+            android:pathData="M16.9333,39.5418m-5.4242,-0a5.5542,5.4242 90,1 0,10.8485 -0a5.5542,5.4242 90,1 0,-10.8485 -0"
+            android:strokeLineJoin="round"
+            android:strokeWidth="1.9"
+            android:fillColor="#ffffff"
+            android:fillAlpha="0.95"
+            android:strokeColor="#000000" />
+        <path
+            android:pathData="M16.9333,17.3249m-16.2727,-0a16.6627,16.2727 90,1 0,32.5454 -0a16.6627,16.2727 90,1 0,-32.5454 -0"
+            android:strokeLineJoin="round"
+            android:strokeWidth="1.9"
+            android:fillColor="#ffffff"
+            android:strokeColor="#000000"
+            android:fillAlpha="0.95" />
+        <path
+            android:pathData="M14.33,8.32h5.2v6.4h6.4v5.2h-6.4v6.4h-5.2v-6.4h-6.4v-5.2h6.4z"
+            android:strokeLineJoin="round"
+            android:strokeWidth="1.1"
+            android:fillColor="#00ff00"
+            android:fillAlpha="0.9"
+            android:strokeColor="#000000" />
+    </group>
+</vector>

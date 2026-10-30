@@ -111,7 +111,7 @@
             android:background="?android:selectableItemBackground"
             android:contentDescription="@string/hint_create_new_route"
             android:layout_margin="5dip"
-            android:src="@drawable/ic_add" />
+            app:srcCompat="@drawable/ic_new_node" />
     </LinearLayout>
 
     <include layout="@layout/map_zoom_controls" />
