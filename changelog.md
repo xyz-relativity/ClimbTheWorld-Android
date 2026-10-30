@@ -2,8 +2,9 @@
 ========
 - Count only the routes matching the display filters on crag and area pins and on the map's cluster bubbles while a filter is on, and mark those pins with a filter badge. The filter button shows in colour while a filter is on.
 - Blur the compass button while the heading is uncertain, on the map and on the A.R. minimap.
-- Add a new node button to the A.R. view. In the non-FOSS build, it opens the node editor's A.R. placement, keeping the routes already aligned on.
+- Add a new node button to the A.R. view. In the non-FOSS build, it opens the node editor's A.R. placement, keeping the routes already aligned on. Give the new node button a new icon, on the map too.
 - Add a button at the bottom right of the map and of the A.R. view to switch from one to the other, as the node editor has.
+- Give the name the whole width of the row in the search results, the map's cluster list and the editors' crag and area picker, with the distance and direction on a line under it.
 - In the non-FOSS A.R. views, once aligned on two routes far enough apart, take the heading from them rather than from the compass, which rock often throws off. Align waits until the compass has given a first heading.
 - While aligning, show where the A.R. has the route now with a faint pin and a dashed line to the cursor.
 - List the routes to align on side by side, under the name of their crag, each with its number in the crag. Outline the routes already aligned on, and those best to align on next, with marks above the scroll bar showing where they are: tap one to go to it.
