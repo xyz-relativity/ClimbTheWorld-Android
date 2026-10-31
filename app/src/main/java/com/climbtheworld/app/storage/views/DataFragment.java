@@ -28,6 +28,7 @@ import com.climbtheworld.app.storage.database.AppDatabase;
 import com.climbtheworld.app.storage.database.DownloadedCountry;
 import com.climbtheworld.app.storage.database.EntityCountryDao;
 import com.climbtheworld.app.storage.database.OsmEntity;
+import com.climbtheworld.app.storage.logbook.LogBookFilter;
 import com.climbtheworld.app.storage.offline.OfflineCountryStore;
 import com.climbtheworld.app.storage.services.DownloadProgressListener;
 import com.climbtheworld.app.storage.services.DownloadService;
@@ -184,6 +185,14 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 		if (adapter != null) {
 			adapter.notifyDataSetChanged();
 		}
+	}
+
+	/** The quick filter of the country tabs: the name in the user's language or English, or the ISO code. */
+	static boolean matchesFilter(CountryViewState country, String filter) {
+		String text = LogBookFilter.normalize(filter.trim());
+		return LogBookFilter.normalize(country.countryName).contains(text)
+				|| LogBookFilter.normalize(country.englishName).contains(text)
+				|| LogBookFilter.normalize(country.countryISO).contains(text);
 	}
 
 	View buildCountriesView(View view, final ViewGroup tab, CountryViewState country) {

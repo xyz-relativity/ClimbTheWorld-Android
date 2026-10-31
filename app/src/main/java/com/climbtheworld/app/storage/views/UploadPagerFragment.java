@@ -28,6 +28,7 @@ import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
 import com.climbtheworld.app.storage.edit.OsmEditStore;
+import com.climbtheworld.app.storage.logbook.LogBookFilter;
 import com.climbtheworld.app.storage.upload.ChangeSummary;
 import com.climbtheworld.app.storage.upload.OsmApi;
 import com.climbtheworld.app.storage.upload.OsmUploader;
@@ -36,6 +37,7 @@ import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.IPagerViewFragment;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
+import com.climbtheworld.app.utils.views.TextWatchers;
 import com.climbtheworld.app.utils.views.dialogs.DialogBuilder;
 import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
 
@@ -45,6 +47,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 import needle.Needle;
 import needle.UiRelatedTask;
@@ -62,6 +65,9 @@ public class UploadPagerFragment extends DataFragment
 
 	/** The changes to upload once the login started for them is done. */
 	private List<String> waitingForLogin;
+	private EditText filter;
+	/** What the quick filter looks up in each change's row: its name and what changed. */
+	private final Map<View, String> changeTexts = new HashMap<>();
 
 	public UploadPagerFragment(AppCompatActivity parent, @LayoutRes int viewID) {
 		super(parent, viewID, new HashMap<>());
@@ -93,6 +99,8 @@ public class UploadPagerFragment extends DataFragment
 		this.view = view;
 		findViewById(R.id.ButtonPush).setOnClickListener(this);
 		findViewById(R.id.ButtonRevert).setOnClickListener(this);
+		filter = findViewById(R.id.editFind);
+		filter.addTextChangedListener(TextWatchers.afterTextChanged(s -> applyFilter()));
 		pushTab();
 	}
 
@@ -108,6 +116,7 @@ public class UploadPagerFragment extends DataFragment
 	public void pushTab() {
 		final ViewGroup tab = findViewById(R.id.changesView);
 		tab.removeAllViews();
+		changeTexts.clear();
 
 		Constants.ASYNC_TASK_EXECUTOR
 				.execute(new Runnable() {
@@ -115,6 +124,9 @@ public class UploadPagerFragment extends DataFragment
 					public void run() {
 						List<OsmEntity> updates = new OsmEditStore(parent.get()).loadChanges();
 						ClimbingRouteCounter routeCounter = ClimbingRouteCounter.forDatabase(parent.get());
+						// Nothing to narrow down to.
+						Needle.onMainThread().execute(() -> findViewById(R.id.filterContainer)
+								.setVisibility(updates.isEmpty() ? View.GONE : View.VISIBLE));
 
 						for (final OsmEntity entity : updates) {
 							final DisplayableGeoNode node = entity instanceof OsmNode
@@ -144,12 +156,28 @@ public class UploadPagerFragment extends DataFragment
 													node.getGeoNode());
 										}
 									});
+									changeTexts.put(newViewElement,
+											LogBookFilter.normalize(node.getGeoNode().getName())
+													+ "\n" + LogBookFilter.normalize(description));
+									showIfMatching(newViewElement);
 									tab.addView(newViewElement);
 								}
 							});
 						}
 					}
 				});
+	}
+
+	private void applyFilter() {
+		for (View row : changeTexts.keySet()) {
+			showIfMatching(row);
+		}
+	}
+
+	private void showIfMatching(View row) {
+		String text = LogBookFilter.normalize(filter.getText().toString().trim());
+		String rowText = changeTexts.get(row);
+		row.setVisibility(rowText == null || rowText.contains(text) ? View.VISIBLE : View.GONE);
 	}
 
 	/** New, deleted, or what changed: tags, position, members. */
@@ -238,9 +266,13 @@ public class UploadPagerFragment extends DataFragment
 		}
 	}
 
+	/** Only the rows the quick filter shows, so nothing the user cannot see is uploaded or reverted. */
 	private void aggregateSelectedItems(ViewGroup listView, List<String> selectedList) {
 		for (int i = 0; i < listView.getChildCount(); i++) {
 			View child = listView.getChildAt(i);
+			if (child.getVisibility() != View.VISIBLE) {
+				continue;
+			}
 			SwitchCompat checkBox = child.findViewById(R.id.switchTypeEnabled);
 			if (checkBox.isChecked()) {
 				TextView nodeID = child.findViewById(R.id.itemID);

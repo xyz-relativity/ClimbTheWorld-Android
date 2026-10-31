@@ -3,7 +3,7 @@ package com.climbtheworld.app.storage.views;
 import android.content.Intent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.annotation.LayoutRes;
@@ -11,11 +11,15 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.services.DownloadService;
+import com.climbtheworld.app.utils.views.FilteredListAdapter;
+import com.climbtheworld.app.utils.views.TextWatchers;
 
 import java.util.List;
 import java.util.Map;
 
 public class LocalPagerFragment extends DataFragment {
+	private EditText filter;
+	private FilteredListAdapter<String> adapter;
 
 	public LocalPagerFragment(AppCompatActivity parent, @LayoutRes int viewID, Map<String, CountryViewState> countryMap) {
 		super(parent, viewID, countryMap);
@@ -42,6 +46,12 @@ public class LocalPagerFragment extends DataFragment {
 
 		listView = findViewById(R.id.localCountryView);
 		findViewById(R.id.noLocalDataContainer).setVisibility(View.GONE);
+		filter = findViewById(R.id.editFind);
+		filter.addTextChangedListener(TextWatchers.afterTextChanged(s -> {
+			if (adapter != null) {
+				adapter.applyFilter(s.toString());
+			}
+		}));
 		refreshInstalledCountries();
 		DownloadService.addListener(this);
 	}
@@ -61,32 +71,28 @@ public class LocalPagerFragment extends DataFragment {
 	protected void onInstalledCountriesLoaded(List<String> installedCountries) {
 		findViewById(R.id.noLocalDataContainer)
 				.setVisibility(installedCountries.isEmpty() ? View.VISIBLE : View.GONE);
+		// Nothing to narrow down to.
+		findViewById(R.id.filterContainer)
+				.setVisibility(installedCountries.isEmpty() ? View.GONE : View.VISIBLE);
 
-		listView.setAdapter(new BaseAdapter() {
+		adapter = new FilteredListAdapter<String>(installedCountries) {
 			@Override
-			public int getCount() {
-				return installedCountries.size();
-			}
-
-			@Override
-			public Object getItem(int i) {
-				return installedCountries.get(i);
-			}
-
-			@Override
-			public long getItemId(int i) {
-				return i;
+			protected boolean isVisible(int i, String filter) {
+				CountryViewState country = countryMap.get(initialList.get(i));
+				return country != null && matchesFilter(country, filter);
 			}
 
 			@Override
 			public View getView(int i, View view, ViewGroup viewGroup) {
-				String countryKey = installedCountries.get(i);
+				String countryKey = visibleList.get(i);
 				final CountryViewState country = countryMap.get(countryKey);
 
 				view = buildCountriesView(view, viewGroup, country);
 				country.setViewState(country, view);
 				return view;
 			}
-		});
+		};
+		adapter.applyFilter(filter.getText().toString());
+		listView.setAdapter(adapter);
 	}
 }

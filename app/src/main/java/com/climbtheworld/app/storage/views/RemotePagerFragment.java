@@ -80,9 +80,7 @@ public class RemotePagerFragment extends DataFragment implements IPagerViewFragm
 		protected boolean isVisible(int i, String filter) {
 			String countryIso = initialList.get(i);
 			CountryViewState country = countryMap.get(countryIso);
-			return country != null && (country.countryName.toLowerCase().contains(filter)
-					|| country.englishName.toLowerCase().contains(filter)
-					|| country.countryISO.toLowerCase().contains(filter));
+			return country != null && matchesFilter(country, filter);
 		}
 
 		@Override

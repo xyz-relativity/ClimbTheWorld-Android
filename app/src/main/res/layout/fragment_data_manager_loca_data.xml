@@ -23,10 +23,13 @@
             android:textAlignment="center" />
     </LinearLayout>
 
+    <include layout="@layout/layout_filter"/>
+
     <ListView
         android:id="@+id/localCountryView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_below="@+id/filterContainer"
         android:orientation="vertical" />
 
 </RelativeLayout>

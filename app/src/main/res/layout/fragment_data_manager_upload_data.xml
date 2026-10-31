@@ -5,9 +5,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <include layout="@layout/layout_filter"/>
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_below="@+id/filterContainer"
         android:layout_above="@+id/ButtonBar"
         android:orientation="vertical">
 
