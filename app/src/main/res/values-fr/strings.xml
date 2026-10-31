@@ -469,7 +469,6 @@
     <string name="arcore_install_play_store">Google Play</string>
     <string name="arcore_install_apk">APK depuis GitHub</string>
     <string name="ar_placement_install_from_apk">Une fois les Services Google Play pour la RA installés, réessayez le placement en R.A.</string>
-    <string name="ar_view_arcore_install_from_apk">Une fois les Services Google Play pour la RA installés, rouvrez la vue en réalité augmentée pour les utiliser.</string>
     <string name="ar_placement_no_camera">Le placement en R.A. a besoin de l’appareil photo.</string>
     <string name="ar_placement_install_declined">Le placement en R.A. a besoin des Services Google Play pour la RA.</string>
     <string name="ar_placement_unsupported">ARCore ne fonctionne pas sur ce téléphone : le placement en R.A. n’est pas possible.</string>

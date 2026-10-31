@@ -7,6 +7,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.climbtheworld.app.augmentedreality.placement.ArPlacement;
 import com.climbtheworld.app.tutorial.TutorialFragment;
 
+import java.util.function.Consumer;
+
 /**
  * Makes what runs on ARCore, which the FOSS build leaves out, as ARCore is not free software: the
  * node editor has no A.R. placement, its button never showing, the A.R. view runs on the
@@ -33,9 +35,8 @@ public final class ArCoreFeatures {
 	}
 
 	/**
-	 * @return null, for no page
+	 * Gives no page.
 	 */
-	public static TutorialFragment tutorialPage(AppCompatActivity activity) {
-		return null;
+	public static void tutorialPage(AppCompatActivity activity, Consumer<TutorialFragment> page) {
 	}
 }

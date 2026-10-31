@@ -77,6 +77,7 @@ public class SettingsActivity extends AppCompatActivity
 				// The user wants ARCore again, whatever they refused before.
 				configs.setInt(Configs.ConfigKey.arCoreViewRefusals, 0);
 				configs.setBoolean(Configs.ConfigKey.arCoreViewRefusedThisRun, false);
+				configs.setBoolean(Configs.ConfigKey.showArCoreInstall, true);
 			}
 		}
 

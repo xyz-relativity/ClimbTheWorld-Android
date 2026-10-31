@@ -271,6 +271,9 @@ public class Configs {
 		// Until the user has read that the A.R. view and placement run on Google Play Services for
 		// AR.
 		showArCoreNotice(-1, -1, "showArCoreNotice", true),
+		// Until the user says not to show again the offer to install ARCore as the A.R. view
+		// opens without it, see ArViewController.
+		showArCoreInstall(-1, -1, "showArCoreInstall", true),
 		// How many times in a row the A.R. view was refused ARCore, see ArViewController.
 		arCoreViewRefusals(-1, -1, "arCoreViewRefusals", 0),
 		// Whether the A.R. view was refused ARCore since the app started, see ArViewController.

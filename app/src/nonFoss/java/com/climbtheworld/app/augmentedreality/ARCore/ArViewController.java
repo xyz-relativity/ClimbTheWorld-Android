@@ -1,8 +1,12 @@
 package com.climbtheworld.app.augmentedreality.ARCore;
 
+import android.app.AlertDialog;
+import android.text.Html;
+import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -37,7 +41,8 @@ import java.util.function.Supplier;
  * Elsewhere, with the Use ARCore setting off, or when the user does not let ARCore run, the A.R.
  * view goes on with CameraX and the sensors. Once refused, ARCore is left alone until the app
  * starts again, which asks once more; refused twice in a row, the setting is turned off, until the
- * user turns it on again.
+ * user turns it on again. Without ARCore installed, or with it too old, the view does the same,
+ * and offers to install it, see offerInstall.
  * <p>
  * To add a node from the view, ARCore's world is handed over to the node editor's A.R. placement
  * as the view is paused for it, see handOver, and taken back, with the routes aligned on there
@@ -74,6 +79,8 @@ public class ArViewController implements ArViewTracking {
 	// As the listener was last told, see Listener.onAligningChanged.
 	private Set<Long> shownWhileAligning;
 	private Long seeThroughNodeId;
+	// Offers to install ARCore, see offerInstall.
+	private AlertDialog installDialog;
 
 	/**
 	 * To be made in the activity's onCreate, as it registers for the camera permission result.
@@ -108,10 +115,6 @@ public class ArViewController implements ArViewTracking {
 					case INSTALL_DECLINED:
 						refused();
 						toast(R.string.ar_view_arcore_install_declined);
-						break;
-					case INSTALL_FROM_APK:
-						// No refusal: the user means to install it.
-						toast(R.string.ar_view_arcore_install_from_apk);
 						break;
 					case UNSUPPORTED:
 						refused();
@@ -216,6 +219,9 @@ public class ArViewController implements ArViewTracking {
 
 	@Override
 	public void onDestroy() {
+		if (installDialog != null) {
+			installDialog.dismiss();
+		}
 		arCore.onDestroy();
 	}
 
@@ -292,7 +298,11 @@ public class ArViewController implements ArViewTracking {
 				Log.i(TAG, "ARCore answered once the view no longer wanted it");
 				return;
 			}
-			if (supported) {
+			if (supported && ArCoreInstall.needsInstall(activity)) {
+				Log.i(TAG, "ARCore is not installed, or too old");
+				offerInstall();
+				giveUp();
+			} else if (supported) {
 				Log.i(TAG, "Starting ARCore");
 				arCore.start();
 			} else {
@@ -300,6 +310,40 @@ public class ArViewController implements ArViewTracking {
 				giveUp();
 			}
 		});
+	}
+
+	/**
+	 * Offers to install ARCore, missing or too old, as the view opens, until the user says not to
+	 * show it again, as its other notices: from Google Play, or as the APK from Google's GitHub
+	 * page, for phones without Google Play. The view goes on with the sensors, and takes ARCore
+	 * once it is installed and the view opens again. It tells about ARCore as its notice does.
+	 */
+	private void offerInstall() {
+		Configs configs = Configs.instance(activity);
+		if (!configs.getBoolean(Configs.ConfigKey.showArCoreInstall)) {
+			return;
+		}
+		AlertDialog.Builder builder = new AlertDialog.Builder(activity)
+				.setCancelable(true)
+				.setTitle(R.string.arcore_notice_title)
+				.setMessage(Html.fromHtml(activity.getString(R.string.arcore_notice_message)
+								+ "<br /><br />" + activity.getString(R.string.arcore_install_from),
+						Html.FROM_HTML_MODE_LEGACY))
+				.setNegativeButton(R.string.arcore_install_apk, (dialog, which) -> {
+					configs.setBoolean(Configs.ConfigKey.showArCoreNotice, false);
+					ArCoreInstall.openApkPage(activity);
+				})
+				.setNeutralButton(R.string.dont_show_again, (dialog, which) ->
+						configs.setBoolean(Configs.ConfigKey.showArCoreInstall, false));
+		if (ArCoreInstall.hasPlayStore(activity)) {
+			builder.setPositiveButton(R.string.arcore_install_play_store, (dialog, which) -> {
+				configs.setBoolean(Configs.ConfigKey.showArCoreNotice, false);
+				ArCoreInstall.openPlayStore(activity);
+			});
+		}
+		installDialog = builder.show();
+		((TextView) installDialog.findViewById(android.R.id.message))
+				.setMovementMethod(LinkMovementMethod.getInstance());
 	}
 
 	private void setMovesCamera(boolean moves) {

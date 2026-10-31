@@ -11,7 +11,6 @@ import androidx.lifecycle.LifecycleOwner;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.augmentedreality.ARCore.ArCoreInstall;
 import com.climbtheworld.app.configs.Configs;
-import com.google.ar.core.ArCoreApk;
 
 /**
  * Tells about ARCore, as its notice does, and offers to install it from Google Play, or as the APK
@@ -63,28 +62,17 @@ public class ArCoreFragment extends TutorialFragment implements DefaultLifecycle
 	}
 
 	/**
-	 * Offers to install ARCore while it is missing or too old, unless it does not run here.
+	 * Offers to install ARCore while it is missing or too old: the page only comes where it runs,
+	 * see ArCoreFeatures.tutorialPage.
 	 */
 	private void updateButtons() {
 		AppCompatActivity activity = parent.get();
 		if (view == null || activity == null) {
 			return;
 		}
-		if (!ArCoreInstall.needsInstall(activity)) {
-			view.findViewById(R.id.arCoreInstall).setVisibility(View.GONE);
-			return;
-		}
-		ArCoreApk.getInstance().checkAvailabilityAsync(activity.getApplicationContext(),
-				availability -> {
-					if (view == null) {
-						return;
-					}
-					boolean installable =
-							availability != ArCoreApk.Availability.UNSUPPORTED_DEVICE_NOT_CAPABLE;
-					view.findViewById(R.id.arCoreInstall).setVisibility(
-							installable ? View.VISIBLE : View.GONE);
-					view.findViewById(R.id.buttonPlayStore).setVisibility(
-							ArCoreInstall.hasPlayStore(activity) ? View.VISIBLE : View.GONE);
-				});
+		view.findViewById(R.id.arCoreInstall).setVisibility(
+				ArCoreInstall.needsInstall(activity) ? View.VISIBLE : View.GONE);
+		view.findViewById(R.id.buttonPlayStore).setVisibility(
+				ArCoreInstall.hasPlayStore(activity) ? View.VISIBLE : View.GONE);
 	}
 }

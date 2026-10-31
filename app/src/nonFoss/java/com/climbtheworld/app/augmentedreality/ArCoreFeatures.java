@@ -10,6 +10,9 @@ import com.climbtheworld.app.augmentedreality.ARCore.ArViewController;
 import com.climbtheworld.app.augmentedreality.placement.ArPlacement;
 import com.climbtheworld.app.tutorial.ArCoreFragment;
 import com.climbtheworld.app.tutorial.TutorialFragment;
+import com.google.ar.core.ArCoreApk;
+
+import java.util.function.Consumer;
 
 /**
  * Makes what runs on ARCore in the non-FOSS build: the A.R. placement in the node editor, the
@@ -40,9 +43,16 @@ public final class ArCoreFeatures {
 	}
 
 	/**
-	 * See ArCoreFragment.
+	 * Gives the page, see ArCoreFragment, on the main thread, only where ARCore is known to run,
+	 * as the A.R. view offers to install it: while it is missing, that takes asking Google.
 	 */
-	public static TutorialFragment tutorialPage(AppCompatActivity activity) {
-		return new ArCoreFragment(activity, R.layout.fragment_tutorial_arcore);
+	public static void tutorialPage(AppCompatActivity activity, Consumer<TutorialFragment> page) {
+		ArCoreApk.getInstance().checkAvailabilityAsync(activity.getApplicationContext(),
+				availability -> {
+					if (availability.isSupported()) {
+						page.accept(new ArCoreFragment(activity,
+								R.layout.fragment_tutorial_arcore));
+					}
+				});
 	}
 }

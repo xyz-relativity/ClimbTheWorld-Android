@@ -471,7 +471,6 @@
     <string name="arcore_install_play_store">Google Play</string>
     <string name="arcore_install_apk">APK from GitHub</string>
     <string name="ar_placement_install_from_apk">Once Google Play Services for AR is installed, try placing in A.R. again.</string>
-    <string name="ar_view_arcore_install_from_apk">Once Google Play Services for AR is installed, open the A.R. view again to use it.</string>
     <string name="ar_placement_no_camera">Placing in A.R. needs the camera.</string>
     <string name="ar_placement_install_declined">Placing in A.R. needs Google Play Services for AR.</string>
     <string name="ar_placement_unsupported">ARCore doesn\'t run on this phone, so it can\'t place in A.R.</string>
