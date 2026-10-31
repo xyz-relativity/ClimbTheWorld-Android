@@ -10,7 +10,6 @@ import androidx.lifecycle.LifecycleOwner;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.augmentedreality.ARCore.ArCoreInstall;
-import com.climbtheworld.app.configs.Configs;
 
 /**
  * Tells about ARCore, as its notice does, and offers to install it from Google Play, or as the APK
@@ -30,14 +29,7 @@ public class ArCoreFragment extends TutorialFragment implements DefaultLifecycle
 		this.view = view;
 		setMessage(view, getString(R.string.arcore_notice_message));
 
-		view.findViewById(R.id.buttonPlayStore).setOnClickListener(v -> {
-			noticeShown();
-			ArCoreInstall.openPlayStore(parent.get());
-		});
-		view.findViewById(R.id.buttonApk).setOnClickListener(v -> {
-			noticeShown();
-			ArCoreInstall.openApkPage(parent.get());
-		});
+		ArCoreInstall.bindBadges(view.findViewById(R.id.arCoreInstall), parent.get(), null);
 		// Back from Google Play or the APK's install.
 		parent.get().getLifecycle().addObserver(this);
 		updateButtons();
@@ -55,13 +47,6 @@ public class ArCoreFragment extends TutorialFragment implements DefaultLifecycle
 	}
 
 	/**
-	 * The page tells about ARCore as its notice does, which the A.R. views then leave out.
-	 */
-	private void noticeShown() {
-		Configs.instance(parent.get()).setBoolean(Configs.ConfigKey.showArCoreNotice, false);
-	}
-
-	/**
 	 * Offers to install ARCore while it is missing or too old: the page only comes where it runs,
 	 * see ArCoreFeatures.tutorialPage.
 	 */
@@ -72,7 +57,5 @@ public class ArCoreFragment extends TutorialFragment implements DefaultLifecycle
 		}
 		view.findViewById(R.id.arCoreInstall).setVisibility(
 				ArCoreInstall.needsInstall(activity) ? View.VISIBLE : View.GONE);
-		view.findViewById(R.id.buttonPlayStore).setVisibility(
-				ArCoreInstall.hasPlayStore(activity) ? View.VISIBLE : View.GONE);
 	}
 }

@@ -41,80 +41,14 @@
                 android:layout_height="wrap_content"
                 style="@style/DescriptionText" />
 
-            <LinearLayout
+            <include
                 android:id="@+id/arCoreInstall"
-                android:layout_width="wrap_content"
+                layout="@layout/arcore_install_badges"
+                android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
                 android:layout_marginTop="10dp"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:visibility="gone">
-
-                <TextView
-                    style="@style/MainText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/arcore_install_from" />
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <LinearLayout
-                        android:id="@+id/buttonPlayStore"
-                        android:layout_width="140dp"
-                        android:layout_height="match_parent"
-                        android:layout_margin="5dp"
-                        android:padding="10dp"
-                        android:background="@drawable/bg_tile_button"
-                        android:gravity="center_horizontal"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:orientation="vertical">
-
-                        <ImageView
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:src="@drawable/ic_store" />
-
-                        <TextView
-                            style="@style/MainText"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:text="@string/arcore_install_play_store"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:id="@+id/buttonApk"
-                        android:layout_width="140dp"
-                        android:layout_height="match_parent"
-                        android:layout_margin="5dp"
-                        android:padding="10dp"
-                        android:background="@drawable/bg_tile_button"
-                        android:gravity="center_horizontal"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:orientation="vertical">
-
-                        <ImageView
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:src="@drawable/ic_download" />
-
-                        <TextView
-                            style="@style/MainText"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:text="@string/arcore_install_apk"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-                </LinearLayout>
-            </LinearLayout>
+                android:visibility="gone" />
         </LinearLayout>
     </ScrollView>
 

@@ -5,7 +5,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.view.View;
 
+import com.climbtheworld.app.R;
+import com.climbtheworld.app.configs.Configs;
 import com.google.ar.core.ArCoreApk;
 
 /**
@@ -36,6 +39,33 @@ public final class ArCoreInstall {
 
 	public static boolean hasPlayStore(Context context) {
 		return isInstalled(context, PLAY_STORE_PACKAGE);
+	}
+
+	/**
+	 * Makes the badges of arcore_install_badges open where to get ARCore, Google Play's only where
+	 * it is there. Picking one tells about ARCore as its notice does, which the A.R. views then
+	 * leave out.
+	 *
+	 * @param onPicked run as a badge is picked, before it opens, or null
+	 */
+	public static void bindBadges(View badges, Context context, Runnable onPicked) {
+		View playStore = badges.findViewById(R.id.buttonPlayStore);
+		playStore.setVisibility(hasPlayStore(context) ? View.VISIBLE : View.GONE);
+		playStore.setOnClickListener(v -> {
+			picked(context, onPicked);
+			openPlayStore(context);
+		});
+		badges.findViewById(R.id.buttonApk).setOnClickListener(v -> {
+			picked(context, onPicked);
+			openApkPage(context);
+		});
+	}
+
+	private static void picked(Context context, Runnable onPicked) {
+		Configs.instance(context).setBoolean(Configs.ConfigKey.showArCoreNotice, false);
+		if (onPicked != null) {
+			onPicked.run();
+		}
 	}
 
 	public static void openPlayStore(Context context) {

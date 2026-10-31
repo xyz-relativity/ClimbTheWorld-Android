@@ -314,34 +314,28 @@ public class ArViewController implements ArViewTracking {
 
 	/**
 	 * Offers to install ARCore, missing or too old, as the view opens, until the user says not to
-	 * show it again, as its other notices: from Google Play, or as the APK from Google's GitHub
-	 * page, for phones without Google Play. The view goes on with the sensors, and takes ARCore
-	 * once it is installed and the view opens again. It tells about ARCore as its notice does.
+	 * show it again, as its other notices: with the badges of the setup wizard's ARCore page, from
+	 * Google Play, or as the APK from Google's GitHub page, for phones without Google Play. The
+	 * view goes on with the sensors, and takes ARCore once it is installed and the view opens
+	 * again. It tells about ARCore as its notice does.
 	 */
 	private void offerInstall() {
 		Configs configs = Configs.instance(activity);
 		if (!configs.getBoolean(Configs.ConfigKey.showArCoreInstall)) {
 			return;
 		}
-		AlertDialog.Builder builder = new AlertDialog.Builder(activity)
+		View badges = activity.getLayoutInflater().inflate(R.layout.arcore_install_badges, null);
+		installDialog = new AlertDialog.Builder(activity)
 				.setCancelable(true)
 				.setTitle(R.string.arcore_notice_title)
-				.setMessage(Html.fromHtml(activity.getString(R.string.arcore_notice_message)
-								+ "<br /><br />" + activity.getString(R.string.arcore_install_from),
+				.setMessage(Html.fromHtml(activity.getString(R.string.arcore_notice_message),
 						Html.FROM_HTML_MODE_LEGACY))
-				.setNegativeButton(R.string.arcore_install_apk, (dialog, which) -> {
-					configs.setBoolean(Configs.ConfigKey.showArCoreNotice, false);
-					ArCoreInstall.openApkPage(activity);
-				})
+				.setView(badges)
 				.setNeutralButton(R.string.dont_show_again, (dialog, which) ->
-						configs.setBoolean(Configs.ConfigKey.showArCoreInstall, false));
-		if (ArCoreInstall.hasPlayStore(activity)) {
-			builder.setPositiveButton(R.string.arcore_install_play_store, (dialog, which) -> {
-				configs.setBoolean(Configs.ConfigKey.showArCoreNotice, false);
-				ArCoreInstall.openPlayStore(activity);
-			});
-		}
-		installDialog = builder.show();
+						configs.setBoolean(Configs.ConfigKey.showArCoreInstall, false))
+				.setPositiveButton(android.R.string.ok, null)
+				.show();
+		ArCoreInstall.bindBadges(badges, activity, installDialog::dismiss);
 		((TextView) installDialog.findViewById(android.R.id.message))
 				.setMovementMethod(LinkMovementMethod.getInstance());
 	}
