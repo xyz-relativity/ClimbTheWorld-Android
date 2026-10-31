@@ -51,7 +51,8 @@ import needle.UiRelatedTask;
 /**
  * Asks which mapped route to align on, from the routes around the user, side by side as their
  * crags list them, see AlignmentOrder, which is how they stand along the wall, each crag's
- * outlined in the crag pins' colour under its name, after its pin as the info dialogs show it.
+ * outlined in the crag pins' colour under its name, after its pin as the info dialogs show it,
+ * which stays in sight while any of the crag's routes is as the user scrolls, see pinGroupTitles.
  * Each route is on its card as the crag dialog shows its routes, see MemberIconCard, its name
  * after its number in its crag, as the map's pins show it, see ClimbingRouteCounter.numberRoutes,
  * and its distance from the user under it, with a quick filter on their names over them, see
@@ -325,7 +326,12 @@ class AlignmentPicker {
 							Gravity.BOTTOM));
 			// The cards are where they are once a refresh has laid out the strip again.
 			scroll.addOnLayoutChangeListener((view, left, top, right, bottom, oldLeft, oldTop,
-			                                  oldRight, oldBottom) -> updateBar());
+			                                  oldRight, oldBottom) -> {
+				updateBar();
+				pinGroupTitles();
+			});
+			scroll.setOnScrollChangeListener((view, scrollX, scrollY, oldScrollX, oldScrollY) ->
+					pinGroupTitles());
 			this.around = around;
 			this.latitude = latitude;
 			this.longitude = longitude;
@@ -417,6 +423,23 @@ class AlignmentPicker {
 			}
 			bar.setMarks(spans);
 			bar.setVisibility(spans.length > 0 ? View.VISIBLE : View.GONE);
+		}
+
+		/**
+		 * Slides each group's title, its crag's pin and name, along the group for it to stay in
+		 * sight while any of the group is: a group starting left of the strip's visible part has
+		 * its title where the first group's is with the strip at its start, as far as the
+		 * group's end lets it.
+		 */
+		private void pinGroupTitles() {
+			int visibleLeft = scroll.getScrollX() + groups.getPaddingLeft();
+			for (int i = 0; i < groups.getChildCount(); i++) {
+				View group = groups.getChildAt(i);
+				View header = group.findViewById(R.id.alignGroupHeader);
+				int room = group.getWidth() - group.getPaddingRight() - header.getRight();
+				int shift = Math.min(visibleLeft - group.getLeft(), room);
+				header.setTranslationX(Math.max(shift, 0));
+			}
 		}
 
 		/**

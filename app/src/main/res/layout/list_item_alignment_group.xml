@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- A group of the A.R. align dialog: a crag's name, after its pin as the info dialogs show it,
      over its routes side by side, see list_item_alignment_route, outlined in the crag pins'
-     colour, see bg_align_crag_group. -->
+     colour, see bg_align_crag_group. The name slides along the group as the strip scrolls, to stay
+     in sight while any of the group is, see AlignmentPicker. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
@@ -9,6 +10,7 @@
     android:orientation="vertical">
 
     <LinearLayout
+        android:id="@+id/alignGroupHeader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
