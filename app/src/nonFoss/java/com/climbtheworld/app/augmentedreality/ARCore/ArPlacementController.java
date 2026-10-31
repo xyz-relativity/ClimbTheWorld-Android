@@ -130,6 +130,9 @@ public class ArPlacementController implements ArPlacement {
 					case INSTALL_DECLINED:
 						toast(R.string.ar_placement_install_declined);
 						break;
+					case INSTALL_FROM_APK:
+						toast(R.string.ar_placement_install_from_apk);
+						break;
 					case UNSUPPORTED:
 						takeAwayButton(R.string.ar_placement_unsupported);
 						break;

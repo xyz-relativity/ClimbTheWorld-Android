@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager.widget.ViewPager;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.augmentedreality.ArCoreFeatures;
 import com.climbtheworld.app.tutorial.DisclaimerFragment;
 import com.climbtheworld.app.tutorial.DownloadRegionFragment;
 import com.climbtheworld.app.tutorial.RoutesSettingsFragment;
@@ -37,6 +38,10 @@ public class FirstRunActivity extends AppCompatActivity implements View.OnClickL
 		views.add(new WelcomeFragment(this, R.layout.fragment_tutorial_welcome));
 		views.add(new DownloadRegionFragment(this, R.layout.fragment_tutorial_download));
 		views.add(new RoutesSettingsFragment(this, R.layout.fragment_tutorial_routes_settiongs));
+		TutorialFragment arCorePage = ArCoreFeatures.tutorialPage(this);
+		if (arCorePage != null) {
+			views.add(arCorePage);
+		}
 		views.add(new SupportUsFragment(this, R.layout.fragment_tutorial_support_us));
 		views.add(new DisclaimerFragment(this, R.layout.fragment_tutorial_disclaimer));
 

@@ -109,6 +109,10 @@ public class ArViewController implements ArViewTracking {
 						refused();
 						toast(R.string.ar_view_arcore_install_declined);
 						break;
+					case INSTALL_FROM_APK:
+						// No refusal: the user means to install it.
+						toast(R.string.ar_view_arcore_install_from_apk);
+						break;
 					case UNSUPPORTED:
 						refused();
 						toast(R.string.ar_view_arcore_unsupported);

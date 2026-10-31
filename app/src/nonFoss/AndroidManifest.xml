@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- To tell whether ARCore is installed, and whether Google Play is there to install it
+         from, see ArCoreInstall. -->
+    <queries>
+        <package android:name="com.google.ar.core" />
+        <package android:name="com.android.vending" />
+    </queries>
+
     <application>
         <!-- ARCore is only used by the A.R. view, which runs on the sensors without it, and the
              A.R. placement in the node editor, so the app installs and runs without it. -->

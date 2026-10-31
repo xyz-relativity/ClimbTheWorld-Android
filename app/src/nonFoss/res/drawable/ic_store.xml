@@ -1,0 +1,25 @@
+<!-- An app store's bag, for the button installing ARCore from Google Play. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+
+    <path
+        android:pathData="M36,30V24C36,15 41,10 50,10C59,10 64,15 64,24V30"
+        android:strokeColor="#000000"
+        android:strokeWidth="5"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M18,30H82L78,84C77.6,88 75,90 71,90H29C25,90 22.4,88 22,84Z"
+        android:fillColor="#ffffff"
+        android:strokeColor="#000000"
+        android:strokeWidth="5"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M41,44L65,58L41,72Z"
+        android:fillColor="#71D96E"
+        android:strokeColor="#000000"
+        android:strokeWidth="4.5"
+        android:strokeLineJoin="round" />
+</vector>

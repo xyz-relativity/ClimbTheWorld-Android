@@ -463,7 +463,13 @@
     <string name="ar_placement_show">Placer en R.A.</string>
     <string name="ar_placement_hide">Revenir à la carte</string>
     <string name="arcore_notice_title">Services Google Play pour la RA</string>
-    <string name="arcore_notice_message">La vue en réalité augmentée et le placement en R.A. fonctionnent avec les &lt;a href=&quot;https://play.google.com/store/apps/details?id=com.google.ar.core&quot;&gt;Services Google Play pour la RA&lt;/a&gt; (ARCore), fournis par Google LLC et régis par les &lt;a href=&quot;https://policies.google.com/privacy&quot;&gt;Règles de confidentialité de Google&lt;/a&gt;.&lt;br /&gt;&lt;br /&gt;ARCore n’est pas un logiciel libre. Sans lui, la vue en réalité augmentée utilise les capteurs du téléphone, et le reste de l’application fonctionne de la même façon.</string>
+    <string name="arcore_notice_message">La vue en réalité augmentée et le placement en R.A. fonctionnent avec les &lt;a href=&quot;https://play.google.com/store/apps/details?id=com.google.ar.core&quot;&gt;Services Google Play pour la RA&lt;/a&gt; (ARCore), fournis par Google LLC et régis par les &lt;a href=&quot;https://policies.google.com/privacy&quot;&gt;Règles de confidentialité de Google&lt;/a&gt;.&lt;br /&gt;&lt;br /&gt;Facultatif : ARCore vous offre une vue en réalité augmentée plus stable, l’alignement des voies sur le rocher et le placement des éléments en R.A. dans l’éditeur.</string>
+    <string name="arcore_install_message">La R.A. a besoin des Services Google Play pour la RA (ARCore). Installez-les depuis Google Play, ou téléchargez l’APK depuis GitHub, puis rouvrez la R.A.</string>
+    <string name="arcore_install_from">Installez-les depuis :</string>
+    <string name="arcore_install_play_store">Google Play</string>
+    <string name="arcore_install_apk">APK depuis GitHub</string>
+    <string name="ar_placement_install_from_apk">Une fois les Services Google Play pour la RA installés, réessayez le placement en R.A.</string>
+    <string name="ar_view_arcore_install_from_apk">Une fois les Services Google Play pour la RA installés, rouvrez la vue en réalité augmentée pour les utiliser.</string>
     <string name="ar_placement_no_camera">Le placement en R.A. a besoin de l’appareil photo.</string>
     <string name="ar_placement_install_declined">Le placement en R.A. a besoin des Services Google Play pour la RA.</string>
     <string name="ar_placement_unsupported">ARCore ne fonctionne pas sur ce téléphone : le placement en R.A. n’est pas possible.</string>

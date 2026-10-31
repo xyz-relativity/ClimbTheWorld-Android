@@ -173,6 +173,10 @@ class ArCoreSession {
 	// setHandsWorldBack.
 	private boolean handsWorldBack;
 	private AlertDialog noticeDialog;
+	// Asks how to get ARCore, see showInstallChoice.
+	private AlertDialog installDialog;
+	// The user picked Google Play there, which ARCore's install screen goes on with.
+	private boolean installChosen;
 	// ARCore's install screen is showing; starting goes on when the activity resumes.
 	private boolean installRequested;
 	// The A.R. is to show, and it can run.
@@ -677,6 +681,9 @@ class ArCoreSession {
 		if (noticeDialog != null) {
 			noticeDialog.dismiss();
 		}
+		if (installDialog != null) {
+			installDialog.dismiss();
+		}
 		alignmentPicker.dismiss();
 		shown = false;
 		apply();
@@ -837,6 +844,34 @@ class ArCoreSession {
 	}
 
 	/**
+	 * Asks how to get ARCore, missing or too old: from Google Play, through ARCore's install
+	 * screen, or as the APK from Google's GitHub page, for phones without Google Play, which the
+	 * user installs and then opens the A.R. again.
+	 */
+	private void showInstallChoice() {
+		AlertDialog.Builder builder = new AlertDialog.Builder(activity)
+				.setTitle(R.string.arcore_notice_title)
+				.setMessage(Html.fromHtml(activity.getString(R.string.arcore_install_message),
+						Html.FROM_HTML_MODE_LEGACY))
+				.setNeutralButton(R.string.arcore_install_apk, (dialog, which) -> {
+					ArCoreInstall.openApkPage(activity);
+					host.onFailed(Failure.INSTALL_FROM_APK);
+				})
+				.setNegativeButton(android.R.string.cancel,
+						(dialog, which) -> host.onFailed(Failure.INSTALL_DECLINED))
+				.setOnCancelListener(dialog -> host.onFailed(Failure.INSTALL_DECLINED));
+		if (ArCoreInstall.hasPlayStore(activity)) {
+			builder.setPositiveButton(R.string.arcore_install_play_store, (dialog, which) -> {
+				installChosen = true;
+				openSession();
+			});
+		}
+		installDialog = builder.show();
+		// As the notice, a tap beside it is no answer.
+		installDialog.setCanceledOnTouchOutside(false);
+	}
+
+	/**
 	 * Shows the A.R. once ARCore is installed and a session is open. ARCore's install screen, when
 	 * it is missing or too old, pauses the activity, which comes back here when it resumes.
 	 */
@@ -854,8 +889,16 @@ class ArCoreSession {
 			}
 		}
 		if (session == null) {
+			if (!installRequested && !installChosen && ArCoreInstall.needsInstall(activity)) {
+				showInstallChoice();
+				return;
+			}
+			installChosen = false;
 			try {
-				if (ArCoreApk.getInstance().requestInstall(activity, !installRequested)
+				// The user picked Google Play already, so ARCore's install screen asks no more.
+				if (ArCoreApk.getInstance().requestInstall(activity, !installRequested,
+						ArCoreApk.InstallBehavior.OPTIONAL,
+						ArCoreApk.UserMessageType.USER_ALREADY_INFORMED)
 						== ArCoreApk.InstallStatus.INSTALL_REQUESTED) {
 					installRequested = true;
 					return;
@@ -1322,6 +1365,8 @@ class ArCoreSession {
 		NO_CAMERA,
 		// The user did not let ARCore be installed or updated.
 		INSTALL_DECLINED,
+		// The user went to get ARCore's APK, to install it themselves.
+		INSTALL_FROM_APK,
 		// ARCore turned out not to run on this phone.
 		UNSUPPORTED,
 		// ARCore cannot measure depth on this phone, and depth is required.

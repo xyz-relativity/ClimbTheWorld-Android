@@ -4,13 +4,17 @@ import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.climbtheworld.app.R;
 import com.climbtheworld.app.augmentedreality.ARCore.ArPlacementController;
 import com.climbtheworld.app.augmentedreality.ARCore.ArViewController;
 import com.climbtheworld.app.augmentedreality.placement.ArPlacement;
+import com.climbtheworld.app.tutorial.ArCoreFragment;
+import com.climbtheworld.app.tutorial.TutorialFragment;
 
 /**
- * Makes what runs on ARCore in the non-FOSS build: the A.R. placement in the node editor, and the
- * A.R. view's tracking. The FOSS build has its own ArCoreFeatures, without any.
+ * Makes what runs on ARCore in the non-FOSS build: the A.R. placement in the node editor, the
+ * A.R. view's tracking, and the setup wizard's page offering to install ARCore. The FOSS build has
+ * its own ArCoreFeatures, without any.
  */
 public final class ArCoreFeatures {
 	// Whether this build has what runs on ARCore: it does.
@@ -33,5 +37,12 @@ public final class ArCoreFeatures {
 	public static ArViewTracking viewTracking(AppCompatActivity activity, View container,
 	                                          ArViewTracking.Listener listener) {
 		return new ArViewController(activity, container, listener);
+	}
+
+	/**
+	 * See ArCoreFragment.
+	 */
+	public static TutorialFragment tutorialPage(AppCompatActivity activity) {
+		return new ArCoreFragment(activity, R.layout.fragment_tutorial_arcore);
 	}
 }
