@@ -121,7 +121,7 @@ public final class ClimbingParent {
 	/**
 	 * The countries in the user's language, or their ISO code when it has no name for one.
 	 */
-	static String countryNames(List<String> countries) {
+	public static String countryNames(List<String> countries) {
 		StringBuilder names = new StringBuilder();
 		for (String countryIso : countries) {
 			String name = new Locale("", countryIso).getDisplayCountry();
@@ -138,7 +138,7 @@ public final class ClimbingParent {
 	 *
 	 * @return null when there are none
 	 */
-	static OsmCollectionEntity closest(List<OsmCollectionEntity> relations) {
+	public static OsmCollectionEntity closest(List<OsmCollectionEntity> relations) {
 		OsmCollectionEntity result = null;
 		for (OsmCollectionEntity relation : relations) {
 			if (result == null || isCloser(relation, result)) {

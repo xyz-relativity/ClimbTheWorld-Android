@@ -3,9 +3,11 @@ package com.climbtheworld.app.activities;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.database.SQLException;
+import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -39,6 +41,10 @@ import com.climbtheworld.app.storage.logbook.LogBookBackup;
 import com.climbtheworld.app.storage.logbook.LogBookDatabase;
 import com.climbtheworld.app.storage.logbook.LogBookEntry;
 import com.climbtheworld.app.storage.logbook.LogBookFilter;
+import com.climbtheworld.app.storage.logbook.LogBookGroup;
+import com.climbtheworld.app.storage.logbook.LogBookGroups;
+import com.climbtheworld.app.storage.logbook.LogBookPlaces;
+import com.climbtheworld.app.storage.views.CountryViewState;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.EdgeToEdge;
@@ -54,19 +60,29 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import needle.UiRelatedTask;
 
 /**
- * Lists the user's log book, filtered by text, climbed status and element type, and lets the
- * user edit, locate or delete its entries, or save the log book to a file and restore it.
+ * Lists the user's log book, grouped by country, area and crag and filtered by text, climbed
+ * status and element type, and lets the user edit, locate or delete its entries, or save the log
+ * book to a file and restore it.
  */
 public class LogBookActivity extends AppCompatActivity {
 	// Some file providers do not report .json files as JSON.
 	private static final String[] BACKUP_FILE_TYPES =
 			{LogBookBackup.MIME_TYPE, "text/plain", "application/octet-stream"};
+	// How much further in each level of the groups is drawn.
+	private static final int GROUP_INDENT_DP = 12;
+	// The sizes of textAppearanceMedium, as the entries' names, and of the section titles.
+	private static final float GROUP_TEXT_SIZE_SP = 18;
+	private static final float TOP_GROUP_TEXT_SIZE_SP = 20;
+	private static final int ROW_TYPE_HEADING = 0;
+	private static final int ROW_TYPE_ENTRY = 1;
 
 	private final ActivityResultLauncher<String> saveBackupLauncher = registerForActivityResult(
 			new ActivityResultContracts.CreateDocument(LogBookBackup.MIME_TYPE), this::saveBackup);
@@ -75,6 +91,9 @@ public class LogBookActivity extends AppCompatActivity {
 					this::restoreBackup);
 	private final List<LogBookItem> allItems = new ArrayList<>();
 	private final List<LogBookItem> shownItems = new ArrayList<>();
+	private final List<LogBookGroups.Row<LogBookItem>> shownRows = new ArrayList<>();
+	// The flags of the country groups, by group key; null for a country the app has none for.
+	private final Map<String, Bitmap> countryFlags = new HashMap<>();
 	private final LogBookFilter filter = new LogBookFilter();
 	private BaseAdapter listAdapter;
 	private TextView countView;
@@ -132,13 +151,26 @@ public class LogBookActivity extends AppCompatActivity {
 	 */
 	public void reload() {
 		Constants.DB_EXECUTOR.execute(new UiRelatedTask<List<LogBookItem>>() {
+			private final Map<String, Bitmap> flags = new HashMap<>();
+
 			@Override
 			protected List<LogBookItem> doWork() {
-				return loadItems();
+				List<LogBookItem> items = loadItems();
+				for (LogBookItem item : items) {
+					LogBookGroup country = item.groups.get(0);
+					if (country.kind() == LogBookGroup.Kind.country
+							&& !flags.containsKey(country.key())) {
+						flags.put(country.key(), CountryViewState.readFlag(LogBookActivity.this,
+								LogBookPlaces.flagCountryOf(country)));
+					}
+				}
+				return items;
 			}
 
 			@Override
 			protected void thenDoUiRelatedWork(List<LogBookItem> items) {
+				countryFlags.clear();
+				countryFlags.putAll(flags);
 				allItems.clear();
 				allItems.addAll(items);
 				loaded = true;
@@ -151,14 +183,16 @@ public class LogBookActivity extends AppCompatActivity {
 		LogBookDatabase logBook = LogBookDatabase.getInstance(this);
 		AppDatabase osmData = AppDatabase.getInstance(this);
 		ClimbingRouteCounter routeCounter = ClimbingRouteCounter.forDatabase(this);
+		LogBookPlaces places = new LogBookPlaces(this);
 		List<LogBookItem> result = new ArrayList<>();
 		for (LogBookEntry entry : logBook.logBookDao().loadAll()) {
 			GeoNode element = loadStoredElement(osmData, routeCounter, entry);
 			if (element != null) {
 				LogBook.refreshSnapshot(logBook, entry, element);
-				result.add(new LogBookItem(entry, element, true));
+				result.add(new LogBookItem(entry, element, true, places.of(entry, element)));
 			} else {
-				result.add(new LogBookItem(entry, entry.toGeoNode(), false));
+				result.add(new LogBookItem(entry, entry.toGeoNode(), false,
+						places.notDownloaded()));
 			}
 		}
 		return result;
@@ -218,10 +252,12 @@ public class LogBookActivity extends AppCompatActivity {
 	private void applyFilter() {
 		shownItems.clear();
 		for (LogBookItem item : allItems) {
-			if (filter.matches(item.entry)) {
+			if (filter.matches(item.entry, item.groups)) {
 				shownItems.add(item);
 			}
 		}
+		shownRows.clear();
+		shownRows.addAll(LogBookGroups.rows(shownItems, item -> item.groups));
 		listAdapter.notifyDataSetChanged();
 		if (!loaded) {
 			// The spinners report their first selection before the log book is read.
@@ -244,12 +280,12 @@ public class LogBookActivity extends AppCompatActivity {
 		listAdapter = new BaseAdapter() {
 			@Override
 			public int getCount() {
-				return shownItems.size();
+				return shownRows.size();
 			}
 
 			@Override
 			public Object getItem(int position) {
-				return shownItems.get(position);
+				return shownRows.get(position);
 			}
 
 			@Override
@@ -258,16 +294,90 @@ public class LogBookActivity extends AppCompatActivity {
 			}
 
 			@Override
+			public int getViewTypeCount() {
+				return 2;
+			}
+
+			@Override
+			public int getItemViewType(int position) {
+				return shownRows.get(position).isHeading() ? ROW_TYPE_HEADING : ROW_TYPE_ENTRY;
+			}
+
+			@Override
+			public boolean areAllItemsEnabled() {
+				return false;
+			}
+
+			@Override
+			public boolean isEnabled(int position) {
+				return !shownRows.get(position).isHeading();
+			}
+
+			@Override
 			public View getView(int position, View view, ViewGroup parent) {
-				if (view == null) {
-					view = getLayoutInflater()
-							.inflate(R.layout.list_item_log_book_entry, parent, false);
+				LogBookGroups.Row<LogBookItem> row = shownRows.get(position);
+				if (row.isHeading()) {
+					if (view == null) {
+						view = getLayoutInflater()
+								.inflate(R.layout.list_item_log_book_group, parent, false);
+					}
+					bindGroup(view, row.group());
+					// Lined up with the icons of its entries.
+					indent(view, row.depth());
+				} else {
+					if (view == null) {
+						view = getLayoutInflater()
+								.inflate(R.layout.list_item_log_book_entry, parent, false);
+					}
+					bindItem(view, row.item());
+					indent(view, row.depth() - 1);
 				}
-				bindItem(view, shownItems.get(position));
 				return view;
 			}
 		};
 		((ListView) findViewById(R.id.listLogBook)).setAdapter(listAdapter);
+	}
+
+	private void indent(View view, int levels) {
+		int start = Math.round(Math.max(0, levels) * GROUP_INDENT_DP
+				* getResources().getDisplayMetrics().density);
+		view.setPaddingRelative(start, view.getPaddingTop(), view.getPaddingEnd(),
+				view.getPaddingBottom());
+	}
+
+	private void bindGroup(View view, LogBookGroup group) {
+		ImageView icon = view.findViewById(R.id.logGroupIcon);
+		if (group.kind() == LogBookGroup.Kind.area) {
+			icon.setImageResource(R.drawable.ic_area);
+			icon.setVisibility(View.VISIBLE);
+		} else if (group.kind() == LogBookGroup.Kind.crag) {
+			icon.setImageResource(R.drawable.ic_crag);
+			icon.setVisibility(View.VISIBLE);
+		} else {
+			icon.setVisibility(View.GONE);
+		}
+
+		ImageView flag = view.findViewById(R.id.logGroupFlag);
+		if (group.kind() == LogBookGroup.Kind.country) {
+			Bitmap countryFlag = countryFlags.get(group.key());
+			// As the download list, the UN flag for a country without one of its own.
+			if (countryFlag != null) {
+				flag.setImageBitmap(countryFlag);
+			} else {
+				flag.setImageResource(R.drawable.flag_un);
+			}
+			flag.setVisibility(View.VISIBLE);
+		} else {
+			flag.setVisibility(View.GONE);
+		}
+
+		TextView name = view.findViewById(R.id.logGroupName);
+		name.setText(group.name());
+		// The top level, the countries, stands out from the areas and crags in them.
+		boolean topLevel = group.kind() != LogBookGroup.Kind.area
+				&& group.kind() != LogBookGroup.Kind.crag;
+		name.setTextSize(TypedValue.COMPLEX_UNIT_SP,
+				topLevel ? TOP_GROUP_TEXT_SIZE_SP : GROUP_TEXT_SIZE_SP);
 	}
 
 	private void bindItem(View view, LogBookItem item) {
@@ -471,12 +581,16 @@ public class LogBookActivity extends AppCompatActivity {
 		// The element from the OSM data when it is on the device, otherwise from the snapshot.
 		private final GeoNode element;
 		private final boolean storedLocally;
+		// Country, area and crag, as far as they are known.
+		private final List<LogBookGroup> groups;
 		private Drawable icon;
 
-		private LogBookItem(LogBookEntry entry, GeoNode element, boolean storedLocally) {
+		private LogBookItem(LogBookEntry entry, GeoNode element, boolean storedLocally,
+		                    List<LogBookGroup> groups) {
 			this.entry = entry;
 			this.element = element;
 			this.storedLocally = storedLocally;
+			this.groups = groups;
 		}
 
 		private String getName() {

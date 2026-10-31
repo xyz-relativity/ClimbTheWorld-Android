@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A heading of the log book list: a country, an area or a crag. Its start padding is set by
+     how deep the group is. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingTop="10dp"
+    android:paddingBottom="2dp">
+
+    <ImageView
+        android:id="@+id/logGroupIcon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="5dp"
+        android:importantForAccessibility="no"
+        android:scaleType="fitCenter" />
+
+    <!-- In the same box as the area and crag glyphs, so the headings line up, but padded: a
+         solid flag looks much bigger than their line art. -->
+    <ImageView
+        android:id="@+id/logGroupFlag"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="5dp"
+        android:importantForAccessibility="no"
+        android:padding="4dp"
+        android:scaleType="fitCenter" />
+
+    <TextView
+        android:id="@+id/logGroupName"
+        style="@style/LogBookEditorLabel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:accessibilityHeading="true"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:paddingHorizontal="5dp" />
+</LinearLayout>

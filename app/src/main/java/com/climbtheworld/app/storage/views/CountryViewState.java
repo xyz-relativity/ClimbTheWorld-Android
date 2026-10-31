@@ -124,8 +124,8 @@ public class CountryViewState {
 		});
 	}
 
-	/** The country's flag, or null if the app has none for it. */
-	private static Bitmap readFlag(Context context, String countryIso) {
+	/** The country's flag, or null if the app has none for it. Reads a file. */
+	public static Bitmap readFlag(Context context, String countryIso) {
 		try (InputStream image = context.getAssets().open(
 				FLAGS_FOLDER + "flag_" + countryIso.toLowerCase(Locale.ROOT) + ".png")) {
 			return BitmapFactory.decodeStream(image);

@@ -7,7 +7,9 @@ import com.climbtheworld.app.storage.database.OsmEntity;
 
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.List;
 
 public class LogBookFilterTest {
 	@Test
@@ -39,6 +41,22 @@ public class LogBookFilterTest {
 		filter.setText("rain");
 
 		assertTrue(filter.matches(entry));
+	}
+
+	@Test
+	public void textAlsoMatchesTheGroupsTheEntryIsListedUnder() {
+		LogBookEntry entry = entry("Pilier", "", OsmEntity.EntityClimbingType.route,
+				LogBookEntry.Attempt.sent);
+		List<LogBookGroup> groups = Arrays.asList(
+				new LogBookGroup(LogBookGroup.Kind.country, "FR", "France"),
+				new LogBookGroup(LogBookGroup.Kind.crag, "relation|1", "Escalès"));
+		LogBookFilter filter = new LogBookFilter();
+
+		filter.setText("escales");
+		assertTrue(filter.matches(entry, groups));
+		assertFalse(filter.matches(entry));
+		filter.setText("spain");
+		assertFalse(filter.matches(entry, groups));
 	}
 
 	@Test
