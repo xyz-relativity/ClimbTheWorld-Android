@@ -1,3 +1,12 @@
+=2026.11-1=
+========
+- Group the log book by country, then area, then crag, with the entries of countries not downloaded under their own heading. Collapse and expand each group, or all of them at once. The log book filter looks up the place names too.
+- Add a quick filter to the downloaded countries and to the changes to upload, as the countries to download have.
+- In the non-FOSS build, tell about ARCore in the setup wizard on the phones it runs on, with buttons to install it from Google Play or as the APK from GitHub, for phones without Google Play. The A.R. view and placing in A.R. offer the same buttons when ARCore is missing or too old.
+- Keep each crag's name in sight while scrolling the list of routes to align on.
+- Move Align to the bottom right of the A.R. views, just above the button hiding the aiming tools.
+- Title the node type list that opens for a new node.
+
 =2026.10-7=
 ========
 - Count only the routes matching the display filters on crag and area pins and on the map's cluster bubbles while a filter is on, and mark those pins with a filter badge. The filter button shows in colour while a filter is on.
