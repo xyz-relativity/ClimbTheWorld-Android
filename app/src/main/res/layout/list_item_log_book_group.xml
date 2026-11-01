@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- A heading of the log book list: a country, an area or a crag. Its start padding is set by
-     how deep the group is. -->
+     how deep the group is. A tap collapses or expands the group. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="?android:selectableItemBackground"
     android:gravity="center_vertical"
     android:orientation="horizontal"
     android:paddingTop="10dp"
@@ -38,4 +39,22 @@
         android:ellipsize="end"
         android:maxLines="1"
         android:paddingHorizontal="5dp" />
+
+    <!-- How many entries the group holds, so a collapsed group still tells. -->
+    <TextView
+        android:id="@+id/logGroupCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="5dp"
+        android:textColor="?android:attr/textColorSecondary" />
+
+    <!-- Lined up with the entries' menu buttons, 32dp wide with a 5dp margin. -->
+    <ImageView
+        android:id="@+id/logGroupChevron"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginEnd="9dp"
+        android:importantForAccessibility="no"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_chevron_down" />
 </LinearLayout>

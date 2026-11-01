@@ -24,6 +24,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.ViewCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.DisplayableGeoNode;
@@ -61,6 +62,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -68,9 +70,9 @@ import java.util.Set;
 import needle.UiRelatedTask;
 
 /**
- * Lists the user's log book, grouped by country, area and crag and filtered by text, climbed
- * status and element type, and lets the user edit, locate or delete its entries, or save the log
- * book to a file and restore it.
+ * Lists the user's log book, grouped by country, area and crag, each group collapsible and all
+ * collapsed at first, and filtered by text, climbed status and element type, and lets the user
+ * edit, locate or delete its entries, or save the log book to a file and restore it.
  */
 public class LogBookActivity extends AppCompatActivity {
 	// Some file providers do not report .json files as JSON.
@@ -83,6 +85,8 @@ public class LogBookActivity extends AppCompatActivity {
 	private static final float TOP_GROUP_TEXT_SIZE_SP = 20;
 	private static final int ROW_TYPE_HEADING = 0;
 	private static final int ROW_TYPE_ENTRY = 1;
+	private static final String STATE_GROUPS_COLLAPSED = "groupsCollapsed";
+	private static final String STATE_TOGGLED_GROUPS = "toggledGroups";
 
 	private final ActivityResultLauncher<String> saveBackupLauncher = registerForActivityResult(
 			new ActivityResultContracts.CreateDocument(LogBookBackup.MIME_TYPE), this::saveBackup);
@@ -94,9 +98,15 @@ public class LogBookActivity extends AppCompatActivity {
 	private final List<LogBookGroups.Row<LogBookItem>> shownRows = new ArrayList<>();
 	// The flags of the country groups, by group key; null for a country the app has none for.
 	private final Map<String, Bitmap> countryFlags = new HashMap<>();
+	// Whether the groups show their heading only, but for the toggled ones, by group id: all
+	// collapsed at first and after Collapse all, all expanded after Expand all. Kept while the
+	// activity lives.
+	private boolean groupsCollapsed = true;
+	private final Set<String> toggledGroups = new HashSet<>();
 	private final LogBookFilter filter = new LogBookFilter();
 	private BaseAdapter listAdapter;
 	private TextView countView;
+	private ImageView expandAllView;
 	private TextView emptyView;
 	private boolean loaded = false;
 
@@ -119,16 +129,33 @@ public class LogBookActivity extends AppCompatActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_log_book);
+		if (savedInstanceState != null) {
+			groupsCollapsed = savedInstanceState.getBoolean(STATE_GROUPS_COLLAPSED, true);
+			ArrayList<String> toggled =
+					savedInstanceState.getStringArrayList(STATE_TOGGLED_GROUPS);
+			if (toggled != null) {
+				toggledGroups.addAll(toggled);
+			}
+		}
 
 		EdgeToEdge.padForSystemBars(findViewById(R.id.main));
 
 		countView = findViewById(R.id.logBookCount);
 		emptyView = findViewById(R.id.logBookListEmpty);
+		expandAllView = findViewById(R.id.logBookExpandAll);
+		expandAllView.setOnClickListener(v -> toggleAllGroups());
 		findViewById(R.id.logBookMenu).setOnClickListener(this::showLogBookMenu);
 		initList();
 		initTextFilter();
 		initStatusFilter();
 		initTypeFilter();
+	}
+
+	@Override
+	protected void onSaveInstanceState(@NonNull Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putBoolean(STATE_GROUPS_COLLAPSED, groupsCollapsed);
+		outState.putStringArrayList(STATE_TOGGLED_GROUPS, new ArrayList<>(toggledGroups));
 	}
 
 	@Override
@@ -256,9 +283,7 @@ public class LogBookActivity extends AppCompatActivity {
 				shownItems.add(item);
 			}
 		}
-		shownRows.clear();
-		shownRows.addAll(LogBookGroups.rows(shownItems, item -> item.groups));
-		listAdapter.notifyDataSetChanged();
+		refreshRows();
 		if (!loaded) {
 			// The spinners report their first selection before the log book is read.
 			return;
@@ -274,6 +299,50 @@ public class LogBookActivity extends AppCompatActivity {
 		} else {
 			emptyView.setVisibility(View.GONE);
 		}
+	}
+
+	private void refreshRows() {
+		shownRows.clear();
+		shownRows.addAll(LogBookGroups.rows(shownItems, item -> item.groups,
+				groupId -> groupsCollapsed != toggledGroups.contains(groupId)));
+		listAdapter.notifyDataSetChanged();
+		updateExpandAll();
+	}
+
+	private void toggleGroup(String groupId) {
+		if (!toggledGroups.remove(groupId)) {
+			toggledGroups.add(groupId);
+		}
+		refreshRows();
+	}
+
+	/**
+	 * Expands every group while a listed one is collapsed, collapses them all otherwise.
+	 */
+	private void toggleAllGroups() {
+		groupsCollapsed = !anyShownGroupCollapsed();
+		toggledGroups.clear();
+		refreshRows();
+	}
+
+	private boolean anyShownGroupCollapsed() {
+		for (LogBookGroups.Row<LogBookItem> row : shownRows) {
+			if (row.collapsed()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private void updateExpandAll() {
+		boolean expand = anyShownGroupCollapsed();
+		// Turned as a heading's chevron: at the names while a group is collapsed, down otherwise.
+		expandAllView.setRotation(chevronRotation(expand));
+		String label = getString(expand
+				? R.string.log_book_expand_all : R.string.log_book_collapse_all);
+		expandAllView.setContentDescription(label);
+		expandAllView.setTooltipText(label);
+		expandAllView.setVisibility(shownRows.isEmpty() ? View.INVISIBLE : View.VISIBLE);
 	}
 
 	private void initList() {
@@ -304,16 +373,6 @@ public class LogBookActivity extends AppCompatActivity {
 			}
 
 			@Override
-			public boolean areAllItemsEnabled() {
-				return false;
-			}
-
-			@Override
-			public boolean isEnabled(int position) {
-				return !shownRows.get(position).isHeading();
-			}
-
-			@Override
 			public View getView(int position, View view, ViewGroup parent) {
 				LogBookGroups.Row<LogBookItem> row = shownRows.get(position);
 				if (row.isHeading()) {
@@ -321,7 +380,7 @@ public class LogBookActivity extends AppCompatActivity {
 						view = getLayoutInflater()
 								.inflate(R.layout.list_item_log_book_group, parent, false);
 					}
-					bindGroup(view, row.group());
+					bindGroup(view, row);
 					// Lined up with the icons of its entries.
 					indent(view, row.depth());
 				} else {
@@ -345,7 +404,8 @@ public class LogBookActivity extends AppCompatActivity {
 				view.getPaddingBottom());
 	}
 
-	private void bindGroup(View view, LogBookGroup group) {
+	private void bindGroup(View view, LogBookGroups.Row<LogBookItem> row) {
+		LogBookGroup group = row.group();
 		ImageView icon = view.findViewById(R.id.logGroupIcon);
 		if (group.kind() == LogBookGroup.Kind.area) {
 			icon.setImageResource(R.drawable.ic_area);
@@ -378,6 +438,24 @@ public class LogBookActivity extends AppCompatActivity {
 				&& group.kind() != LogBookGroup.Kind.crag;
 		name.setTextSize(TypedValue.COMPLEX_UNIT_SP,
 				topLevel ? TOP_GROUP_TEXT_SIZE_SP : GROUP_TEXT_SIZE_SP);
+
+		((TextView) view.findViewById(R.id.logGroupCount))
+				.setText(String.valueOf(row.entryCount()));
+		view.findViewById(R.id.logGroupChevron).setRotation(chevronRotation(row.collapsed()));
+		ViewCompat.setStateDescription(view, getString(row.collapsed()
+				? R.string.log_book_group_collapsed : R.string.log_book_group_expanded));
+		view.setOnClickListener(v -> toggleGroup(row.groupId()));
+	}
+
+	/**
+	 * @return how far to turn the chevron, which points down while expanded and at the name
+	 * while collapsed
+	 */
+	private float chevronRotation(boolean collapsed) {
+		// From the configuration, as a newly inflated row has no direction until it is attached.
+		boolean rightToLeft = getResources().getConfiguration().getLayoutDirection()
+				== View.LAYOUT_DIRECTION_RTL;
+		return !collapsed ? 0 : rightToLeft ? 90 : -90;
 	}
 
 	private void bindItem(View view, LogBookItem item) {

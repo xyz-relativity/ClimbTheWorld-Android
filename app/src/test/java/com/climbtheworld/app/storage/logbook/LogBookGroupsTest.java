@@ -7,8 +7,10 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class LogBookGroupsTest {
 	private static final LogBookGroup FRANCE = group(LogBookGroup.Kind.country, "FR", "France");
@@ -98,6 +100,45 @@ public class LogBookGroupsTest {
 	}
 
 	@Test
+	public void collapsedGroupShowsItsHeadingWithItsEntryCountOnly() {
+		Map<String, List<LogBookGroup>> paths = new HashMap<>();
+		paths.put("Ula", Arrays.asList(FRANCE, VERDON, ESCALES));
+		paths.put("Pilier", Arrays.asList(FRANCE, VERDON, ESCALES));
+		paths.put("Verdon area", Arrays.asList(FRANCE, VERDON));
+		paths.put("Dalle", Arrays.asList(FRANCE, ECRINS, AILEFROIDE));
+		List<String> items = Arrays.asList("Ula", "Pilier", "Verdon area", "Dalle");
+		Set<String> collapsed = new HashSet<>();
+		collapsed.add(idOf(items, paths, VERDON));
+
+		assertEquals(Arrays.asList(
+						"# France (4)",
+						"  # Écrins (1)",
+						"    # Ailefroide (1)",
+						"      Dalle",
+						"  > Verdon (3)"),
+				renderWithCounts(items, paths, collapsed));
+	}
+
+	@Test
+	public void collapsingAGroupLeavesTheSameGroupElsewhereOpen() {
+		Map<String, List<LogBookGroup>> paths = new HashMap<>();
+		paths.put("A", Arrays.asList(FRANCE, BUOUX));
+		paths.put("B", Arrays.asList(SPAIN, BUOUX));
+		List<String> items = Arrays.asList("A", "B");
+		Set<String> collapsed = new HashSet<>();
+		// The first Buoux, France's.
+		collapsed.add(idOf(items, paths, BUOUX));
+
+		assertEquals(Arrays.asList(
+						"# France (1)",
+						"  > Buoux (1)",
+						"# Spain (1)",
+						"  # Buoux (1)",
+						"    B"),
+				renderWithCounts(items, paths, collapsed));
+	}
+
+	@Test
 	public void emptyLogBookHasNoRows() {
 		assertEquals(new ArrayList<String>(), render(new ArrayList<>(), new HashMap<>()));
 	}
@@ -109,6 +150,30 @@ public class LogBookGroupsTest {
 			result.add(row.isHeading() ? indent + "# " + row.group().name() : indent + row.item());
 		}
 		return result;
+	}
+
+	private static List<String> renderWithCounts(List<String> items,
+	                                             Map<String, List<LogBookGroup>> paths,
+	                                             Set<String> collapsed) {
+		List<String> result = new ArrayList<>();
+		for (LogBookGroups.Row<String> row : LogBookGroups.rows(items, paths::get, collapsed::contains)) {
+			String indent = "  ".repeat(row.depth());
+			result.add(row.isHeading()
+					? indent + (row.collapsed() ? "> " : "# ") + row.group().name()
+					+ " (" + row.entryCount() + ")"
+					: indent + row.item());
+		}
+		return result;
+	}
+
+	private static String idOf(List<String> items, Map<String, List<LogBookGroup>> paths,
+	                           LogBookGroup group) {
+		for (LogBookGroups.Row<String> row : LogBookGroups.rows(items, paths::get)) {
+			if (row.group() == group) {
+				return row.groupId();
+			}
+		}
+		throw new AssertionError(group.name() + " is not listed");
 	}
 
 	private static LogBookGroup group(LogBookGroup.Kind kind, String key, String name) {

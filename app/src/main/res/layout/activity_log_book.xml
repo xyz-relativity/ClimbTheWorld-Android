@@ -89,6 +89,23 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="10dp" />
+
+                <!-- Expands or collapses every group; in line with the entries' menu buttons,
+                     and padded to the size of the groups' chevrons. -->
+                <ImageView
+                    android:id="@+id/logBookExpandAll"
+                    style="?android:imageButtonStyle"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_marginEnd="5dp"
+                    android:background="?android:selectableItemBackground"
+                    android:clickable="true"
+                    android:contentDescription="@string/log_book_expand_all"
+                    android:focusable="true"
+                    android:padding="4dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_chevrons_down"
+                    android:tooltipText="@string/log_book_expand_all" />
             </LinearLayout>
 
             <View

@@ -558,6 +558,10 @@
     <string name="log_book_list_empty">Rien d’enregistré pour l’instant. Ouvrez un site, un secteur ou une voie et utilisez sa section carnet pour l’ajouter.</string>
     <string name="log_book_group_unknown_country">Pays inconnu</string>
     <string name="log_book_group_not_downloaded">Non téléchargés</string>
+    <string name="log_book_group_collapsed">Replié</string>
+    <string name="log_book_group_expanded">Déplié</string>
+    <string name="log_book_expand_all">Tout déplier</string>
+    <string name="log_book_collapse_all">Tout replier</string>
     <string name="log_book_entry_options">Options de l’entrée</string>
     <string name="log_book_show_info">Afficher les infos</string>
     <string name="log_book_delete">Supprimer l’entrée</string>

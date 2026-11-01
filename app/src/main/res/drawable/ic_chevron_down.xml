@@ -1,0 +1,14 @@
+<!-- An expanded group of the log book list; turned to point at the text while collapsed. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillAlpha=".9"
+        android:fillColor="#ffffff"
+        android:pathData="M3.5,8.5L6.5,5.5L12,11L17.5,5.5L20.5,8.5L12,17Z"
+        android:strokeWidth="1.2"
+        android:strokeColor="#000000"
+        android:strokeLineJoin="round" />
+</vector>
