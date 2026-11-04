@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?><!-- The map compass's dial, under its needle (ic_compass_needle), see ic_compass. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="52.916664"
+    android:viewportHeight="52.916664">
+    <path
+        android:fillAlpha="0.9"
+        android:fillColor="#fffffe"
+        android:pathData="M26.4583,26.4583m-25.225,-0a25.225,25.225 90,1 0,50.45 -0a25.225,25.225 90,1 0,-50.45 -0"
+        android:strokeWidth="2"
+        android:strokeColor="#000000"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?><!-- The map compass's needle, over its dial (ic_compass_dial or ic_compass_user_dial). Only
+the needle blurs while the heading is doubtful, see CompassBlur. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="52.916664"
+    android:viewportHeight="52.916664">
+    <path
+        android:fillAlpha="0.9"
+        android:fillColor="#ff0000"
+        android:pathData="m21.7977,25.636c1.9606,-9.5458 4.6635,-22.3028 4.6967,-22.1672 0.0663,0.2708 4.7399,22.7245 4.7399,22.7721 0,0.0233 -2.1531,0.0424 -4.7848,0.0424h-4.7848z"
+        android:strokeWidth="1"
+        android:strokeColor="#000000"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:fillAlpha="0.9"
+        android:fillColor="#e6e6e6"
+        android:pathData="m24.0555,38.1253 l-2.3845,-11.457 4.7578,-0.018c2.6168,-0.0099 4.77,-0.0058 4.7849,0.0091 0.0274,0.0274 -4.6317,22.4844 -4.7239,22.769 -0.0324,0.1 -0.8852,-3.8597 -2.4343,-11.3032z"
+        android:strokeWidth="1"
+        android:strokeColor="#000000"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

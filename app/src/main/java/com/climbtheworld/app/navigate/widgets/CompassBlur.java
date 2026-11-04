@@ -8,6 +8,7 @@ import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.widget.ImageView;
 
@@ -21,69 +22,37 @@ import java.util.EnumMap;
 import java.util.Map;
 
 /**
- * Blurs a compass icon while the heading is not to be trusted, see HeadingConfidence: a little
- * while it is rough, more while it is not to be trusted, never so much that it cannot be read,
- * and not at all while it is sure. Only the icon blurs: the button it is on and whatever is
- * drawn over it, such as the accuracy arc, stay sharp. One level fades into the next, rather
- * than snapping, and once it has, the view shows that level's icon alone, as it did before the
- * fade: nothing of the fade is left on it. The blur spills a little past the icon's edge, as a
- * blur does, so the blurred icon is drawn past its bounds, see BlurredIcon: the view must not
- * crop it to its padding.
+ * Blurs a compass icon's needle while the heading is not to be trusted, see HeadingConfidence: a
+ * little while it is rough, more while it is not to be trusted, never so much that it cannot be
+ * read, and not at all while it is sure. Only the needle blurs: the dial under it, the button it
+ * is on and whatever is drawn over it, such as the accuracy arc, stay sharp. One level fades into
+ * the next, rather than snapping, and once it has, the view shows that level's needle alone over
+ * the dial, as it did before the fade: nothing of the fade is left on it. The blur spills a
+ * little past the needle's edge, as a blur does, so the blurred needle is drawn past its bounds,
+ * see BlurredIcon: the view must not crop it to its padding.
  */
 public class CompassBlur {
 	// The blur's radius at each level, as a fraction of the icon's size, so that it is the same
 	// whatever size the icon is drawn at: light enough to read the compass through.
-	static final float ROUGH_RADIUS_FRACTION = 1f / 48;
-	static final float UNSURE_RADIUS_FRACTION = 1f / 24;
+	static final float ROUGH_RADIUS_FRACTION = 1f / 24;
+	static final float UNSURE_RADIUS_FRACTION = 1f / 12;
 	static final int FADE_MILLIS = 400;
 
 	private final ImageView view;
-	private Drawable icon;
+	// The needle at each level, made once per needle.
+	private final Map<HeadingConfidence, Drawable> blurred =
+			new EnumMap<>(HeadingConfidence.class);
+	private Drawable dial;
+	private Drawable needle;
+	// The needle the view shows over the dial: one level's, or the fade between two.
+	private Drawable shownNeedle;
 	private HeadingConfidence confidence = HeadingConfidence.SURE;
-	// The icon at each level, made once per icon.
-	private final Map<HeadingConfidence, Drawable> blurred = new EnumMap<>(HeadingConfidence.class);
 
 	/**
 	 * @param view the view showing the compass icon, whose image this sets from now on
 	 */
 	public CompassBlur(ImageView view) {
 		this.view = view;
-	}
-
-	/**
-	 * @param icon the compass icon, sharp
-	 */
-	public void setIcon(Drawable icon) {
-		this.icon = icon;
-		blurred.clear();
-		view.setImageDrawable(at(confidence));
-	}
-
-	public HeadingConfidence getConfidence() {
-		return confidence;
-	}
-
-	public void setConfidence(HeadingConfidence confidence) {
-		if (confidence == this.confidence) {
-			return;
-		}
-		Drawable from = at(this.confidence);
-		this.confidence = confidence;
-		Drawable to = at(confidence);
-		if (from == null || to == null) {
-			view.setImageDrawable(to);
-			return;
-		}
-		TransitionDrawable transition = new TransitionDrawable(new Drawable[]{from, to});
-		transition.setCrossFadeEnabled(true);
-		view.setImageDrawable(transition);
-		transition.startTransition(FADE_MILLIS);
-		// Unless another fade, or another icon, took over meanwhile.
-		view.postDelayed(() -> {
-			if (view.getDrawable() == transition) {
-				view.setImageDrawable(to);
-			}
-		}, FADE_MILLIS);
 	}
 
 	/**
@@ -98,21 +67,6 @@ public class CompassBlur {
 			default:
 				return 0;
 		}
-	}
-
-	/**
-	 * @return the icon as it looks at a level, null while there is no icon
-	 */
-	private Drawable at(HeadingConfidence confidence) {
-		if (icon == null || confidence == HeadingConfidence.SURE) {
-			return icon;
-		}
-		Drawable drawable = blurred.get(confidence);
-		if (drawable == null) {
-			drawable = blur(icon, radiusFraction(confidence));
-			blurred.put(confidence, drawable);
-		}
-		return drawable;
 	}
 
 	/**
@@ -141,6 +95,68 @@ public class CompassBlur {
 		PixelBlur.blur(pixels, paddedWidth, paddedHeight, radius);
 		bitmap.setPixels(pixels, 0, paddedWidth, 0, 0, paddedWidth, paddedHeight);
 		return new BlurredIcon(bitmap, width, height, padding);
+	}
+
+	/**
+	 * @param dial   the compass icon's dial, which stays sharp
+	 * @param needle the compass icon's needle, sharp, drawn over the dial at the same size
+	 */
+	public void setIcon(Drawable dial, Drawable needle) {
+		this.dial = dial;
+		this.needle = needle;
+		blurred.clear();
+		show(at(confidence));
+	}
+
+	public HeadingConfidence getConfidence() {
+		return confidence;
+	}
+
+	public void setConfidence(HeadingConfidence confidence) {
+		if (confidence == this.confidence) {
+			return;
+		}
+		Drawable from = at(this.confidence);
+		this.confidence = confidence;
+		Drawable to = at(confidence);
+		if (from == null || to == null) {
+			show(to);
+			return;
+		}
+		TransitionDrawable transition = new TransitionDrawable(new Drawable[]{from, to});
+		transition.setCrossFadeEnabled(true);
+		show(transition);
+		transition.startTransition(FADE_MILLIS);
+		// Unless another fade, or another icon, took over meanwhile.
+		view.postDelayed(() -> {
+			if (shownNeedle == transition) {
+				show(to);
+			}
+		}, FADE_MILLIS);
+	}
+
+	/**
+	 * Shows a needle over the dial, or nothing while there is no icon.
+	 */
+	private void show(Drawable needle) {
+		shownNeedle = needle;
+		view.setImageDrawable(needle == null ? null : new LayerDrawable(new Drawable[]{dial,
+				needle}));
+	}
+
+	/**
+	 * @return the needle as it looks at a level, null while there is no icon
+	 */
+	private Drawable at(HeadingConfidence confidence) {
+		if (needle == null || confidence == HeadingConfidence.SURE) {
+			return needle;
+		}
+		Drawable drawable = blurred.get(confidence);
+		if (drawable == null) {
+			drawable = blur(needle, radiusFraction(confidence));
+			blurred.put(confidence, drawable);
+		}
+		return drawable;
 	}
 
 	/**
@@ -190,14 +206,14 @@ public class CompassBlur {
 		}
 
 		@Override
-		public void setAlpha(int alpha) {
-			paint.setAlpha(alpha);
-			invalidateSelf();
+		public int getAlpha() {
+			return paint.getAlpha();
 		}
 
 		@Override
-		public int getAlpha() {
-			return paint.getAlpha();
+		public void setAlpha(int alpha) {
+			paint.setAlpha(alpha);
+			invalidateSelf();
 		}
 
 		@Override

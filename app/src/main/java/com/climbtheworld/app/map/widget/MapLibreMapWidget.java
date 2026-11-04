@@ -240,7 +240,7 @@ public class MapLibreMapWidget {
 	// Null in containers whose compass button has no badge.
 	private CompassStatusBadge compassStatusBadge;
 	private CompassAccuracyArcDrawable compassAccuracyArc;
-	// Blurs the compass button's icon while the heading is not to be trusted, as each
+	// Blurs the compass button's needle while the heading is not to be trusted, as each
 	// orientation reading tells, see onOrientationChange and CompassBlur.
 	private CompassBlur compassBlur;
 	private double viewConeFieldOfViewDegrees;
@@ -1731,9 +1731,11 @@ public class MapLibreMapWidget {
 		if (button == null) {
 			return;
 		}
-		int icon = rotationMode == RotationMode.USER ? R.drawable.ic_compass_user :
-				R.drawable.ic_compass;
-		compassBlur.setIcon(ResourcesCompat.getDrawable(parent.getResources(), icon, null));
+		int dial = rotationMode == RotationMode.USER ? R.drawable.ic_compass_user_dial :
+				R.drawable.ic_compass_dial;
+		compassBlur.setIcon(ResourcesCompat.getDrawable(parent.getResources(), dial, null),
+				ResourcesCompat.getDrawable(parent.getResources(), R.drawable.ic_compass_needle,
+						null));
 		if (rotationMode == RotationMode.STATIC) {
 			button.setRotation(0);
 		} else if (rotationMode == RotationMode.USER && map != null) {
