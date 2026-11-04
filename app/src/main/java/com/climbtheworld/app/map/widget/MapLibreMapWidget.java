@@ -118,8 +118,7 @@ import needle.UiRelatedTask;
  */
 public class MapLibreMapWidget {
 	/**
-	 * Washes out a button whose mode is off: GPS centering here, and the filter and ARCore's aiming
-	 * tools buttons.
+	 * Washes out a button whose mode is off: GPS centering here, and ARCore's aiming tools button.
 	 */
 	public static final int BUTTON_OFF_TINT = Color.parseColor("#aaffffff");
 	private static final double DEFAULT_ZOOM_LEVEL = 16;

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?><!-- Shared by the map and the A.R. view: the display filter button, with a badge on its bottom
+corner while any filter is on, as the compass button's status badge, see
+NodeDisplayFilters.showFilterState. The badge does not take taps, which go to the button. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/filterButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="?android:selectableItemBackground"
+        android:onClick="onClick"
+        android:contentDescription="@string/hint_filter"
+        android:cropToPadding="true"
+        android:scaleType="fitXY"
+        android:layout_margin="5dip"
+        app:srcCompat="@drawable/ic_filter" />
+
+    <ImageView
+        android:id="@+id/filterStateBadge"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_gravity="bottom|end"
+        android:padding="4dp"
+        android:importantForAccessibility="no"
+        android:visibility="gone"
+        app:srcCompat="@drawable/ic_filter_on_badge" />
+
+</FrameLayout>

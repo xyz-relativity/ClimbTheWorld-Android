@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?><!-- Filter button badge, in the style of the compass status badges: a check mark on green, while
+any display filter is on, see NodeDisplayFilters.showFilterState. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="22dp"
+    android:height="22dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#43a047"
+        android:pathData="M1,12a11,11 0,1 0,22 0a11,11 0,1 0,-22 0z"
+        android:strokeWidth="1.5"
+        android:strokeColor="#ffffff" />
+    <path
+        android:pathData="M6.8,12.4l3.4,3.4l7,-7.4"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:strokeWidth="2.6"
+        android:strokeColor="#ffffff" />
+</vector>

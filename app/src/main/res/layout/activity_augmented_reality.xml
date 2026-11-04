@@ -252,17 +252,7 @@
                 android:layout_margin="5dip"
                 app:srcCompat="@drawable/ic_horizon_terrain" />
 
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/filterButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="?android:selectableItemBackground"
-                android:onClick="onClick"
-                android:contentDescription="@string/hint_filter"
-                android:cropToPadding="true"
-                android:scaleType="fitXY"
-                android:layout_margin="5dip"
-                app:srcCompat="@drawable/ic_filter" />
+            <include layout="@layout/filter_button" />
         </LinearLayout>
 
         <LinearLayout

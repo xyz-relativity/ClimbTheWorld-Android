@@ -1,16 +1,16 @@
 package com.climbtheworld.app.map.marker;
 
+import android.view.View;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.GradeSystem;
-import com.climbtheworld.app.map.widget.MapLibreMapWidget;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.utils.Globals;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.Collections;
 import java.util.Set;
@@ -18,16 +18,12 @@ import java.util.function.Predicate;
 
 public class NodeDisplayFilters {
 	/**
-	 * Shows on the activity's filter button whether any filter is on: in colour while one is,
-	 * washed out while none is, as the GPS centering button.
+	 * Shows on the activity's filter button whether any filter is on: a check mark badge on its
+	 * bottom corner while one is, as the compass button's status badge, see filter_button.xml.
 	 */
 	public static void showFilterState(AppCompatActivity activity, Configs configs) {
-		FloatingActionButton button = activity.findViewById(R.id.filterButton);
-		if (hasFilters(configs)) {
-			button.clearColorFilter();
-		} else {
-			button.setColorFilter(MapLibreMapWidget.BUTTON_OFF_TINT);
-		}
+		activity.findViewById(R.id.filterStateBadge)
+				.setVisibility(hasFilters(configs) ? View.VISIBLE : View.GONE);
 	}
 
 	private static final int styleCount = GeoNode.ClimbingStyle.values().length;
