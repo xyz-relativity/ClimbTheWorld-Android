@@ -21,9 +21,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @RunWith(RobolectricTestRunner.class)
 public class MapLibreMapWidgetTest {
@@ -212,6 +217,26 @@ public class MapLibreMapWidgetTest {
 				.put("lat", 46.2259683 + id * 1e-5).put("lon", -73.7403424).put("tags", tags));
 		nodes.put(id, node);
 		return node;
+	}
+
+	@Test
+	public void unusedImagesArePrunedAndForgotten() {
+		Set<String> registered = new HashSet<>(Arrays.asList("gone", "kept", "gone too"));
+		List<String> removed = new ArrayList<>();
+		MapLibreMapWidget.pruneImages(registered,
+				new HashSet<>(Arrays.asList("kept", "never registered")), removed::add);
+		assertEquals(Collections.singleton("kept"), registered);
+		assertEquals(new HashSet<>(Arrays.asList("gone", "gone too")), new HashSet<>(removed));
+	}
+
+	@Test
+	public void theCacheDropsTheLeastRecentlyUsedPin() {
+		Map<String, Integer> cache = MapLibreMapWidget.lruCache(2);
+		cache.put("first", 1);
+		cache.put("second", 2);
+		assertEquals(Integer.valueOf(1), cache.get("first"));
+		cache.put("third", 3);
+		assertEquals(new HashSet<>(Arrays.asList("first", "third")), cache.keySet());
 	}
 
 	private static OsmCollectionEntity routeWay(OsmNode bottom, OsmNode top) throws Exception {

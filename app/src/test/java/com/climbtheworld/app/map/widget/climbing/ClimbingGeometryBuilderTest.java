@@ -31,8 +31,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @RunWith(RobolectricTestRunner.class)
 public class ClimbingGeometryBuilderTest {
@@ -499,6 +501,24 @@ public class ClimbingGeometryBuilderTest {
 	private String rgba(int color) {
 		return "rgba(" + (color >> 16 & 0xff) + "," + (color >> 8 & 0xff) + ","
 				+ (color & 0xff) + "," + (color >>> 24) / 255.0 + ")";
+	}
+
+	@Test
+	public void zoomLevelsAreWhereTheGeometriesAndTheirLabelsComeAndGo() {
+		ClimbingGeometryBuilder.GeometrySpec capped = new ClimbingGeometryBuilder.GeometrySpec(
+				"capped", Arrays.asList(new MapCoordinate(45, 24), new MapCoordinate(46, 24)),
+				false, 0, 0, 12, 16, null, null, 0, false, 0, null, null);
+		Set<Float> levels = ClimbingGeometryBuilder.zoomLevels(Arrays.asList(
+				geometry(MapZoomLevels.AREA_MIN, MapZoomLevels.CRAG_MIN, "Area", 3),
+				geometry(MapZoomLevels.CRAG_MIN, 0, "Crag", 2),
+				capped));
+		assertEquals(new HashSet<>(Arrays.asList(MapZoomLevels.AREA_MIN, MapZoomLevels.CRAG_MIN,
+				12f, 16f)), levels);
+	}
+
+	@Test
+	public void noZoomLevelsWithoutGeometries() {
+		assertTrue(ClimbingGeometryBuilder.zoomLevels(Collections.emptyList()).isEmpty());
 	}
 
 	private ClimbingGeometryBuilder.GeometrySpec geometry(float minZoom, float labelMaxZoom,

@@ -24,8 +24,10 @@ import org.locationtech.jts.geom.GeometryFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 
 /**
@@ -150,6 +152,25 @@ public final class ClimbingGeometryBuilder {
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * The zooms at which what is drawn of the geometries changes: where their hulls and lines
+	 * come and go, and where their labels go. Between two zooms crossing none of them (see
+	 * MapZoomLevels.crosses), the layers draw the same of the geometries.
+	 */
+	public static Set<Float> zoomLevels(List<GeometrySpec> geometries) {
+		Set<Float> levels = new HashSet<>();
+		for (GeometrySpec geometry : geometries) {
+			levels.add(geometry.minZoom);
+			if (geometry.maxZoom > 0) {
+				levels.add(geometry.maxZoom);
+			}
+			if (geometry.labelMaxZoom > 0) {
+				levels.add(geometry.labelMaxZoom);
+			}
+		}
+		return levels;
 	}
 
 	public String buildHullGeoJson(List<GeometrySpec> geometries, double zoom, boolean outlines) {

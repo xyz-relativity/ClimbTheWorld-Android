@@ -106,10 +106,13 @@ import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 import needle.UiRelatedTask;
 
@@ -186,6 +189,10 @@ public class MapLibreMapWidget {
 	private static final String EMPTY_FEATURE_COLLECTION =
 			"{\"type\":\"FeatureCollection\",\"features\":[]}";
 	private static final float MANUAL_ROTATION_DEADBAND_DEGREES = 12f;
+	// The zoom levels at which more is loaded for the view: the routes are numbered from CRAG_MIN,
+	// see invalidateData. Crossing one needs the database again, see refreshForView.
+	private static final List<Float> RELOAD_ZOOM_LEVELS =
+			Collections.singletonList(MapZoomLevels.CRAG_MIN);
 	private static boolean ambientCacheConfigured;
 	private static final Map<Profile, SessionState> sessionStates = new EnumMap<>(Profile.class);
 	private final AppCompatActivity parent;
@@ -203,10 +210,18 @@ public class MapLibreMapWidget {
 	private final Map<String, ClimbingGeometryBuilder.GeometrySpec> renderedHullLabels =
 			new HashMap<>();
 	private final Map<Long, DisplayableGeoNode> pendingRenderedPois = new HashMap<>();
-	private final Map<String, Bitmap> poiBitmaps = new HashMap<>();
+	// The pins drawn, by what they are drawn from (see poiIconKey), the least recently used
+	// dropped first.
+	private final Map<String, Bitmap> poiBitmaps = lruCache(MAX_CACHED_POI_ICONS);
+	// The images in the style, pruned of what the sources no longer use once they are set, see
+	// publishPoiFeatures.
 	private final Set<String> registeredPoiImages = new HashSet<>();
+	// The pin images the POI features being prepared use, see preparePoiFeature.
+	private final Set<String> pendingPoiImages = new HashSet<>();
 	private final Set<String> registeredHeadingAccuracyImages = new HashSet<>();
 	private final Set<String> registeredHullLabelImages = new HashSet<>();
+	// The label images the rendered hull label features use, see registerHullLabelImages.
+	private Set<String> renderedHullLabelImages = Collections.emptySet();
 	private final List<DisplayableGeoNode> pendingPoiMarkers = new ArrayList<>();
 	private final List<String> pendingPoiFeatures = new ArrayList<>();
 	private final boolean forceGhostPois;
@@ -226,7 +241,12 @@ public class MapLibreMapWidget {
 	// badge for it.
 	private boolean pendingClusterFiltered;
 	private Map<Long, DisplayableGeoNode> renderedClusterPois = Collections.emptyMap();
+	// The zoom the climbing geometry is prepared for, see prepareClimbingGeometry.
 	private double pendingClimbingZoom;
+	// The zoom levels at which what is drawn of the loaded data changes, see refreshForView.
+	private Set<Float> displayZoomLevels = Collections.emptySet();
+	// The route relations loaded, by the IDs of their pitches, see isRouteGhost.
+	private Map<Long, RouteRelation> loadedPitchRoutes = Collections.emptyMap();
 	private MapLibreMap map;
 	private UiRelatedTask<Boolean> updateTask;
 	private int markerRenderGeneration;
@@ -263,7 +283,17 @@ public class MapLibreMapWidget {
 	// The style shown, or loading, null before the first.
 	private String loadedStyleId;
 	private boolean refreshOnNextCameraIdle;
+	// The area and zoom the data is loaded for, or being loaded for, see invalidateData.
 	private MapBounds loadedBounds;
+	private double loadedZoom;
+	// Whether the data for loadedBounds is loaded and drawn, so a zoom can be drawn from it.
+	private boolean dataLoaded;
+	// Whether a task loads the data for the view, or prepares the loaded data for a zoom.
+	private boolean dataTaskRunning;
+	// Where the camera was when the pins were drawn, and whether the pin count limit left some
+	// out: it keeps the pins nearest the centre, so a move changes which show.
+	private LatLng renderedCenter;
+	private boolean renderedPoisCapped;
 	private boolean styleLoaded;
 	private MapLibreMap.CancelableCallback buttonAnimation;
 	private RotationMode rotationMode;
@@ -442,12 +472,9 @@ public class MapLibreMapWidget {
 				invalidateData();
 				return;
 			}
-			if (automaticCameraMove) {
-				automaticCameraMove = false;
-				refreshIfViewLeftLoadedArea();
-				return;
-			}
-			invalidateData();
+			boolean movedByUser = !automaticCameraMove;
+			automaticCameraMove = false;
+			refreshForView(movedByUser);
 		});
 		loadSelectedStyle();
 	}
@@ -508,6 +535,7 @@ public class MapLibreMapWidget {
 			registeredPoiImages.clear();
 			registeredHeadingAccuracyImages.clear();
 			registeredHullLabelImages.clear();
+			renderedHullLabelImages = Collections.emptySet();
 			renderedPois.clear();
 			renderedHullLabels.clear();
 			renderedHullLabelFeatures = Collections.emptyList();
@@ -735,7 +763,7 @@ public class MapLibreMapWidget {
 			centerOnObserver();
 			// The recentering animations keep cancelling each other while moving, so the camera
 			// may not go idle until the observer stops.
-			refreshIfViewLeftLoadedArea();
+			refreshForView(false);
 		}
 	}
 
@@ -896,6 +924,11 @@ public class MapLibreMapWidget {
 		return tapLocation;
 	}
 
+	/**
+	 * Loads the data for the view from the database and draws it: the pins, clusters, hulls and
+	 * lines in an area padded past the view, so that a small move needs no loading (see
+	 * refreshForView). The routes are only numbered from CRAG_MIN, see RELOAD_ZOOM_LEVELS.
+	 */
 	public void invalidateData() {
 		if (!styleLoaded || map == null) {
 			return;
@@ -907,6 +940,9 @@ public class MapLibreMapWidget {
 		final MapBounds loadBounds = getVisibleBounds().padded(LOAD_BOUNDS_PADDING);
 		loadedBounds = loadBounds;
 		final double visibleZoom = map.getCameraPosition().zoom;
+		loadedZoom = visibleZoom;
+		dataLoaded = false;
+		dataTaskRunning = true;
 		setLoading(true);
 		updateTask = new UiRelatedTask<Boolean>() {
 			@Override
@@ -933,7 +969,7 @@ public class MapLibreMapWidget {
 								? routeNumbers.get(poi.geoNode.osmID) : null;
 						poi.setRouteNumber(routeNumber != null ? routeNumber : 0);
 					}
-					pendingClimbingZoom = visibleZoom;
+					loadedPitchRoutes = pitchRoutes;
 					pendingClimbingGeometry = climbingGeometryBuilder.load(parent, loadBounds);
 					for (ClimbingGeometryBuilder.GeometrySpec geometry : pendingClimbingGeometry) {
 						// The pitches of a route relation leave the top to the route.
@@ -942,31 +978,82 @@ public class MapLibreMapWidget {
 							addRouteTop(visiblePois, geometry.route);
 						}
 					}
-					pendingHullFillGeoJson = climbingGeometryBuilder.buildHullGeoJson(
-							pendingClimbingGeometry, visibleZoom, false);
-					pendingHullOutlineGeoJson = climbingGeometryBuilder.buildHullGeoJson(
-							pendingClimbingGeometry, visibleZoom, true);
-					pendingHullLabelFeatures = climbingGeometryBuilder.buildHullLabelFeatures(
-							pendingClimbingGeometry, visibleZoom);
-					pendingWayGeoJson = climbingGeometryBuilder.buildWayGeoJson(
-							pendingClimbingGeometry, visibleZoom,
-							geometry -> isRouteGhost(geometry, pitchRoutes));
-					pendingClusterGeoJson = buildClusterGeoJson(visibleZoom);
+					Set<Float> zoomLevels =
+							ClimbingGeometryBuilder.zoomLevels(pendingClimbingGeometry);
+					// Where the pins show, and where the clusters stand in for them.
+					zoomLevels.add(MapZoomLevels.POI_AND_ROUTE_MIN);
+					zoomLevels.add(MapZoomLevels.AREA_MIN);
+					displayZoomLevels = zoomLevels;
+					prepareClimbingGeometry(visibleZoom);
 				}
 				return loaded || visiblePois.isEmpty() || isCanceled();
 			}
 
 			@Override
 			protected void thenDoUiRelatedWork(Boolean completed) {
-				if (completed && !isCanceled()) {
-					renderClimbingGeometry();
-					renderClusters();
-					renderMarkers();
-				}
-				setLoading(false);
+				onDataPrepared(completed && !isCanceled());
 			}
 		};
 		Constants.MAP_EXECUTOR.execute(updateTask);
+	}
+
+	/**
+	 * Draws the loaded data again for the zoom the map is at, where it needs no loading: the
+	 * hulls, lines and labels in view at that zoom, the clusters and the pins.
+	 */
+	private void redrawLoadedForZoom() {
+		final double visibleZoom = map.getCameraPosition().zoom;
+		dataTaskRunning = true;
+		setLoading(true);
+		updateTask = new UiRelatedTask<Boolean>() {
+			@Override
+			protected Boolean doWork() {
+				prepareClimbingGeometry(visibleZoom);
+				return !isCanceled();
+			}
+
+			@Override
+			protected void thenDoUiRelatedWork(Boolean completed) {
+				onDataPrepared(completed && !isCanceled());
+			}
+		};
+		Constants.MAP_EXECUTOR.execute(updateTask);
+	}
+
+	/**
+	 * Builds what the layers draw of the loaded climbing geometry and POIs at the zoom. Runs off
+	 * the UI thread, after the data is loaded.
+	 */
+	private void prepareClimbingGeometry(double zoom) {
+		pendingClimbingZoom = zoom;
+		pendingHullFillGeoJson = climbingGeometryBuilder.buildHullGeoJson(
+				pendingClimbingGeometry, zoom, false);
+		pendingHullOutlineGeoJson = climbingGeometryBuilder.buildHullGeoJson(
+				pendingClimbingGeometry, zoom, true);
+		pendingHullLabelFeatures = climbingGeometryBuilder.buildHullLabelFeatures(
+				pendingClimbingGeometry, zoom);
+		pendingWayGeoJson = climbingGeometryBuilder.buildWayGeoJson(
+				pendingClimbingGeometry, zoom,
+				geometry -> isRouteGhost(geometry, loadedPitchRoutes));
+		pendingClusterGeoJson = buildClusterGeoJson(zoom);
+	}
+
+	/**
+	 * Draws what a task loaded or prepared, then checks the view it is for is still the one
+	 * shown: the camera may have moved on meanwhile.
+	 */
+	private void onDataPrepared(boolean completed) {
+		dataTaskRunning = false;
+		if (completed) {
+			dataLoaded = true;
+			renderClimbingGeometry();
+			renderClusters();
+			renderMarkers();
+		}
+		setLoading(false);
+		if (completed) {
+			refreshForView(false);
+		}
 	}
 
 	/**
@@ -1025,20 +1112,39 @@ public class MapLibreMapWidget {
 	}
 
 	/**
-	 * Following the observer or the compass moves the camera many times a second, so instead of
-	 * reloading on every move, the data is reloaded once the view leaves the padded area loaded
-	 * last time.
+	 * Shows the data for the view as it is now, loading it again only when needed: once the view
+	 * leaves the padded area loaded last time, or the zoom crosses a level at which more is
+	 * loaded. A zoom crossing a level at which what is drawn of the loaded data changes is drawn
+	 * from it. Following the observer or the compass moves the camera many times a second, and
+	 * a pan or a zoom seldom needs the database again.
+	 *
+	 * @param movedByUser whether the user moved the camera, as opposed to the sensors or a
+	 *                    task finishing: a pan changes which pins the count limit keeps
 	 */
-	private void refreshIfViewLeftLoadedArea() {
+	private void refreshForView(boolean movedByUser) {
 		if (!styleLoaded || map == null) {
 			return;
 		}
 		MapBounds visible = getVisibleBounds();
-		if (loadedBounds == null
-				|| !loadedBounds.contains(new MapCoordinate(visible.getNorth(), visible.getEast()))
-				||
-				!loadedBounds.contains(new MapCoordinate(visible.getSouth(), visible.getWest()))) {
+		double zoom = map.getCameraPosition().zoom;
+		boolean covered = loadedBounds != null
+				&& loadedBounds.contains(new MapCoordinate(visible.getNorth(), visible.getEast()))
+				&& loadedBounds.contains(new MapCoordinate(visible.getSouth(), visible.getWest()))
+				&& !MapZoomLevels.crosses(loadedZoom, zoom, RELOAD_ZOOM_LEVELS);
+		if (!covered || (!dataTaskRunning && !dataLoaded)) {
 			invalidateData();
+			return;
+		}
+		if (dataTaskRunning) {
+			// What the task prepares covers the view; it is checked again once drawn, see
+			// onDataPrepared.
+			return;
+		}
+		if (MapZoomLevels.crosses(pendingClimbingZoom, zoom, displayZoomLevels)) {
+			redrawLoadedForZoom();
+		} else if (movedByUser && renderedPoisCapped
+				&& !map.getCameraPosition().target.equals(renderedCenter)) {
+			renderMarkers();
 		}
 	}
 
@@ -1197,15 +1303,18 @@ public class MapLibreMapWidget {
 	}
 
 	private void registerHullLabelImages(Style style) {
+		Set<String> usedImages = new HashSet<>();
 		for (ClimbingGeometryBuilder.GeometrySpec geometry : pendingClimbingGeometry) {
 			if (!geometry.isLabelVisibleAt(pendingClimbingZoom)) {
 				continue;
 			}
 			String imageId = geometry.getLabelImageId();
+			usedImages.add(imageId);
 			if (registeredHullLabelImages.add(imageId)) {
 				style.addImage(imageId, createRelationLabelBitmap(geometry));
 			}
 		}
+		renderedHullLabelImages = usedImages;
 	}
 
 	private Bitmap createRelationLabelBitmap(
@@ -1225,6 +1334,7 @@ public class MapLibreMapWidget {
 		pendingPoiMarkers.addAll(getVisiblePoisToRender());
 		pendingPoiMarkerIndex = 0;
 		pendingPoiFeatures.clear();
+		pendingPoiImages.clear();
 		pendingRenderedPois.clear();
 		updateObserverMarker();
 		if (showTapMarker) {
@@ -1247,6 +1357,8 @@ public class MapLibreMapWidget {
 				new LatLng(poi.geoNode.decimalLatitude, poi.geoNode.decimalLongitude))));
 
 		int limit = configs.getInt(Configs.ConfigKey.maxNodesShowCountLimit);
+		renderedCenter = center;
+		renderedPoisCapped = limit < pois.size();
 		if (limit < pois.size()) {
 			return new ArrayList<>(pois.subList(0, Math.max(limit, 0)));
 		}
@@ -1278,14 +1390,12 @@ public class MapLibreMapWidget {
 				"ctw-poi-" + poi.geoNode.osmID + "-" + Integer.toUnsignedString(iconKey.hashCode());
 		Bitmap bitmap = poiBitmaps.get(iconKey);
 		if (bitmap == null) {
-			if (poiBitmaps.size() >= MAX_CACHED_POI_ICONS) {
-				poiBitmaps.clear();
-			}
 			Drawable drawable = new PoiMarkerDrawable(parent, poi,
 					PoiMarkerDrawable.PinShape.slim).getDrawable();
 			bitmap = bitmapFromDrawable(drawable);
 			poiBitmaps.put(iconKey, bitmap);
 		}
+		pendingPoiImages.add(imageId);
 		if (registeredPoiImages.add(imageId)) {
 			style.addImage(imageId, bitmap);
 		}
@@ -1302,14 +1412,45 @@ public class MapLibreMapWidget {
 		if (generation != markerRenderGeneration || map == null || map.getStyle() == null) {
 			return;
 		}
-		GeoJsonSource source = map.getStyle().getSourceAs(POI_SOURCE_ID);
+		Style style = map.getStyle();
+		GeoJsonSource source = style.getSourceAs(POI_SOURCE_ID);
 		if (source != null) {
 			List<String> features = new ArrayList<>(renderedHullLabelFeatures);
 			features.addAll(pendingPoiFeatures);
 			source.setGeoJson(ClimbingGeometryBuilder.featureCollection(features));
 			renderedPois.clear();
 			renderedPois.putAll(pendingRenderedPois);
+			// The style keeps every image added to it, so the pins of everywhere the map has
+			// been would pile up in it. Only the images the source no longer uses go, so the
+			// pins staying are drawn without a break while the new features are laid out.
+			pruneImages(registeredPoiImages, pendingPoiImages, style::removeImage);
+			pruneImages(registeredHullLabelImages, renderedHullLabelImages, style::removeImage);
 		}
+	}
+
+	/**
+	 * Removes the registered images that are not used, and forgets them.
+	 *
+	 * @param remove removes an image from the style
+	 */
+	static void pruneImages(Set<String> registered, Set<String> used, Consumer<String> remove) {
+		for (Iterator<String> images = registered.iterator(); images.hasNext(); ) {
+			String imageId = images.next();
+			if (!used.contains(imageId)) {
+				remove.accept(imageId);
+				images.remove();
+			}
+		}
+	}
+
+	/** A map holding at most the given number of entries, dropping the least recently used. */
+	static <K, V> Map<K, V> lruCache(int maxSize) {
+		return new LinkedHashMap<K, V>(16, 0.75f, true) {
+			@Override
+			protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
+				return size() > maxSize;
+			}
+		};
 	}
 
 	/**
