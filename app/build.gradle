@@ -90,11 +90,11 @@ dependencies {
 
     implementation "org.shredzone.commons:commons-suncalc:3.11"
 
-    implementation 'com.squareup.okhttp3:okhttp:5.5.0'
+    implementation 'com.squareup.okhttp3:okhttp:5.5.1'
     // The OpenStreetMap login page opens in a browser tab.
-    implementation 'androidx.browser:browser:1.8.0'
+    implementation 'androidx.browser:browser:1.10.0'
 
-    implementation 'org.maplibre.gl:android-sdk:13.6.1'
+    implementation 'org.maplibre.gl:android-sdk:13.7.1'
 
     //multithreading handler
     implementation 'com.zsoltsafrany:needle:1.0.0'
@@ -105,7 +105,7 @@ dependencies {
     // The A.R. view's tracking and the A.R. placement in the node editor, in the nonFoss build
     // only. Optional at runtime: it needs Google Play Services for AR, which is not free software
     // and not on every phone; see src/nonFoss/AndroidManifest.xml.
-    nonFossImplementation 'com.google.ar:core:1.56.0'
+    nonFossImplementation 'com.google.ar:core:1.57.0'
 
     //database
     implementation 'androidx.room:room-runtime:2.8.5'
