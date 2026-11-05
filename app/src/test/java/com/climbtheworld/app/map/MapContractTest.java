@@ -181,6 +181,24 @@ public class MapContractTest {
 	}
 
 	@Test
+	public void cameraStateKeepsAZoomBelowZero() {
+		MapCameraState camera = new MapCameraState(new MapCoordinate(70, 20), -0.8, 30);
+
+		assertEquals(-0.8, camera.getZoom(), 0);
+		assertEquals(30, camera.getBearing(), 0);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void cameraStateRejectsAZoomThatIsNotANumber() {
+		new MapCameraState(new MapCoordinate(45, 24), Double.NaN);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void cameraStateRejectsAnInfiniteZoom() {
+		new MapCameraState(new MapCoordinate(45, 24), Double.NEGATIVE_INFINITY);
+	}
+
+	@Test
 	public void styleRegistryUsesOpenFreeMapLibertyByDefault() {
 		assertEquals("openfreemap-liberty", MapStyleRegistry.getDefaultStyle().getId());
 		assertEquals("https://tiles.openfreemap.org/styles/liberty",

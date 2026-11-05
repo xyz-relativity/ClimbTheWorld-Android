@@ -14,9 +14,13 @@ public final class MapCameraState {
 		this(center, zoom, 0);
 	}
 
+	/**
+	 * The zoom may be negative, as MapLibre's globe projection zooms below 0 away from the
+	 * equator; it only has to be a number.
+	 */
 	public MapCameraState(MapCoordinate center, double zoom, double bearing) {
-		if (zoom < 0) {
-			throw new IllegalArgumentException("Zoom must not be negative");
+		if (Double.isNaN(zoom) || Double.isInfinite(zoom)) {
+			throw new IllegalArgumentException("Zoom must be a finite number");
 		}
 
 		this.center = Objects.requireNonNull(center, "center");
