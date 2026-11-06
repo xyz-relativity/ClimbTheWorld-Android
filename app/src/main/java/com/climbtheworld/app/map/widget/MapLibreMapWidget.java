@@ -110,6 +110,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
@@ -149,7 +150,9 @@ public class MapLibreMapWidget {
 	private static final float VIEW_RANGE_LINE_WIDTH_DP = 1.5f;
 	private static final int VIEW_CONE_ARC_SEGMENTS = 32;
 	private static final int VIEW_RANGE_CIRCLE_SEGMENTS = 96;
-	private static final double VIEW_CONE_HEADING_EPSILON_DEGREES = 1;
+	// How far the heading turns before the view cone and the observer arrow are drawn again, see
+	// headingChanged.
+	private static final double HEADING_EPSILON_DEGREES = 1;
 	private static final int FIT_RADIUS_PADDING_DP = 8;
 	// Fraction of the visible span loaded beyond each edge of the view.
 	private static final double LOAD_BOUNDS_PADDING = 0.25;
@@ -267,6 +270,11 @@ public class MapLibreMapWidget {
 	private double renderedViewConeHeadingDegrees = Double.NaN;
 	private double renderedViewConeFieldOfViewDegrees;
 	private double renderedViewConeRangeMeters;
+	// What the observer marker shows, so that it is only sent again once it would look
+	// different, see updateObserverMarker. Null, NaN and null before it is first drawn.
+	private MapCoordinate renderedObserverLocation;
+	private double renderedObserverHeadingDegrees = Double.NaN;
+	private String renderedObserverAccuracyImage;
 	private List<DisplayableGeoNode> editMarkerPois = new ArrayList<>();
 	private int editMarkerImageCount = 0;
 	private OnMapClickListener onMapClickListener;
@@ -536,6 +544,9 @@ public class MapLibreMapWidget {
 			renderedHullLabelFeatures = Collections.emptyList();
 			renderedViewConeCenter = null;
 			renderedViewConeHeadingDegrees = Double.NaN;
+			renderedObserverLocation = null;
+			renderedObserverHeadingDegrees = Double.NaN;
+			renderedObserverAccuracyImage = null;
 			initializeOverlayLayers(loadedStyle);
 			applyCamera(session.camera != null ? session.camera
 					: new MapCameraState(observerLocation, DEFAULT_ZOOM_LEVEL), false);
@@ -1514,17 +1525,51 @@ public class MapLibreMapWidget {
 		}
 	}
 
+	/**
+	 * Draws the observer where it is, turned to its heading, with the wedge of how far off the
+	 * heading may be. The heading arrives at sensor rate, and every source update makes MapLibre
+	 * parse, tile and lay the marker out again, so the marker is only sent once it would look
+	 * different: moved, turned by HEADING_EPSILON_DEGREES, or with another wedge.
+	 */
 	private void updateObserverMarker() {
-		if (Double.isNaN(lastSensorHeadingDegrees)) {
-			updatePointSource(OBSERVER_SOURCE_ID, observerLocation);
+		if (!styleLoaded || map == null || map.getStyle() == null) {
 			return;
 		}
-		String properties = "\"" + ROTATION_PROPERTY + "\":" + lastSensorHeadingDegrees;
-		String accuracyImage = getHeadingAccuracyImage();
-		if (accuracyImage != null) {
-			properties += ",\"" + HEADING_ACCURACY_IMAGE_PROPERTY + "\":\"" + accuracyImage + "\"";
+		String accuracyImage =
+				Double.isNaN(lastSensorHeadingDegrees) ? null : getHeadingAccuracyImage();
+		boolean changed = renderedObserverLocation == null
+				|| renderedObserverLocation.getLatitude() != observerLocation.getLatitude()
+				|| renderedObserverLocation.getLongitude() != observerLocation.getLongitude()
+				|| headingChanged(renderedObserverHeadingDegrees, lastSensorHeadingDegrees)
+				|| !Objects.equals(renderedObserverAccuracyImage, accuracyImage);
+		if (!changed) {
+			return;
+		}
+
+		String properties = "";
+		if (!Double.isNaN(lastSensorHeadingDegrees)) {
+			properties = "\"" + ROTATION_PROPERTY + "\":" + lastSensorHeadingDegrees;
+			if (accuracyImage != null) {
+				properties += ",\"" + HEADING_ACCURACY_IMAGE_PROPERTY + "\":\"" + accuracyImage
+						+ "\"";
+			}
 		}
 		updatePointSource(OBSERVER_SOURCE_ID, observerLocation, properties);
+		renderedObserverLocation = observerLocation;
+		renderedObserverHeadingDegrees = lastSensorHeadingDegrees;
+		renderedObserverAccuracyImage = accuracyImage;
+	}
+
+	/**
+	 * Whether a heading drawn differs visibly from the heading now, so that what shows it is
+	 * drawn again: turned by HEADING_EPSILON_DEGREES or more, either way round. NaN is no heading
+	 * at all, which shows differently from any heading, and the same as itself.
+	 */
+	static boolean headingChanged(double renderedDegrees, double degrees) {
+		if (Double.isNaN(renderedDegrees) || Double.isNaN(degrees)) {
+			return Double.isNaN(renderedDegrees) != Double.isNaN(degrees);
+		}
+		return Math.abs(GeoUtils.diffAngle(degrees, renderedDegrees)) >= HEADING_EPSILON_DEGREES;
 	}
 
 	/**
@@ -1608,9 +1653,7 @@ public class MapLibreMapWidget {
 				|| renderedViewConeRangeMeters != viewConeRangeMeters;
 		boolean coneChanged = shapeChanged
 				|| renderedViewConeFieldOfViewDegrees != viewConeFieldOfViewDegrees
-				|| Double.isNaN(renderedViewConeHeadingDegrees)
-				|| Math.abs(GeoUtils.diffAngle(lastSensorHeadingDegrees,
-				renderedViewConeHeadingDegrees)) >= VIEW_CONE_HEADING_EPSILON_DEGREES;
+				|| headingChanged(renderedViewConeHeadingDegrees, lastSensorHeadingDegrees);
 
 		if (coneChanged) {
 			coneSource.setGeoJson(Double.isNaN(lastSensorHeadingDegrees)

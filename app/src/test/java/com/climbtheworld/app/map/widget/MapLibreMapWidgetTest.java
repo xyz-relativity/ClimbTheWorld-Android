@@ -220,6 +220,23 @@ public class MapLibreMapWidgetTest {
 	}
 
 	@Test
+	public void theHeadingChangesOnceTurnedByADegree() {
+		assertFalse(MapLibreMapWidget.headingChanged(10, 10.5));
+		assertTrue(MapLibreMapWidget.headingChanged(10, 11));
+		assertTrue(MapLibreMapWidget.headingChanged(11, 10));
+		// Across north.
+		assertTrue(MapLibreMapWidget.headingChanged(359.5, 0.5));
+		assertFalse(MapLibreMapWidget.headingChanged(359.8, 0.2));
+	}
+
+	@Test
+	public void noHeadingShowsDifferentlyFromAnyHeading() {
+		assertTrue(MapLibreMapWidget.headingChanged(Double.NaN, 10));
+		assertTrue(MapLibreMapWidget.headingChanged(10, Double.NaN));
+		assertFalse(MapLibreMapWidget.headingChanged(Double.NaN, Double.NaN));
+	}
+
+	@Test
 	public void unusedImagesArePrunedAndForgotten() {
 		Set<String> registered = new HashSet<>(Arrays.asList("gone", "kept", "gone too"));
 		List<String> removed = new ArrayList<>();
