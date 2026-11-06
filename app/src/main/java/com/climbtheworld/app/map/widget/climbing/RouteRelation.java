@@ -156,7 +156,15 @@ public final class RouteRelation {
 	 * @return the route relations within the bounds. Must run off the UI thread.
 	 */
 	public static List<RouteRelation> load(Context context, MapBounds bounds) {
-		DataManager dataManager = new DataManager();
+		return load(context, bounds, new DataManager());
+	}
+
+	/**
+	 * @param dataManager reads the relations and their nodes; a CachedDataManager shares what it
+	 *                    read with the other loaders of the view
+	 */
+	public static List<RouteRelation> load(Context context, MapBounds bounds,
+	                                       DataManager dataManager) {
 		List<OsmCollectionEntity> relations = new ArrayList<>();
 		List<Long> nodeIds = new ArrayList<>();
 		for (OsmCollectionEntity collection : dataManager.loadCollectionData(context,

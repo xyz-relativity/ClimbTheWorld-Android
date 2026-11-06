@@ -26,8 +26,16 @@ public final class RouteNumbers {
 	 * a route relation, by the ID of the node its pin is at.
 	 */
 	public static Map<Long, Integer> load(Context context, MapBounds bounds) {
-		DataManager dataManager = new DataManager();
-		ClimbingRouteCounter routeCounter = ClimbingRouteCounter.forDatabase(context);
+		return load(context, bounds, new DataManager());
+	}
+
+	/**
+	 * @param dataManager reads the crags and their routes; a CachedDataManager shares what it
+	 *                    read with the other loaders of the view
+	 */
+	public static Map<Long, Integer> load(Context context, MapBounds bounds,
+	                                      DataManager dataManager) {
+		ClimbingRouteCounter routeCounter = ClimbingRouteCounter.forDatabase(context, dataManager);
 		Map<Long, Integer> result = new HashMap<>();
 		List<Long> ids = dataManager.loadCollectionBBox(context, bounds,
 				OsmEntity.EntityClimbingType.crag);

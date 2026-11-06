@@ -8,13 +8,16 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import android.content.Context;
 import android.graphics.Color;
 
 import androidx.core.graphics.ColorUtils;
 
 import com.climbtheworld.app.map.DisplayableGeoNode;
+import com.climbtheworld.app.map.model.MapBounds;
 import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.map.model.MapZoomLevels;
+import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
@@ -26,6 +29,7 @@ import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -285,8 +289,8 @@ public class ClimbingGeometryBuilderTest {
 
 		assertEquals(MapZoomLevels.AREA_MIN, geometries.get(0).minZoom, 0);
 		assertEquals(EMPTY_FEATURE_COLLECTION,
-				builder.buildHullGeoJson(geometries, MapZoomLevels.AREA_MIN - 0.01, false));
-		assertTrue(builder.buildHullGeoJson(geometries, MapZoomLevels.AREA_MIN, false)
+				builder.buildHullGeoJson(geometries, MapZoomLevels.AREA_MIN - 0.01));
+		assertTrue(builder.buildHullGeoJson(geometries, MapZoomLevels.AREA_MIN)
 				.contains("Polygon"));
 	}
 
@@ -316,8 +320,8 @@ public class ClimbingGeometryBuilderTest {
 		assertTrue(geometries.get(0).coordinates.size() >= 3);
 		assertEquals(45.0005, geometries.get(0).labelCoordinate.getLatitude(), 1e-9);
 		assertEquals(24.0005, geometries.get(0).labelCoordinate.getLongitude(), 1e-9);
-		assertTrue(builder.buildHullGeoJson(geometries, MapZoomLevels.CRAG_MIN, true)
-				.contains("LineString"));
+		assertTrue(builder.buildHullGeoJson(geometries, MapZoomLevels.CRAG_MIN)
+				.contains("Polygon"));
 	}
 
 	@Test
@@ -330,8 +334,7 @@ public class ClimbingGeometryBuilderTest {
 		builder.addGeometry(geometries, relation(2L, "crag"), triangle);
 		builder.addGeometry(geometries, relation(3L, "area"), triangle);
 
-		String fills = builder.buildHullGeoJson(geometries, MapZoomLevels.POI_AND_ROUTE_MIN,
-				false);
+		String fills = builder.buildHullGeoJson(geometries, MapZoomLevels.POI_AND_ROUTE_MIN);
 
 		int area =
 				fills.indexOf(rgba(com.climbtheworld.app.map.DisplayableGeoNode.AREA_HULL_COLOR));
@@ -501,6 +504,36 @@ public class ClimbingGeometryBuilderTest {
 	private String rgba(int color) {
 		return "rgba(" + (color >> 16 & 0xff) + "," + (color >> 8 & 0xff) + ","
 				+ (color & 0xff) + "," + (color >>> 24) / 255.0 + ")";
+	}
+
+	@Test
+	public void aLoadWithoutTypesReadsEveryFeatureType() {
+		List<String> boxesRead = new ArrayList<>();
+		DataManager dataManager = new DataManager() {
+			@Override
+			public List<Long> loadCollectionBBox(Context context, MapBounds bounds,
+			                                     OsmEntity.EntityClimbingType... types) {
+				for (OsmEntity.EntityClimbingType type : types) {
+					boxesRead.add(type.name());
+				}
+				return Collections.emptyList();
+			}
+
+			@Override
+			public Map<String, OsmCollectionEntity> loadCollectionData(Context context,
+			                                                           List<Long> ids) {
+				return Collections.emptyMap();
+			}
+		};
+
+		assertTrue(builder.load(RuntimeEnvironment.getApplication(),
+				MapBounds.fromUnwrapped(46, 25, 45, 24), dataManager).isEmpty());
+
+		List<String> features = new ArrayList<>();
+		for (OsmEntity.EntityClimbingType type : OsmEntity.EntityClimbingType.features()) {
+			features.add(type.name());
+		}
+		assertEquals(features, boxesRead);
 	}
 
 	@Test

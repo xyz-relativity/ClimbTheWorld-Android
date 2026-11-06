@@ -24,6 +24,7 @@ import org.locationtech.jts.geom.GeometryFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -115,43 +116,89 @@ public final class ClimbingGeometryBuilder {
 	private final DataManager dataManager = new DataManager();
 
 	public List<GeometrySpec> load(Context context, MapBounds bounds) {
-		return load(context, bounds, OsmEntity.EntityClimbingType.features());
+		return load(context, bounds, dataManager, OsmEntity.EntityClimbingType.features());
 	}
 
 	public List<GeometrySpec> load(Context context, MapBounds bounds,
 	                               OsmEntity.EntityClimbingType... types) {
-		List<GeometrySpec> result = new ArrayList<>();
-		ClimbingRouteCounter routeCounter = ClimbingRouteCounter.forDatabase(context);
+		return load(context, bounds, dataManager, types);
+	}
+
+	/**
+	 * The geometry of every climbing feature type in the bounds.
+	 *
+	 * @param dataManager reads the collections and their nodes; a CachedDataManager shares what
+	 *                    it read with the other loaders of the view
+	 */
+	public List<GeometrySpec> load(Context context, MapBounds bounds, DataManager dataManager) {
+		return load(context, bounds, dataManager, OsmEntity.EntityClimbingType.features());
+	}
+
+	/**
+	 * The geometry of the given types in the bounds: none without a type.
+	 *
+	 * @param dataManager see {@link #load(Context, MapBounds, DataManager)}
+	 */
+	public List<GeometrySpec> load(Context context, MapBounds bounds, DataManager dataManager,
+	                               OsmEntity.EntityClimbingType... types) {
+		ClimbingRouteCounter routeCounter = ClimbingRouteCounter.forDatabase(context, dataManager);
+		// The collections of every type first, then their nodes in one read rather than one a
+		// collection.
+		List<OsmCollectionEntity> collections = new ArrayList<>();
+		List<Long> nodeIds = new ArrayList<>();
 		for (OsmEntity.EntityClimbingType type : types) {
 			if (type == OsmEntity.EntityClimbingType.NAN) {
 				continue;
 			}
-
 			List<Long> ids = dataManager.loadCollectionBBox(context, bounds, type);
-			Map<String, OsmCollectionEntity> collections = dataManager.loadCollectionData(context, ids);
-			for (OsmCollectionEntity collection : collections.values()) {
-				Map<Long, OsmNode> nodes = dataManager.loadNodeData(context, collection.osmNodes);
-				List<MapCoordinate> coordinates = toCoordinates(collection, nodes);
-				// Hulls are drawn around any number of points, but a way needs two for its line.
-				// A crag or area without any route start has no hull, see toCoordinates.
-				if (coordinates.isEmpty() || (coordinates.size() < 2
-						&& collection.osmType == OsmEntity.EntityOsmType.way)) {
-					continue;
-				}
-				int routeCount = -1;
-				boolean routeCountFiltered = false;
-				if (collection.entityClimbingType == OsmEntity.EntityClimbingType.area
-						|| collection.entityClimbingType == OsmEntity.EntityClimbingType.crag) {
-					ClimbingRouteCounter.RouteSummary routes =
-							routeCounter.summarize(collection, nodes);
-					routeCount = routes.getMatchingRouteCount();
-					routeCountFiltered = routes.isFiltered();
-				}
-				addGeometry(result, collection, coordinates, routeCount, routeCountFiltered,
-						toRouteWay(collection, nodes));
+			for (OsmCollectionEntity collection
+					: dataManager.loadCollectionData(context, ids).values()) {
+				collections.add(collection);
+				nodeIds.addAll(collection.osmNodes);
 			}
 		}
+		Map<Long, OsmNode> loadedNodes = nodeIds.isEmpty() ? Collections.emptyMap()
+				: dataManager.loadNodeData(context, nodeIds);
+
+		List<GeometrySpec> result = new ArrayList<>();
+		for (OsmCollectionEntity collection : collections) {
+			Map<Long, OsmNode> nodes = nodesOf(collection, loadedNodes);
+			List<MapCoordinate> coordinates = toCoordinates(collection, nodes);
+			// Hulls are drawn around any number of points, but a way needs two for its line.
+			// A crag or area without any route start has no hull, see toCoordinates.
+			if (coordinates.isEmpty() || (coordinates.size() < 2
+					&& collection.osmType == OsmEntity.EntityOsmType.way)) {
+				continue;
+			}
+			int routeCount = -1;
+			boolean routeCountFiltered = false;
+			if (collection.entityClimbingType == OsmEntity.EntityClimbingType.area
+					|| collection.entityClimbingType == OsmEntity.EntityClimbingType.crag) {
+				ClimbingRouteCounter.RouteSummary routes =
+						routeCounter.summarize(collection, nodes);
+				routeCount = routes.getMatchingRouteCount();
+				routeCountFiltered = routes.isFiltered();
+			}
+			addGeometry(result, collection, coordinates, routeCount, routeCountFiltered,
+					toRouteWay(collection, nodes));
+		}
 		return result;
+	}
+
+	/**
+	 * The collection's own nodes among the loaded ones, by ID: the route counter takes them as
+	 * the collection's, see ClimbingRouteCounter.summarize.
+	 */
+	private static Map<Long, OsmNode> nodesOf(OsmCollectionEntity collection,
+	                                          Map<Long, OsmNode> loadedNodes) {
+		Map<Long, OsmNode> nodes = new HashMap<>();
+		for (Long id : collection.osmNodes) {
+			OsmNode node = loadedNodes.get(id);
+			if (node != null) {
+				nodes.put(id, node);
+			}
+		}
+		return nodes;
 	}
 
 	/**
@@ -173,7 +220,11 @@ public final class ClimbingGeometryBuilder {
 		return levels;
 	}
 
-	public String buildHullGeoJson(List<GeometrySpec> geometries, double zoom, boolean outlines) {
+	/**
+	 * The hulls in view at the zoom, as polygons in their fill colour: one source for the fill
+	 * and the outline, which a line layer draws along the polygons' rings.
+	 */
+	public String buildHullGeoJson(List<GeometrySpec> geometries, double zoom) {
 		StringBuilder result = new StringBuilder("{\"type\":\"FeatureCollection\",\"features\":[");
 		boolean firstFeature = true;
 		for (GeometrySpec geometry : sortByHullDrawOrder(geometries)) {
@@ -185,21 +236,11 @@ public final class ClimbingGeometryBuilder {
 				result.append(',');
 			}
 			firstFeature = false;
-			result.append("{\"type\":\"Feature\",\"properties\":{");
-			if (!outlines) {
-				result.append("\"fillColor\":\"").append(toRgba(geometry.fillColor)).append('\"');
-			}
-			result.append("},\"geometry\":{\"type\":\"")
-					.append(outlines ? "LineString" : "Polygon")
-					.append("\",\"coordinates\":");
-			if (!outlines) {
-				result.append('[');
-			}
+			result.append("{\"type\":\"Feature\",\"properties\":{\"fillColor\":\"")
+					.append(toRgba(geometry.fillColor))
+					.append("\"},\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[");
 			appendClosedCoordinates(result, geometry.coordinates);
-			if (!outlines) {
-				result.append(']');
-			}
-			result.append("}}");
+			result.append("]}}");
 		}
 		return result.append("]}").toString();
 	}

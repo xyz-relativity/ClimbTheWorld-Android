@@ -16,6 +16,7 @@ import com.climbtheworld.app.map.widget.climbing.ClimbingGeometryBuilder;
 import com.climbtheworld.app.map.widget.climbing.RouteNumbers;
 import com.climbtheworld.app.map.widget.climbing.RouteRelation;
 import com.climbtheworld.app.sensors.camera.VirtualCamera;
+import com.climbtheworld.app.storage.CachedDataManager;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.TerrainElevation;
 import com.climbtheworld.app.storage.database.GeoNode;
@@ -407,9 +408,11 @@ public class AugmentedRealityScene {
 								center.y + deltaLongitude, center.x - deltaLatitude,
 								center.y - deltaLongitude);
 
+						// One load reads each element once, see CachedDataManager.
+						CachedDataManager data = new CachedDataManager();
 						List<ClimbingHull> hulls = new ArrayList<>();
 						for (ClimbingGeometryBuilder.GeometrySpec geometry : hullGeometryBuilder.load(
-								activity.getApplicationContext(), bounds,
+								activity.getApplicationContext(), bounds, data,
 								OsmEntity.EntityClimbingType.crag,
 								OsmEntity.EntityClimbingType.area)) {
 							// Hulls are those of relations; the OSM wiki has no crag mapped as a way.
@@ -419,9 +422,11 @@ public class AugmentedRealityScene {
 							}
 							hulls.add(toClimbingHull(geometry));
 						}
-						routeNumbers = RouteNumbers.load(activity.getApplicationContext(), bounds);
-						relations = RouteRelation.load(activity.getApplicationContext(), bounds);
-						routes = loadRouteLines(bounds, RouteRelation.byPitch(relations));
+						routeNumbers = RouteNumbers.load(activity.getApplicationContext(), bounds,
+								data);
+						relations = RouteRelation.load(activity.getApplicationContext(), bounds,
+								data);
+						routes = loadRouteLines(data, bounds, RouteRelation.byPitch(relations));
 						return hulls;
 					}
 
@@ -482,10 +487,10 @@ public class AugmentedRealityScene {
 	 *
 	 * @param pitchRoutes the route relations by the IDs of their pitches
 	 */
-	private List<RouteLine> loadRouteLines(MapBounds bounds,
+	private List<RouteLine> loadRouteLines(DataManager dataManager, MapBounds bounds,
 	                                       Map<Long, RouteRelation> pitchRoutes) {
-		Map<String, OsmCollectionEntity> collections = offlineDataManager.loadCollectionData(
-				activity.getApplicationContext(), offlineDataManager.loadCollectionBBox(
+		Map<String, OsmCollectionEntity> collections = dataManager.loadCollectionData(
+				activity.getApplicationContext(), dataManager.loadCollectionBBox(
 						activity.getApplicationContext(), bounds,
 						OsmEntity.EntityClimbingType.route));
 		List<OsmCollectionEntity> ways = new ArrayList<>();
@@ -496,7 +501,7 @@ public class AugmentedRealityScene {
 				nodeIds.addAll(collection.osmNodes);
 			}
 		}
-		Map<Long, OsmNode> nodes = offlineDataManager.loadNodeData(
+		Map<Long, OsmNode> nodes = dataManager.loadNodeData(
 				activity.getApplicationContext(), nodeIds);
 		List<RouteLine> routes = new ArrayList<>();
 		for (OsmCollectionEntity way : ways) {

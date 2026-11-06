@@ -62,7 +62,7 @@ import com.climbtheworld.app.navigate.widgets.CompassBlur;
 import com.climbtheworld.app.navigate.widgets.CompassStatusBadge;
 import com.climbtheworld.app.sensors.orientation.HeadingConfidence;
 import com.climbtheworld.app.sensors.orientation.OrientationManager;
-import com.climbtheworld.app.storage.DataManager;
+import com.climbtheworld.app.storage.CachedDataManager;
 import com.climbtheworld.app.storage.TerrainElevation;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
@@ -106,6 +106,7 @@ import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -131,8 +132,8 @@ public class MapLibreMapWidget {
 	private static final double POI_RENDER_MIN_ZOOM_LEVEL = MapZoomLevels.POI_AND_ROUTE_MIN;
 	private static final int MAX_CACHED_POI_ICONS = 200;
 	private static final float HULL_OUTLINE_WIDTH_DP = 1f;
-	private static final String HULL_FILL_SOURCE_ID = "ctw-hull-fill-source";
-	private static final String HULL_OUTLINE_SOURCE_ID = "ctw-hull-outline-source";
+	// The hull polygons, which the fill layer fills and the outline layer draws the rings of.
+	private static final String HULL_SOURCE_ID = "ctw-hull-source";
 	private static final String HULL_FILL_LAYER_ID = "ctw-hull-fill-layer";
 	private static final String HULL_OUTLINE_LAYER_ID = "ctw-hull-outline-layer";
 	private static final String HULL_FILL_COLOR_PROPERTY = "fillColor";
@@ -205,7 +206,6 @@ public class MapLibreMapWidget {
 	private final SessionState session;
 	private final MapView mapView;
 	private final View loadingIndicator;
-	private final DataManager mapLibreDataManager = new DataManager();
 	private final ClimbingGeometryBuilder climbingGeometryBuilder = new ClimbingGeometryBuilder();
 	private final Map<Long, DisplayableGeoNode> visiblePois = new ConcurrentHashMap<>();
 	private final Map<Long, DisplayableGeoNode> renderedPois = new HashMap<>();
@@ -226,8 +226,7 @@ public class MapLibreMapWidget {
 	private final boolean creditTerrain;
 	private List<ClimbingGeometryBuilder.GeometrySpec> pendingClimbingGeometry =
 			Collections.emptyList();
-	private String pendingHullFillGeoJson = EMPTY_FEATURE_COLLECTION;
-	private String pendingHullOutlineGeoJson = EMPTY_FEATURE_COLLECTION;
+	private String pendingHullGeoJson = EMPTY_FEATURE_COLLECTION;
 	private List<String> pendingHullLabelFeatures = Collections.emptyList();
 	private List<String> renderedHullLabelFeatures = Collections.emptyList();
 	private String pendingWayGeoJson = EMPTY_FEATURE_COLLECTION;
@@ -569,8 +568,7 @@ public class MapLibreMapWidget {
 				parent, DisplayableGeoNode.CLUSTER_DEFAULT_COLOR,
 				DisplayableGeoNode.CLUSTER_ICON_ALPHA, true)));
 
-		style.addSource(new GeoJsonSource(HULL_FILL_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
-		style.addSource(new GeoJsonSource(HULL_OUTLINE_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
+		style.addSource(new GeoJsonSource(HULL_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
 		style.addSource(new GeoJsonSource(WAY_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
 		style.addSource(new GeoJsonSource(VIEW_CONE_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
 		style.addSource(new GeoJsonSource(VIEW_RANGE_SOURCE_ID, EMPTY_FEATURE_COLLECTION));
@@ -593,10 +591,10 @@ public class MapLibreMapWidget {
 					TerrainElevation.TILE_SIZE));
 		}
 
-		style.addLayer(new FillLayer(HULL_FILL_LAYER_ID, HULL_FILL_SOURCE_ID)
+		style.addLayer(new FillLayer(HULL_FILL_LAYER_ID, HULL_SOURCE_ID)
 				.withProperties(
 						fillColor(Expression.toColor(Expression.get(HULL_FILL_COLOR_PROPERTY)))));
-		style.addLayer(new LineLayer(HULL_OUTLINE_LAYER_ID, HULL_OUTLINE_SOURCE_ID)
+		style.addLayer(new LineLayer(HULL_OUTLINE_LAYER_ID, HULL_SOURCE_ID)
 				.withProperties(
 						lineColor(0xff000000),
 						lineWidth(HULL_OUTLINE_WIDTH_DP),
@@ -954,10 +952,16 @@ public class MapLibreMapWidget {
 			@Override
 			protected Boolean doWork() {
 				visiblePois.clear();
-				boolean loaded = mapLibreDataManager.loadDisplayableNodesBBox(
-						parent, loadBounds, visiblePois);
+				// One load reads each element once, see CachedDataManager. The geometry goes
+				// first: its collections and their nodes are most of what the pins, the route
+				// relations and the route numbers read.
+				CachedDataManager data = new CachedDataManager();
+				List<ClimbingGeometryBuilder.GeometrySpec> climbingGeometry =
+						climbingGeometryBuilder.load(parent, loadBounds, data);
+				boolean loaded = data.loadDisplayableNodesBBox(parent, loadBounds, visiblePois);
 				if (!isCanceled()) {
-					List<RouteRelation> routeRelations = RouteRelation.load(parent, loadBounds);
+					List<RouteRelation> routeRelations =
+							RouteRelation.load(parent, loadBounds, data);
 					for (RouteRelation routeRelation : routeRelations) {
 						addRouteRelation(visiblePois, routeRelation);
 					}
@@ -967,7 +971,7 @@ public class MapLibreMapWidget {
 					Map<Long, RouteRelation> pitchRoutes = RouteRelation.byPitch(routeRelations);
 					// Pins only show close in, and numbering every crag of a wide view is costly.
 					Map<Long, Integer> routeNumbers = visibleZoom >= MapZoomLevels.CRAG_MIN
-							? RouteNumbers.load(parent, loadBounds) : Collections.emptyMap();
+							? RouteNumbers.load(parent, loadBounds, data) : Collections.emptyMap();
 					for (DisplayableGeoNode poi : visiblePois.values()) {
 						// Only nodes take route numbers. A way's negative marker ID is not enough
 						// to tell, as nodes created in the app have negative IDs too.
@@ -976,7 +980,7 @@ public class MapLibreMapWidget {
 						poi.setRouteNumber(routeNumber != null ? routeNumber : 0);
 					}
 					loadedPitchRoutes = pitchRoutes;
-					pendingClimbingGeometry = climbingGeometryBuilder.load(parent, loadBounds);
+					pendingClimbingGeometry = climbingGeometry;
 					for (ClimbingGeometryBuilder.GeometrySpec geometry : pendingClimbingGeometry) {
 						// The pitches of a route relation leave the top to the route.
 						if (geometry.route != null
@@ -1032,10 +1036,8 @@ public class MapLibreMapWidget {
 	 */
 	private void prepareClimbingGeometry(double zoom) {
 		pendingClimbingZoom = zoom;
-		pendingHullFillGeoJson = climbingGeometryBuilder.buildHullGeoJson(
-				pendingClimbingGeometry, zoom, false);
-		pendingHullOutlineGeoJson = climbingGeometryBuilder.buildHullGeoJson(
-				pendingClimbingGeometry, zoom, true);
+		pendingHullGeoJson = climbingGeometryBuilder.buildHullGeoJson(
+				pendingClimbingGeometry, zoom);
 		pendingHullLabelFeatures = climbingGeometryBuilder.buildHullLabelFeatures(
 				pendingClimbingGeometry, zoom);
 		pendingWayGeoJson = climbingGeometryBuilder.buildWayGeoJson(
@@ -1293,14 +1295,10 @@ public class MapLibreMapWidget {
 				renderedHullLabels.put(geometry.key, geometry);
 			}
 		}
-		GeoJsonSource fillSource = style.getSourceAs(HULL_FILL_SOURCE_ID);
-		GeoJsonSource outlineSource = style.getSourceAs(HULL_OUTLINE_SOURCE_ID);
+		GeoJsonSource hullSource = style.getSourceAs(HULL_SOURCE_ID);
 		GeoJsonSource waySource = style.getSourceAs(WAY_SOURCE_ID);
-		if (fillSource != null) {
-			fillSource.setGeoJson(pendingHullFillGeoJson);
-		}
-		if (outlineSource != null) {
-			outlineSource.setGeoJson(pendingHullOutlineGeoJson);
+		if (hullSource != null) {
+			hullSource.setGeoJson(pendingHullGeoJson);
 		}
 		renderedHullLabelFeatures = pendingHullLabelFeatures;
 		if (waySource != null) {
@@ -1383,18 +1381,22 @@ public class MapLibreMapWidget {
 				pois.add(poi);
 			}
 		}
-		// The loaded area extends past the view, so the cap keeps the POIs nearest its centre.
 		LatLng center = map.getCameraPosition().target;
-		Collections.sort(pois, Comparator.comparingDouble(poi -> center.distanceTo(
-				new LatLng(poi.geoNode.decimalLatitude, poi.geoNode.decimalLongitude))));
-
 		int limit = configs.getInt(Configs.ConfigKey.maxNodesShowCountLimit);
 		renderedCenter = center;
 		renderedPoisCapped = limit < pois.size();
-		if (limit < pois.size()) {
-			return new ArrayList<>(pois.subList(0, Math.max(limit, 0)));
+		if (!renderedPoisCapped) {
+			return pois;
 		}
-		return pois;
+		// The loaded area extends past the view, so the cap keeps the POIs nearest its centre.
+		// Each distance is worked out once: the sort compares them many times over.
+		Map<DisplayableGeoNode, Double> distances = new IdentityHashMap<>();
+		for (DisplayableGeoNode poi : pois) {
+			distances.put(poi, center.distanceTo(
+					new LatLng(poi.geoNode.decimalLatitude, poi.geoNode.decimalLongitude)));
+		}
+		Collections.sort(pois, Comparator.comparingDouble(distances::get));
+		return new ArrayList<>(pois.subList(0, Math.max(limit, 0)));
 	}
 
 	/**

@@ -30,6 +30,8 @@ import java.util.function.Function;
 
 public class DataManager {
 	private static final int SEARCH_RESULTS_LIMIT = 50;
+	// How many IDs one query asks for: SQLite on Android 10 and 11 binds at most 999 variables.
+	private static final int QUERY_CHUNK = 500;
 	private static final double PARENT_SEARCH_MARGIN_DEGREES = 0.000001;
 
 	// The nodes pinned on the map and in the A.R. view, and found by a search: the climbing
@@ -102,13 +104,22 @@ public class DataManager {
 	public Map<String, OsmCollectionEntity> loadCollectionData(Context appCompatActivity, List<Long> ids) {
 		AppDatabase appDB = AppDatabase.getInstance(appCompatActivity);
 		Map<String, OsmCollectionEntity> result = new HashMap<>();
-		List<OsmCollectionEntity> data = appDB.osmCollectionDao().resolveData(ids);
-
-		for (OsmCollectionEntity collection : data) {
-			result.put(collectionKey(collection.osmType, collection.osmID), collection);
+		for (List<Long> chunk : chunks(ids)) {
+			for (OsmCollectionEntity collection : appDB.osmCollectionDao().resolveData(chunk)) {
+				result.put(collectionKey(collection.osmType, collection.osmID), collection);
+			}
 		}
 
 		return result;
+	}
+
+	/** The IDs in runs of at most QUERY_CHUNK, for one query each. */
+	private static List<List<Long>> chunks(List<Long> ids) {
+		List<List<Long>> chunks = new ArrayList<>();
+		for (int start = 0; start < ids.size(); start += QUERY_CHUNK) {
+			chunks.add(ids.subList(start, Math.min(start + QUERY_CHUNK, ids.size())));
+		}
+		return chunks;
 	}
 
 	/**
@@ -263,10 +274,10 @@ public class DataManager {
 	public Map<Long, OsmNode> loadNodeData(Context appCompatActivity, List<Long> ids) {
 		AppDatabase appDB = AppDatabase.getInstance(appCompatActivity);
 		Map<Long, OsmNode> result = new HashMap<>();
-		List<OsmNode> data = appDB.osmNodeDao().resolveNodeData(ids);
-
-		for (OsmNode node: data) {
-			result.put(node.osmID, node);
+		for (List<Long> chunk : chunks(ids)) {
+			for (OsmNode node : appDB.osmNodeDao().resolveNodeData(chunk)) {
+				result.put(node.osmID, node);
+			}
 		}
 
 		return result;

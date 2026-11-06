@@ -252,7 +252,14 @@ public final class ClimbingRouteCounter {
 	 * area is drawn, see NodeDisplayFilters.routeFilter.
 	 */
 	public static ClimbingRouteCounter forDatabase(Context context) {
-		DataManager dataManager = new DataManager();
+		return forDatabase(context, new DataManager());
+	}
+
+	/**
+	 * @param dataManager reads the elements; a CachedDataManager shares what it read with the
+	 *                    other loaders of a view
+	 */
+	public static ClimbingRouteCounter forDatabase(Context context, DataManager dataManager) {
 		Predicate<GeoNode> routeFilter = NodeDisplayFilters.routeFilter(Configs.instance(context));
 		return new ClimbingRouteCounter(new EntitySource() {
 			@Override
