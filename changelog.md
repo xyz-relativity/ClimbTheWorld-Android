@@ -1,6 +1,10 @@
 =2026.11-2=
 ========
-- Load wide map views faster, with the climbing data indexed for them.
+- Load wide map views faster, with the climbing data indexed for them. The map and the A.R. view read the climbing data of a view in fewer goes.
+- Keep the map smooth while panning, zooming and following you: load the climbing data again only once the view leaves what was loaded, draw the pins without holding up the map, even at a crag of many routes, and redraw your position only once it moves or turns.
+- Mark the filter button with a green check while a filter is on, in place of showing it in colour. The filter badge on crag, area and cluster pins shows the funnel in the button's colours.
+- Blur only the compass button's needle while the heading is uncertain, keeping its dial sharp, and blur it more.
+- Fix a crash when zooming the map far out, away from the equator.
 
 =2026.11-1=
 ========
