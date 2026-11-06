@@ -284,7 +284,6 @@ public class MapLibreMapWidget {
 	private boolean automaticCameraMove;
 	// The style shown, or loading, null before the first.
 	private String loadedStyleId;
-	private boolean refreshOnNextCameraIdle;
 	// The area and zoom the data is loaded for, or being loaded for, see invalidateData.
 	private MapBounds loadedBounds;
 	private double loadedZoom;
@@ -468,12 +467,6 @@ public class MapLibreMapWidget {
 				return;
 			}
 			saveCamera();
-			if (refreshOnNextCameraIdle) {
-				refreshOnNextCameraIdle = false;
-				automaticCameraMove = false;
-				invalidateData();
-				return;
-			}
 			boolean movedByUser = !automaticCameraMove;
 			automaticCameraMove = false;
 			refreshForView(movedByUser);
@@ -1821,7 +1814,8 @@ public class MapLibreMapWidget {
 		followObserver = enabled;
 		session.followObserver = enabled;
 		if (enabled) {
-			refreshOnNextCameraIdle = true;
+			// Recentering is a button move: once the camera settles, the data is loaded if the
+			// view left the loaded area, see refreshForView.
 			if (map == null) {
 				centerOnObserver();
 			} else {

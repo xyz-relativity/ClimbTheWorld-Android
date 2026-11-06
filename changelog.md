@@ -1,3 +1,7 @@
+=2026.11-2=
+========
+- Load wide map views faster, with the climbing data indexed for them.
+
 =2026.11-1=
 ========
 - Group the log book by country, then area, then crag, with the entries of countries not downloaded under their own heading. Collapse and expand each group, or all of them at once. The log book filter looks up the place names too.

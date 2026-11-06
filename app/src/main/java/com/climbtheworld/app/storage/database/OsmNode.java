@@ -6,9 +6,12 @@ import androidx.room.Index;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+// The index serves the bounding box query (OsmNodeDao.loadBBox) on its own: a seek on the type
+// and the latitude, the rest read from the index without the table. One index on the latitude
+// and one on the longitude, as before, had SQLite walk a whole band of a wide view.
 @Entity(primaryKeys = {"osmType", "osmID"}, indices = {
-		@Index(value = "decimalLatitude"),
-		@Index(value = "decimalLongitude")
+		@Index(name = "index_OsmNode_box", value = {"entityClimbingType", "decimalLatitude",
+				"decimalLongitude", "localUpdateState", "osmID"})
 })
 public class OsmNode extends OsmEntity {
 	public Double decimalLatitude = 0.0;
