@@ -22,14 +22,16 @@ import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.utils.Globals;
 
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class MarkerUtils {
 	public static final String UNKNOWN_TYPE = "-?-";
 	public final static int DEFAULT_STYLE_ICON_SIZE = Globals.convertDpToPixel(20).intValue();
 
-	private static final HashMap<String, Drawable> iconCache = new HashMap<>();
+	// Read from the UI thread and the map's executor, which draws the map pins, at once.
+	private static final Map<String, Drawable> iconCache = new ConcurrentHashMap<>();
 	// The bottom right of ic_clusters' main circle, as a share of its size, where the filter badge
 	// goes.
 	private static final float CLUSTER_BADGE_CENTER_X = 0.71f;

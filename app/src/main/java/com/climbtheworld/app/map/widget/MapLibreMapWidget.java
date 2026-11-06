@@ -128,7 +128,6 @@ public class MapLibreMapWidget {
 	private static final long AMBIENT_CACHE_SIZE_BYTES = 300L * 1024L * 1024L;
 	private static final double CENTER_ON_LOCATION_ZOOM_LEVEL = 24;
 	private static final double POI_RENDER_MIN_ZOOM_LEVEL = MapZoomLevels.POI_AND_ROUTE_MIN;
-	private static final int MARKER_RENDER_BATCH_SIZE = 4;
 	private static final int MAX_CACHED_POI_ICONS = 200;
 	private static final float HULL_OUTLINE_WIDTH_DP = 1f;
 	private static final String HULL_FILL_SOURCE_ID = "ctw-hull-fill-source";
@@ -209,21 +208,16 @@ public class MapLibreMapWidget {
 	private final Map<Long, DisplayableGeoNode> renderedPois = new HashMap<>();
 	private final Map<String, ClimbingGeometryBuilder.GeometrySpec> renderedHullLabels =
 			new HashMap<>();
-	private final Map<Long, DisplayableGeoNode> pendingRenderedPois = new HashMap<>();
 	// The pins drawn, by what they are drawn from (see poiIconKey), the least recently used
-	// dropped first.
+	// dropped first. Only touched on the map executor's thread, see preparePoiFeature.
 	private final Map<String, Bitmap> poiBitmaps = lruCache(MAX_CACHED_POI_ICONS);
 	// The images in the style, pruned of what the sources no longer use once they are set, see
 	// publishPoiFeatures.
 	private final Set<String> registeredPoiImages = new HashSet<>();
-	// The pin images the POI features being prepared use, see preparePoiFeature.
-	private final Set<String> pendingPoiImages = new HashSet<>();
 	private final Set<String> registeredHeadingAccuracyImages = new HashSet<>();
 	private final Set<String> registeredHullLabelImages = new HashSet<>();
 	// The label images the rendered hull label features use, see registerHullLabelImages.
 	private Set<String> renderedHullLabelImages = Collections.emptySet();
-	private final List<DisplayableGeoNode> pendingPoiMarkers = new ArrayList<>();
-	private final List<String> pendingPoiFeatures = new ArrayList<>();
 	private final boolean forceGhostPois;
 	private final boolean showTapMarker;
 	private final boolean creditTerrain;
@@ -250,7 +244,8 @@ public class MapLibreMapWidget {
 	private MapLibreMap map;
 	private UiRelatedTask<Boolean> updateTask;
 	private int markerRenderGeneration;
-	private int pendingPoiMarkerIndex;
+	// Draws the pins off the UI thread, see renderMarkers.
+	private UiRelatedTask<PreparedPins> markerTask;
 	private MapCoordinate observerLocation;
 	private MapCoordinate tapLocation;
 	// Unknown until the first heading arrives, and for good on devices without a compass.
@@ -1324,23 +1319,49 @@ public class MapLibreMapWidget {
 				parent, new DisplayableGeoNode(relation)).getDrawable());
 	}
 
+	/**
+	 * Draws the pins of the POIs in view and puts them on the map. Drawing them takes a while
+	 * for a crag of many routes, so they are drawn off the UI thread, and go on the map all at
+	 * once, see publishPoiFeatures. A newer call supersedes the pins being drawn.
+	 */
 	private void renderMarkers() {
 		if (!styleLoaded || map == null || map.getStyle() == null) {
 			return;
 		}
 
 		markerRenderGeneration++;
-		pendingPoiMarkers.clear();
-		pendingPoiMarkers.addAll(getVisiblePoisToRender());
-		pendingPoiMarkerIndex = 0;
-		pendingPoiFeatures.clear();
-		pendingPoiImages.clear();
-		pendingRenderedPois.clear();
+		final int generation = markerRenderGeneration;
+		final List<DisplayableGeoNode> pois = getVisiblePoisToRender();
+		// The pins already in the style are not drawn again.
+		final Set<String> registeredImages = new HashSet<>(registeredPoiImages);
 		updateObserverMarker();
 		if (showTapMarker) {
 			updateTapMarker();
 		}
-		renderNextPoiMarkerBatch(markerRenderGeneration);
+		if (markerTask != null) {
+			markerTask.cancel();
+		}
+		markerTask = new UiRelatedTask<PreparedPins>() {
+			@Override
+			protected PreparedPins doWork() {
+				PreparedPins prepared = new PreparedPins();
+				for (DisplayableGeoNode poi : pois) {
+					if (isCanceled()) {
+						break;
+					}
+					preparePoiFeature(poi, registeredImages, prepared);
+				}
+				return prepared;
+			}
+
+			@Override
+			protected void thenDoUiRelatedWork(PreparedPins prepared) {
+				if (!isCanceled()) {
+					publishPoiFeatures(generation, prepared);
+				}
+			}
+		};
+		Constants.MAP_EXECUTOR.execute(markerTask);
 	}
 
 	private List<DisplayableGeoNode> getVisiblePoisToRender() {
@@ -1365,67 +1386,77 @@ public class MapLibreMapWidget {
 		return pois;
 	}
 
-	private void renderNextPoiMarkerBatch(int generation) {
-		if (generation != markerRenderGeneration || !styleLoaded || map == null ||
-				map.getStyle() == null) {
-			return;
-		}
-
-		int end = Math.min(pendingPoiMarkerIndex + MARKER_RENDER_BATCH_SIZE,
-				pendingPoiMarkers.size());
-		while (pendingPoiMarkerIndex < end) {
-			preparePoiFeature(pendingPoiMarkers.get(pendingPoiMarkerIndex++), map.getStyle());
-		}
-		if (pendingPoiMarkerIndex < pendingPoiMarkers.size()) {
-			mapView.post(() -> renderNextPoiMarkerBatch(generation));
-		} else {
-			publishPoiFeatures(generation);
-		}
-	}
-
-	private void preparePoiFeature(DisplayableGeoNode poi, Style style) {
+	/**
+	 * Draws the pin of the POI, unless the style has it, and prepares its feature. Runs off the
+	 * UI thread.
+	 *
+	 * @param registeredImages the pin images in the style when the drawing started
+	 */
+	private void preparePoiFeature(DisplayableGeoNode poi, Set<String> registeredImages,
+	                               PreparedPins prepared) {
 		poi.setGhost(isGhost(poi.geoNode));
 		String iconKey = poiIconKey(poi);
 		String imageId =
 				"ctw-poi-" + poi.geoNode.osmID + "-" + Integer.toUnsignedString(iconKey.hashCode());
-		Bitmap bitmap = poiBitmaps.get(iconKey);
-		if (bitmap == null) {
-			Drawable drawable = new PoiMarkerDrawable(parent, poi,
-					PoiMarkerDrawable.PinShape.slim).getDrawable();
-			bitmap = bitmapFromDrawable(drawable);
-			poiBitmaps.put(iconKey, bitmap);
+		if (!registeredImages.contains(imageId) && !prepared.newImages.containsKey(imageId)) {
+			Bitmap bitmap = poiBitmaps.get(iconKey);
+			if (bitmap == null) {
+				Drawable drawable = new PoiMarkerDrawable(parent, poi,
+						PoiMarkerDrawable.PinShape.slim).getDrawable();
+				bitmap = bitmapFromDrawable(drawable);
+				poiBitmaps.put(iconKey, bitmap);
+			}
+			prepared.newImages.put(imageId, bitmap);
 		}
-		pendingPoiImages.add(imageId);
-		if (registeredPoiImages.add(imageId)) {
-			style.addImage(imageId, bitmap);
-		}
+		prepared.imageIds.add(imageId);
 
 		long markerId = markerId(poi.geoNode);
-		pendingRenderedPois.put(markerId, poi);
-		pendingPoiFeatures.add("{\"type\":\"Feature\",\"properties\":{\""
+		prepared.pois.put(markerId, poi);
+		prepared.features.add("{\"type\":\"Feature\",\"properties\":{\""
 				+ POI_ID_PROPERTY + "\":" + markerId + ",\"" + ICON_PROPERTY
 				+ "\":\"" + imageId + "\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":["
 				+ poi.geoNode.decimalLongitude + "," + poi.geoNode.decimalLatitude + "]}}");
 	}
 
-	private void publishPoiFeatures(int generation) {
+	/** Puts the prepared pins on the map, on the UI thread, unless newer ones are being drawn. */
+	private void publishPoiFeatures(int generation, PreparedPins prepared) {
 		if (generation != markerRenderGeneration || map == null || map.getStyle() == null) {
 			return;
 		}
 		Style style = map.getStyle();
 		GeoJsonSource source = style.getSourceAs(POI_SOURCE_ID);
-		if (source != null) {
-			List<String> features = new ArrayList<>(renderedHullLabelFeatures);
-			features.addAll(pendingPoiFeatures);
-			source.setGeoJson(ClimbingGeometryBuilder.featureCollection(features));
-			renderedPois.clear();
-			renderedPois.putAll(pendingRenderedPois);
-			// The style keeps every image added to it, so the pins of everywhere the map has
-			// been would pile up in it. Only the images the source no longer uses go, so the
-			// pins staying are drawn without a break while the new features are laid out.
-			pruneImages(registeredPoiImages, pendingPoiImages, style::removeImage);
-			pruneImages(registeredHullLabelImages, renderedHullLabelImages, style::removeImage);
+		if (source == null) {
+			return;
 		}
+		HashMap<String, Bitmap> newImages = new HashMap<>();
+		for (Map.Entry<String, Bitmap> image : prepared.newImages.entrySet()) {
+			if (registeredPoiImages.add(image.getKey())) {
+				newImages.put(image.getKey(), image.getValue());
+			}
+		}
+		if (!newImages.isEmpty()) {
+			style.addImages(newImages);
+		}
+		List<String> features = new ArrayList<>(renderedHullLabelFeatures);
+		features.addAll(prepared.features);
+		source.setGeoJson(ClimbingGeometryBuilder.featureCollection(features));
+		renderedPois.clear();
+		renderedPois.putAll(prepared.pois);
+		// The style keeps every image added to it, so the pins of everywhere the map has been
+		// would pile up in it. Only the images the source no longer uses go, so the pins staying
+		// are drawn without a break while the new features are laid out.
+		pruneImages(registeredPoiImages, prepared.imageIds, style::removeImage);
+		pruneImages(registeredHullLabelImages, renderedHullLabelImages, style::removeImage);
+	}
+
+	/** The pins drawn off the UI thread for the POI source, see renderMarkers. */
+	private static final class PreparedPins {
+		private final List<String> features = new ArrayList<>();
+		// The POIs of the features, by marker ID.
+		private final Map<Long, DisplayableGeoNode> pois = new HashMap<>();
+		// The images the features use, and among them those the style lacked, drawn.
+		private final Set<String> imageIds = new HashSet<>();
+		private final Map<String, Bitmap> newImages = new HashMap<>();
 	}
 
 	/**
