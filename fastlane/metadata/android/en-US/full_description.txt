@@ -1,0 +1,13 @@
+Climb The World shows the rock climbing crags and routes mapped in OpenStreetMap, on a map and in augmented reality, and lets you add and fix them.
+
+<ul>
+<li><b>Augmented reality:</b> point the camera at the rock to see the crags and routes where they are.</li>
+<li><b>Map:</b> browse the crags and routes from the whole world down to a single wall, with each route's grade, length and bolts.</li>
+<li><b>Crags and routes:</b> see what a crag or an area holds and its grades by climbing style, and find the climbs you want with the search and the display filters.</li>
+<li><b>Offline:</b> download the climbing data of the countries you want, and use the app without a connection.</li>
+<li><b>Editing:</b> add and fix crags and routes, and upload your changes to OpenStreetMap with your account.</li>
+<li><b>Log book:</b> keep track of the routes you climbed.</li>
+<li><b>Tools:</b> a climbing grade and unit converter, and a walkie-talkie that talks to nearby buddies over Wi-Fi Aware, without a network.</li>
+</ul>
+
+The climbing data comes from OpenStreetMap, © OpenStreetMap contributors, under the ODbL.
