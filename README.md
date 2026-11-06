@@ -68,7 +68,7 @@ New versions then have to be downloaded and installed the same way.
 
 Point the camera at the rock to see the crags and routes from OpenStreetMap where they are.
 
-| <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/01-ar-cliff-from-approach.png" width="120" alt="A.R. view of a cliff from the approach"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/02-ar-cliff-from-road.png" width="120" alt="A.R. view of the same cliff from the road"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/03-ar-crag-routes.png" width="120" alt="A.R. view close to a crag, with its routes' pins"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/04-ar-forest-terrain.png" width="120" alt="A.R. view in the forest with the virtual terrain"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/05-ar-forest-no-horizon.png" width="120" alt="A.R. view in the forest with the horizon off"> |
+| <img src="app/src/main/play/listings/en-US/graphics/phone-screenshots/01-ar-cliff-from-approach.png" width="120" alt="A.R. view of a cliff from the approach"> | <img src="app/src/main/play/listings/en-US/graphics/phone-screenshots/02-ar-cliff-from-road.png" width="120" alt="A.R. view of the same cliff from the road"> | <img src="app/src/main/play/listings/en-US/graphics/phone-screenshots/03-ar-crag-routes.png" width="120" alt="A.R. view close to a crag, with its routes' pins"> | <img src="app/src/main/play/listings/en-US/graphics/phone-screenshots/04-ar-forest-terrain.png" width="120" alt="A.R. view in the forest with the virtual terrain"> | <img src="app/src/main/play/listings/en-US/graphics/phone-screenshots/05-ar-forest-no-horizon.png" width="120" alt="A.R. view in the forest with the horizon off"> |
 |:---:|:---:|:---:|:---:|:---:|
 | From the approach | From the road | Close to a crag | Virtual terrain | No horizon |
 
@@ -76,7 +76,7 @@ Point the camera at the rock to see the crags and routes from OpenStreetMap wher
 
 Browse the crags and routes mapped in OpenStreetMap, from the whole world down to a single wall.
 
-| <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/06-map-world.png" width="120" alt="Map of North America with the counts of climbing places"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/07-map-crags-areas.png" width="120" alt="Map of a region with its climbing areas, crags and gyms"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/08-map-crag-outlines.png" width="120" alt="Map of a climbing area with the outlines of its crags"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/09-map-routes.png" width="120" alt="Map of a crag with its routes"> |
+| <img src="app/src/main/play/listings/en-US/graphics/phone-screenshots/06-map-world.png" width="120" alt="Map of North America with the counts of climbing places"> | <img src="app/src/main/play/listings/en-US/graphics/phone-screenshots/07-map-crags-areas.png" width="120" alt="Map of a region with its climbing areas, crags and gyms"> | <img src="app/src/main/play/listings/en-US/graphics/phone-screenshots/08-map-crag-outlines.png" width="120" alt="Map of a climbing area with the outlines of its crags"> | <img src="app/src/main/play/listings/en-US/graphics/phone-screenshots/09-map-routes.png" width="120" alt="Map of a crag with its routes"> |
 |:---:|:---:|:---:|:---:|
 | Around the world | Areas and crags | Crag outlines | Routes |
 
@@ -84,6 +84,6 @@ Browse the crags and routes mapped in OpenStreetMap, from the whole world down t
 
 See what a crag or an area holds, and find the climbs you want.
 
-| <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/10-area-crags.png" width="120" alt="An area with the grades of its crags"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/11-crag-routes.png" width="120" alt="A crag with its routes, their length and bolts"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/12-climbing-info.png" width="120" alt="The grades of an area by climbing style"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/13-search.png" width="120" alt="Search results"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/14-filter.png" width="120" alt="The display filters"> |
+| <img src="app/src/main/play/listings/en-US/graphics/phone-screenshots/10-area-crags.png" width="120" alt="An area with the grades of its crags"> | <img src="app/src/main/play/listings/en-US/graphics/phone-screenshots/11-crag-routes.png" width="120" alt="A crag with its routes, their length and bolts"> | <img src="app/src/main/play/listings/en-US/graphics/phone-screenshots/12-climbing-info.png" width="120" alt="The grades of an area by climbing style"> | <img src="app/src/main/play/listings/en-US/graphics/phone-screenshots/13-search.png" width="120" alt="Search results"> | <img src="app/src/main/play/listings/en-US/graphics/phone-screenshots/14-filter.png" width="120" alt="The display filters"> |
 |:---:|:---:|:---:|:---:|:---:|
 | An area's crags | A crag's routes | Grades by style | Search | Filters |
