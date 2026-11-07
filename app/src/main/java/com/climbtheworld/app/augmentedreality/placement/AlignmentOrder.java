@@ -1,16 +1,20 @@
 package com.climbtheworld.app.augmentedreality.placement;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
 
 /**
  * The order the list to align on shows the routes in: as their crag lists them, which is how they
- * stand along the wall, so the user finds the route in front of them as in a guidebook. The crag
- * of the closest route comes first, then the crag of the closest route left, and so on; the
+ * stand along the wall, and the crags as their area lists them, so the user finds the route in
+ * front of them as in a guidebook. The crags of the closest route's area come first, all of them
+ * in the area's order, an area within it listing its own crags where the area lists it; then
+ * those of the area of the closest route left, and so on, a crag of no area coming alone. The
  * routes of no crag come last, closest first. The list shows each crag's routes together, under
  * its name, see Group.
  */
@@ -35,16 +39,32 @@ public final class AlignmentOrder {
 	}
 
 	/**
+	 * A crag or area relation around: its OSM ID, and the OSM IDs of its members in its order,
+	 * its member nodes for a crag, its routes, and its member relations for an area, its crags
+	 * and the areas within it.
+	 */
+	public static final class Site {
+		final long id;
+		final List<Long> members;
+
+		public Site(long id, List<Long> members) {
+			this.id = id;
+			this.members = members;
+		}
+	}
+
+	/**
 	 * @param closestFirst the routes around, closest first
-	 * @param crags        per crag relation around, the OSM IDs of its member nodes in the
-	 *                     relation's order
+	 * @param crags        the crag relations around, see Site; a crag's index here is its
+	 *                     Group.crag
+	 * @param areas        the area relations around, see Site
 	 * @param id           a route's OSM ID
 	 * @return the routes, each once, in the order to list them
 	 */
-	public static <T> List<T> ordered(List<T> closestFirst, List<List<Long>> crags,
+	public static <T> List<T> ordered(List<T> closestFirst, List<Site> crags, List<Site> areas,
 	                                  ToLongFunction<T> id) {
 		List<T> ordered = new ArrayList<>(closestFirst.size());
-		for (Group<T> group : grouped(closestFirst, crags, id)) {
+		for (Group<T> group : grouped(closestFirst, crags, areas, id)) {
 			ordered.addAll(group.routes);
 		}
 		return ordered;
@@ -52,44 +72,11 @@ public final class AlignmentOrder {
 
 	/**
 	 * The routes in the order to list them, see ordered, by crag: each route with the first crag
-	 * to list it, the crags in the order they come.
+	 * to list it, the crags in the order they come; a crag with no route left around has no group.
 	 */
-	public static <T> List<Group<T>> grouped(List<T> closestFirst, List<List<Long>> crags,
-	                                         ToLongFunction<T> id) {
-		List<Group<T>> groups = new ArrayList<>();
-		Set<Long> listed = new HashSet<>();
-		// The first crag listing the closest route left lists its routes next.
-		for (T closest : closestFirst) {
-			if (listed.contains(id.applyAsLong(closest))) {
-				continue;
-			}
-			for (int crag = 0; crag < crags.size(); crag++) {
-				if (!crags.get(crag).contains(id.applyAsLong(closest))) {
-					continue;
-				}
-				Group<T> group = new Group<>(crag);
-				for (Long member : crags.get(crag)) {
-					for (T route : closestFirst) {
-						if (id.applyAsLong(route) == member && listed.add(member)) {
-							group.routes.add(route);
-						}
-					}
-				}
-				groups.add(group);
-				break;
-			}
-		}
-		// Then the routes of no crag around.
-		Group<T> none = new Group<>(NO_CRAG);
-		for (T route : closestFirst) {
-			if (listed.add(id.applyAsLong(route))) {
-				none.routes.add(route);
-			}
-		}
-		if (!none.routes.isEmpty()) {
-			groups.add(none);
-		}
-		return groups;
+	public static <T> List<Group<T>> grouped(List<T> closestFirst, List<Site> crags,
+	                                         List<Site> areas, ToLongFunction<T> id) {
+		return new Grouping<>(closestFirst, crags, areas, id).groups();
 	}
 
 	/**
@@ -108,5 +95,135 @@ public final class AlignmentOrder {
 			groups.get(groups.size() - 1).routes.add(route);
 		}
 		return groups;
+	}
+
+	/**
+	 * Works out grouped, once.
+	 */
+	private static final class Grouping<T> {
+		private final List<T> closestFirst;
+		private final List<Site> crags;
+		private final List<Site> areas;
+		private final ToLongFunction<T> id;
+		// The routes around, by OSM ID.
+		private final Map<Long, T> around = new HashMap<>();
+		// Each crag's and area's index, by OSM ID.
+		private final Map<Long, Integer> cragIndex = new HashMap<>();
+		private final Map<Long, Integer> areaIndex = new HashMap<>();
+		// The first crag listing each route, by the route's OSM ID.
+		private final Map<Long, Integer> cragOfRoute = new HashMap<>();
+		// The first area listing each crag and area, by its OSM ID.
+		private final Map<Long, Integer> areaOf = new HashMap<>();
+		private final Set<Long> listed = new HashSet<>();
+		private final Set<Integer> listedCrags = new HashSet<>();
+		private final Set<Integer> listedAreas = new HashSet<>();
+		private final List<Group<T>> groups = new ArrayList<>();
+
+		Grouping(List<T> closestFirst, List<Site> crags, List<Site> areas,
+		         ToLongFunction<T> id) {
+			this.closestFirst = closestFirst;
+			this.crags = crags;
+			this.areas = areas;
+			this.id = id;
+			for (T route : closestFirst) {
+				around.putIfAbsent(id.applyAsLong(route), route);
+			}
+			for (int crag = 0; crag < crags.size(); crag++) {
+				cragIndex.putIfAbsent(crags.get(crag).id, crag);
+				for (Long member : crags.get(crag).members) {
+					cragOfRoute.putIfAbsent(member, crag);
+				}
+			}
+			for (int area = 0; area < areas.size(); area++) {
+				areaIndex.putIfAbsent(areas.get(area).id, area);
+				for (Long member : areas.get(area).members) {
+					areaOf.putIfAbsent(member, area);
+				}
+			}
+		}
+
+		List<Group<T>> groups() {
+			// The crags of the outermost area of the closest route left come next, or its crag
+			// alone when it is in no area.
+			for (T closest : closestFirst) {
+				long routeId = id.applyAsLong(closest);
+				Integer crag = cragOfRoute.get(routeId);
+				if (listed.contains(routeId) || crag == null) {
+					continue;
+				}
+				int area = outermostArea(crags.get(crag).id);
+				if (area < 0) {
+					addCrag(crag);
+				} else {
+					addArea(area);
+				}
+			}
+			// Then the routes of no crag around.
+			Group<T> none = new Group<>(NO_CRAG);
+			for (T route : closestFirst) {
+				if (listed.add(id.applyAsLong(route))) {
+					none.routes.add(route);
+				}
+			}
+			if (!none.routes.isEmpty()) {
+				groups.add(none);
+			}
+			return groups;
+		}
+
+		/**
+		 * @return the index of the outermost area holding the crag or area, through the first
+		 * area listing each, -1 for none; areas listing each other end at the last one not met
+		 * yet
+		 */
+		private int outermostArea(long relationId) {
+			int outermost = -1;
+			Set<Integer> met = new HashSet<>();
+			for (Integer area = areaOf.get(relationId); area != null && met.add(area);
+			     area = areaOf.get(areas.get(area).id)) {
+				outermost = area;
+			}
+			return outermost;
+		}
+
+		/**
+		 * Adds the crags of the area, in its order, those of an area within it where it lists
+		 * that area, each crag and area once.
+		 */
+		private void addArea(int area) {
+			if (!listedAreas.add(area)) {
+				return;
+			}
+			for (Long member : areas.get(area).members) {
+				Integer crag = cragIndex.get(member);
+				if (crag != null) {
+					addCrag(crag);
+				}
+				Integer inner = areaIndex.get(member);
+				if (inner != null) {
+					addArea(inner);
+				}
+			}
+		}
+
+		/**
+		 * Adds the group of the crag's routes around not listed yet, in its order, unless there
+		 * are none, each crag once.
+		 */
+		private void addCrag(int crag) {
+			if (!listedCrags.add(crag)) {
+				return;
+			}
+			Group<T> group = new Group<>(crag);
+			for (Long member : crags.get(crag).members) {
+				T route = around.get(member);
+				if (route != null && listed.add(member)) {
+					group.routes.add(route);
+				}
+			}
+			if (!group.routes.isEmpty()) {
+				groups.add(group);
+			}
+		}
 	}
 }

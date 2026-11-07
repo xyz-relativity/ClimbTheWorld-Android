@@ -60,6 +60,17 @@ public final class RelationMembers {
 		return result;
 	}
 
+	/** The ids of the members that are relations, in order. */
+	public static List<Long> relationRefs(List<JSONObject> members) {
+		List<Long> result = new ArrayList<>();
+		for (JSONObject member : members) {
+			if (osmType(member) == OsmEntity.EntityOsmType.relation) {
+				result.add(ref(member));
+			}
+		}
+		return result;
+	}
+
 	/** The ids of the members that are ways or relations, in order. */
 	public static List<Long> collectionRefs(List<JSONObject> members) {
 		List<Long> result = new ArrayList<>();

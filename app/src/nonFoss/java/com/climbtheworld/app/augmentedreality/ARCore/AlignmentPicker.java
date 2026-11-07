@@ -38,6 +38,8 @@ import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.MemberIconCard;
 import com.climbtheworld.app.utils.views.TextWatchers;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -49,20 +51,20 @@ import java.util.Set;
 import needle.UiRelatedTask;
 
 /**
- * Asks which mapped route to align on, from the routes around the user, side by side as their
- * crags list them, see AlignmentOrder, which is how they stand along the wall, each crag's
- * outlined in the crag pins' colour under its name, after its pin as the info dialogs show it,
- * which stays in sight while any of the crag's routes is as the user scrolls, see pinGroupTitles.
- * Each route is on its card as the crag dialog shows its routes, see MemberIconCard, its name
- * after its number in its crag, as the map's pins show it, see ClimbingRouteCounter.numberRoutes,
- * and its distance from the user under it, with a quick filter on their names over them, see
- * AlignmentChoices. The list opens with the closest route in its middle, its neighbours along
- * the wall around it, and so it does again for what the user types in the filter. The routes
- * already aligned on are listed wherever they are, outlined, each with a button to delete its
- * alignment, and one under the strip deletes them all, the dialog staying open. The routes best
- * to align on next, see AlignmentSuggestions, are outlined too, and a bar above the scroll
- * indicator shows where along the strip they are, each under the icon of dropping a route onto
- * its spot, a tap on it scrolling to the nearest, see SuggestionBar.
+ * Asks which mapped route to align on, from the routes around the user, side by side as their crags
+ * list them and the crags as their areas list them, see AlignmentOrder, which is how they stand
+ * along the wall, each crag's outlined in the crag pins' colour under its name, after its pin as
+ * the info dialogs show it, which stays in sight while any of the crag's routes is as the user
+ * scrolls, see pinGroupTitles. Each route is on its card as the crag dialog shows its routes, see
+ * MemberIconCard, its name after its number in its crag, as the map's pins show it, see
+ * ClimbingRouteCounter.numberRoutes, and its distance from the user under it, with a quick filter
+ * on their names over them, see AlignmentChoices. The list opens with the closest route in its
+ * middle, its neighbours along the wall around it, and so it does again for what the user types in
+ * the filter. The routes already aligned on are listed wherever they are, outlined, each with a
+ * button to delete its alignment, and one under the strip deletes them all, the dialog staying
+ * open. The routes best to align on next, see AlignmentSuggestions, are outlined too, and a bar
+ * above the scroll indicator shows where along the strip they are, each under the icon of dropping
+ * a route onto its spot, a tap on it scrolling to the nearest, see SuggestionBar.
  */
 class AlignmentPicker {
 	// How far around where the user seems to be routes are looked for, as GPS can be that far
@@ -140,8 +142,11 @@ class AlignmentPicker {
 		}
 		routes.sort(Comparator.comparingDouble(node -> distanceMeters(node, latitude, longitude)));
 		Around around = new Around();
-		for (AlignmentOrder.Group<GeoNode> group : AlignmentOrder.grouped(routes,
-				loadCragOrders(dataManager, latitude, longitude, around), node -> node.osmID)) {
+		List<AlignmentOrder.Site> crags = new ArrayList<>();
+		List<AlignmentOrder.Site> areas = new ArrayList<>();
+		loadSites(dataManager, latitude, longitude, crags, areas, around);
+		for (AlignmentOrder.Group<GeoNode> group : AlignmentOrder.grouped(routes, crags, areas,
+				node -> node.osmID)) {
 			for (GeoNode route : group.routes) {
 				around.routes.add(route);
 				around.cragOf.put(route.osmID, group.crag);
@@ -151,29 +156,37 @@ class AlignmentPicker {
 	}
 
 	/**
-	 * Per crag relation around a point, the OSM IDs of its member nodes in the relation's order.
-	 * Any crag with a route around reaches the point, as its bounding box holds the route.
+	 * The crag and area relations around a point, as AlignmentOrder takes them: a crag with its
+	 * member nodes, an area with its member relations, in the relation's order. Any crag with a
+	 * route around reaches the point, as its bounding box holds the route, and so does any area
+	 * holding the crag, however deep, as its bounding box holds its crags' routes.
 	 *
-	 * @param around filled with the crags' names and pins, and the routes' numbers in these
-	 *               crags, the first crag's for a route of several
+	 * @param crags  filled with the crags
+	 * @param areas  filled with the areas
+	 * @param around filled with the crags' names and pins, in the order of crags, and the
+	 *               routes' numbers in these crags, the first crag's for a route of several
 	 */
-	private List<List<Long>> loadCragOrders(DataManager dataManager, double latitude,
-	                                        double longitude, Around around) {
+	private void loadSites(DataManager dataManager, double latitude, double longitude,
+	                       List<AlignmentOrder.Site> crags, List<AlignmentOrder.Site> areas,
+	                       Around around) {
 		ClimbingRouteCounter routeCounter = ClimbingRouteCounter.forDatabase(activity);
-		List<List<Long>> crags = new ArrayList<>();
 		for (OsmCollectionEntity relation : dataManager.loadRelationsBBox(activity,
 				DataManager.computeBoundingBox(new Vector4d(latitude, longitude, 0, 0),
 						SEARCH_METERS))) {
+			List<JSONObject> members = RelationMembers.list(relation.getMembers());
 			if (relation.entityClimbingType == OsmEntity.EntityClimbingType.crag) {
-				crags.add(RelationMembers.nodeRefs(RelationMembers.list(relation.getMembers())));
+				crags.add(new AlignmentOrder.Site(relation.osmID,
+						RelationMembers.nodeRefs(members)));
 				around.cragNames.add(ClimbingParent.nameOf(activity, relation));
 				// With the route count, as the map shows it.
 				around.cragIcons.add(new PoiMarkerDrawable(activity,
 						DataManager.toDisplayableNode(relation, routeCounter)).getDrawable());
 				routeCounter.numberRoutes(relation).forEach(around.routeNumbers::putIfAbsent);
+			} else if (relation.entityClimbingType == OsmEntity.EntityClimbingType.area) {
+				areas.add(new AlignmentOrder.Site(relation.osmID,
+						RelationMembers.relationRefs(members)));
 			}
 		}
-		return crags;
 	}
 
 	/**
