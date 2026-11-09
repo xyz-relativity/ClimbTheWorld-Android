@@ -176,45 +176,45 @@ jobs:
           echo "BUILD_TOOLS_VERSION=$BUILD_TOOLS_VERSION" >> $GITHUB_ENV
           echo "Using pre-installed Build Tools Version: $BUILD_TOOLS_VERSION"
 
-      # Both with the same key, so that either installs over the other.
-      - name: Sign FOSS Release APK
-        uses: r0adkll/sign-android-release@v1
-        with:
-          releaseDirectory: app/build/outputs/apk/foss/release
-          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
-          alias: ${{ secrets.ALIAS }}
-          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
-          keyPassword: ${{ secrets.KEY_PASSWORD }}
-        env:
-          BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOLS_VERSION }}
-
-      - name: Sign Non-FOSS Release APK
-        uses: r0adkll/sign-android-release@v1
-        with:
-          releaseDirectory: app/build/outputs/apk/nonFoss/release
-          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
-          alias: ${{ secrets.ALIAS }}
-          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
-          keyPassword: ${{ secrets.KEY_PASSWORD }}
-        env:
-          BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOLS_VERSION }}
-
-      # app-<flavor>-release-unsigned-signed.apk, as the signing action names them, become
-      # ClimbTheWorld-Release.apk for nonFoss, the default build, under the name releases always
-      # had, and ClimbTheWorld-foss-Release.apk for foss.
-      - name: Rename Signed APKs
+      # Both with the same key, so that either installs over the other: ClimbTheWorld-Release.apk for
+      # nonFoss, the default build, under the name releases always had, and
+      # ClimbTheWorld-foss-Release.apk for foss.
+      # F-Droid builds the foss APK itself, copies our signature onto its build, and publishes ours
+      # when that verifies, so signing must leave the APK exactly as Gradle made it:
+      # - --alignment-preserved keeps Gradle's alignment padding, which apksigner otherwise redoes
+      #   its own way in every uncompressed file's header;
+      # - no v1 signature, which only Android 6 and older need (minSdk is Android 10), so there are
+      #   no signature files in the APK for F-Droid to recreate.
+      - name: Sign Release APKs
         shell: bash
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          ALIAS: ${{ secrets.ALIAS }}
+          KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          rename_apk() {
-            local OLD_PATH=app/build/outputs/apk/$1/release/app-$1-release-unsigned-signed.apk
-            if [[ ! -f "$OLD_PATH" ]]; then
-              echo "::error::No signed APK in app/build/outputs/apk/$1/release."
+          APKSIGNER=/usr/local/lib/android/sdk/build-tools/$BUILD_TOOLS_VERSION/apksigner
+          KEYSTORE=$RUNNER_TEMP/signing-key.jks
+          trap 'rm -f "$KEYSTORE"' EXIT
+          base64 -d <<< "$SIGNING_KEY" > "$KEYSTORE"
+          KEY_PASS=()
+          if [[ -n "$KEY_PASSWORD" ]]; then
+            KEY_PASS=(--key-pass env:KEY_PASSWORD)
+          fi
+          sign_apk() {
+            local DIR=app/build/outputs/apk/$1/release
+            if [[ ! -f "$DIR/app-$1-release-unsigned.apk" ]]; then
+              echo "::error::No unsigned APK in $DIR."
               exit 1
             fi
-            mv "$OLD_PATH" "app/build/outputs/apk/$1/release/$2"
+            "$APKSIGNER" sign --ks "$KEYSTORE" --ks-key-alias "$ALIAS" \
+              --ks-pass env:KEY_STORE_PASSWORD "${KEY_PASS[@]}" \
+              --alignment-preserved --v1-signing-enabled false \
+              --out "$DIR/$2" "$DIR/app-$1-release-unsigned.apk"
+            "$APKSIGNER" verify --verbose --print-certs "$DIR/$2"
           }
-          rename_apk nonFoss ClimbTheWorld-Release.apk
-          rename_apk foss ClimbTheWorld-foss-Release.apk
+          sign_apk nonFoss ClimbTheWorld-Release.apk
+          sign_apk foss ClimbTheWorld-foss-Release.apk
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
