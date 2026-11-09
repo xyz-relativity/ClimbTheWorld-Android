@@ -1,4 +1,1 @@
-- Load the map faster, wide views above all, and keep it smooth while panning, zooming and following you.
-- Mark the filter button with a green check while a filter is on.
-- Blur only the compass button's needle while the heading is uncertain, keeping its dial sharp.
-- Fix a crash when zooming the map far out, away from the equator.
+- Drop the phone state permission, which the app never used.

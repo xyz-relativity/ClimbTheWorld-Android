@@ -1,3 +1,8 @@
+=2026.11-3=
+========
+- List the crags of the routes to align on as their area lists them, starting with the area of the closest route, so they come in guidebook order.
+- Drop the phone state permission, which the app never used.
+
 =2026.11-2=
 ========
 - Load wide map views faster, with the climbing data indexed for them. The map and the A.R. view read the climbing data of a view in fewer goes.
