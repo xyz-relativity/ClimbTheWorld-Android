@@ -358,6 +358,14 @@
 
                 </LinearLayout>
 
+                <!-- The name, right after the type, see NameTags. -->
+                <LinearLayout
+                    android:id="@+id/containerName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+                <!-- The position, see LocationTags, then the tags of the node's type. -->
                 <LinearLayout
                     android:id="@+id/containerTags"
                     android:layout_width="match_parent"
@@ -368,6 +376,13 @@
 
                 <LinearLayout
                     android:id="@+id/containerCrags"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+                <!-- What is left of the general tags, see GeneralTags. -->
+                <LinearLayout
+                    android:id="@+id/containerGeneral"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical" />

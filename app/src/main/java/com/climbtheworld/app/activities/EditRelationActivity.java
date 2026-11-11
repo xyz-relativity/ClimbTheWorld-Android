@@ -16,6 +16,7 @@ import android.widget.Toast;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.editor.GeneralTags;
+import com.climbtheworld.app.map.editor.NameTags;
 import com.climbtheworld.app.map.editor.ITags;
 import com.climbtheworld.app.map.editor.OtherTags;
 import com.climbtheworld.app.map.editor.ParentMembership;
@@ -104,7 +105,7 @@ public class EditRelationActivity extends MapWidgetActivity {
 	 * the node editor.
 	 */
 	private boolean nameRequired;
-	private GeneralTags generalTags;
+	private NameTags nameTags;
 	private final List<ITags> tagSections = new ArrayList<>();
 	private RelationMemberList memberList;
 	private ParentMembership areaMembership;
@@ -263,13 +264,20 @@ public class EditRelationActivity extends MapWidgetActivity {
 	}
 
 	private void buildTagSections() {
+		// The name right after the type, and what is left of the general tags after the members
+		// and the areas, as in the node editor.
+		ViewGroup containerName = findViewById(R.id.containerName);
+		ViewGroup containerGeneral = findViewById(R.id.containerGeneral);
+		containerName.removeAllViews();
 		containerTags.removeAllViews();
+		containerGeneral.removeAllViews();
 		tagSections.clear();
 		editNode = new GeoNode(OsmElements.copy(originalJson));
 
-		generalTags = new GeneralTags(editNode, this, containerTags);
-		generalTags.hideLocation();
-		tagSections.add(generalTags);
+		// No position: a relation's place is that of its members.
+		nameTags = new NameTags(editNode, this, containerName);
+		tagSections.add(nameTags);
+		tagSections.add(new GeneralTags(editNode, this, containerGeneral));
 		// The crag tags (grades, routes, lengths, styles) are for crag and area nodes, not relations.
 		if (editNode.getNodeType() != OsmEntity.EntityClimbingType.crag
 				&& editNode.getNodeType() != OsmEntity.EntityClimbingType.area) {
@@ -456,7 +464,7 @@ public class EditRelationActivity extends MapWidgetActivity {
 			}
 			if (relation.getMembers().length() > 0) {
 				// Without members it is deleted, which needs no name.
-				if (nameRequired && !generalTags.checkNameGiven()) {
+				if (nameRequired && !nameTags.checkNameGiven()) {
 					return;
 				}
 				save(edited);

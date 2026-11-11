@@ -123,6 +123,13 @@
                         android:text="@string/crag" />
                 </LinearLayout>
 
+                <!-- The name, right after the type, see NameTags. -->
+                <LinearLayout
+                    android:id="@+id/containerName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
                 <LinearLayout
                     android:id="@+id/containerTags"
                     android:layout_width="match_parent"
@@ -137,6 +144,13 @@
 
                 <LinearLayout
                     android:id="@+id/containerParents"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+                <!-- What is left of the general tags, see GeneralTags, as in the node editor. -->
+                <LinearLayout
+                    android:id="@+id/containerGeneral"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical" />

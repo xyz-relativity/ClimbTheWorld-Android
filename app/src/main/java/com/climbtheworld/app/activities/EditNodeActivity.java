@@ -25,6 +25,8 @@ import com.climbtheworld.app.map.editor.ArtificialTags;
 import com.climbtheworld.app.map.editor.ContactTags;
 import com.climbtheworld.app.map.editor.CragTags;
 import com.climbtheworld.app.map.editor.GeneralTags;
+import com.climbtheworld.app.map.editor.LocationTags;
+import com.climbtheworld.app.map.editor.NameTags;
 import com.climbtheworld.app.map.editor.ITags;
 import com.climbtheworld.app.map.editor.ITagsEvents;
 import com.climbtheworld.app.map.editor.OtherTags;
@@ -88,8 +90,14 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 	private Barometer barometer;
 	private OrientationManager orientationManager;
 	private Spinner dropdownType;
+	// The name's section, right after the type.
+	private ViewGroup containerName;
+	// The position's section, then the sections of the node's type.
 	private ViewGroup containerTags;
-	private GeneralTags genericTags;
+	// What is left of the general tags, after the crags.
+	private ViewGroup containerGeneral;
+	private NameTags nameTags;
+	private LocationTags locationTags;
 	private ITags routeTags;
 
 	private final Map<OsmEntity.EntityClimbingType, List<ITags>> nodeTypesTags = new HashMap<>();
@@ -122,7 +130,9 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 		doDatabaseWork(editNodeID);
 
 		this.dropdownType = findViewById(R.id.spinnerNodeType);
+		containerName = findViewById(R.id.containerName);
 		containerTags = findViewById(R.id.containerTags);
+		containerGeneral = findViewById(R.id.containerGeneral);
 
 		EditorMapSizer.sizeOnFirstLayout(findViewById(R.id.geoNodeEditView), findViewById(R.id.mapViewContainer));
 		mapWidget = new MapLibreMapWidget(this, findViewById(R.id.mapViewContainer),
@@ -296,14 +306,17 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 	}
 
 	private void buildNodeFragments() {
-		GeneralTags generalTags = new GeneralTags(editNode, this, containerTags);
+		nameTags = new NameTags(editNode, this, containerName);
+		locationTags = new LocationTags(editNode, this, containerTags);
+		ITags generalTags = new GeneralTags(editNode, this, containerGeneral);
 		routeTags = new RouteTags(editNode, this, containerTags);
 		ITags cragTags = new CragTags(editNode, this, containerTags);
 		ITags artificialTags = new ArtificialTags(editNode, this, containerTags);
 		ITags contactInfoTags = new ContactTags(editNode, this, containerTags);
 		ITags otherTags = new OtherTags(editNode, this, containerTags);
 
-		this.genericTags = generalTags;
+		allTagsHandlers.add(nameTags);
+		allTagsHandlers.add(locationTags);
 		allTagsHandlers.add(generalTags);
 		allTagsHandlers.add(routeTags);
 		allTagsHandlers.add(cragTags);
@@ -312,34 +325,46 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 		allTagsHandlers.add(otherTags);
 
 		List<ITags> tags = new ArrayList<>();
+		tags.add(nameTags);
+		tags.add(locationTags);
 		tags.add(generalTags);
 		tags.add(routeTags);
 		nodeTypesTags.put(OsmEntity.EntityClimbingType.route, tags);
 
 		tags = new ArrayList<>();
+		tags.add(nameTags);
+		tags.add(locationTags);
 		tags.add(generalTags);
 		tags.add(cragTags);
 		nodeTypesTags.put(OsmEntity.EntityClimbingType.crag, tags);
 
 		tags = new ArrayList<>();
+		tags.add(nameTags);
+		tags.add(locationTags);
 		tags.add(generalTags);
 		tags.add(cragTags);
 		nodeTypesTags.put(OsmEntity.EntityClimbingType.area, tags);
 
 		tags = new ArrayList<>();
+		tags.add(nameTags);
+		tags.add(locationTags);
 		tags.add(generalTags);
 		tags.add(artificialTags);
 		tags.add(contactInfoTags);
 		nodeTypesTags.put(OsmEntity.EntityClimbingType.artificial, tags);
 
 		tags = new ArrayList<>();
+		tags.add(nameTags);
+		tags.add(locationTags);
 		tags.add(generalTags);
 		tags.add(otherTags);
 		nodeTypesTags.put(OsmEntity.EntityClimbingType.others, tags);
 	}
 
 	private void buildUi() {
+		containerName.removeAllViews();
 		containerTags.removeAllViews();
+		containerGeneral.removeAllViews();
 		nodeTypesTags.clear();
 		allTagsHandlers.clear();
 		buildNodeFragments();
@@ -481,7 +506,7 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 		if (edited == null) {
 			return;
 		}
-		if (nameRequired && !genericTags.checkNameGiven()) {
+		if (nameRequired && !nameTags.checkNameGiven()) {
 			return;
 		}
 		final OsmNode savedNode = new OsmNode(edited);
@@ -557,7 +582,7 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 		}
 		editNode.updatePOILocation(latitude, longitude, editNode.elevationMeters);
 		updateMapMarker();
-		genericTags.updateLocation();
+		locationTags.updateLocation();
 	}
 
 	public void updateMapMarker() {
