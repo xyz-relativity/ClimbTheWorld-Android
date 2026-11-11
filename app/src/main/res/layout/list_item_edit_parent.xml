@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- A crag or area the edited element is in, in the editors, see ParentMembership: its pin, its
+     name over how many elements it holds, and the button taking the element out of it. The pin
+     and the button are the size of the type's pin in the editor, which ParentMembership gives
+     them, see list_item_switch_description_content's imageIcon. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -8,6 +12,18 @@
     android:focusable="true"
     android:gravity="center_vertical"
     android:orientation="horizontal">
+
+    <!-- Shown once the pin is drawn, with its route count. -->
+    <ImageView
+        android:id="@+id/imageParentIcon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:cropToPadding="true"
+        android:importantForAccessibility="no"
+        android:paddingEnd="2dp"
+        android:scaleType="centerInside"
+        android:visibility="gone" />
 
     <LinearLayout
         android:layout_width="0dp"
@@ -22,14 +38,14 @@
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <TextView
-            android:id="@+id/textParentPosition"
+            android:id="@+id/textParentElements"
             style="@style/SectionItemLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAllCaps="false" />
     </LinearLayout>
 
-    <!-- Same as the delete button of the download manager's country list. -->
+    <!-- The delete icon of the download manager's country list. -->
     <ImageView
         android:id="@+id/buttonRemoveFromParent"
         android:layout_width="wrap_content"

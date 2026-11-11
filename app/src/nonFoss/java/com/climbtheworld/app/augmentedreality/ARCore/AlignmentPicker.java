@@ -21,6 +21,7 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.augmentedreality.placement.AlignmentChoices;
 import com.climbtheworld.app.augmentedreality.placement.AlignmentOrder;
 import com.climbtheworld.app.augmentedreality.placement.AlignmentSuggestions;
+import com.climbtheworld.app.augmentedreality.placement.SuggestionsOutOfSight;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.map.widget.climbing.ClimbingParent;
@@ -64,7 +65,9 @@ import needle.UiRelatedTask;
  * button to delete its alignment, and one under the strip deletes them all, the dialog staying
  * open. The routes best to align on next, see AlignmentSuggestions, are outlined too, and a bar
  * above the scroll indicator shows where along the strip they are, each under the icon of dropping
- * a route onto its spot, a tap on it scrolling to the nearest, see SuggestionBar.
+ * a route onto its spot, a tap on it scrolling to the nearest, see SuggestionBar. While some of
+ * them are out of sight, a button over that end of the strip says how many more are that way, a
+ * tap on it scrolling to the nearest of them, see SuggestionsOutOfSight.
  */
 class AlignmentPicker {
 	// How far around where the user seems to be routes are looked for, as GPS can be that far
@@ -302,6 +305,14 @@ class AlignmentPicker {
 		private final SuggestionBar bar;
 		// The cards of the suggested routes the bar marks, in the order of its marks.
 		private final List<View> markedCards = new ArrayList<>();
+		// Each of these cards' start and end along the strip, from 0 to 1, in pairs, as the bar
+		// marks them.
+		private float[] markSpans = new float[0];
+		// How many more suggested routes are out of sight on each side, see updateMoreButtons.
+		private final TextView moreLeft;
+		private final TextView moreRight;
+		// Which they are, as the strip is scrolled now.
+		private SuggestionsOutOfSight outOfSight = SuggestionsOutOfSight.of(markSpans, 0, 0);
 		private final Around around;
 		private final double latitude;
 		private final double longitude;
@@ -343,8 +354,17 @@ class AlignmentPicker {
 				updateBar();
 				pinGroupTitles();
 			});
-			scroll.setOnScrollChangeListener((view, scrollX, scrollY, oldScrollX, oldScrollY) ->
-					pinGroupTitles());
+			scroll.setOnScrollChangeListener((view, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+				pinGroupTitles();
+				updateMoreButtons();
+			});
+			this.moreLeft = content.findViewById(R.id.buttonMoreSuggestionsLeft);
+			this.moreRight = content.findViewById(R.id.buttonMoreSuggestionsRight);
+			// Shown only while there is a nearest one on their side.
+			moreLeft.setOnClickListener(
+					clicked -> centre(markedCards.get(outOfSight.nearestBefore), true));
+			moreRight.setOnClickListener(
+					clicked -> centre(markedCards.get(outOfSight.nearestAfter), true));
 			this.around = around;
 			this.latitude = latitude;
 			this.longitude = longitude;
@@ -436,6 +456,33 @@ class AlignmentPicker {
 			}
 			bar.setMarks(spans);
 			bar.setVisibility(spans.length > 0 ? View.VISIBLE : View.GONE);
+			markSpans = spans;
+			updateMoreButtons();
+		}
+
+		/**
+		 * Shows, over each end of the strip, how many of the suggested routes the bar marks are
+		 * out of sight on that side, see SuggestionsOutOfSight, as the strip is scrolled.
+		 */
+		private void updateMoreButtons() {
+			// No marks while the strip is not laid out, or needs no scrolling.
+			float width = groups.getWidth();
+			outOfSight = SuggestionsOutOfSight.of(markSpans, scroll.getScrollX() / width,
+					(scroll.getScrollX() + scroll.getWidth()) / width);
+			showMore(moreLeft, outOfSight.before);
+			showMore(moreRight, outOfSight.after);
+		}
+
+		private void showMore(TextView button, int count) {
+			button.setVisibility(count > 0 ? View.VISIBLE : View.GONE);
+			if (count > 0) {
+				String text = activity.getResources()
+						.getQuantityString(R.plurals.ar_placement_align_more, count, count);
+				// Not laid out again at each step of a scroll.
+				if (!text.contentEquals(button.getText())) {
+					button.setText(text);
+				}
+			}
 		}
 
 		/**

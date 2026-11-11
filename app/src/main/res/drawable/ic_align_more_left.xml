@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Which way the suggested routes out of sight are, on the A.R. align dialog's button for
+     those on the left, see AlignmentPicker. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="16dp"
+    android:height="16dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M15,5 L8,12 L15,19"
+        android:strokeWidth="3"
+        android:strokeColor="?android:textColorPrimary"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

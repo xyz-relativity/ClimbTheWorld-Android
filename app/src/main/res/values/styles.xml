@@ -46,6 +46,26 @@
         <item name="android:tooltipText">@string/direction_from_user</item>
     </style>
 
+    <!-- The buttons floating over the ends of the A.R. align dialog's strip while suggested routes
+         are out of sight there, see fragment_dialog_align_route: hidden until there are any. -->
+    <style name="AlignMoreSuggestions">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/bg_align_more_suggestions</item>
+        <item name="android:clickable">true</item>
+        <item name="android:drawablePadding">2dp</item>
+        <item name="android:elevation">4dp</item>
+        <item name="android:focusable">true</item>
+        <item name="android:gravity">center</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:minHeight">32dp</item>
+        <item name="android:paddingHorizontal">10dp</item>
+        <item name="android:textColor">?android:textColorPrimary</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:visibility">gone</item>
+    </style>
+
     <style name="SectionItemLabel">
         <item name="android:textStyle">bold</item>
     </style>

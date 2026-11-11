@@ -2,10 +2,12 @@
 <!-- A group of the A.R. align dialog: a crag's name, after its pin as the info dialogs show it,
      over its routes side by side, see list_item_alignment_route, outlined in the crag pins'
      colour, see bg_align_crag_group. The name slides along the group as the strip scrolls, to stay
-     in sight while any of the group is, see AlignmentPicker. -->
+     in sight while any of the group is, see AlignmentPicker. As tall as the tallest group, the
+     one with a route aligned on and its delete button, for the outlines to end level, where the
+     buttons for the suggested routes out of sight sit, see fragment_dialog_align_route. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:layout_marginEnd="8dp"
     android:orientation="vertical">
 

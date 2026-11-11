@@ -195,8 +195,12 @@
     <string name="find_crag">Chercher un secteur…</string>
     <string name="unnamed_crag">Secteur sans nom</string>
     <string name="not_in_a_crag">Dans aucun secteur.</string>
-    <string name="route_position">Voie %1$d sur %2$d</string>
-    <string name="member_position">Membre %1$d sur %2$d</string>
+    <!-- Under the name of a crag or area the edited element is in, in the editors. -->
+    <plurals name="parent_elements">
+        <item quantity="one">%d élément</item>
+        <item quantity="many">%d d’éléments</item>
+        <item quantity="other">%d éléments</item>
+    </plurals>
     <string name="areas">Sites</string>
     <string name="add_to_area">Ajouter à un site</string>
     <string name="new_area">Nouveau site…</string>
@@ -497,6 +501,14 @@
     <string name="ar_placement_align_clear">Effacer l’alignement</string>
     <string name="ar_placement_align_delete">Supprimer cet alignement</string>
     <string name="ar_placement_align_no_crag">Hors secteur</string>
+    <!-- On the buttons over the ends of the list of routes to align on, for example "2 suggérées". -->
+    <plurals name="ar_placement_align_more">
+        <item quantity="one">%d suggérée</item>
+        <item quantity="many">%d suggérées</item>
+        <item quantity="other">%d suggérées</item>
+    </plurals>
+    <string name="ar_placement_align_more_left">D’autres voies suggérées à gauche</string>
+    <string name="ar_placement_align_more_right">D’autres voies suggérées à droite</string>
     <string name="ar_align_help_title">Comment aligner</string>
     <string name="ar_align_help_message">S’aligner sur des voies cartographiées relie la réalité augmentée à la carte.</string>
     <string name="ar_align_help_pick">Touchez Aligner et choisissez une voie cartographiée que vous voyez.</string>

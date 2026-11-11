@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -15,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.DisplayableGeoNode;
+import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.map.model.MapBounds;
 import com.climbtheworld.app.map.widget.climbing.ClimbingParent;
 import com.climbtheworld.app.map.widget.climbing.ClimbingRouteCounter;
@@ -22,13 +24,13 @@ import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
-import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmEntity.EntityClimbingType;
 import com.climbtheworld.app.storage.database.OsmEntity.EntityOsmType;
 import com.climbtheworld.app.storage.edit.OsmEditStore;
 import com.climbtheworld.app.storage.edit.RelationMembers;
 import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.constants.Constants;
+import com.climbtheworld.app.utils.constants.UIConstants;
 import com.climbtheworld.app.utils.views.ClimbingPoiRow;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 import com.climbtheworld.app.utils.views.TextWatchers;
@@ -52,10 +54,12 @@ import needle.UiRelatedTask;
 
 /**
  * An editor's section listing the relations the edited element is a member of, a route's crags or
- * a crag's areas, with its place in each, adding it to one nearby or on the editor's map, one found
- * by name or a new one, and taking it out of one. An element joins at the end; its place is changed in the
- * parent's own editor, which a new parent opens in right away, and where the parent can join its
- * own parents in turn, like a route's new crag joining an area. Nothing is stored until the editor
+ * a crag's areas, each after its pin, the size of the type's in the editor, see
+ * SpinnerMarkerArrayAdapter, as is the button taking the element out of it, with how many
+ * elements it holds under its name, adding it to one nearby or on the editor's map, one found by
+ * name or a new one, and taking it out of one. An element joins at the end; its place is changed
+ * in the parent's own editor, which a new parent opens in right away, and where the parent can
+ * join its own parents in turn, like a route's new crag joining an area. Nothing is stored until the editor
  * saves the parents together with the element, followed by the parents' parents.
  */
 public class ParentMembership {
@@ -156,20 +160,23 @@ public class ParentMembership {
 
 	private static final class Membership {
 		OsmCollectionEntity relation;
-		/** The relation's stored members by RelationMembers.key. */
-		Map<String, OsmEntity> members;
+		/**
+		 * The relation as its pin draws it, with the count of its routes as they are stored, see
+		 * pinOf; null until it is loaded.
+		 */
+		DisplayableGeoNode pin;
 		boolean changed;
 
-		Membership(OsmCollectionEntity relation, Map<String, OsmEntity> members, boolean changed) {
+		Membership(OsmCollectionEntity relation, DisplayableGeoNode pin, boolean changed) {
 			this.relation = relation;
-			this.members = members;
+			this.pin = pin;
 			this.changed = changed;
 		}
 	}
 
 	/**
-	 * @param editedElement the element as the form has it now, placed where it is, for its route
-	 *                      number and for the distances to the parents.
+	 * @param editedElement the element as the form has it now, placed where it is, for the
+	 *                      distances to the parents.
 	 * @param shownBounds   the part of the editor's map on screen, where the parents to choose from
 	 *                      are listed besides the nearby ones, or null before the map is ready.
 	 * @param editedParents parents changed earlier in the same edit, which the element may be in or
@@ -310,7 +317,7 @@ public class ParentMembership {
 			if (listsElement) {
 				// Changes in its editor happen in the same edit.
 				leftParents.removeIf(left -> left.osmID == relation.osmID);
-				membership = new Membership(relation, new HashMap<>(), true);
+				membership = new Membership(relation, null, true);
 				memberships.add(membership);
 			} else {
 				return;
@@ -332,9 +339,8 @@ public class ParentMembership {
 		updated.relation = relation;
 		updated.changed = true;
 		render();
-		// Members added in the parent's editor are looked up for the route numbers.
-		loadMembers(relation, members -> {
-			updated.members = members;
+		loadPin(relation, pin -> {
+			updated.pin = pin;
 			render();
 		});
 	}
@@ -346,6 +352,7 @@ public class ParentMembership {
 
 			@Override
 			protected List<Membership> doWork() {
+				ClimbingRouteCounter routeCounter = ClimbingRouteCounter.forDatabase(parent);
 				List<Membership> result = new ArrayList<>();
 				for (OsmCollectionEntity relation : store.loadParents(kind.memberType, memberId)) {
 					OsmCollectionEntity edited = editedParents.get(relation.osmID);
@@ -354,13 +361,13 @@ public class ParentMembership {
 							left.add(edited);
 						}
 					} else if (relation.entityClimbingType != EntityClimbingType.NAN) {
-						result.add(new Membership(relation,
-								store.loadMembers(relation.getMembers()), false));
+						result.add(new Membership(relation, pinOf(relation, routeCounter),
+								false));
 					}
 				}
 				for (OsmCollectionEntity edited : editedParents.values()) {
 					if (listsElement(edited)) {
-						result.add(new Membership(edited, store.loadMembers(edited.getMembers()), true));
+						result.add(new Membership(edited, pinOf(edited, routeCounter), true));
 					}
 				}
 				return result;
@@ -391,9 +398,16 @@ public class ParentMembership {
 
 	private View buildRow(Membership membership) {
 		View row = parent.getLayoutInflater().inflate(R.layout.list_item_edit_parent, parentsContainer, false);
+		if (membership.pin != null) {
+			ImageView icon = row.findViewById(R.id.imageParentIcon);
+			icon.setImageDrawable(new PoiMarkerDrawable(parent, membership.pin).getDrawable());
+			sizeAsTypeIcon(icon);
+			icon.setVisibility(View.VISIBLE);
+		}
 		((TextView) row.findViewById(R.id.textParentName)).setText(nameOf(membership.relation));
-		((TextView) row.findViewById(R.id.textParentPosition)).setText(positionText(membership));
+		((TextView) row.findViewById(R.id.textParentElements)).setText(elementsText(membership));
 		View removeButton = row.findViewById(R.id.buttonRemoveFromParent);
+		sizeAsTypeIcon(removeButton);
 		removeButton.setContentDescription(parent.getString(kind.remove));
 		removeButton.setOnClickListener(view -> remove(membership));
 		if (parentEditor != null) {
@@ -402,6 +416,12 @@ public class ParentMembership {
 			row.setClickable(false);
 		}
 		return row;
+	}
+
+	/** Sizes an icon of a row as the type's pin just above in the editor is. */
+	private static void sizeAsTypeIcon(View icon) {
+		icon.getLayoutParams().width = (int) UIConstants.POI_TYPE_LIST_ICON_SIZE;
+		icon.getLayoutParams().height = (int) UIConstants.POI_TYPE_LIST_ICON_SIZE;
 	}
 
 	private void remove(Membership membership) {
@@ -586,26 +606,36 @@ public class ParentMembership {
 		// Joins the parent as changed earlier in the edit, keeping those changes.
 		OsmCollectionEntity relation = editedParents.containsKey(listed.osmID)
 				? editedParents.get(listed.osmID) : listed;
-		loadMembers(relation, members -> {
+		loadPin(relation, pin -> {
 			// Taken out and added back in the same edit, it is still listed in the stored one.
 			leftParents.removeIf(left -> left.osmID == relation.osmID);
-			join(new Membership(relation, members, true));
+			join(new Membership(relation, pin, true));
 		});
 	}
 
-	/** Loads the relation's members off the UI thread and hands them to then on it. */
-	private void loadMembers(OsmCollectionEntity relation, Consumer<Map<String, OsmEntity>> then) {
-		Constants.DB_EXECUTOR.execute(new UiRelatedTask<Map<String, OsmEntity>>() {
+	/** Loads the relation's pin, see pinOf, off the UI thread and hands it to then on it. */
+	private void loadPin(OsmCollectionEntity relation, Consumer<DisplayableGeoNode> then) {
+		Constants.DB_EXECUTOR.execute(new UiRelatedTask<DisplayableGeoNode>() {
 			@Override
-			protected Map<String, OsmEntity> doWork() {
-				return store.loadMembers(relation.getMembers());
+			protected DisplayableGeoNode doWork() {
+				return pinOf(relation, ClimbingRouteCounter.forDatabase(parent));
 			}
 
 			@Override
-			protected void thenDoUiRelatedWork(Map<String, OsmEntity> members) {
-				then.accept(members);
+			protected void thenDoUiRelatedWork(DisplayableGeoNode pin) {
+				then.accept(pin);
 			}
 		});
+	}
+
+	/**
+	 * The relation as its pin draws it, as the picker lists it and the map shows it: the count on
+	 * it is of its routes as they are stored, so without what the edit changes until it is saved.
+	 * Runs off the UI thread.
+	 */
+	private static DisplayableGeoNode pinOf(OsmCollectionEntity relation,
+	                                        ClimbingRouteCounter routeCounter) {
+		return DataManager.toDisplayableNode(relation, routeCounter);
 	}
 
 	/**
@@ -614,6 +644,8 @@ public class ParentMembership {
 	 */
 	private void createParent() {
 		Constants.DB_EXECUTOR.execute(new UiRelatedTask<OsmCollectionEntity>() {
+			private DisplayableGeoNode pin;
+
 			@Override
 			protected OsmCollectionEntity doWork() {
 				// The new id comes from the database.
@@ -628,6 +660,7 @@ public class ParentMembership {
 					throw new IllegalStateException(e);
 				}
 				RelationMembers.append(relation.getMembers(), kind.memberType.name(), memberId, "");
+				pin = pinOf(relation, ClimbingRouteCounter.forDatabase(parent));
 				return relation;
 			}
 
@@ -636,7 +669,7 @@ public class ParentMembership {
 				if (parentEditor != null) {
 					parentEditor.editParent(relation);
 				} else {
-					join(new Membership(relation, new HashMap<>(), true));
+					join(new Membership(relation, pin, true));
 				}
 			}
 		});
@@ -651,42 +684,13 @@ public class ParentMembership {
 		render();
 	}
 
-	/** "Route 3 of 12" when the element takes a route number, else its place among all members. */
-	private String positionText(Membership membership) {
-		JSONArray members = membership.relation.getMembers();
-		int routes = 0;
-		int routeNumber = 0;
-		int memberIndex = -1;
-		for (int index = 0; index < members.length(); index++) {
-			JSONObject member = members.optJSONObject(index);
-			boolean edited = isEditedElement(member);
-			if (edited && memberIndex < 0) {
-				memberIndex = index;
-			}
-			if (takesRouteNumber(membership, member)) {
-				routes++;
-				if (edited && routeNumber == 0) {
-					routeNumber = routes;
-				}
-			}
-		}
-		if (routeNumber > 0) {
-			return parent.getString(R.string.route_position, routeNumber, routes);
-		}
-		return parent.getString(R.string.member_position, memberIndex + 1, members.length());
-	}
-
-	/** Same rule as the map's route numbers. */
-	private boolean takesRouteNumber(Membership membership, JSONObject member) {
-		if (member == null) {
-			return false;
-		}
-		if (isEditedElement(member)) {
-			GeoNode element = editedElement.get();
-			return element.getNodeType() == OsmEntity.EntityClimbingType.route && !element.isRouteTop();
-		}
-		OsmEntity entity = membership.members.get(RelationMembers.key(member));
-		return entity != null && ClimbingRouteCounter.takesRouteNumber(entity);
+	/**
+	 * "12 elements": how many members the parent has as the edit leaves it, the edited element
+	 * among them, whatever they are.
+	 */
+	private String elementsText(Membership membership) {
+		int count = membership.relation.getMembers().length();
+		return parent.getResources().getQuantityString(R.plurals.parent_elements, count, count);
 	}
 
 	private boolean isEditedElement(JSONObject member) {

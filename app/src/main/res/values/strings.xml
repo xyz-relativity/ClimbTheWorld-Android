@@ -198,8 +198,11 @@
     <string name="find_crag">Find any crag…</string>
     <string name="unnamed_crag">Unnamed crag</string>
     <string name="not_in_a_crag">Not in a crag.</string>
-    <string name="route_position">Route %1$d of %2$d</string>
-    <string name="member_position">Member %1$d of %2$d</string>
+    <!-- Under the name of a crag or area the edited element is in, in the editors. -->
+    <plurals name="parent_elements">
+        <item quantity="one">%d element</item>
+        <item quantity="other">%d elements</item>
+    </plurals>
     <string name="areas">Areas</string>
     <string name="add_to_area">Add to area</string>
     <string name="new_area">New area…</string>
@@ -499,6 +502,13 @@
     <string name="ar_placement_align_clear">Clear alignment</string>
     <string name="ar_placement_align_delete">Delete this alignment</string>
     <string name="ar_placement_align_no_crag">In no crag</string>
+    <!-- On the buttons over the ends of the list of routes to align on, for example "2 suggested". -->
+    <plurals name="ar_placement_align_more">
+        <item quantity="one">%d suggested</item>
+        <item quantity="other">%d suggested</item>
+    </plurals>
+    <string name="ar_placement_align_more_left">More suggested routes on the left</string>
+    <string name="ar_placement_align_more_right">More suggested routes on the right</string>
     <string name="ar_align_help_title">How to Align</string>
     <string name="ar_align_help_message">Aligning on mapped routes ties the A.R. to the map.</string>
     <string name="ar_align_help_pick">Tap Align and pick a mapped route you can see.</string>

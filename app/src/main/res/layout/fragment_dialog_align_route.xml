@@ -3,7 +3,8 @@
      wall, grouped by crag, see list_item_alignment_group, left to right whatever the language, as
      the wall is, with a bar over its scroll indicator marking where the suggested routes are,
      which the nonFoss AlignmentPicker adds, see SuggestionBar, in the strip's bottom padding,
-     which leaves it the room for the icon over each mark, and under them the button deleting all
+     which leaves it the room for the icon over each mark, a button over each end of the strip
+     for the suggested routes out of sight on that side, and under them the button deleting all
      the alignments, shown while there are any, here rather than among the dialog's buttons as it
      leaves the dialog open. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -36,6 +37,30 @@
                 android:paddingRight="8dp"
                 android:paddingBottom="24dp" />
         </HorizontalScrollView>
+
+        <!-- How many more suggested routes are out of sight on each side of the strip, floating
+             over its ends, their bottom on the bottom of the crags' outlines, which is the
+             strip's bottom padding up, so they cover little of the routes; a tap scrolls to the
+             nearest of them. Shown by AlignmentPicker. -->
+        <TextView
+            android:id="@+id/buttonMoreSuggestionsLeft"
+            style="@style/AlignMoreSuggestions"
+            android:layout_gravity="left|bottom"
+            android:layout_marginLeft="4dp"
+            android:layout_marginBottom="24dp"
+            android:contentDescription="@string/ar_placement_align_more_left"
+            android:drawableLeft="@drawable/ic_align_more_left"
+            android:tooltipText="@string/ar_placement_align_more_left" />
+
+        <TextView
+            android:id="@+id/buttonMoreSuggestionsRight"
+            style="@style/AlignMoreSuggestions"
+            android:layout_gravity="right|bottom"
+            android:layout_marginRight="4dp"
+            android:layout_marginBottom="24dp"
+            android:contentDescription="@string/ar_placement_align_more_right"
+            android:drawableRight="@drawable/ic_align_more_right"
+            android:tooltipText="@string/ar_placement_align_more_right" />
     </FrameLayout>
 
     <TextView
