@@ -1037,8 +1037,8 @@ class ArCoreSession {
 			hint = trackingMessage(trackingState, trackingFailureReason);
 		} else if (tracking && aligningRoute != null) {
 			// Aligning is what ties the world to the map, which may not be done yet.
-			hintText = activity.getString(R.string.ar_placement_align_drag,
-					aligningRoute.getName());
+			hintText = routeText(aligningRoute, R.string.ar_placement_align_drag,
+					R.string.ar_placement_align_drag_unnamed);
 		} else if (tracking && !registration.hasHeading()) {
 			// Before the location, which the hint offers to align for: without a heading a
 			// route aligned on would not tie the world, so Align waits for the compass.
@@ -1293,14 +1293,23 @@ class ArCoreSession {
 		AlignedRoute aligned = new AlignedRoute(route);
 		alignedRoutes.add(aligned);
 		renderer.setAnchor(aligned.anchorKey(), aimed);
-		Toast.makeText(activity, activity.getString(R.string.ar_placement_aligned,
-				route.getName()), Toast.LENGTH_LONG).show();
+		Toast.makeText(activity, routeText(route, R.string.ar_placement_aligned,
+				R.string.ar_placement_aligned_unnamed), Toast.LENGTH_LONG).show();
 		// A triangulated spot, now aligned on.
 		if (triangulationStep == TriangulationStep.FIXED) {
 			triangulationStep = TriangulationStep.NONE;
 			renderer.setTriangulated(null);
 		}
 		updateStatus();
+	}
+
+	/**
+	 * @param named the text taking the route's name
+	 * @param unnamed the same text for a route with no name, which would leave a gap in it
+	 */
+	private String routeText(GeoNode route, int named, int unnamed) {
+		String name = route.getName();
+		return name.isEmpty() ? activity.getString(unnamed) : activity.getString(named, name);
 	}
 
 	private void deleteAlignment(long osmId) {
