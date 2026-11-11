@@ -63,6 +63,10 @@ public class EnvironmentActivity extends MapWidgetActivity implements IEnvironme
 	private TextView editSunset;
 	private TextView editAzimuthName;
 	private TextView editAzimuthValue;
+	// The azimuth the texts show, in hundredths of a degree, as the value is written, so that
+	// they are only set again once they would read differently: the orientation comes many
+	// times a second, and each text set is formatted and laid out again. Unset at first.
+	private long shownAzimuthHundredths = Long.MIN_VALUE;
 	private BottomNavigationView navigation;
 	private ViewGroup viewSwitcher;
 	private EnvironmentalSensors sensorManager;
@@ -284,9 +288,17 @@ public class EnvironmentActivity extends MapWidgetActivity implements IEnvironme
 				MapLibreMapWidget.headingAccuracyWedgeDegrees(event.headingAccuracyDegrees));
 		mapWidget.onOrientationChange(heading, event);
 
-		editAzimuthName.setText(AugmentedRealityUtils.getStringBearings(EnvironmentActivity.this, heading.x));
-
-		editAzimuthValue.setText(decimalFormat.format(heading.x));
+		long azimuthHundredths = Math.round(heading.x * 100);
+		if (azimuthHundredths != shownAzimuthHundredths) {
+			shownAzimuthHundredths = azimuthHundredths;
+			String name = AugmentedRealityUtils.getStringBearings(EnvironmentActivity.this,
+					heading.x);
+			// The name only changes every 22.5 degrees.
+			if (!name.contentEquals(editAzimuthName.getText())) {
+				editAzimuthName.setText(name);
+			}
+			editAzimuthValue.setText(decimalFormat.format(heading.x));
+		}
 		compass.updateOrientation(heading);
 	}
 

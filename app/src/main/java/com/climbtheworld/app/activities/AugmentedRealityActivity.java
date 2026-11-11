@@ -14,6 +14,7 @@ import android.os.SystemClock;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
+import android.view.Choreographer;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -97,7 +98,12 @@ public class AugmentedRealityActivity extends MapWidgetActivity
 	private Toast hudToast;
 	private Vector2d horizonSize = new Vector2d(1, 3);
 	private CountDownTimer gpsUpdateAnimationTimer;
-	private long lastFrame;
+	// Whether the view is to be drawn on the next display frame, see requestFrame.
+	private boolean framePending;
+	private final Choreographer.FrameCallback frameCallback = frameTimeNanos -> {
+		framePending = false;
+		updateView();
+	};
 	private Configs configs;
 	private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
 	private Camera camera;
@@ -401,7 +407,7 @@ public class AugmentedRealityActivity extends MapWidgetActivity
 			applyHorizonMode(mode);
 			showHudToast(getString(R.string.ar_horizon_mode_toast, getString(mode.labelId),
 					getString(elevation ? R.string.ar_elevation_on : R.string.ar_elevation_off)));
-			updateView(true);
+			updateView();
 		} else if (id == R.id.toolsButton) {
 			intent = new Intent(AugmentedRealityActivity.this, ToolsActivity.class);
 			startActivityForResult(intent, Constants.OPEN_TOOLS_ACTIVITY);
@@ -450,6 +456,10 @@ public class AugmentedRealityActivity extends MapWidgetActivity
 		if (gpsUpdateAnimationTimer != null) {
 			gpsUpdateAnimationTimer.cancel();
 		}
+		if (framePending) {
+			framePending = false;
+			Choreographer.getInstance().removeFrameCallback(frameCallback);
+		}
 		super.onPause();
 	}
 
@@ -474,7 +484,7 @@ public class AugmentedRealityActivity extends MapWidgetActivity
 			return;
 		}
 		mapWidget.onOrientationChange(event.camera, event);
-		updateView(false);
+		requestFrame();
 	}
 
 	public void updatePosition(final double pDecLatitude, final double pDecLongitude,
@@ -548,14 +558,33 @@ public class AugmentedRealityActivity extends MapWidgetActivity
 		// Forced, as a move must not be skipped: until the view is updated, the terrain
 		// wireframe stays sampled around where the camera was, which can be meters away when
 		// driving.
-		updateView(true);
+		updateView();
 	}
 
-	private void updateView(boolean forced) {
-		if (!forced && (System.currentTimeMillis() - lastFrame < Constants.TIME_TO_FRAME_MS)) {
-			return;
+	/**
+	 * Draws the view on the next display frame, with the camera as it is turned by then. The
+	 * orientation is read about as often as the display draws, and each reading is handled on
+	 * the thread that draws: drawing on every reading, once drawing takes longer than the
+	 * readings are apart, leaves them queueing up, and the view trailing behind the device. This
+	 * way the readings in between only turn the camera, and the view is drawn once, from the
+	 * latest.
+	 */
+	private void requestFrame() {
+		if (!framePending) {
+			framePending = true;
+			Choreographer.getInstance().postFrameCallback(frameCallback);
 		}
-		lastFrame = System.currentTimeMillis();
+	}
+
+	/**
+	 * Draws the view now, for what must not wait for the next frame, see requestFrame.
+	 */
+	private void updateView() {
+		if (framePending) {
+			// Drawn now, with nothing newer to draw on the next frame.
+			framePending = false;
+			Choreographer.getInstance().removeFrameCallback(frameCallback);
+		}
 
 		setOrientation();
 
@@ -632,7 +661,7 @@ public class AugmentedRealityActivity extends MapWidgetActivity
 		updateFilterIcon();
 		mapWidget.invalidateData();
 
-		updateView(true);
+		updateView();
 		// The crag and area pins count only the routes matching the display filters, and a
 		// longer view distance needs the POIs beyond the ones loaded so far.
 		scene.dataChanged();

@@ -18,6 +18,13 @@ package com.climbtheworld.app.sensors.orientation;
  * spreadDegrees: a compass that agrees with itself as the user walks about has settled, one that
  * tells north now here, now there, as the field bends around what they walk past, has not. The
  * device's own estimate of its heading accuracy knows nothing of such bends.
+ * <p>
+ * While the sensors are not read, as one screen gives way to another, the game rotation vector's
+ * world may start over, turned any way, or stay as it was: the device does not tell. So the
+ * offset is held, see pause, and the first reading afterwards settles it. One that agrees with
+ * the offset held, within RESUME_AGREEMENT_DEGREES, says the world stayed: the average carries
+ * on with all it knew, and the heading is sure at once. Any other starts over from that reading,
+ * as at first.
  */
 class HeadingOffset {
 	// How long the readings are averaged over, once they have been coming for that long: before,
@@ -42,6 +49,12 @@ class HeadingOffset {
 	static final double DRIFT_DEGREES_PER_SECOND = 0.05;
 	// How far off the offset counts as while nothing tells: as far as can be.
 	static final double UNKNOWN_DEGREES = 180;
+	// How close to the offset held over a pause the first reading after it must be for the
+	// offset to carry on, see pause. A single reading is off by a few degrees, and so is the
+	// offset after a pause, as the gyroscope drifts. A world that started over lands this close
+	// one time in 18, and the offset carried on is then no further off than this, which still
+	// counts as sure, see HeadingConfidence, until the readings average it out.
+	static final double RESUME_AGREEMENT_DEGREES = 10;
 
 	// Sine and cosine of the offset, averaged.
 	private double sin;
@@ -51,6 +64,10 @@ class HeadingOffset {
 	private long lastTimestampNanos;
 	// How long readings have been coming for, gaps cut short, see MAX_READ_GAP_SECONDS.
 	private double readSeconds;
+	// Whether the offset is held over a pause, for the next reading to settle, see pause, and how
+	// long the readings had been coming for by then.
+	private boolean held;
+	private long heldComingNanos;
 
 	/**
 	 * The yaw from the game rotation vector's world to the rotation vector's, in degrees: what to
@@ -69,20 +86,20 @@ class HeadingOffset {
 		// The rotation between the worlds is M = magnetic * transpose(game), of which only the
 		// horizontal part is needed: a turn about the vertical by phi has cos phi on its diagonal
 		// and -sin phi above it.
-		double[][] between = new double[2][2];
-		for (int row = 0; row < 2; row++) {
-			for (int column = 0; column < 2; column++) {
-				double sum = 0;
-				for (int axis = 0; axis < 3; axis++) {
-					sum += magneticRotationMatrix[row * magneticStride + axis]
-							* gameRotationMatrix[column * gameStride + axis];
-				}
-				between[row][column] = sum;
-			}
+		// Summed in place rather than into a matrix: this runs on every compass reading.
+		double diagonal = 0;
+		double above = 0;
+		for (int axis = 0; axis < 3; axis++) {
+			double magneticEast = magneticRotationMatrix[axis];
+			double magneticNorth = magneticRotationMatrix[magneticStride + axis];
+			double gameEast = gameRotationMatrix[axis];
+			double gameNorth = gameRotationMatrix[gameStride + axis];
+			// M[0][0] + M[1][1], and M[0][1] - M[1][0].
+			diagonal += magneticEast * gameEast + magneticNorth * gameNorth;
+			above += magneticEast * gameNorth - magneticNorth * gameEast;
 		}
 		// A turn of the world by phi, from east towards north, turns azimuths by -phi.
-		return Math.toDegrees(Math.atan2(between[0][1] - between[1][0],
-				between[0][0] + between[1][1]));
+		return Math.toDegrees(Math.atan2(above, diagonal));
 	}
 
 	/**
@@ -105,6 +122,19 @@ class HeadingOffset {
 	 */
 	void add(double offsetDegrees, double accuracyDegrees, long timestampNanos) {
 		double offset = Math.toRadians(offsetDegrees);
+		if (!known && held) {
+			held = false;
+			double heldOffset = Math.atan2(sin, cos);
+			double apart = Math.toDegrees(Math.abs(Math.atan2(Math.sin(offset - heldOffset),
+					Math.cos(offset - heldOffset))));
+			if (apart <= RESUME_AGREEMENT_DEGREES) {
+				// The world stayed: the average carries on, as if the readings had kept coming.
+				known = true;
+				firstTimestampNanos = timestampNanos - heldComingNanos;
+				lastTimestampNanos = timestampNanos;
+				return;
+			}
+		}
 		if (!known) {
 			sin = Math.sin(offset);
 			cos = Math.cos(offset);
@@ -188,10 +218,23 @@ class HeadingOffset {
 	}
 
 	/**
-	 * Forgets the readings, for when the game rotation vector's world may have drifted away while
-	 * the sensors were not read.
+	 * Holds the offset while the sensors are not read: it is not known until the next reading,
+	 * which either agrees with it, and the average carries on, or starts over, see
+	 * RESUME_AGREEMENT_DEGREES.
+	 */
+	void pause() {
+		if (known) {
+			held = true;
+			heldComingNanos = lastTimestampNanos - firstTimestampNanos;
+			known = false;
+		}
+	}
+
+	/**
+	 * Forgets the readings, and any offset held.
 	 */
 	void reset() {
 		known = false;
+		held = false;
 	}
 }

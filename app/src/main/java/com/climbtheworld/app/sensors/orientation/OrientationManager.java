@@ -42,6 +42,10 @@ public class OrientationManager implements SensorEventListener {
 	// orientation, which can be up to a fifth of a second apart. While the device tilts faster
 	// than this, the dip would look off by several degrees, and so the field disturbed.
 	private static final double STILL_TILT_DEGREES_PER_SECOND = 20;
+	// What the SENSOR_DELAY_ rates stand for, in microseconds, see SensorManager.
+	private static final int GAME_PERIOD_US = 20_000;
+	private static final int UI_PERIOD_US = 66_667;
+	private static final int NORMAL_PERIOD_US = 200_000;
 
 	private final WeakReference<AppCompatActivity> parent;
 	private IOrientationListener orientationListener;
@@ -80,7 +84,10 @@ public class OrientationManager implements SensorEventListener {
 	private boolean gameRotationKnown;
 	// Whether the device has a game rotation vector, and so the orientation is read from it.
 	private boolean onGameRotation;
-	private final HeadingOffset headingOffset = new HeadingOffset();
+	// Shared by the screens, each of which has its own manager, so that north is carried from
+	// one to the next, as from the map to the A.R. view, see HeadingOffset.pause. Only the screen
+	// in front reads the sensors, all on the main thread.
+	private static final HeadingOffset headingOffset = new HeadingOffset();
 	private final float[] remappedRotationMatrix = new float[16];
 	private final float[] screenRotationMatrix = new float[16];
 	private final float[] orientationVector = new float[3];
@@ -195,17 +202,20 @@ public class OrientationManager implements SensorEventListener {
 		updateDisplayRotation();
 		displayManager.registerDisplayListener(displayListener, null);
 		// The device may have turned any way while the updates were stopped, and the game
-		// rotation vector's world drifted.
+		// rotation vector's world drifted, or started over: the first compass reading tells
+		// whether north is still where it was, see HeadingOffset.pause.
 		smoother.reset();
-		headingOffset.reset();
+		headingOffset.pause();
 		gameRotationKnown = false;
 		Sensor gameRotationSensor = getGameRotationSensor();
 		onGameRotation = gameRotationSensor != null;
 		if (onGameRotation) {
 			sensorManager.registerListener(this, gameRotationSensor, samplingPeriodUs);
 			// The compass only sets where north is, slowly: the rate the screen asked for is
-			// enough for it, whatever the orientation is read at.
-			sensorManager.registerListener(this, rotationSensor, slowSamplingPeriodUs);
+			// enough for it, whatever the orientation is read at, and the UI rate where the
+			// screen asked for more, see compassSamplingPeriodUs.
+			sensorManager.registerListener(this, rotationSensor,
+					compassSamplingPeriodUs(slowSamplingPeriodUs));
 		} else {
 			sensorManager.registerListener(this, rotationSensor, samplingPeriodUs);
 		}
@@ -222,6 +232,38 @@ public class OrientationManager implements SensorEventListener {
 			rotationKnown = false;
 			sensorManager.registerListener(this, magnetometer, SensorManager.SENSOR_DELAY_NORMAL);
 		}
+	}
+
+	/**
+	 * The rate the compass is read at while the orientation comes from the game rotation vector:
+	 * the one the screen asked for, but no faster than the UI rate. Its readings go into an
+	 * average over many seconds, see HeadingOffset, weighted by the time between them, so more
+	 * of them tell no more: the A.R. view's game rate only had the magnetometer and the fusion
+	 * run three times as often.
+	 *
+	 * @param requested a SensorManager.SENSOR_DELAY_ rate, or a period in microseconds
+	 * @return the period, in microseconds
+	 */
+	static int compassSamplingPeriodUs(int requested) {
+		int periodUs;
+		switch (requested) {
+			case SensorManager.SENSOR_DELAY_FASTEST:
+				periodUs = 0;
+				break;
+			case SensorManager.SENSOR_DELAY_GAME:
+				periodUs = GAME_PERIOD_US;
+				break;
+			case SensorManager.SENSOR_DELAY_UI:
+				periodUs = UI_PERIOD_US;
+				break;
+			case SensorManager.SENSOR_DELAY_NORMAL:
+				periodUs = NORMAL_PERIOD_US;
+				break;
+			default:
+				periodUs = requested;
+				break;
+		}
+		return Math.max(periodUs, UI_PERIOD_US);
 	}
 
 	/**

@@ -230,6 +230,19 @@ public class MapLibreMapWidgetTest {
 	}
 
 	@Test
+	public void theMapTurnsWithEveryReadingButTheJitterOfAStillDevice() {
+		// A device lying still.
+		assertFalse(MapLibreMapWidget.cameraBearingChanged(10, 10.02));
+		assertFalse(MapLibreMapWidget.cameraBearingChanged(10, 9.98));
+		// Turning slowly, at 5 degrees per second read 50 times a second.
+		assertTrue(MapLibreMapWidget.cameraBearingChanged(10, 10.1));
+		assertTrue(MapLibreMapWidget.cameraBearingChanged(10, 9.9));
+		// Across north.
+		assertFalse(MapLibreMapWidget.cameraBearingChanged(359.99, 0.01));
+		assertTrue(MapLibreMapWidget.cameraBearingChanged(359.95, 0.05));
+	}
+
+	@Test
 	public void noHeadingShowsDifferentlyFromAnyHeading() {
 		assertTrue(MapLibreMapWidget.headingChanged(Double.NaN, 10));
 		assertTrue(MapLibreMapWidget.headingChanged(10, Double.NaN));

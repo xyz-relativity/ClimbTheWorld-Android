@@ -38,6 +38,22 @@ public class OrientationManagerTest {
 			0, 0, 0, 1};
 
 	@Test
+	public void theCompassIsReadNoFasterThanTheUiRate() {
+		assertEquals(66_667, OrientationManager.compassSamplingPeriodUs(
+				SensorManager.SENSOR_DELAY_FASTEST));
+		assertEquals(66_667, OrientationManager.compassSamplingPeriodUs(
+				SensorManager.SENSOR_DELAY_GAME));
+		assertEquals(66_667, OrientationManager.compassSamplingPeriodUs(
+				SensorManager.SENSOR_DELAY_UI));
+		// Slower when the screen asked for no more.
+		assertEquals(200_000, OrientationManager.compassSamplingPeriodUs(
+				SensorManager.SENSOR_DELAY_NORMAL));
+		// Periods in microseconds.
+		assertEquals(66_667, OrientationManager.compassSamplingPeriodUs(10_000));
+		assertEquals(500_000, OrientationManager.compassSamplingPeriodUs(500_000));
+	}
+
+	@Test
 	public void worseUncertaintyIsTheLargerKnownOne() {
 		assertEquals(15, OrientationManager.worseUncertaintyDegrees(5, 15), 1e-9);
 		assertEquals(15, OrientationManager.worseUncertaintyDegrees(15, 5), 1e-9);

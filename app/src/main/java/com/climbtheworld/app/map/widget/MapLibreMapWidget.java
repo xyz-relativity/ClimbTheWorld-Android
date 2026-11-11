@@ -154,6 +154,13 @@ public class MapLibreMapWidget {
 	// How far the heading turns before the view cone and the observer arrow are drawn again, see
 	// headingChanged.
 	private static final double HEADING_EPSILON_DEGREES = 1;
+	// How far the heading turns before a map following the compass turns with it. While the
+	// device turns, each reading is further than this from the last, so the map turns with every
+	// one of them, as smoothly as before: holding readings back by time made it choppy. This only
+	// leaves out what a device lying still jitters by, which no one sees (at this angle, the
+	// corner of the screen moves by about a pixel) but which kept the map drawing, saving its
+	// camera and checking its data again, 50 times a second.
+	private static final double CAMERA_BEARING_EPSILON_DEGREES = 0.05;
 	private static final int FIT_RADIUS_PADDING_DP = 8;
 	// Fraction of the visible span loaded beyond each edge of the view.
 	private static final double LOAD_BOUNDS_PADDING = 0.25;
@@ -837,7 +844,8 @@ public class MapLibreMapWidget {
 		}
 		updateCompassAccuracyArc();
 		if (rotationMode == RotationMode.AUTO && map != null) {
-			if (buttonAnimation == null) {
+			if (buttonAnimation == null
+					&& cameraBearingChanged(map.getCameraPosition().bearing, orientation.x)) {
 				rotateCamera(orientation.x);
 			}
 			ImageView compassButton = container.findViewById(R.id.compassButton);
@@ -1565,6 +1573,17 @@ public class MapLibreMapWidget {
 			return Double.isNaN(renderedDegrees) != Double.isNaN(degrees);
 		}
 		return Math.abs(GeoUtils.diffAngle(degrees, renderedDegrees)) >= HEADING_EPSILON_DEGREES;
+	}
+
+	/**
+	 * Whether a map following the compass is turned to a heading: once it is
+	 * CAMERA_BEARING_EPSILON_DEGREES or more from the bearing the camera has, either way round.
+	 * Measured from the camera, not from the last reading, so a slow turn is not lost: it adds up
+	 * until the map follows.
+	 */
+	static boolean cameraBearingChanged(double cameraBearingDegrees, double headingDegrees) {
+		return Math.abs(GeoUtils.diffAngle(headingDegrees, cameraBearingDegrees))
+				>= CAMERA_BEARING_EPSILON_DEGREES;
 	}
 
 	/**

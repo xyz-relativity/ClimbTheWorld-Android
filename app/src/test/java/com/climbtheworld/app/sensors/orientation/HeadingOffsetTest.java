@@ -307,6 +307,77 @@ public class HeadingOffsetTest {
 	}
 
 	@Test
+	public void aPausedOffsetIsNotKnownUntilTheNextReading() {
+		addFor(2 * HeadingOffset.SPREAD_KNOWN_SECONDS, 20, 5);
+		offset.pause();
+
+		assertFalse(offset.isKnown());
+		assertTrue(Double.isNaN(offset.getDegrees()));
+	}
+
+	@Test
+	public void aReadingThatAgreesAfterAPauseCarriesTheOffsetOn() {
+		addFor(2 * HeadingOffset.SPREAD_KNOWN_SECONDS, 20, 5);
+		offset.pause();
+		timestampNanos += 30_000_000_000L;
+		add(26, 5);
+
+		// The offset as it was, not the reading, and sure at once, the pause left out.
+		assertTrue(offset.isKnown());
+		assertEquals(20, offset.getDegrees(), 1e-6);
+		assertEquals(0, offset.spreadDegrees(), 1e-6);
+		assertEquals(0, offset.uncertaintyDegrees(timestampNanos), 1e-6);
+		// And averaged as slowly as before: one more reading hardly moves it.
+		add(26, 5);
+		assertEquals(20, offset.getDegrees(), 0.1);
+	}
+
+	@Test
+	public void aReadingThatAgreesAcrossNorthCarriesTheOffsetOn() {
+		addFor(2 * HeadingOffset.SPREAD_KNOWN_SECONDS, 177, 5);
+		offset.pause();
+		add(-178, 5);
+
+		assertEquals(177, offset.getDegrees(), 1e-6);
+	}
+
+	@Test
+	public void aReadingThatDisagreesAfterAPauseStartsOver() {
+		addFor(2 * HeadingOffset.SPREAD_KNOWN_SECONDS, 20, 5);
+		offset.pause();
+		add(140, 5);
+
+		assertEquals(140, offset.getDegrees(), 1e-9);
+		assertTrue(Double.isNaN(offset.spreadDegrees()));
+		assertEquals(HeadingOffset.UNKNOWN_DEGREES, offset.uncertaintyDegrees(timestampNanos),
+				1e-9);
+		// The offset held is gone: a later pause holds the new one.
+		offset.pause();
+		add(22, 5);
+		assertEquals(22, offset.getDegrees(), 1e-9);
+	}
+
+	@Test
+	public void pausedTwiceTheOffsetIsStillHeld() {
+		addFor(2 * HeadingOffset.SPREAD_KNOWN_SECONDS, 20, 5);
+		offset.pause();
+		offset.pause();
+		add(22, 5);
+
+		assertEquals(20, offset.getDegrees(), 1e-6);
+	}
+
+	@Test
+	public void resetForgetsTheOffsetHeld() {
+		addFor(2 * HeadingOffset.SPREAD_KNOWN_SECONDS, 20, 5);
+		offset.pause();
+		offset.reset();
+		add(22, 5);
+
+		assertEquals(22, offset.getDegrees(), 1e-9);
+	}
+
+	@Test
 	public void resetForgetsTheSpread() {
 		addFor(2 * HeadingOffset.SPREAD_KNOWN_SECONDS, 20, 5);
 		offset.reset();
