@@ -101,6 +101,8 @@ public class AugmentedRealityScene {
 	private volatile Set<Long> routeRelationEnds = Collections.emptySet();
 	private final ReloadGuard poisLoaded = ReloadGuard.afterMeters(POI_RELOAD_METERS);
 	private final ReloadGuard hullsLoaded = ReloadGuard.afterShare(HULL_RELOAD_SHARE);
+	// Whether the POIs within the view distance are to be picked again, see updateBoundingBox.
+	private final BoundingBoxGuard boundingBoxPicked = new BoundingBoxGuard();
 	// Where refreshAround was last asked to load around, null before the first time.
 	private Vector4d requestedCenter;
 	// The display filters as of the last draw, and whether each POI tested against them passed.
@@ -305,10 +307,13 @@ public class AugmentedRealityScene {
 	 */
 	public void clearPins() {
 		removePinsExcept(Collections.emptySet());
+		// The pins kept out of view are drawn as before the change too, so they all go as well,
+		// whatever they are of.
+		arViewManager.removeHiddenPOIs();
 	}
 
 	/**
-	 * Takes the pins off the view, but those of some nodes.
+	 * Takes the pins off the view, on display or kept out of view, but those of some nodes.
 	 */
 	private void removePinsExcept(Set<Long> kept) {
 		for (Map.Entry<Long, GeoNode> entry : boundingBoxPOIs.entrySet()) {
@@ -425,6 +430,8 @@ public class AugmentedRealityScene {
 					protected void thenDoUiRelatedWork(Boolean result) {
 						boolean again = poisLoaded.loaded(center.x, center.y, distance);
 						if (result) {
+							// More POIs are held, for onLoaded to pick the ones in reach from.
+							boundingBoxPicked.poisChanged();
 							onLoaded.run();
 						}
 						if (again) {
@@ -494,8 +501,8 @@ public class AugmentedRealityScene {
 						for (ClimbingHull removed : climbingHulls.setHulls(hulls)) {
 							arViewManager.removePOIFromView(removed.pin);
 						}
-						// A pin on view keeps its drawing, so one that changed, as its route count
-						// with the display filters, is put on the view again.
+						// A pin keeps its drawing, on view and out of it, so one that changed, as
+						// its route count with the display filters, is put on the view again.
 						for (ClimbingHull hull : hulls) {
 							GeoNode earlier = earlierPins.get(hull.key);
 							if (earlier != null && !drawsAlike(earlier, hull.pin)) {
@@ -572,10 +579,16 @@ public class AugmentedRealityScene {
 
 	/**
 	 * Keeps the POIs within the view distance of the camera, and releases those well beyond it.
+	 * To be called whenever the camera may have moved, as on every frame of ARCore's: they are
+	 * only gone through once it moved far enough to matter, the view distance changed or more of
+	 * them are loaded, see BoundingBoxGuard.
 	 */
 	public void updateBoundingBox() {
 		double latitude = camera.decimalLatitude;
 		double longitude = camera.decimalLongitude;
+		if (!boundingBoxPicked.request(latitude, longitude, maxDistance)) {
+			return;
+		}
 		double deltaLatitude = Math.toDegrees(maxDistance / GeoUtils.EARTH_RADIUS_M);
 		double deltaLongitude = Math.toDegrees(
 				maxDistance / (Math.cos(Math.toRadians(latitude)) * GeoUtils.EARTH_RADIUS_M));
@@ -648,6 +661,9 @@ public class AugmentedRealityScene {
 
 	/**
 	 * Lays the routes, crags and areas out as the camera sees them from the eye, and draws them.
+	 * The pins that do not show in this frame are only hidden, see
+	 * AugmentedRealityViewManager.hidePOIFromView, as most are back as the camera turns; what
+	 * changes a pin's drawing takes it off the view, to be drawn again.
 	 */
 	public void draw(EyeElevation eye) {
 		Set<Long> only = shownOnly;
@@ -683,7 +699,7 @@ public class AugmentedRealityScene {
 							maxViewAngleFor(seeThrough, entry.getKey(), maxViewAngle))) {
 						visible.add(poi);
 					} else {
-						arViewManager.removePOIFromView(poi);
+						arViewManager.hidePOIFromView(poi);
 					}
 				}
 
@@ -695,7 +711,7 @@ public class AugmentedRealityScene {
 							maxViewAngle)) {
 						visible.add(hull.pin);
 					} else {
-						arViewManager.removePOIFromView(hull.pin);
+						arViewManager.hidePOIFromView(hull.pin);
 					}
 				}
 
@@ -709,14 +725,14 @@ public class AugmentedRealityScene {
 							maxViewAngleFor(seeThrough, relation.start.getID(), maxViewAngle))) {
 						visible.add(relation.start);
 					} else {
-						arViewManager.removePOIFromView(relation.start);
+						arViewManager.hidePOIFromView(relation.start);
 					}
 					if (shown && only == null && useTerrain
 							&& placeInView(relation.top, false, true, observerElevation,
 							maxViewAngle)) {
 						visible.add(relation.top);
 					} else {
-						arViewManager.removePOIFromView(relation.top);
+						arViewManager.hidePOIFromView(relation.top);
 					}
 				}
 
@@ -727,7 +743,7 @@ public class AugmentedRealityScene {
 				for (RouteLine route : routeLines.getRoutes()) {
 					// Neither the lines nor the tops show along with only some pins.
 					if (only != null) {
-						arViewManager.removePOIFromView(route.top);
+						arViewManager.hidePOIFromView(route.top);
 						continue;
 					}
 					// A pitch of a route relation shows along with the route, which has the top.
@@ -747,7 +763,7 @@ public class AugmentedRealityScene {
 							continue;
 						}
 					}
-					arViewManager.removePOIFromView(route.top);
+					arViewManager.hidePOIFromView(route.top);
 				}
 				if (only == null) {
 					updateRouteLines(useTerrain, observerElevation);
@@ -766,7 +782,7 @@ public class AugmentedRealityScene {
 
 						zOrderedDisplay.add(poi);
 					} else {
-						arViewManager.removePOIFromView(poi);
+						arViewManager.hidePOIFromView(poi);
 					}
 				}
 
@@ -855,9 +871,11 @@ public class AugmentedRealityScene {
 	 * @param useTerrain whether the observer elevation comes from the terrain model
 	 */
 	private void updateHulls(boolean useTerrain, double observerElevation) {
+		// Hidden, by the setting or while only some pins show, the outlines are not laid out, and
+		// need no elevations, which would be looked up for nothing.
+		boolean outlines = showClimbingHulls && shownOnly == null;
 		climbingHulls.update(camera.decimalLatitude, camera.decimalLongitude, maxDistance,
-				// Hidden, the outlines need no elevations, which would be looked up for nothing.
-				useTerrain && showClimbingHulls ? hullElevations : null,
+				outlines, useTerrain && outlines ? hullElevations : null,
 				terrainElevation.getVersion(),
 				SystemClock.elapsedRealtime());
 		climbingHullView.show(climbingHulls, camera, observerElevation, EYE_HEIGHT_METERS,

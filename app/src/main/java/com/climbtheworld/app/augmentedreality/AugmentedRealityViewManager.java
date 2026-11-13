@@ -30,13 +30,24 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Predicate;
 
 /**
  * Created by xyz on 12/27/17.
  */
 
 public class AugmentedRealityViewManager {
+	// How many pins are kept out of view at most, see hidePOIFromView. Thousands of pins can be
+	// within the view distance, and each one kept holds the bitmap of its icon, a hundred
+	// kilobytes or so, and is one more child for the container to measure whenever a pin is
+	// added or dropped. Twice the default of maxNodesShowCountLimit covers a full view on
+	// either side of the one on display, enough for turning back and forth along a crag, in
+	// 20 to 30 megabytes.
+	private static final int MAX_HIDDEN_PINS = 200;
+
 	private final Map<GeoNode, View> toDisplay = new HashMap<>(); //Visible POIs
+	// The pins out of view for now, invisible in the container, see hidePOIFromView.
+	private final HiddenPins<GeoNode, View> hiddenPins = new HiddenPins<>(MAX_HIDDEN_PINS);
 	private Map<Long, Integer> routeNumbers = Collections.emptyMap();
 	// The node whose pin is drawn see-through, and lets taps through, null for none, see
 	// setSeeThrough.
@@ -103,6 +114,8 @@ public class AugmentedRealityViewManager {
 		LayoutInflater inflater =
 				(LayoutInflater) parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		View newViewElement = inflater.inflate(R.layout.button_topo_display, container, false);
+		// The POI the pin is drawn from, see addOrUpdatePOIToView.
+		newViewElement.setTag(poi);
 
 		// Only POIs that pass the display filters reach this point, so they are all interactive.
 		// The top of a route, and the start of a route relation, open the route, see
@@ -134,7 +147,8 @@ public class AugmentedRealityViewManager {
 	/**
 	 * Draws the pin of a node see-through, and lets taps through it, as the pin of the route being
 	 * aligned on is drawn where the A.R. has it until it is dropped, see
-	 * AugmentedRealityScene.showOnly, and redraws the pins on display this changes.
+	 * AugmentedRealityScene.showOnly, and redraws the pins on display this changes. The ones
+	 * kept out of view are dropped instead, to be drawn again once back in view.
 	 *
 	 * @param nodeId null for none
 	 */
@@ -150,6 +164,8 @@ public class AugmentedRealityViewManager {
 				style(parent, entry.getValue(), entry.getKey());
 			}
 		}
+		dropHidden(poi -> (previous != null && previous == poi.getID())
+				|| (nodeId != null && nodeId == poi.getID()));
 	}
 
 	/**
@@ -207,7 +223,8 @@ public class AugmentedRealityViewManager {
 
 	/**
 	 * Sets the crag route numbers shown on the pins, keyed by node ID, and redraws the pins on
-	 * display whose number changed.
+	 * display whose number changed. The ones kept out of view are dropped instead, to be drawn
+	 * again once back in view.
 	 */
 	public void setRouteNumbers(AppCompatActivity parent, Map<Long, Integer> routeNumbers) {
 		Map<Long, Integer> previous = this.routeNumbers;
@@ -218,6 +235,7 @@ public class AugmentedRealityViewManager {
 				setIcon((ImageButton) entry.getValue(), createIcon(parent, poi));
 			}
 		}
+		dropHidden(poi -> getRouteNumber(previous, poi) != getRouteNumber(routeNumbers, poi));
 	}
 
 	// The crag and area pins are relations, whose IDs may match a node's.
@@ -282,9 +300,53 @@ public class AugmentedRealityViewManager {
 				/ MarkerUtils.IconType.poiRouteIcon.getIconPxHeight());
 	}
 
+	/**
+	 * Takes the pin of a POI off the view for good, on display or kept out of view, as one that
+	 * is no longer there, or whose drawing no longer holds: the next addOrUpdatePOIToView draws
+	 * it anew.
+	 */
 	public void removePOIFromView(GeoNode poi) {
 		View button = toDisplay.remove(poi);
 		if (button != null) {
+			deleteViewFromContainer(button);
+		}
+		button = hiddenPins.take(poi);
+		if (button != null) {
+			deleteViewFromContainer(button);
+		}
+	}
+
+	/**
+	 * Takes the pin of a POI out of view for now, as one the camera turned away from: it is
+	 * kept as drawn, for addOrUpdatePOIToView to show it again, rather than inflated and drawn
+	 * anew each time the camera turns back. Only MAX_HIDDEN_PINS are kept, the ones hidden last.
+	 */
+	public void hidePOIFromView(GeoNode poi) {
+		View button = toDisplay.remove(poi);
+		if (button == null) {
+			return;
+		}
+		// Invisible, the pin is neither drawn nor tapped, and unlike removing it or making it
+		// gone, this asks for no layout of the container and all its pins.
+		button.setVisibility(View.INVISIBLE);
+		// A press under way is let go, as it was when the pin was removed: it would still open
+		// the POI once the finger lifts where the pin was.
+		button.setPressed(false);
+		View dropped = hiddenPins.hide((GeoNode) button.getTag(), button);
+		if (dropped != null) {
+			deleteViewFromContainer(dropped);
+		}
+	}
+
+	/**
+	 * Drops all the pins kept out of view, as after a change of what the pins are drawn from.
+	 */
+	public void removeHiddenPOIs() {
+		dropHidden(poi -> true);
+	}
+
+	private void dropHidden(Predicate<GeoNode> stale) {
+		for (View button : hiddenPins.takeIf(stale)) {
 			deleteViewFromContainer(button);
 		}
 	}
@@ -292,11 +354,24 @@ public class AugmentedRealityViewManager {
 	public void addOrUpdatePOIToView(AppCompatActivity parent, GeoNode poi, float stackOrder) {
 		View button = toDisplay.get(poi);
 		if (button == null) {
-			button = addViewElementFromTemplate(parent, poi);
+			button = hiddenPins.take(poi);
+			// A pin kept out of view only comes back for the very POI it was drawn from: the
+			// pins of a node, of the top of a route ending at it and of a crag loaded again
+			// share its ID, and may well draw differently.
+			if (button != null && button.getTag() != poi) {
+				deleteViewFromContainer(button);
+				button = null;
+			}
+			if (button == null) {
+				button = addViewElementFromTemplate(parent, poi);
+				addViewToContainer(button);
+			} else {
+				button.setVisibility(View.VISIBLE);
+			}
 			toDisplay.put(poi, button);
-			addViewToContainer(button);
 		}
 
+		// Placed, scaled and stacked anew on every frame, so a pin shown again is as a new one.
 		updateViewElement(button, poi, stackOrder);
 	}
 

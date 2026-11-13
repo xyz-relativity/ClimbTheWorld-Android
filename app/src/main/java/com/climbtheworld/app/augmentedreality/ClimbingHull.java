@@ -52,7 +52,10 @@ public class ClimbingHull {
 	// The nodes of the relation and of the relations in it, such as the routes.
 	private final long[] nodeIds;
 	private boolean showingRoutes;
-	// As of the last build, around its origin.
+	// As of the last build, around its origin, which is kept to look the elevations up again
+	// where they were.
+	private double originLatitude = Double.NaN;
+	private double originLongitude = Double.NaN;
 	private GroundMesh fill;
 	private final List<GroundLine> outline = new ArrayList<>();
 
@@ -108,27 +111,39 @@ public class ClimbingHull {
 	 * Decides between the routes and the pin, seen from the origin, and lays the hull out around
 	 * it, cut to the range.
 	 *
-	 * @param range      the area around the origin within which the hull is drawn, in meters east
-	 *                   and north of it
-	 * @param elevations source of the ground elevation, null to leave it unknown
+	 * @param range       the area around the origin within which the hull is drawn, in meters
+	 *                    east and north of it, null when the hull is not drawn, to only decide
+	 *                    between the routes and the pin
+	 * @param rangeMeters how far from the origin the range reaches at most
+	 * @param elevations  source of the ground elevation, null to leave it unknown
 	 */
-	void build(double originLatitude, double originLongitude, Geometry range,
+	void build(double originLatitude, double originLongitude, Geometry range, double rangeMeters,
 	           TerrainWireframe.ElevationSource elevations) {
-		double metersPerDegreeLongitude =
-				METERS_PER_DEGREE * Math.cos(Math.toRadians(originLatitude));
+		double metersPerDegreeLongitude = metersPerDegreeLongitude(originLatitude);
 		double[] east = new double[latitudes.length];
 		double[] north = new double[latitudes.length];
-		Coordinate[] ring = new Coordinate[latitudes.length];
 		for (int index = 0; index < latitudes.length; index++) {
 			east[index] = (longitudes[index] - originLongitude) * metersPerDegreeLongitude;
 			north[index] = (latitudes[index] - originLatitude) * METERS_PER_DEGREE;
-			ring[index] = new Coordinate(east[index], north[index]);
 		}
 
-		showingRoutes = isShowingRoutes(east, north, showingRoutes);
+		double distance = distanceToHull(east, north);
+		showingRoutes = isShowingRoutes(distance, showingRoutes);
+		this.originLatitude = originLatitude;
+		this.originLongitude = originLongitude;
 		fill = null;
 		outline.clear();
 
+		// Nothing of a hull farther than the range reaches is in it, which saves cutting it to
+		// the range to find out.
+		if (range == null || distance > rangeMeters) {
+			return;
+		}
+
+		Coordinate[] ring = new Coordinate[latitudes.length];
+		for (int index = 0; index < latitudes.length; index++) {
+			ring[index] = new Coordinate(east[index], north[index]);
+		}
 		Geometry fillShape;
 		Geometry outlineShape;
 		try {
@@ -156,6 +171,29 @@ public class ClimbingHull {
 	}
 
 	/**
+	 * Looks the ground elevation up again all over the fill and the outline, left as the last
+	 * build laid them out: what building the hull again from the same origin and within the same
+	 * range would give, without cutting it again, for when only the terrain changed.
+	 *
+	 * @param elevations source of the ground elevation, null to leave it unknown
+	 */
+	void lookUpElevations(TerrainWireframe.ElevationSource elevations) {
+		double metersPerDegreeLongitude = metersPerDegreeLongitude(originLatitude);
+		if (fill != null) {
+			lookUpElevations(fill.east, fill.north, fill.elevation, fill.size, originLatitude,
+					originLongitude, metersPerDegreeLongitude, elevations);
+		}
+		for (GroundLine line : outline) {
+			lookUpElevations(line.east, line.north, line.elevation, line.size, originLatitude,
+					originLongitude, metersPerDegreeLongitude, elevations);
+		}
+	}
+
+	private static double metersPerDegreeLongitude(double latitude) {
+		return METERS_PER_DEGREE * Math.cos(Math.toRadians(latitude));
+	}
+
+	/**
 	 * Inside the hull, its routes always show. Outside, they show while the hull is close enough
 	 * to make them out, see ROUTES_MAX_DISTANCE_METERS.
 	 *
@@ -164,11 +202,24 @@ public class ClimbingHull {
 	 * @param showingRoutes whether the routes show so far
 	 */
 	static boolean isShowingRoutes(double[] east, double[] north, boolean showingRoutes) {
-		if (containsOrigin(east, north)) {
-			return true;
-		}
-		return distanceFromOrigin(east, north)
+		return isShowingRoutes(distanceToHull(east, north), showingRoutes);
+	}
+
+	/**
+	 * @param distance      how far the hull is, see distanceToHull
+	 * @param showingRoutes whether the routes show so far
+	 */
+	private static boolean isShowingRoutes(double distance, boolean showingRoutes) {
+		return distance
 				<= (showingRoutes ? PIN_MIN_DISTANCE_METERS : ROUTES_MAX_DISTANCE_METERS);
+	}
+
+	/**
+	 * How far from the origin a hull is, as a ring: nothing from inside it, the distance to its
+	 * nearest edge from outside.
+	 */
+	static double distanceToHull(double[] east, double[] north) {
+		return containsOrigin(east, north) ? 0 : distanceFromOrigin(east, north);
 	}
 
 	/**

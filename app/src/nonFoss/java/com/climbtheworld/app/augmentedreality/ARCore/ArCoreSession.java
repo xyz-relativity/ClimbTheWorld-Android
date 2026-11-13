@@ -144,6 +144,9 @@ class ArCoreSession {
 	private final List<AlignedRoute> alignedRoutes = new ArrayList<>();
 	// The anchors of the routes aligned on ARCore tracked last, see cameraMoved.
 	private Set<String> trackedAnchors = Collections.emptySet();
+	// The anchor positions the registration's landmarks were last made from, see
+	// refreshLandmarks; null for them to be made again, see landmarksChanged.
+	private Map<String, double[]> landmarkPositions;
 	// Whether telling the host the camera moved is already posted to the main thread, which
 	// reads where it is then.
 	private final AtomicBoolean cameraMovePosted = new AtomicBoolean();
@@ -738,6 +741,7 @@ class ArCoreSession {
 		alignedRoutes.clear();
 		trackedAnchors = Collections.emptySet();
 		registration.reset();
+		landmarksChanged();
 		updateStatus();
 		return true;
 	}
@@ -753,6 +757,7 @@ class ArCoreSession {
 		for (GeoNode route : world.alignedRoutes()) {
 			alignedRoutes.add(new AlignedRoute(route));
 		}
+		landmarksChanged();
 		Log.i(TAG, "ARCore's world taken over, aligned on " + alignedRoutes.size()
 				+ " route(s)");
 	}
@@ -952,6 +957,7 @@ class ArCoreSession {
 			}
 			// The session's world may be new after a pause.
 			registration.reset();
+			landmarksChanged();
 			triangulationStep = TriangulationStep.NONE;
 			renderer.setSighting(null);
 			renderer.setTriangulated(null);
@@ -1012,6 +1018,7 @@ class ArCoreSession {
 		// Tracking stopped for good: the session's world will be a new one.
 		if (state == TrackingState.STOPPED) {
 			registration.reset();
+			landmarksChanged();
 		}
 		trackingState = state;
 		trackingFailureReason = reason;
@@ -1305,6 +1312,7 @@ class ArCoreSession {
 		alignedRoutes.removeIf(aligned -> aligned.osmId() == route.osmID);
 		AlignedRoute aligned = new AlignedRoute(route);
 		alignedRoutes.add(aligned);
+		landmarksChanged();
 		renderer.setAnchor(aligned.anchorKey(), aimed);
 		Toast.makeText(activity, routeText(route, R.string.ar_placement_aligned,
 				R.string.ar_placement_aligned_unnamed), Toast.LENGTH_LONG).show();
@@ -1332,6 +1340,7 @@ class ArCoreSession {
 			}
 		}
 		alignedRoutes.removeIf(aligned -> aligned.osmId() == osmId);
+		landmarksChanged();
 		updateStatus();
 	}
 
@@ -1340,14 +1349,22 @@ class ArCoreSession {
 			renderer.setAnchor(aligned.anchorKey(), null);
 		}
 		alignedRoutes.clear();
+		landmarksChanged();
 		updateStatus();
 	}
 
 	/**
-	 * Gives the registration the routes aligned on, where ARCore has them now.
+	 * Gives the registration the routes aligned on, where ARCore has them now. Asked for with
+	 * every pose of the camera, it only does so once an anchor moved, see
+	 * ArSessionRenderer.updateAnchors, or the landmarks changed some other way, see
+	 * landmarksChanged: the landmarks would be the same otherwise.
 	 */
 	private void refreshLandmarks() {
 		Map<String, double[]> positions = renderer.getAnchorPositions();
+		if (positions == landmarkPositions) {
+			return;
+		}
+		landmarkPositions = positions;
 		List<GeoRegistration.Landmark> landmarks = new ArrayList<>();
 		for (AlignedRoute aligned : alignedRoutes) {
 			double[] position = positions.get(aligned.anchorKey());
@@ -1357,6 +1374,15 @@ class ArCoreSession {
 			}
 		}
 		registration.setLandmarks(landmarks);
+	}
+
+	/**
+	 * Has the next refreshLandmarks give the registration its landmarks again, wherever the
+	 * anchors are: the routes aligned on changed, or the registration was reset, which forgets
+	 * its landmarks.
+	 */
+	private void landmarksChanged() {
+		landmarkPositions = null;
 	}
 
 	/**
@@ -1442,8 +1468,16 @@ class ArCoreSession {
 
 	/**
 	 * A mapped route the user aimed at.
+	 *
+	 * @param anchorKey the key of the anchor keeping where they aimed, see
+	 *                  ArSessionRenderer.setAnchor; made once, as it is asked for several times
+	 *                  on every frame
 	 */
-	private record AlignedRoute(GeoNode route) {
+	private record AlignedRoute(GeoNode route, String anchorKey) {
+		AlignedRoute(GeoNode route) {
+			this(route, "route:" + route.osmID);
+		}
+
 		long osmId() {
 			return route.osmID;
 		}
@@ -1455,10 +1489,6 @@ class ArCoreSession {
 
 		double longitude() {
 			return route.decimalLongitude;
-		}
-
-		String anchorKey() {
-			return "route:" + route.osmID;
 		}
 	}
 }

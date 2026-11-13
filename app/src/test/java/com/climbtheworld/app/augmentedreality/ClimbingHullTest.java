@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import com.climbtheworld.app.storage.database.OsmEntity;
@@ -11,6 +12,11 @@ import com.climbtheworld.app.storage.database.OsmEntity;
 import org.junit.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class ClimbingHullTest {
 	private static final double LATITUDE = 45.52;
@@ -22,9 +28,20 @@ public class ClimbingHullTest {
 			+ ClimbingHull.PIN_MIN_DISTANCE_METERS) / 2;
 
 	/**
-	 * A rectangle, as a closed ring, in meters east and north of the observer.
+	 * A crag as a rectangle, as a closed ring, in meters east and north of the observer.
 	 */
 	private static ClimbingHull rectangle(double west, double south, double east, double north) {
+		return rectangle(OsmEntity.EntityClimbingType.crag, 1, new long[]{11, 12}, west, south,
+				east, north);
+	}
+
+	/**
+	 * A crag or an area as a rectangle, as a closed ring, in meters east and north of the
+	 * observer.
+	 */
+	private static ClimbingHull rectangle(OsmEntity.EntityClimbingType type, long id,
+	                                      long[] nodeIds, double west, double south, double east,
+	                                      double north) {
 		double[][] corners = {{west, south}, {west, north}, {east, north}, {east, south},
 				{west, south}};
 		double[] latitudes = new double[corners.length];
@@ -33,8 +50,19 @@ public class ClimbingHullTest {
 			longitudes[index] = LONGITUDE + corners[index][0] / METERS_PER_DEGREE_LONGITUDE;
 			latitudes[index] = LATITUDE + corners[index][1] / ClimbingHull.METERS_PER_DEGREE;
 		}
-		return new ClimbingHull("crag|relation|1", OsmEntity.EntityClimbingType.crag, null, latitudes,
-				longitudes, new long[]{11, 12});
+		return new ClimbingHull(type + "|relation|" + id, type, null, latitudes, longitudes,
+				nodeIds);
+	}
+
+	/**
+	 * A crag close enough to show its routes, and an area too far to, left to its pin.
+	 */
+	private static List<ClimbingHull> closeCragAndFarArea() {
+		return Arrays.asList(
+				rectangle(OsmEntity.EntityClimbingType.crag, 1, new long[]{11, 12}, -10, 20, 10,
+						30),
+				rectangle(OsmEntity.EntityClimbingType.area, 2, new long[]{21}, -10, 2000, 10,
+						2010));
 	}
 
 	private static Geometry range(double meters) {
@@ -54,6 +82,24 @@ public class ClimbingHullTest {
 					- (mesh.east[c] - mesh.east[a]) * (mesh.north[b] - mesh.north[a])) / 2;
 		}
 		return area;
+	}
+
+	/**
+	 * Checks that the fill and the outline of a hull are on a ground rising with the distance
+	 * from where it was laid out, from an elevation there.
+	 */
+	private static void assertOnGround(double elevation, ClimbingHull hull) {
+		ClimbingHull.GroundMesh fill = hull.getFill();
+		for (int index = 0; index < fill.size; index++) {
+			assertEquals(elevation + Math.hypot(fill.east[index], fill.north[index]),
+					fill.elevation[index], 1e-6);
+		}
+		for (ClimbingHull.GroundLine line : hull.getOutline()) {
+			for (int index = 0; index < line.size; index++) {
+				assertEquals(elevation + Math.hypot(line.east[index], line.north[index]),
+						line.elevation[index], 1e-6);
+			}
+		}
 	}
 
 	@Test
@@ -103,7 +149,7 @@ public class ClimbingHullTest {
 	@Test
 	public void farHullIsDrawnWithItsPin() {
 		ClimbingHull hull = rectangle(-10, 2000, 10, 2010);
-		hull.build(LATITUDE, LONGITUDE, range(2500), null);
+		hull.build(LATITUDE, LONGITUDE, range(2500), 2500, null);
 		assertFalse(hull.isShowingRoutes());
 		assertNotNull(hull.getFill());
 		assertEquals(1, hull.getOutline().size());
@@ -112,22 +158,46 @@ public class ClimbingHullTest {
 	@Test
 	public void hullBeyondTheRangeIsNotDrawn() {
 		ClimbingHull hull = rectangle(-10, 3000, 10, 3010);
-		hull.build(LATITUDE, LONGITUDE, range(2500), null);
+		hull.build(LATITUDE, LONGITUDE, range(2500), 2500, null);
 		assertNull(hull.getFill());
 		assertTrue(hull.getOutline().isEmpty());
 	}
 
 	@Test
+	public void hullOffTheRangeIsNotDrawn() {
+		int[] lookups = {0};
+		TerrainWireframe.ElevationSource elevations = (latitude, longitude, distance) -> {
+			lookups[0]++;
+			return 100;
+		};
+		// North-east, no farther north or east than the range reaches, but farther from the
+		// observer.
+		ClimbingHull hull = rectangle(1800, 1800, 1900, 1900);
+		hull.build(LATITUDE, LONGITUDE, range(2500), 2500, elevations);
+		assertNull(hull.getFill());
+		assertTrue(hull.getOutline().isEmpty());
+		assertEquals(0, lookups[0]);
+
+		// A little closer, its near corner is within the range.
+		hull = rectangle(1700, 1700, 1800, 1800);
+		hull.build(LATITUDE, LONGITUDE, range(2500), 2500, elevations);
+		assertNotNull(hull.getFill());
+		assertFalse(hull.getOutline().isEmpty());
+		assertTrue(lookups[0] > 0);
+	}
+
+	@Test
 	public void routesOfFarHullsAreHidden() {
 		ClimbingHulls hulls = new ClimbingHulls();
-		hulls.setHulls(java.util.Collections.singletonList(rectangle(-10, 2000, 10, 2010)));
-		hulls.update(LATITUDE, LONGITUDE, 2500, null, 0, 0);
+		hulls.setHulls(Collections.singletonList(rectangle(-10, 2000, 10, 2010)));
+		hulls.update(LATITUDE, LONGITUDE, 2500, true, null, 0, 0);
 		assertTrue(hulls.isHidden(11));
 		assertTrue(hulls.isHidden(12));
 		assertFalse(hulls.isHidden(13));
 
 		// Walking up to it.
-		hulls.update(LATITUDE + 1990 / ClimbingHull.METERS_PER_DEGREE, LONGITUDE, 2500, null, 0, 0);
+		hulls.update(LATITUDE + 1990 / ClimbingHull.METERS_PER_DEGREE, LONGITUDE, 2500, true, null,
+				0, 0);
 		assertTrue(hulls.getHulls().get(0).isShowingRoutes());
 		assertFalse(hulls.isHidden(11));
 	}
@@ -136,7 +206,7 @@ public class ClimbingHullTest {
 	public void outlineIsCutToTheRangeInGrowingSteps() {
 		// Crossing in front of the observer, beyond the range on both sides.
 		ClimbingHull hull = rectangle(-3000, 20, 3000, 40);
-		hull.build(LATITUDE, LONGITUDE, range(1000),
+		hull.build(LATITUDE, LONGITUDE, range(1000), 1000,
 				(latitude, longitude, distance) -> 100 + distance);
 		assertTrue(hull.isShowingRoutes());
 		assertNotNull(hull.getFill());
@@ -165,7 +235,7 @@ public class ClimbingHullTest {
 	@Test
 	public void fromInsideTheGroundAroundIsFilled() {
 		ClimbingHull hull = rectangle(-300, -200, 400, 100);
-		hull.build(LATITUDE, LONGITUDE, range(2500), null);
+		hull.build(LATITUDE, LONGITUDE, range(2500), 2500, null);
 		assertTrue(hull.isShowingRoutes());
 		ClimbingHull.GroundMesh fill = hull.getFill();
 		assertNotNull(fill);
@@ -181,7 +251,7 @@ public class ClimbingHullTest {
 	@Test
 	public void fillFollowsTheTerrain() {
 		ClimbingHull hull = rectangle(-50, 20, 50, 40);
-		hull.build(LATITUDE, LONGITUDE, range(1000),
+		hull.build(LATITUDE, LONGITUDE, range(1000), 1000,
 				(latitude, longitude, distance) -> 100 + distance);
 		ClimbingHull.GroundMesh fill = hull.getFill();
 		assertNotNull(fill);
@@ -200,7 +270,7 @@ public class ClimbingHullTest {
 	public void fillOfAWideHullIsCutInFewCells() {
 		ClimbingHull hull = rectangle(-3000, -3000, 3000, 3000);
 		Geometry range = range(2500);
-		hull.build(LATITUDE, LONGITUDE, range, null);
+		hull.build(LATITUDE, LONGITUDE, range, 2500, null);
 		ClimbingHull.GroundMesh fill = hull.getFill();
 		assertNotNull(fill);
 		// The range, cut to it, in cells wide enough to be few, whose edge cells are cut to it.
@@ -211,7 +281,7 @@ public class ClimbingHullTest {
 	@Test
 	public void withoutElevationsTheyAreUnknown() {
 		ClimbingHull hull = rectangle(-50, 20, 50, 40);
-		hull.build(LATITUDE, LONGITUDE, range(1000), null);
+		hull.build(LATITUDE, LONGITUDE, range(1000), 1000, null);
 		ClimbingHull.GroundMesh fill = hull.getFill();
 		assertNotNull(fill);
 		for (int index = 0; index < fill.size; index++) {
@@ -223,18 +293,160 @@ public class ClimbingHullTest {
 	public void reloadedHullKeepsShowingItsRoutes() {
 		ClimbingHulls hulls = new ClimbingHulls();
 		ClimbingHull shown = rectangle(-10, BETWEEN_METERS, 10, BETWEEN_METERS + 10);
-		hulls.setHulls(java.util.Collections.singletonList(shown));
+		hulls.setHulls(Collections.singletonList(shown));
 		// Its routes shown from 10 m away, then seen from further.
 		double closer = (BETWEEN_METERS - 10) / ClimbingHull.METERS_PER_DEGREE;
-		hulls.update(LATITUDE + closer, LONGITUDE, 2500, null, 0, 0);
+		hulls.update(LATITUDE + closer, LONGITUDE, 2500, true, null, 0, 0);
 		assertTrue(shown.isShowingRoutes());
-		hulls.update(LATITUDE, LONGITUDE, 2500, null, 0, 0);
+		hulls.update(LATITUDE, LONGITUDE, 2500, true, null, 0, 0);
 		assertTrue(shown.isShowingRoutes());
 
 		ClimbingHull reloaded = rectangle(-10, BETWEEN_METERS, 10, BETWEEN_METERS + 10);
-		assertTrue(hulls.setHulls(java.util.Collections.singletonList(reloaded)).isEmpty());
-		hulls.update(LATITUDE, LONGITUDE, 2500, null, 0, 0);
+		assertTrue(hulls.setHulls(Collections.singletonList(reloaded)).isEmpty());
+		hulls.update(LATITUDE, LONGITUDE, 2500, true, null, 0, 0);
 		assertTrue(reloaded.isShowingRoutes());
 		assertFalse(hulls.isHidden(11));
+	}
+
+	@Test
+	public void hiddenOutlinesAreNotLaidOut() {
+		int[] lookups = {0};
+		TerrainWireframe.ElevationSource elevations = (latitude, longitude, distance) -> {
+			lookups[0]++;
+			return 100;
+		};
+		ClimbingHulls hidden = new ClimbingHulls();
+		hidden.setHulls(closeCragAndFarArea());
+		hidden.update(LATITUDE, LONGITUDE, 2500, false, elevations, 0, 0);
+		ClimbingHulls shown = new ClimbingHulls();
+		shown.setHulls(closeCragAndFarArea());
+		shown.update(LATITUDE, LONGITUDE, 2500, true, null, 0, 0);
+
+		assertEquals(0, lookups[0]);
+		assertEquals(2, hidden.getHulls().size());
+		for (int index = 0; index < 2; index++) {
+			ClimbingHull hull = hidden.getHulls().get(index);
+			assertNull(hull.getFill());
+			assertTrue(hull.getOutline().isEmpty());
+			// The routes show or give way to the pin all the same, the areas first.
+			assertEquals(shown.getHulls().get(index).key, hull.key);
+			assertEquals(shown.getHulls().get(index).isShowingRoutes(), hull.isShowingRoutes());
+		}
+		assertEquals(OsmEntity.EntityClimbingType.area, hidden.getHulls().get(0).type);
+		assertFalse(hidden.getHulls().get(0).isShowingRoutes());
+		assertTrue(hidden.getHulls().get(1).isShowingRoutes());
+		for (long nodeId : new long[]{11, 12, 21}) {
+			assertEquals(shown.isHidden(nodeId), hidden.isHidden(nodeId));
+		}
+		assertFalse(hidden.isHidden(11));
+		assertTrue(hidden.isHidden(21));
+
+		// Shown again, they are laid out, with nothing else changed.
+		hidden.update(LATITUDE, LONGITUDE, 2500, true, elevations, 0, 0);
+		assertTrue(lookups[0] > 0);
+		for (ClimbingHull hull : hidden.getHulls()) {
+			assertNotNull(hull.getFill());
+			assertEquals(1, hull.getOutline().size());
+		}
+
+		// And hidden again, nothing is left of them.
+		hidden.update(LATITUDE, LONGITUDE, 2500, false, elevations, 0, 0);
+		for (ClimbingHull hull : hidden.getHulls()) {
+			assertNull(hull.getFill());
+			assertTrue(hull.getOutline().isEmpty());
+		}
+		assertTrue(hidden.isHidden(21));
+	}
+
+	@Test
+	public void routesGiveWayToThePinWhileTheOutlinesAreHidden() {
+		ClimbingHulls hulls = new ClimbingHulls();
+		ClimbingHull hull = rectangle(-10, BETWEEN_METERS, 10, BETWEEN_METERS + 10);
+		hulls.setHulls(Collections.singletonList(hull));
+		// Its routes shown from 10 m away, kept from further, then left to the pin from far.
+		double closer = (BETWEEN_METERS - 10) / ClimbingHull.METERS_PER_DEGREE;
+		hulls.update(LATITUDE + closer, LONGITUDE, 2500, false, null, 0, 0);
+		assertTrue(hull.isShowingRoutes());
+		hulls.update(LATITUDE, LONGITUDE, 2500, false, null, 0, 0);
+		assertTrue(hull.isShowingRoutes());
+		assertFalse(hulls.isHidden(11));
+		hulls.update(LATITUDE - 100 / ClimbingHull.METERS_PER_DEGREE, LONGITUDE, 2500, false, null,
+				0, 0);
+		assertFalse(hull.isShowingRoutes());
+		assertTrue(hulls.isHidden(11));
+	}
+
+	@Test
+	public void terrainLoadingMoreOnlyGivesTheElevationsAgain() {
+		double[] ground = {100};
+		int[] lookups = {0};
+		TerrainWireframe.ElevationSource elevations = (latitude, longitude, distance) -> {
+			lookups[0]++;
+			return ground[0] + distance;
+		};
+		ClimbingHulls hulls = new ClimbingHulls();
+		ClimbingHull hull = rectangle(-50, 20, 50, 40);
+		hulls.setHulls(Collections.singletonList(hull));
+		hulls.update(LATITUDE, LONGITUDE, 1000, true, elevations, 1, 0);
+		ClimbingHull.GroundMesh fill = hull.getFill();
+		assertNotNull(fill);
+		List<ClimbingHull.GroundLine> outline = new ArrayList<>(hull.getOutline());
+		assertFalse(outline.isEmpty());
+		int points = fill.size;
+		for (ClimbingHull.GroundLine line : outline) {
+			points += line.size;
+		}
+		assertEquals(points, lookups[0]);
+		assertOnGround(100, hull);
+
+		// More of the terrain loaded, but the elevations were just looked up.
+		ground[0] = 200;
+		hulls.update(LATITUDE, LONGITUDE, 1000, true, elevations, 2,
+				ClimbingHulls.TERRAIN_REBUILD_DELAY_MS - 1);
+		assertEquals(points, lookups[0]);
+		assertOnGround(100, hull);
+
+		// Later, they are looked up again, for the hull as it was laid out.
+		hulls.update(LATITUDE, LONGITUDE, 1000, true, elevations, 2,
+				ClimbingHulls.TERRAIN_REBUILD_DELAY_MS);
+		assertEquals(2 * points, lookups[0]);
+		assertSame(fill, hull.getFill());
+		assertEquals(outline.size(), hull.getOutline().size());
+		for (int index = 0; index < outline.size(); index++) {
+			assertSame(outline.get(index), hull.getOutline().get(index));
+		}
+		assertOnGround(200, hull);
+		assertTrue(hull.isShowingRoutes());
+		assertFalse(hulls.isHidden(11));
+
+		// Loaded, there is nothing more to look up.
+		hulls.update(LATITUDE, LONGITUDE, 1000, true, elevations, 2, 600_000);
+		assertEquals(2 * points, lookups[0]);
+
+		// The observer a few steps away, the hull stays laid out from where it was.
+		ground[0] = 300;
+		hulls.update(LATITUDE + 5 / ClimbingHull.METERS_PER_DEGREE, LONGITUDE, 1000, true,
+				elevations, 3, 600_000);
+		assertEquals(3 * points, lookups[0]);
+		assertSame(fill, hull.getFill());
+		assertOnGround(300, hull);
+	}
+
+	@Test
+	public void terrainLoadingMoreLeavesHiddenOutlinesAlone() {
+		int[] lookups = {0};
+		TerrainWireframe.ElevationSource elevations = (latitude, longitude, distance) -> {
+			lookups[0]++;
+			return 100;
+		};
+		ClimbingHulls hulls = new ClimbingHulls();
+		hulls.setHulls(closeCragAndFarArea());
+		hulls.update(LATITUDE, LONGITUDE, 2500, false, elevations, 1, 0);
+		hulls.update(LATITUDE, LONGITUDE, 2500, false, elevations, 2, 600_000);
+		assertEquals(0, lookups[0]);
+		for (ClimbingHull hull : hulls.getHulls()) {
+			assertNull(hull.getFill());
+			assertTrue(hull.getOutline().isEmpty());
+		}
 	}
 }

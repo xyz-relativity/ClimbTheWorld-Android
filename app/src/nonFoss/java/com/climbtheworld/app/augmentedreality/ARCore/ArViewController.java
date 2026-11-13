@@ -132,9 +132,12 @@ public class ArViewController implements ArViewTracking {
 
 			@Override
 			public void onCameraMoved() {
-				// The sensors' camera shows over ARCore's image too.
-				arCore.matchAngleOfView(Globals.virtualCamera);
+				// Posed, the camera takes ARCore's angle of view along. The sensors' camera
+				// shows over ARCore's image too, so it is given that angle the rest of the time.
 				boolean posed = arCore.poseCamera(Globals.virtualCamera);
+				if (!posed) {
+					arCore.matchAngleOfView(Globals.virtualCamera);
+				}
 				setMovesCamera(posed);
 				if (posed) {
 					listener.onCameraMoved();

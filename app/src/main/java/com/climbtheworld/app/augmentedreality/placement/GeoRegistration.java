@@ -67,10 +67,21 @@ public class GeoRegistration {
 	private final ArrayDeque<double[]> headings = new ArrayDeque<>();
 	// When the latest compass reading kept was taken, see MIN_HEADING_INTERVAL_SECONDS.
 	private long lastHeadingTimestampNanos;
+	// What the readings kept tell together, worked out as one is kept rather than each time it
+	// is asked, which is several times for every frame of the camera: the offset, in radians,
+	// see averageCompassHeading, and its accuracy, in degrees, see
+	// averageCompassAccuracyDegrees; NaN without any reading.
+	private double averageCompassOffset = Double.NaN;
+	private double averageCompassAccuracy = Double.NaN;
 	// Per fix: its east and north of the reference, its weight, and the session's x and z of the
 	// phone.
 	private final ArrayDeque<double[]> locations = new ArrayDeque<>();
 	private List<Landmark> landmarks = Collections.emptyList();
+	// What the landmarks tell of the heading, worked out as they are set, likewise: the offset,
+	// in radians, see landmarkHeading, and how far off it may be, in degrees, see
+	// landmarkHeadingAccuracyDegrees; NaN when they tell none.
+	private double landmarkOffset = Double.NaN;
+	private double landmarkAccuracyDegrees = Double.NaN;
 	// The compass's offset, in radians, and its accuracy, in degrees, held while there are
 	// landmarks; NaN while following the compass.
 	private double heldCompassOffset = Double.NaN;
@@ -109,8 +120,12 @@ public class GeoRegistration {
 	 */
 	public void reset() {
 		headings.clear();
+		averageCompassOffset = Double.NaN;
+		averageCompassAccuracy = Double.NaN;
 		locations.clear();
 		landmarks = Collections.emptyList();
+		landmarkOffset = Double.NaN;
+		landmarkAccuracyDegrees = Double.NaN;
 		heldCompassOffset = Double.NaN;
 		referenceSet = false;
 	}
@@ -136,6 +151,8 @@ public class GeoRegistration {
 		double offset = Math.toRadians(compassAzimuthDegrees - sessionAzimuthDegrees);
 		add(headings, new double[]{Math.sin(offset), Math.cos(offset), 1 / (accuracy * accuracy)},
 				MAX_HEADING_READINGS);
+		averageCompassOffset = averageCompassHeading();
+		averageCompassAccuracy = averageCompassAccuracyDegrees();
 		holdCompass();
 	}
 
@@ -162,10 +179,15 @@ public class GeoRegistration {
 	public void setLandmarks(List<Landmark> landmarks) {
 		this.landmarks = new ArrayList<>(landmarks);
 		if (landmarks.isEmpty()) {
+			landmarkOffset = Double.NaN;
+			landmarkAccuracyDegrees = Double.NaN;
 			heldCompassOffset = Double.NaN;
 			return;
 		}
 		setReference(landmarks.get(0).latitude(), landmarks.get(0).longitude());
+		// Against the reference, which stays as it is until the next reset.
+		landmarkOffset = landmarkHeading();
+		landmarkAccuracyDegrees = landmarkHeadingAccuracyDegrees(landmarkEastNorth());
 		holdCompass();
 	}
 
@@ -177,8 +199,8 @@ public class GeoRegistration {
 		if (landmarks.isEmpty() || !Double.isNaN(heldCompassOffset) || headings.isEmpty()) {
 			return;
 		}
-		heldCompassOffset = averageCompassHeading();
-		heldCompassAccuracyDegrees = averageCompassAccuracyDegrees();
+		heldCompassOffset = averageCompassOffset;
+		heldCompassAccuracyDegrees = averageCompassAccuracy;
 	}
 
 	private void setReference(double latitude, double longitude) {
@@ -201,7 +223,7 @@ public class GeoRegistration {
 	 */
 	public boolean hasHeading() {
 		return headings.size() >= (landmarks.isEmpty() ? MIN_HEADING_READINGS : 1)
-				|| !Double.isNaN(landmarkHeading());
+				|| !Double.isNaN(landmarkOffset);
 	}
 
 	/**
@@ -222,7 +244,7 @@ public class GeoRegistration {
 	 * compass reading
 	 */
 	public double getHeadingOffsetDegrees() {
-		return Math.toDegrees(landmarksSetHeading() ? landmarkHeading() : compassHeading());
+		return Math.toDegrees(landmarksSetHeading() ? landmarkOffset : compassHeading());
 	}
 
 	/**
@@ -230,13 +252,12 @@ public class GeoRegistration {
 	 * getHeadingOffsetDegrees
 	 */
 	public boolean landmarksSetHeading() {
-		if (Double.isNaN(landmarkHeading())) {
+		if (Double.isNaN(landmarkOffset)) {
 			return false;
 		}
 		double compassAccuracy = Math.max(compassAccuracyDegrees(),
 				MAX_COMPARED_COMPASS_ACCURACY_DEGREES);
-		return Double.isNaN(compassAccuracy)
-				|| landmarkHeadingAccuracyDegrees(landmarkEastNorth()) <= compassAccuracy;
+		return Double.isNaN(compassAccuracy) || landmarkAccuracyDegrees <= compassAccuracy;
 	}
 
 	/**
@@ -245,8 +266,7 @@ public class GeoRegistration {
 	 * do, see compassAccuracyDegrees; NaN without any reading
 	 */
 	public double headingAccuracyDegrees() {
-		return landmarksSetHeading() ? landmarkHeadingAccuracyDegrees(landmarkEastNorth())
-				: compassAccuracyDegrees();
+		return landmarksSetHeading() ? landmarkAccuracyDegrees : compassAccuracyDegrees();
 	}
 
 	/**
@@ -254,7 +274,7 @@ public class GeoRegistration {
 	 * without any reading
 	 */
 	private double compassHeading() {
-		return Double.isNaN(heldCompassOffset) ? averageCompassHeading() : heldCompassOffset;
+		return Double.isNaN(heldCompassOffset) ? averageCompassOffset : heldCompassOffset;
 	}
 
 	/**
@@ -262,7 +282,7 @@ public class GeoRegistration {
 	 * landmarks, NaN without any reading
 	 */
 	public double compassAccuracyDegrees() {
-		return Double.isNaN(heldCompassOffset) ? averageCompassAccuracyDegrees()
+		return Double.isNaN(heldCompassOffset) ? averageCompassAccuracy
 				: heldCompassAccuracyDegrees;
 	}
 

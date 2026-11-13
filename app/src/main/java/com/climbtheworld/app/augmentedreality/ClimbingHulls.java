@@ -30,8 +30,10 @@ public class ClimbingHulls {
 	private boolean changed;
 	private final LayoutOrigin origin = new LayoutOrigin();
 	private double range;
+	private boolean outlines;
 	private boolean withElevation;
 	private int terrainVersion;
+	// When the elevations were last looked up, along with a layout or on their own.
 	private long builtAtMillis;
 
 	/**
@@ -55,38 +57,54 @@ public class ClimbingHulls {
 	}
 
 	/**
-	 * Lays the hulls out around the observer again when they changed, the observer moved, or,
-	 * now and then, when the terrain loaded more.
+	 * Lays the hulls out around the observer again when they changed, the observer moved, or
+	 * what is drawn of them changed. When only the terrain loaded more, now and then, they stay
+	 * as laid out, and only take their elevations from it again.
 	 *
 	 * @param range          how far from the observer the outlines are drawn, in meters
+	 * @param outlines       whether the outlines are drawn. Hidden, they are not laid out, and
+	 *                       the hulls only decide between their routes and their pin.
 	 * @param elevations     source of the ground elevation, null to leave it unknown
 	 * @param terrainVersion changes whenever the elevations may have changed
 	 */
-	public void update(double latitude, double longitude, double range,
+	public void update(double latitude, double longitude, double range, boolean outlines,
 	                   TerrainWireframe.ElevationSource elevations, int terrainVersion,
 	                   long nowMillis) {
-		boolean withElevation = elevations != null;
-		boolean moved = origin.needsLayout(latitude, longitude);
+		// Hidden, the outlines have no elevations to follow.
+		boolean withElevation = outlines && elevations != null;
+		boolean layout = changed || origin.needsLayout(latitude, longitude) || range != this.range
+				|| outlines != this.outlines || withElevation != this.withElevation;
 		boolean terrainChanged = withElevation && terrainVersion != this.terrainVersion
 				&& nowMillis - builtAtMillis >= TERRAIN_REBUILD_DELAY_MS;
-		if (!changed && !moved && !terrainChanged && range == this.range
-				&& withElevation == this.withElevation) {
+		if (!layout && !terrainChanged) {
+			return;
+		}
+
+		this.terrainVersion = terrainVersion;
+		builtAtMillis = nowMillis;
+		if (!layout) {
+			// The terrain moves no hull: each is cut as it was, and chooses between its routes
+			// and its pin as it did, so only the elevations are left to take again.
+			for (ClimbingHull hull : drawn) {
+				hull.lookUpElevations(elevations);
+			}
 			return;
 		}
 
 		changed = false;
 		origin.moveTo(latitude, longitude);
 		this.range = range;
+		this.outlines = outlines;
 		this.withElevation = withElevation;
-		this.terrainVersion = terrainVersion;
-		builtAtMillis = nowMillis;
 
-		Geometry rangeShape = ClimbingHull.GEOMETRY_FACTORY.createPoint(new Coordinate(0, 0))
-				.buffer(range, RANGE_QUADRANT_SEGMENTS);
+		Geometry rangeShape = outlines
+				? ClimbingHull.GEOMETRY_FACTORY.createPoint(new Coordinate(0, 0))
+				.buffer(range, RANGE_QUADRANT_SEGMENTS) : null;
 		drawn.clear();
 		hiddenNodes.clear();
 		for (ClimbingHull hull : hulls.values()) {
-			hull.build(latitude, longitude, rangeShape, elevations);
+			// The range shape has its corners on the circle of the range, so reaches no farther.
+			hull.build(latitude, longitude, rangeShape, range, elevations);
 			drawn.add(hull);
 			if (!hull.isShowingRoutes()) {
 				for (long nodeId : hull.getNodeIds()) {

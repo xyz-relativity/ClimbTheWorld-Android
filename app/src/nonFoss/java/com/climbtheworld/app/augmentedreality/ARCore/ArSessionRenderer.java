@@ -8,6 +8,7 @@ import android.opengl.Matrix;
 import android.util.Log;
 import android.view.Display;
 
+import com.climbtheworld.app.augmentedreality.placement.AnchorPositions;
 import com.climbtheworld.app.augmentedreality.placement.CursorHit;
 import com.climbtheworld.app.augmentedreality.placement.CursorRing;
 import com.climbtheworld.app.augmentedreality.placement.DepthFrame;
@@ -131,7 +132,8 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 	private final Map<String, double[]> anchorRequests = new ConcurrentHashMap<>();
 	// Points ARCore keeps in place as it learns more of the world, by key. GL thread only.
 	private final Map<String, Anchor> anchors = new HashMap<>();
-	// Where the anchors ARCore tracks now are, by key.
+	// Where the anchors ARCore tracks now are, by key: the same map from frame to frame while
+	// none of them moved, see updateAnchors.
 	private volatile Map<String, double[]> anchorPositions = Collections.emptyMap();
 	// The net over the rock is lined up with the way the user faces once tracking starts.
 	private boolean wireframeFacingSet;
@@ -493,7 +495,13 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 				positions.put(entry.getKey(), new double[]{pose.tx(), pose.ty(), pose.tz()});
 			}
 		}
-		anchorPositions = positions;
+		// The map told stays the same one until an anchor moves, comes or goes, so that the main
+		// thread, which reads it on every frame, sees from it that none did, and keeps what it
+		// worked out from them, see ArCoreSession.refreshLandmarks. A map told is never changed,
+		// as the main thread may be reading it: a new one takes its place.
+		if (!AnchorPositions.same(anchorPositions, positions)) {
+			anchorPositions = positions;
+		}
 	}
 
 	/**

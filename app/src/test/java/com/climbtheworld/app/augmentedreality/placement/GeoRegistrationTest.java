@@ -76,6 +76,19 @@ public class GeoRegistrationTest {
 		return new GeoRegistration.Landmark(sessionX, sessionZ, mapped[0], mapped[1]);
 	}
 
+	/**
+	 * A landmark as the session has it once it learned more of its world, which turned it there,
+	 * clockwise around the session's origin as seen from above.
+	 */
+	private static GeoRegistration.Landmark turned(GeoRegistration.Landmark landmark,
+	                                               double degrees) {
+		double turn = Math.toRadians(degrees);
+		return new GeoRegistration.Landmark(
+				landmark.sessionX() * Math.cos(turn) + landmark.sessionZ() * Math.sin(turn),
+				landmark.sessionZ() * Math.cos(turn) - landmark.sessionX() * Math.sin(turn),
+				landmark.latitude(), landmark.longitude());
+	}
+
 	private static double northMeters(double[] latLon, double[] expected) {
 		return (latLon[0] - expected[0]) * METERS_PER_DEGREE;
 	}
@@ -400,6 +413,72 @@ public class GeoRegistrationTest {
 		addCompass(registration, OFFSET_DEGREES + 20, 5);
 
 		assertEquals(OFFSET_DEGREES + 20, registration.getHeadingOffsetDegrees(), 1e-3);
+	}
+
+	@Test
+	public void theLandmarksHeadingFollowsThemAsTheSessionMovesThem() {
+		GeoRegistration registration = new GeoRegistration();
+		GeoRegistration.Landmark left = landmark(-20, -8);
+		GeoRegistration.Landmark right = landmark(20, -8);
+		registration.setLandmarks(List.of(left, right));
+		assertEquals(OFFSET_DEGREES, registration.getHeadingOffsetDegrees(), 1e-3);
+
+		// The session turns its world 10 degrees under them: north is as much further round.
+		GeoRegistration.Landmark leftTurned = turned(left, 10);
+		registration.setLandmarks(List.of(leftTurned, turned(right, 10)));
+
+		assertTrue(registration.landmarksSetHeading());
+		assertEquals(OFFSET_DEGREES + 10, registration.getHeadingOffsetDegrees(), 1e-3);
+		assertAt(truth(-20, -8),
+				registration.toLatLon(leftTurned.sessionX(), leftTurned.sessionZ()));
+	}
+
+	@Test
+	public void landmarksTakenAwayTellNoHeadingAnymore() {
+		GeoRegistration registration = new GeoRegistration();
+		registration.setLandmarks(List.of(landmark(-20, -8), landmark(20, -8)));
+		assertTrue(registration.landmarksSetHeading());
+
+		// One alone tells where the world is, not which way it is turned.
+		registration.setLandmarks(Collections.singletonList(landmark(-20, -8)));
+		assertFalse(registration.landmarksSetHeading());
+		assertFalse(registration.hasHeading());
+		assertTrue(Double.isNaN(registration.headingAccuracyDegrees()));
+
+		registration.setLandmarks(Collections.emptyList());
+		assertFalse(registration.hasHeading());
+		assertTrue(Double.isNaN(registration.getHeadingOffsetDegrees()));
+	}
+
+	@Test
+	public void resetForgetsTheHeadingTheLandmarksTold() {
+		GeoRegistration registration = new GeoRegistration();
+		registration.setLandmarks(List.of(landmark(-20, -8), landmark(20, -8)));
+		registration.reset();
+
+		assertFalse(registration.landmarksSetHeading());
+		assertFalse(registration.hasHeading());
+
+		addCompass(registration, OFFSET_DEGREES + 20, 5);
+		assertFalse(registration.landmarksSetHeading());
+		assertEquals(OFFSET_DEGREES + 20, registration.getHeadingOffsetDegrees(), 1e-3);
+		assertEquals(5, registration.headingAccuracyDegrees(), 1e-9);
+	}
+
+	@Test
+	public void theCompassAverageFollowsEveryReadingKept() {
+		GeoRegistration registration = new GeoRegistration();
+		registration.addHeading(OFFSET_DEGREES, 0, 5, tick());
+		assertEquals(OFFSET_DEGREES, registration.getHeadingOffsetDegrees(), 1e-9);
+
+		registration.addHeading(OFFSET_DEGREES + 20, 0, 5, tick());
+		assertEquals(OFFSET_DEGREES + 10, registration.getHeadingOffsetDegrees(), 1e-9);
+
+		// The oldest readings go once there are too many, and the average with them.
+		for (int i = 0; i < GeoRegistration.MAX_HEADING_READINGS; i++) {
+			registration.addHeading(OFFSET_DEGREES - 20, 0, 5, tick());
+		}
+		assertEquals(OFFSET_DEGREES - 20, registration.getHeadingOffsetDegrees(), 1e-9);
 	}
 
 	@Test
