@@ -90,8 +90,10 @@ public class FuseLocationProvider implements LocationListener {
 				lastLocation.getElapsedRealtimeNanos(), location.getProvider(),
 				location.getAccuracy(), location.getElapsedRealtimeNanos())) {
 			lastLocation = new Location(location);
+			// Only a fix that is kept is told: one turned down would tell the last one again,
+			// once for each provider reporting, and have the views move to where they are.
+			updateListeners();
 		}
-		updateListeners();
 	}
 
 	@Override

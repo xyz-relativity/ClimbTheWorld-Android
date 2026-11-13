@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -57,10 +58,16 @@ public class AugmentedRealityScene {
 	private static final double POI_CACHE_EVICTION_MARGIN = 1.5;
 	// Terrain detail only pays off close by, where an elevation error moves things the most.
 	private static final double TERRAIN_DETAIL_DISTANCE_METERS = 1000;
-	// The POIs, and the crags and areas, are loaded again once the observer moves this share of
-	// the view distance, from POI_CACHE_EVICTION_MARGIN times the view distance around them, so
-	// the ones in view are always loaded, see ReloadGuard.
-	private static final double RELOAD_SHARE = 0.25;
+	// The POIs are loaded again once the observer moves this far, see ReloadGuard, from
+	// POI_LOAD_MARGIN_METERS beyond the view distance around them, so the ones in view are
+	// loaded, also while the observer moves on during a load. A load only reads the POIs not
+	// held yet, see DataManager.loadDisplayableNodesBBox.
+	private static final double POI_RELOAD_METERS = 2;
+	private static final double POI_LOAD_MARGIN_METERS = 50;
+	// Crags and areas are loaded again once the observer moves this share of the view distance,
+	// from POI_CACHE_EVICTION_MARGIN times the view distance around them, so the ones in view are
+	// always loaded.
+	private static final double HULL_RELOAD_SHARE = 0.25;
 
 	private final AppCompatActivity activity;
 	private final VirtualCamera camera;
@@ -92,10 +99,15 @@ public class AugmentedRealityScene {
 	private volatile List<RouteRelation> routeRelations = Collections.emptyList();
 	// The nodes the route relations start and end at, whose own pins theirs take the place of.
 	private volatile Set<Long> routeRelationEnds = Collections.emptySet();
-	private final ReloadGuard poisLoaded = new ReloadGuard(RELOAD_SHARE);
-	private final ReloadGuard hullsLoaded = new ReloadGuard(RELOAD_SHARE);
+	private final ReloadGuard poisLoaded = ReloadGuard.afterMeters(POI_RELOAD_METERS);
+	private final ReloadGuard hullsLoaded = ReloadGuard.afterShare(HULL_RELOAD_SHARE);
 	// Where refreshAround was last asked to load around, null before the first time.
 	private Vector4d requestedCenter;
+	// The display filters as of the last draw, and whether each POI tested against them passed.
+	// Testing one takes its tags apart, too much for every POI on every frame, so it is done
+	// once: until the filters change, see readDisplayFilters, or the data may have.
+	private NodeDisplayFilters.Settings displayFilters;
+	private final Map<GeoNode, Boolean> displayFilterResults = new IdentityHashMap<>();
 	private double maxDistance;
 	private boolean useElevation;
 	private boolean showClimbingHulls;
@@ -241,6 +253,31 @@ public class AugmentedRealityScene {
 		showClimbingHulls = configs.getBoolean(Configs.ConfigKey.arClimbingHulls);
 		climbingHullView.setVisibility(showClimbingHulls && shownOnly == null ? View.VISIBLE
 				: View.INVISIBLE);
+		readDisplayFilters();
+	}
+
+	/**
+	 * Takes the display filters as they are set now. What was kept of the POIs passing the ones
+	 * before goes when these filter differently.
+	 */
+	private void readDisplayFilters() {
+		NodeDisplayFilters.Settings filters = NodeDisplayFilters.read(configs);
+		if (!filters.equals(displayFilters)) {
+			displayFilters = filters;
+			displayFilterResults.clear();
+		}
+	}
+
+	/**
+	 * @return whether the POI passes the display filters as of the last draw
+	 */
+	private boolean passesDisplayFilters(GeoNode poi) {
+		Boolean passes = displayFilterResults.get(poi);
+		if (passes == null) {
+			passes = displayFilters.matches(poi);
+			displayFilterResults.put(poi, passes);
+		}
+		return passes;
 	}
 
 	/**
@@ -259,6 +296,7 @@ public class AugmentedRealityScene {
 	public void dataChanged() {
 		poisLoaded.dataChanged();
 		hullsLoaded.dataChanged();
+		displayFilterResults.clear();
 	}
 
 	/**
@@ -356,7 +394,8 @@ public class AugmentedRealityScene {
 	/**
 	 * Loads the POIs, crags, areas and routes around a point, calling onLoaded once more of
 	 * them are. They are only loaded again once the observer moved away from where they were
-	 * loaded, the view distance changed or the data did, see RELOAD_SHARE and dataChanged.
+	 * loaded, the view distance changed or the data did, see POI_RELOAD_METERS,
+	 * HULL_RELOAD_SHARE and dataChanged.
 	 */
 	public void refreshAround(final Vector4d center) {
 		requestedCenter = center;
@@ -365,7 +404,8 @@ public class AugmentedRealityScene {
 	}
 
 	/**
-	 * Loads the POIs around the observer, further than the view distance, see RELOAD_SHARE.
+	 * Loads the POIs around the observer, a little further than the view distance, see
+	 * POI_RELOAD_METERS.
 	 */
 	private void refreshPois(final Vector4d center) {
 		final double distance = maxDistance;
@@ -378,7 +418,7 @@ public class AugmentedRealityScene {
 					@Override
 					protected Boolean doWork() {
 						return offlineDataManager.loadAround(activity.getApplicationContext(),
-								center, distance * POI_CACHE_EVICTION_MARGIN, arPOIs);
+								center, distance + POI_LOAD_MARGIN_METERS, arPOIs);
 					}
 
 					@Override
@@ -396,7 +436,7 @@ public class AugmentedRealityScene {
 
 	/**
 	 * Loads the crag and area relations around the observer, as their hulls, and the numbers of
-	 * the crags' routes, see RELOAD_SHARE.
+	 * the crags' routes, see HULL_RELOAD_SHARE.
 	 */
 	private void refreshHulls(final Vector4d center) {
 		final double distance = maxDistance;
@@ -445,6 +485,8 @@ public class AugmentedRealityScene {
 					@Override
 					protected void thenDoUiRelatedWork(List<ClimbingHull> hulls) {
 						boolean again = hullsLoaded.loaded(center.x, center.y, distance);
+						// The routes and route relations are read anew, and the ones before go.
+						displayFilterResults.clear();
 						Map<String, GeoNode> earlierPins = new HashMap<>();
 						for (ClimbingHull earlier : climbingHulls.getHulls()) {
 							earlierPins.put(earlier.key, earlier.pin);
@@ -563,6 +605,7 @@ public class AugmentedRealityScene {
 					deltaLongitude * POI_CACHE_EVICTION_MARGIN)) {
 				arPOIs.remove(poiID);
 				footElevations.remove(poiID);
+				displayFilterResults.remove(poi);
 			}
 		}
 	}
@@ -611,6 +654,7 @@ public class AugmentedRealityScene {
 		Long seeThrough = seeThroughNodeId;
 		boolean useTerrain = useElevation && eye.onTerrain();
 		double observerElevation = useElevation ? eye.meters() : Double.NaN;
+		readDisplayFilters();
 		updateHulls(useTerrain, observerElevation);
 
 		if (updatingView.tryAcquire()) {
@@ -755,7 +799,7 @@ public class AugmentedRealityScene {
 	private boolean isRouteShown(GeoNode bottom) {
 		return !climbingHulls.isHidden(bottom.getID())
 				&& GeoUtils.calculateDistance(camera, bottom) < maxDistance
-				&& NodeDisplayFilters.matchFilters(configs, bottom);
+				&& passesDisplayFilters(bottom);
 	}
 
 	/**
@@ -783,7 +827,7 @@ public class AugmentedRealityScene {
 	private boolean placeInView(GeoNode poi, boolean filter, boolean useTerrain,
 	                            double observerElevation, double maxViewAngle) {
 		double distance = GeoUtils.calculateDistance(camera, poi);
-		if (distance >= maxDistance || (filter && !NodeDisplayFilters.matchFilters(configs, poi))) {
+		if (distance >= maxDistance || (filter && !passesDisplayFilters(poi))) {
 			return false;
 		}
 

@@ -1,13 +1,15 @@
 package com.climbtheworld.app.augmentedreality;
 
 /**
- * Says when what is loaded around the observer is to be loaded again: once they moved a share of
- * the view distance from where it was loaded, the view distance changed, or the data did. So what
- * is loaded has to reach at least that share beyond the view distance, for all in view to stay
- * loaded in between. One load runs at a time: a request made during it waits for its end.
+ * Says when what is loaded around the observer is to be loaded again: once they moved some way
+ * from where it was loaded, the view distance changed, or the data did. So what is loaded has to
+ * reach at least that far beyond the view distance, for all in view to stay loaded in between.
+ * One load runs at a time: a request made during it waits for its end.
  */
 final class ReloadGuard {
+	// How far the observer moves between two loads: a share of the view distance, plus meters.
 	private final double share;
+	private final double meters;
 	// Where the last load was made around, nowhere before the first and once the data changed.
 	private final LayoutOrigin loadedAround = new LayoutOrigin();
 	private double loadedDistance;
@@ -16,11 +18,23 @@ final class ReloadGuard {
 	private boolean requestWaiting;
 	private boolean changedWhileLoading;
 
+	private ReloadGuard(double share, double meters) {
+		this.share = share;
+		this.meters = meters;
+	}
+
 	/**
 	 * @param share the share of the view distance the observer moves between two loads
 	 */
-	ReloadGuard(double share) {
-		this.share = share;
+	static ReloadGuard afterShare(double share) {
+		return new ReloadGuard(share, 0);
+	}
+
+	/**
+	 * @param meters how far the observer moves between two loads, whatever the view distance
+	 */
+	static ReloadGuard afterMeters(double meters) {
+		return new ReloadGuard(0, meters);
 	}
 
 	/**
@@ -35,7 +49,7 @@ final class ReloadGuard {
 		}
 		// NaN, so not close, while loaded around nowhere.
 		double moved = Math.hypot(loadedAround.eastOf(longitude), loadedAround.northOf(latitude));
-		if (loadedDistance == viewDistance && moved < viewDistance * share) {
+		if (loadedDistance == viewDistance && moved < viewDistance * share + meters) {
 			return false;
 		}
 		loading = true;

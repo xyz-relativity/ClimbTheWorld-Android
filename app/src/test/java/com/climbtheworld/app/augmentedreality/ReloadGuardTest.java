@@ -12,10 +12,11 @@ public class ReloadGuardTest {
 	private static final double LATITUDE = 45;
 	private static final double LONGITUDE = 24;
 	// About 111 km to a degree of latitude.
+	private static final double NORTH_1_METER = 1 / 111_000.0;
 	private static final double NORTH_400_METERS = 400 / 111_000.0;
 	private static final double NORTH_600_METERS = 600 / 111_000.0;
 
-	private final ReloadGuard guard = new ReloadGuard(SHARE);
+	private final ReloadGuard guard = ReloadGuard.afterShare(SHARE);
 
 	@Test
 	public void theFirstRequestLoads() {
@@ -53,6 +54,17 @@ public class ReloadGuardTest {
 		// At 45 degrees north, the 600 m north in degrees are only about 420 m east.
 		assertFalse(guard.request(LATITUDE, LONGITUDE + NORTH_600_METERS, VIEW_DISTANCE));
 		assertTrue(guard.request(LATITUDE, LONGITUDE + 2 * NORTH_600_METERS, VIEW_DISTANCE));
+	}
+
+	@Test
+	public void aGuardInMetersLoadsAgainAfterThemWhateverTheViewDistance() {
+		ReloadGuard afterTwoMeters = ReloadGuard.afterMeters(2);
+		assertTrue(afterTwoMeters.request(LATITUDE, LONGITUDE, VIEW_DISTANCE));
+		afterTwoMeters.loaded(LATITUDE, LONGITUDE, VIEW_DISTANCE);
+
+		assertFalse(afterTwoMeters.request(LATITUDE + NORTH_1_METER, LONGITUDE, VIEW_DISTANCE));
+		assertTrue(afterTwoMeters.request(LATITUDE + 3 * NORTH_1_METER, LONGITUDE,
+				VIEW_DISTANCE));
 	}
 
 	@Test
