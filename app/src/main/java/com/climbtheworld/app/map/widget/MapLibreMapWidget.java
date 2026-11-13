@@ -272,6 +272,9 @@ public class MapLibreMapWidget {
 	private double initialFitRadiusMeters;
 	private boolean initialFitPending;
 	private boolean initialFitWaitingForLayout;
+	// The bounds centerOnBounds is to fit once the map can, null for none.
+	private BoundsFit pendingFit;
+	private boolean pendingFitWaitingForLayout;
 	private MapCoordinate renderedViewConeCenter;
 	private double renderedViewConeHeadingDegrees = Double.NaN;
 	private double renderedViewConeFieldOfViewDegrees;
@@ -550,6 +553,7 @@ public class MapLibreMapWidget {
 			applyCamera(session.camera != null ? session.camera
 					: new MapCameraState(observerLocation, DEFAULT_ZOOM_LEVEL), false);
 			applyInitialFit();
+			applyPendingFit();
 			applyRotationMode();
 			renderMarkers();
 			invalidateData();
@@ -862,13 +866,19 @@ public class MapLibreMapWidget {
 	}
 
 	public void centerOnLocation(MapCoordinate location, double zoom) {
+		centerOn(location, zoom, true);
+	}
+
+	private void centerOn(MapCoordinate location, double zoom, boolean animate) {
+		// The last place asked for wins over bounds still waiting to be fitted.
+		pendingFit = null;
 		tapLocation = location;
 		setFollowObserver(false);
 		if (map == null) {
 			session.camera = new MapCameraState(location, zoom);
 			return;
 		}
-		moveCamera(location, zoom, currentBearing(), true);
+		moveCamera(location, zoom, currentBearing(), animate);
 		if (showTapMarker) {
 			updateTapMarker();
 		}
@@ -876,26 +886,64 @@ public class MapLibreMapWidget {
 
 	/**
 	 * Centers on the bounds and zooms to fit them, with the zoom clamped to [minZoom, maxZoom]
-	 * (e.g. so a relation's label stays visible).
+	 * (e.g. so a relation's label stays visible). While the map opens, before its style and its
+	 * size are known, it shows their center at maxZoom, then fits them once it can.
 	 */
 	public void centerOnBounds(MapBounds bounds, double minZoom, double maxZoom) {
+		if (fitBounds(new BoundsFit(bounds, minZoom, maxZoom), true)) {
+			return;
+		}
+		centerOn(bounds.getCenter(), maxZoom, true);
+		pendingFit = new BoundsFit(bounds, minZoom, maxZoom);
+		pendingFitWaitingForLayout = false;
+		applyPendingFit();
+	}
+
+	/** Fits the bounds waiting since the map opened, see centerOnBounds. */
+	private void applyPendingFit() {
+		if (pendingFit == null || !styleLoaded || map == null) {
+			return;
+		}
+		if (mapView.getWidth() == 0 || mapView.getHeight() == 0) {
+			// As for the initial fit: one retry per fit, once the pending layout pass is done.
+			if (!pendingFitWaitingForLayout) {
+				pendingFitWaitingForLayout = true;
+				mapView.post(this::applyPendingFit);
+			}
+			return;
+		}
+		// Not animated: the map is only just showing.
+		fitBounds(pendingFit, false);
+	}
+
+	/**
+	 * @return whether the map could fit the bounds, which takes its style and its size
+	 */
+	private boolean fitBounds(BoundsFit fit, boolean animate) {
+		if (map == null || !styleLoaded || mapView.getWidth() == 0 || mapView.getHeight() == 0) {
+			return false;
+		}
+		MapBounds bounds = fit.bounds();
 		MapCoordinate center = bounds.getCenter();
-		double zoom = maxZoom;
-		if (map != null && mapView.getWidth() > 0 && mapView.getHeight() > 0) {
-			int padding = Globals.convertDpToPixel(FIT_RADIUS_PADDING_DP).intValue();
-			// MapLibre takes bounds across the antimeridian with the east side past 180.
-			CameraPosition fitted = map.getCameraForLatLngBounds(new LatLngBounds(
-							bounds.getNorth(), bounds.getWest() + bounds.getLongitudeSpan(),
-							bounds.getSouth(), bounds.getWest()),
-					new int[]{padding, padding, padding, padding});
-			if (fitted != null) {
-				zoom = fitted.zoom;
-				if (fitted.target != null) {
-					center = fromLatLng(fitted.target.wrap());
-				}
+		double zoom = fit.maxZoom();
+		int padding = Globals.convertDpToPixel(FIT_RADIUS_PADDING_DP).intValue();
+		// MapLibre takes bounds across the antimeridian with the east side past 180.
+		CameraPosition fitted = map.getCameraForLatLngBounds(new LatLngBounds(
+						bounds.getNorth(), bounds.getWest() + bounds.getLongitudeSpan(),
+						bounds.getSouth(), bounds.getWest()),
+				new int[]{padding, padding, padding, padding});
+		if (fitted != null) {
+			zoom = fitted.zoom;
+			if (fitted.target != null) {
+				center = fromLatLng(fitted.target.wrap());
 			}
 		}
-		centerOnLocation(center, Math.max(minZoom, Math.min(maxZoom, zoom)));
+		centerOn(center, Math.max(fit.minZoom(), Math.min(fit.maxZoom(), zoom)), animate);
+		return true;
+	}
+
+	/** Bounds to fit, with the zoom clamped to [minZoom, maxZoom], see centerOnBounds. */
+	private record BoundsFit(MapBounds bounds, double minZoom, double maxZoom) {
 	}
 
 	/**

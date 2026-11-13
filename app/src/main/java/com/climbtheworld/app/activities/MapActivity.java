@@ -11,6 +11,7 @@ import android.widget.ListPopupWindow;
 import android.widget.SearchView;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.ask.Ask;
@@ -32,6 +33,7 @@ import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.EdgeToEdge;
 import com.climbtheworld.app.utils.views.SearchResultsAdapter;
 import com.climbtheworld.app.utils.views.dialogs.FilterDialogue;
+import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.maplibre.android.MapLibre;
@@ -48,6 +50,8 @@ public class MapActivity extends MapWidgetActivity implements ConfigFragment.OnC
 	private static final int LOCATION_UPDATE = 500;
 	private static final double MAP_CENTER_ON_ZOOM_LEVEL = 24;
 	private static final int SEARCH_DEBOUNCE_MS = 300;
+	// With GeoPoint, the relation to show there, see showOnMap.
+	private static final String EXTRA_RELATION_ID = "relationId";
 	private Configs configs;
 
 	private final DataManager dataManager = new DataManager();
@@ -81,7 +85,12 @@ public class MapActivity extends MapWidgetActivity implements ConfigFragment.OnC
 		if (intent != null && intent.hasExtra("GeoPoint")) {
 			String intentGeoPoint = intent.getStringExtra("GeoPoint");
 			if (intentGeoPoint != null) {
-				centerOnLocation(MapCoordinate.fromDelimitedString(intentGeoPoint));
+				MapCoordinate location = MapCoordinate.fromDelimitedString(intentGeoPoint);
+				// At once, so the map opens there even while a relation's outline loads.
+				centerOnLocation(location);
+				if (intent.hasExtra(EXTRA_RELATION_ID)) {
+					fitOutline(intent.getLongExtra(EXTRA_RELATION_ID, 0), location);
+				}
 			}
 		}
 
@@ -114,10 +123,7 @@ public class MapActivity extends MapWidgetActivity implements ConfigFragment.OnC
 		searchView.setQueryHint(getString(R.string.search));
 
 		searchResultsAdapter = new SearchResultsAdapter(this, searchResults,
-				this::onSearchResultSelected, () -> {
-					searchResultsPopup.dismiss();
-					searchView.clearFocus();
-				});
+				this::onSearchResultSelected, this::closeSearchResults);
 
 		searchResultsPopup = new ListPopupWindow(this);
 		// Anchor to the search bar's container (the space between the FAB columns) so the list is
@@ -207,19 +213,62 @@ public class MapActivity extends MapWidgetActivity implements ConfigFragment.OnC
 		searchResultsBackCallback.setEnabled(true);
 	}
 
+	/**
+	 * A tap on a result opens its info dialog, as in the search page and the cluster list; only
+	 * the show on map buttons move the map, see ClimbingPoiRow and showOnMap. The results stay
+	 * open under the dialog, so closing it brings the user back to them; only the keyboard goes.
+	 */
 	private void onSearchResultSelected(final GeoNode node) {
+		searchView.clearFocus();
+		NodeDialogBuilder.showNodeInfoDialog(this, node);
+	}
+
+	private void closeSearchResults() {
 		searchResultsPopup.dismiss();
 		searchView.clearFocus();
-		if (!OsmEntity.EntityOsmType.relation.name().equals(node.jsonNodeInfo.optString(ClimbingTags.KEY_TYPE))) {
-			centerOnLocation(new MapCoordinate(node.decimalLatitude, node.decimalLongitude, node.elevationMeters));
+	}
+
+	/**
+	 * Shows the POI on the map, the same from every show on map button and menu item, opening the
+	 * map from the other activities: a crag or area mapped as a relation with its outline in
+	 * sight, at a zoom where the map shows its label, anything else centered on, close up.
+	 */
+	public static void showOnMap(AppCompatActivity from, GeoNode poi) {
+		MapCoordinate location = new MapCoordinate(
+				poi.decimalLatitude, poi.decimalLongitude, poi.elevationMeters);
+		boolean relation = OsmEntity.EntityOsmType.relation.name().equals(
+				poi.jsonNodeInfo.optString(ClimbingTags.KEY_TYPE));
+		if (from instanceof MapActivity) {
+			MapActivity map = (MapActivity) from;
+			// The map is what the user asked for, so the search results go, even when the
+			// button is in an info dialog opened from them.
+			map.closeSearchResults();
+			if (relation) {
+				map.fitOutline(poi.osmID, location);
+			} else {
+				map.centerOnLocation(location);
+			}
 			return;
 		}
+		Intent intent = new Intent(from, MapActivity.class);
+		intent.putExtra("GeoPoint", location.toDelimitedString());
+		if (relation) {
+			intent.putExtra(EXTRA_RELATION_ID, poi.osmID);
+		}
+		from.startActivity(intent);
+	}
 
-		// Crags/areas mapped as relations: fit their outline, at a zoom where the map shows its label.
+	/**
+	 * Fits the outline of a crag or area mapped as a relation, at a zoom where the map shows its
+	 * label. Any other relation, such as a multi-pitch route, which that zoom would leave out, or
+	 * one not stored, is centered on at the location.
+	 */
+	private void fitOutline(final long relationId, final MapCoordinate location) {
 		Constants.DB_EXECUTOR.execute(new UiRelatedTask<OsmCollectionEntity>() {
 			@Override
 			protected OsmCollectionEntity doWork() {
-				return dataManager.loadCollection(MapActivity.this, node);
+				return dataManager.loadCollection(MapActivity.this,
+						OsmEntity.EntityOsmType.relation, relationId);
 			}
 
 			@Override
@@ -227,11 +276,14 @@ public class MapActivity extends MapWidgetActivity implements ConfigFragment.OnC
 				if (isFinishing() || isDestroyed()) {
 					return;
 				}
-				if (collection == null) {
-					centerOnLocation(new MapCoordinate(node.decimalLatitude, node.decimalLongitude, node.elevationMeters));
+				boolean isArea = collection != null
+						&& collection.entityClimbingType == OsmEntity.EntityClimbingType.area;
+				boolean isCrag = collection != null
+						&& collection.entityClimbingType == OsmEntity.EntityClimbingType.crag;
+				if (!isArea && !isCrag) {
+					centerOnLocation(location);
 					return;
 				}
-				boolean isArea = collection.entityClimbingType == OsmEntity.EntityClimbingType.area;
 				double minZoom = isArea ? MapZoomLevels.AREA_MIN : MapZoomLevels.CRAG_MIN;
 				// Labels hide at the next detail level, so stay just below it.
 				double maxZoom = (isArea ? MapZoomLevels.CRAG_MIN : MapZoomLevels.POI_AND_ROUTE_MIN) - 0.5;
@@ -270,6 +322,11 @@ public class MapActivity extends MapWidgetActivity implements ConfigFragment.OnC
 		super.onActivityResult(requestCode, resultCode, data);
 		if (requestCode == Constants.OPEN_EDIT_ACTIVITY || requestCode == Constants.OPEN_TOOLS_ACTIVITY) {
 			mapWidget.invalidateData();
+			// E.g. edited from the info dialog of a search result: the results still showing
+			// list what the data holds now.
+			if (searchResultsPopup.isShowing()) {
+				scheduleSearch(searchView.getQuery().toString(), 0);
+			}
 		}
 	}
 

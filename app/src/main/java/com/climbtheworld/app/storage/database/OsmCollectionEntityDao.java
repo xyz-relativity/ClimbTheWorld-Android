@@ -100,7 +100,16 @@ public interface OsmCollectionEntityDao {
 	@Query("SELECT COUNT(*) FROM OsmCollectionEntity WHERE localUpdateState != 'clean'")
 	int countDirty();
 
-	@Query("SELECT COALESCE(MIN(osmID), 0) FROM OsmCollectionEntity")
+	/**
+	 * The smallest ID, 0 without any way or relation: the smaller of the two types' first
+	 * entries in the primary key, see OsmNodeDao.MIN_ID.
+	 */
+	String MIN_ID = "SELECT COALESCE(MIN(smallest), 0) FROM ("
+			+ "SELECT MIN(osmID) AS smallest FROM OsmCollectionEntity WHERE osmType = 'way' "
+			+ "UNION ALL "
+			+ "SELECT MIN(osmID) FROM OsmCollectionEntity WHERE osmType = 'relation')";
+
+	@Query(MIN_ID)
 	long minId();
 
 	@Query("DELETE FROM OsmCollectionEntity WHERE osmType = :osmType AND osmID = :osmID")

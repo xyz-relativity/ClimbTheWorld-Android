@@ -155,7 +155,13 @@ public class DataManager {
 		if (osmType == OsmEntity.EntityOsmType.node) {
 			return null;
 		}
-		return AppDatabase.getInstance(context).osmCollectionDao().find(osmType, poi.osmID);
+		return loadCollection(context, osmType, poi.osmID);
+	}
+
+	/** The way or relation, or null when it is not stored. */
+	public OsmCollectionEntity loadCollection(Context context, OsmEntity.EntityOsmType osmType,
+	                                          long osmId) {
+		return AppDatabase.getInstance(context).osmCollectionDao().find(osmType, osmId);
 	}
 
 	public static String collectionKey(OsmEntity.EntityOsmType osmType, long osmId) {

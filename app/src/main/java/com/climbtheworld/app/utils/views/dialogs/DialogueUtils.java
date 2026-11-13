@@ -74,16 +74,7 @@ public class DialogueUtils {
 							DialogBuilder.closeAllDialogs();
 						} else if (id == R.id.centerLocation) {
 							DialogBuilder.closeAllDialogs();
-							if (activity instanceof MapActivity) {
-								((MapActivity) activity).centerOnLocation(new MapCoordinate(
-										location.decimalLatitude, location.decimalLongitude, location.elevationMeters));
-							} else {
-								intent = new Intent(activity, MapActivity.class);
-								intent.putExtra("GeoPoint", new MapCoordinate(
-										location.decimalLatitude, location.decimalLongitude,
-										location.elevationMeters).toDelimitedString());
-								activity.startActivity(intent);
-							}
+							MapActivity.showOnMap(activity, location);
 						} else if (id == R.id.navigate) {
 							urlFormat = String.format(Locale.getDefault(), "geo:0,0?q=%f,%f (%s)",
 									location.decimalLatitude,
@@ -169,8 +160,9 @@ public class DialogueUtils {
 
 	/**
 	 * Fills in the straight line distance and the compass point from the observer to the POI, and
-	 * sets the button that centers the map on the POI, the same in the info dialogs and in the
-	 * lists of climbing POIs: editDistance, editBearings and showOnMapButton in the view.
+	 * sets the button that shows the POI on the map, see MapActivity.showOnMap, the same in the
+	 * info dialogs and in the lists of climbing POIs: editDistance, editBearings and
+	 * showOnMapButton in the view.
 	 *
 	 * @param closeList closes what the button is in, before the map shows the POI, unless it is a
 	 *                  dialog from getNewDialog, which all close anyway; null for nothing more
@@ -192,15 +184,7 @@ public class DialogueUtils {
 				closeList.run();
 			}
 			DialogBuilder.closeAllDialogs();
-			MapCoordinate location = new MapCoordinate(
-					poi.decimalLatitude, poi.decimalLongitude, poi.elevationMeters);
-			if (parent instanceof MapActivity) {
-				((MapActivity) parent).centerOnLocation(location);
-			} else {
-				Intent intent = new Intent(parent, MapActivity.class);
-				intent.putExtra("GeoPoint", location.toDelimitedString());
-				parent.startActivity(intent);
-			}
+			MapActivity.showOnMap(parent, poi);
 		});
 	}
 }

@@ -22,8 +22,9 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * The queries that read nodes, ways and relations by their IDs find them, and do it through
- * the primary key rather than by reading the whole table, see OsmNodeDao.NODES_BY_ID.
+ * The queries that read nodes, ways and relations by their IDs, or the smallest of their IDs,
+ * find them, and do it through the primary key rather than by reading the whole table, see
+ * OsmNodeDao.NODES_BY_ID.
  */
 @RunWith(RobolectricTestRunner.class)
 public class IdLookupIndexTest {
@@ -79,6 +80,37 @@ public class IdLookupIndexTest {
 		String plan = queryPlan(OsmCollectionEntityDao.COLLECTIONS_BY_ID);
 		assertTrue(plan, plan.contains(
 				"sqlite_autoindex_OsmCollectionEntity_1 (osmType=? AND osmID=?)"));
+	}
+
+	@Test
+	public void theSmallestIdIsFoundAmongNodesAndAmongWaysAndRelations() throws Exception {
+		assertEquals(0, database.osmNodeDao().minId());
+		assertEquals(0, database.osmCollectionDao().minId());
+
+		// The elements made in the app have negative IDs.
+		database.osmNodeDao().insertNodesWithIgnore(Arrays.asList(node(5), node(-3)));
+		database.osmCollectionDao().insertCollectionWithIgnore(Arrays.asList(
+				collection("way", 7), collection("relation", 2), collection("relation", -9)));
+
+		assertEquals(-3, database.osmNodeDao().minId());
+		assertEquals(-9, database.osmCollectionDao().minId());
+	}
+
+	@Test
+	public void theSmallestIdIsFoundAmongWaysAlone() throws Exception {
+		database.osmCollectionDao().insertCollectionWithIgnore(Arrays.asList(
+				collection("way", 7), collection("way", 4)));
+
+		assertEquals(4, database.osmCollectionDao().minId());
+	}
+
+	@Test
+	public void theSmallestIdsAreFoundThroughThePrimaryKey() {
+		String nodes = queryPlan(OsmNodeDao.MIN_ID);
+		assertTrue(nodes, nodes.contains("sqlite_autoindex_OsmNode_1 (osmType=?)"));
+		String collections = queryPlan(OsmCollectionEntityDao.MIN_ID);
+		assertTrue(collections, collections.contains(
+				"sqlite_autoindex_OsmCollectionEntity_1 (osmType=?)"));
 	}
 
 	/**

@@ -45,7 +45,13 @@ public interface OsmNodeDao {
 	@Query("SELECT COUNT(*) FROM OsmNode WHERE localUpdateState != 'clean'")
 	int countDirty();
 
-	@Query("SELECT COALESCE(MIN(osmID), 0) FROM OsmNode")
+	/**
+	 * The smallest ID, 0 without any node. With the type, it is the first entry of the primary
+	 * key, which starts with the type: on the IDs alone, SQLite reads all of it.
+	 */
+	String MIN_ID = "SELECT COALESCE(MIN(osmID), 0) FROM OsmNode WHERE osmType = 'node'";
+
+	@Query(MIN_ID)
 	long minId();
 
 	@Query("DELETE FROM OsmNode WHERE osmType = :osmType AND osmID = :osmID")

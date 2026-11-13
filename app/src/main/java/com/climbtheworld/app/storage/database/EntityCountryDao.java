@@ -12,14 +12,21 @@ public interface EntityCountryDao {
 	@Insert(onConflict = OnConflictStrategy.IGNORE)
 	void insertAll(List<EntityCountry> entities);
 
-	@Query("DELETE FROM EntityCountry WHERE countryIso = :countryIso COLLATE NOCASE")
+	/**
+	 * The rows of a country, whatever the case its code is given in. The codes are stored in
+	 * upper case, see EntityCountry, so the one given is put in upper case too: compared without
+	 * regard to case instead, the index on the codes went unused and every row was read.
+	 */
+	String OF_COUNTRY = "countryIso = UPPER(:countryIso)";
+
+	@Query("DELETE FROM EntityCountry WHERE " + OF_COUNTRY)
 	void deleteForCountry(String countryIso);
 
 	/**
 	 * Like deleteForCountry, but keeps the links of entities changed in the app: a new download
 	 * leaves those entities as they are, and the ones created in the app are not in it.
 	 */
-	@Query("DELETE FROM EntityCountry WHERE countryIso = :countryIso COLLATE NOCASE "
+	@Query("DELETE FROM EntityCountry WHERE " + OF_COUNTRY + " "
 			+ "AND NOT EXISTS (SELECT 1 FROM OsmNode WHERE OsmNode.osmType = EntityCountry.osmType "
 			+ "AND OsmNode.osmID = EntityCountry.osmID AND OsmNode.localUpdateState != 'clean') "
 			+ "AND NOT EXISTS (SELECT 1 FROM OsmCollectionEntity "
@@ -31,7 +38,7 @@ public interface EntityCountryDao {
 	@Query("DELETE FROM EntityCountry WHERE osmType = :osmType AND osmID = :osmID")
 	void deleteForEntity(OsmEntity.EntityOsmType osmType, long osmID);
 
-	@Query("SELECT COUNT(*) FROM EntityCountry WHERE countryIso = :countryIso COLLATE NOCASE")
+	@Query("SELECT COUNT(*) FROM EntityCountry WHERE " + OF_COUNTRY)
 	int countForCountry(String countryIso);
 
 	/** The countries whose download supplied the entity, more than one along a border. */
