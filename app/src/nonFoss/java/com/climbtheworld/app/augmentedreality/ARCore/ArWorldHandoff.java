@@ -53,7 +53,7 @@ final class ArWorldHandoff {
 			return;
 		}
 		Log.i(TAG, "ARCore's world handed over goes untaken");
-		offered.session().close();
+		ArSessionCloser.close(offered.session());
 		offered = null;
 	}
 

@@ -690,7 +690,8 @@ class ArCoreSession {
 			handOver();
 		}
 		if (session != null) {
-			session.close();
+			// Paused by now, see apply. Off the UI thread, as it can take seconds.
+			ArSessionCloser.close(session);
 			session = null;
 		}
 	}
@@ -874,7 +875,7 @@ class ArCoreSession {
 			// ARCore is installed then.
 			ArWorldHandoff.World handed = ArWorldHandoff.take();
 			if (handed != null && !handed.depth() && depthRequired) {
-				handed.session().close();
+				ArSessionCloser.close(handed.session());
 				handed = null;
 			}
 			if (handed != null) {
@@ -903,7 +904,7 @@ class ArCoreSession {
 				// The cursor is placed on the depth ARCore measures, where it can.
 				boolean depth = created.isDepthModeSupported(Config.DepthMode.AUTOMATIC);
 				if (!depth && depthRequired) {
-					created.close();
+					ArSessionCloser.close(created);
 					host.onFailed(Failure.NO_DEPTH);
 					return;
 				}

@@ -48,7 +48,7 @@ public class TerrainWireframeTest {
 		// Ground rising with the distance, the same along every ray.
 		TerrainWireframe wireframe =
 				new TerrainWireframe((latitude, longitude, distance) -> 100 + 0.3 * distance);
-		wireframe.update(LATITUDE, LONGITUDE, 0);
+		wireframe.update(LATITUDE, LONGITUDE, 0, 0);
 		double eyeElevation = 101.5;
 
 		double[][] cameras = {{0, 0}, {37, 10}, {200, -25}};
@@ -84,7 +84,7 @@ public class TerrainWireframeTest {
 	@Test
 	public void flatGroundIsBelowTheHorizonUpToTheSkyline() {
 		TerrainWireframe wireframe = new TerrainWireframe((latitude, longitude, distance) -> 100);
-		wireframe.update(LATITUDE, LONGITUDE, 0);
+		wireframe.update(LATITUDE, LONGITUDE, 0, 0);
 		project(wireframe, LATITUDE, 101.5, 0, 0);
 
 		double previousY = Double.POSITIVE_INFINITY;
@@ -106,7 +106,7 @@ public class TerrainWireframeTest {
 	public void ridgeHidesTheGroundBehindIt() {
 		TerrainWireframe wireframe = new TerrainWireframe((latitude, longitude, distance) ->
 				distance > 100 && distance < 130 ? 150 : 100);
-		wireframe.update(LATITUDE, LONGITUDE, 0);
+		wireframe.update(LATITUDE, LONGITUDE, 0, 0);
 		project(wireframe, LATITUDE, 101.5, 0, 0);
 
 		int firstRidgeRing = -1;
@@ -134,7 +134,7 @@ public class TerrainWireframeTest {
 		TerrainWireframe wireframe = new TerrainWireframe((latitude, longitude, distance) ->
 				distance > 100 && distance < 130 ? 150
 						: distance > 1000 ? 100 + 2 * (distance - 1000) : 100);
-		wireframe.update(LATITUDE, LONGITUDE, 0);
+		wireframe.update(LATITUDE, LONGITUDE, 0, 0);
 		project(wireframe, LATITUDE, 101.5, 0, 0);
 
 		int ridge = sampleIndex(0, firstRingBeyond(100));
@@ -155,10 +155,10 @@ public class TerrainWireframeTest {
 	@Test
 	public void farTerrainStaysPutBetweenSamplings() {
 		TerrainWireframe wireframe = new TerrainWireframe((latitude, longitude, distance) -> 100);
-		wireframe.update(LATITUDE, LONGITUDE, 0);
+		wireframe.update(LATITUDE, LONGITUDE, 0, 0);
 		// Sixty centimeters north, which is not enough to sample the terrain again.
 		double latitude = LATITUDE + 0.6 / METERS_PER_DEGREE;
-		assertFalse(wireframe.update(latitude, LONGITUDE, 0));
+		assertFalse(wireframe.update(latitude, LONGITUDE, 0, 0));
 		project(wireframe, latitude, 101.5, 0, 0);
 
 		int ring = firstRingBeyond(100);
@@ -173,7 +173,7 @@ public class TerrainWireframeTest {
 	@Test
 	public void reachesTheFeet() {
 		TerrainWireframe wireframe = new TerrainWireframe((latitude, longitude, distance) -> 100);
-		wireframe.update(LATITUDE, LONGITUDE, 0);
+		wireframe.update(LATITUDE, LONGITUDE, 0, 0);
 		// Looking down, the bottom of the view is about 1.3 meters ahead of the feet.
 		project(wireframe, LATITUDE, 101.5, 0, -10);
 
@@ -190,14 +190,14 @@ public class TerrainWireframeTest {
 		// Falling southwards as steep as it rises, 45 degrees.
 		TerrainWireframe wireframe = new TerrainWireframe((latitude, longitude, distance) ->
 				100 + (latitude - LATITUDE) * METERS_PER_DEGREE);
-		wireframe.update(LATITUDE, LONGITUDE, 0);
+		wireframe.update(LATITUDE, LONGITUDE, 0, 0);
 
 		// Facing downhill and looking down, nearly a meter behind the centre, where the rays
 		// meet, then nearly a meter past it.
 		int ray = RAY_COUNT / 2;
 		for (double north : new double[]{0.95, -0.95}) {
 			double latitude = LATITUDE + north / METERS_PER_DEGREE;
-			assertFalse(wireframe.update(latitude, LONGITUDE, 0));
+			assertFalse(wireframe.update(latitude, LONGITUDE, 0, 0));
 			double eyeElevation = 100 + north + EYE_HEIGHT;
 			project(wireframe, latitude, eyeElevation, 180, -45);
 
@@ -223,7 +223,7 @@ public class TerrainWireframeTest {
 	}
 
 	@Test
-	public void samplesAgainWhenMovedOrWhileLoading() {
+	public void samplesAgainWhenMovedOrOnceMoreTerrainLoaded() {
 		int[] calls = {0};
 		boolean[] loaded = {false};
 		TerrainWireframe wireframe = new TerrainWireframe((latitude, longitude, distance) -> {
@@ -231,15 +231,42 @@ public class TerrainWireframeTest {
 			return loaded[0] || distance < 1000 ? 100 : Double.NaN;
 		});
 
-		assertTrue("First sampling", wireframe.update(LATITUDE, LONGITUDE, 0));
+		assertTrue("First sampling", wireframe.update(LATITUDE, LONGITUDE, 1, 0));
 		// Every ring of every ray, and the centre.
 		assertEquals((long) RAY_COUNT * RING_COUNT + 1, calls[0]);
-		assertFalse("Still loading, but just sampled", wireframe.update(LATITUDE, LONGITUDE, 500));
-		assertTrue("Still loading", wireframe.update(LATITUDE, LONGITUDE, 1000));
+		assertFalse("Still loading, with nothing more loaded",
+				wireframe.update(LATITUDE, LONGITUDE, 1, 5000));
 
+		// The far terrain loaded, which changes the terrain's version.
 		loaded[0] = true;
-		assertTrue(wireframe.update(LATITUDE, LONGITUDE, 2000));
-		assertFalse("Loaded", wireframe.update(LATITUDE, LONGITUDE, 5000));
-		assertTrue("Moved", wireframe.update(LATITUDE + 10 / METERS_PER_DEGREE, LONGITUDE, 5001));
+		assertFalse("More loaded, but just sampled", wireframe.update(LATITUDE, LONGITUDE, 2,
+				TerrainWireframe.TERRAIN_RESAMPLE_DELAY_MS - 1));
+		assertTrue("More loaded", wireframe.update(LATITUDE, LONGITUDE, 2, 6000));
+		assertFalse("Loaded", wireframe.update(LATITUDE, LONGITUDE, 2, 600_000));
+		assertTrue("More detail loaded", wireframe.update(LATITUDE, LONGITUDE, 3, 600_000));
+		assertTrue("Moved",
+				wireframe.update(LATITUDE + 10 / METERS_PER_DEGREE, LONGITUDE, 3, 600_001));
+	}
+
+	@Test
+	public void asksAgainNowAndThenWhileSomeTerrainIsMissing() {
+		int[] calls = {0};
+		// The far terrain never loads, as without a network.
+		TerrainWireframe wireframe = new TerrainWireframe((latitude, longitude, distance) -> {
+			calls[0]++;
+			return distance < 1000 ? 100 : Double.NaN;
+		});
+		assertTrue(wireframe.update(LATITUDE, LONGITUDE, 1, 0));
+		int perSampling = calls[0];
+
+		// A minute of frames, 50 a second.
+		for (long millis = 20; millis <= 60_000; millis += 20) {
+			wireframe.update(LATITUDE, LONGITUDE, 1, millis);
+		}
+
+		// Before, it was sampled again every second: 60 times over.
+		assertEquals("Sampled again every " + TerrainWireframe.MISSING_RETRY_DELAY_MS + " ms",
+				perSampling * (1 + 60_000 / TerrainWireframe.MISSING_RETRY_DELAY_MS),
+				(long) calls[0]);
 	}
 }

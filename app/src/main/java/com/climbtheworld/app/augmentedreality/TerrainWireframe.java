@@ -32,8 +32,14 @@ public class TerrainWireframe {
 	// with every sampling. The far rings are seen from about the observer, so they stay on the
 	// terrain they show. Half way at this distance.
 	private static final double VIEWPOINT_HALFWAY_METERS = 5;
-	// How often the terrain is sampled again while some of it is still loading.
-	private static final long RETRY_DELAY_MS = 1000;
+	// The terrain is sampled again once more of it loaded, this long after the last sampling at
+	// the soonest, as its tiles come in one after the other.
+	static final long TERRAIN_RESAMPLE_DELAY_MS = 1000;
+	// While some of it is missing, it is also sampled again this often with nothing more loaded:
+	// asking again for a tile that could not be fetched is what has it fetched again, in time.
+	// Sampling it every second for that kept the view busy for as long as a tile was missing,
+	// which without a network is for good.
+	static final long MISSING_RETRY_DELAY_MS = 15_000;
 	// The share of the Earth curvature that light bending through the atmosphere makes up for.
 	private static final double REFRACTION = 0.13;
 	// Terrain only just below what hides it, like flat ground, is kept, so it does not flicker.
@@ -80,6 +86,8 @@ public class TerrainWireframe {
 	private double centreElevation = Double.NaN;
 	private boolean complete;
 	private long sampledAtMillis;
+	// The version of the terrain as of the last sampling, see update.
+	private int terrainVersion;
 	// The camera of the last projection, see toScreen.
 	private double sinAzimuth;
 	private double cosAzimuth;
@@ -109,16 +117,23 @@ public class TerrainWireframe {
 	}
 
 	/**
-	 * Samples the terrain again when the observer moved away from the centre of the samples, or
-	 * while some of it is still loading.
+	 * Samples the terrain again when the observer moved away from the centre of the samples,
+	 * once more of the terrain loaded, and now and then while some of it is missing, see
+	 * MISSING_RETRY_DELAY_MS.
 	 *
+	 * @param terrainVersion changes whenever the elevations may have changed
 	 * @return whether the terrain was sampled again
 	 */
-	public boolean update(double latitude, double longitude, long nowMillis) {
+	public boolean update(double latitude, double longitude, int terrainVersion,
+	                      long nowMillis) {
 		boolean moved = Double.isNaN(centreLatitude)
 				|| Math.hypot(eastOfCentre(longitude), northOfCentre(latitude))
 				> RECENTRE_DISTANCE_METERS;
-		if (!moved && (complete || nowMillis - sampledAtMillis < RETRY_DELAY_MS)) {
+		long sinceSampled = nowMillis - sampledAtMillis;
+		boolean terrainChanged = terrainVersion != this.terrainVersion
+				&& sinceSampled >= TERRAIN_RESAMPLE_DELAY_MS;
+		boolean retry = !complete && sinceSampled >= MISSING_RETRY_DELAY_MS;
+		if (!moved && !terrainChanged && !retry) {
 			return false;
 		}
 
@@ -127,6 +142,7 @@ public class TerrainWireframe {
 			centreLongitude = longitude;
 		}
 		sample();
+		this.terrainVersion = terrainVersion;
 		sampledAtMillis = nowMillis;
 		return true;
 	}

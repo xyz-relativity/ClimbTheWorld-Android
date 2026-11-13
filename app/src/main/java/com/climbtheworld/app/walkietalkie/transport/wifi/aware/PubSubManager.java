@@ -345,7 +345,10 @@ public class PubSubManager {
 
 						cancelPeerRecovery(peerHandle);
 						Log.d(TAG, "Network available. Is Publisher:" + isPublisher);
-						connectivityManager.bindProcessToNetwork(network);
+						// Only the sockets to the peer go through its network, see
+						// setupUdpSocketsForPeer. The whole app is not bound to it: the network
+						// only reaches the peer, so the map tiles, the downloads and the uploads
+						// would find no internet for as long as a peer is connected.
 						peerNetworks.put(peerHandle, network);
 						setupUdpSocketsForPeer(peerHandle, network);
 					}
@@ -542,7 +545,6 @@ public class PubSubManager {
 			}
 		}
 		if (peerSendSockets.isEmpty()) {
-			connectivityManager.bindProcessToNetwork(null);
 			stopReceiverEngine();
 			wifiAwareTransport.onDataPathStatusChanged(this, false);
 		}

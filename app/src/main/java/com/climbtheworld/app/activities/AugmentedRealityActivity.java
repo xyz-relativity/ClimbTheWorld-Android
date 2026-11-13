@@ -629,7 +629,8 @@ public class AugmentedRealityActivity extends MapWidgetActivity
 		if (showTerrain) {
 			double latitude = Globals.virtualCamera.decimalLatitude;
 			double longitude = Globals.virtualCamera.decimalLongitude;
-			terrainWireframe.update(latitude, longitude, SystemClock.elapsedRealtime());
+			terrainWireframe.update(latitude, longitude,
+					scene.getTerrainElevation().getVersion(), SystemClock.elapsedRealtime());
 			terrainWireframeView.show(terrainWireframe, latitude, longitude, eyeElevation,
 					AugmentedRealityScene.EYE_HEIGHT_METERS, scene.getViewManager().getViewSize());
 		}
