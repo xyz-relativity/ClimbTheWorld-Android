@@ -271,6 +271,7 @@ public class ArPlacementController implements ArPlacement {
 	@Override
 	public void onDestroy() {
 		arCore.onDestroy();
+		scene.onDestroy();
 	}
 
 	/**

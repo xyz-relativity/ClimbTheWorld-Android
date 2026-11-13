@@ -383,6 +383,7 @@ public class AugmentedRealityActivity extends MapWidgetActivity
 	@Override
 	public void onDestroy() {
 		arCore.onDestroy();
+		scene.onDestroy();
 		for (AlertDialog startupDialog : startupDialogs) {
 			startupDialog.dismiss();
 		}

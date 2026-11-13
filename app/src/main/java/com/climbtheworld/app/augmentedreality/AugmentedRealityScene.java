@@ -119,8 +119,12 @@ public class AugmentedRealityScene {
 	private Long seeThroughNodeId;
 	// A node whose pin is left out, null for none.
 	private Long leftOutNodeId;
+	// Whether the shared terrain was given back, see onDestroy.
+	private boolean destroyed;
 
 	/**
+	 * Whoever builds a scene calls its {@link #onDestroy} when its screen is destroyed.
+	 *
 	 * @param container the view the scene draws in, holding a ClimbingHullView climbingHulls and a
 	 *                  RouteLineView routeLines, in a RelativeLayout; it is grown to stay over the
 	 *                  view as it turns with the camera's roll, see rotateWithCamera
@@ -132,7 +136,8 @@ public class AugmentedRealityScene {
 		this.camera = camera;
 		this.configs = Configs.instance(activity);
 		this.onLoaded = onLoaded;
-		this.terrainElevation = new TerrainElevation(activity);
+		// Shared with the other scenes alive, and with the next one, see onDestroy.
+		this.terrainElevation = TerrainElevation.acquireShared(activity);
 		this.arViewManager = new AugmentedRealityViewManager(container, camera);
 		this.climbingHullView = container.findViewById(R.id.climbingHulls);
 		this.routeLineView = container.findViewById(R.id.routeLines);
@@ -204,6 +209,18 @@ public class AugmentedRealityScene {
 			return Math.toDegrees(Math.atan2(-EYE_HEIGHT_METERS, distance));
 		}
 		return GeoUtils.calculateElevationAngle(observerElevation, poiElevation, distance);
+	}
+
+	/**
+	 * To be called when the screen of the scene is destroyed. The scenes share the terrain, whose
+	 * tiles are only let go of once every scene gave it back, see TerrainElevation.acquireShared.
+	 */
+	public void onDestroy() {
+		// Once only, as each scene took it once.
+		if (!destroyed) {
+			destroyed = true;
+			TerrainElevation.releaseShared();
+		}
 	}
 
 	public AugmentedRealityViewManager getViewManager() {

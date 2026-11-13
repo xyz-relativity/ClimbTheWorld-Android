@@ -1,8 +1,12 @@
 package com.climbtheworld.app.storage;
 
+import android.content.ComponentCallbacks2;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.SystemClock;
 import android.util.Log;
 
@@ -15,11 +19,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import needle.UiRelatedTask;
@@ -32,6 +31,9 @@ import okhttp3.Response;
  * covering the world at zoom 12 (about 30 m) and some regions in more detail. Tiles are fetched
  * in the background and cached on disk, so lookups never block; they return NaN until the tile
  * is there.
+ * <p>
+ * The A.R. screens share one, see {@link #acquireShared}, so that they hold the decoded tiles
+ * once, and a screen finds the ones the screen before it loaded.
  * <p>
  * Prototype: not tied into the offline downloads yet. Only to be used from the main thread.
  */
@@ -48,7 +50,6 @@ public class TerrainElevation {
 	public static final int TILE_SIZE = 512;
 	private static final String TAG = TerrainElevation.class.getSimpleName();
 	private static final long TILE_TIMEOUT_SECONDS = 20;
-	private static final long RETRY_DELAY_MS = 60_000;
 	// Each decoded tile takes 1 MB. The AR terrain wireframe reads all around the observer, which
 	// takes up to about 13 tiles at mid latitudes and 20 near the polar circles, where the tiles
 	// cover less ground; fewer than it needs would keep evicting and reloading them.
@@ -62,29 +63,85 @@ public class TerrainElevation {
 	// How many of the directions lowest at FOOT_NEAR_METERS are weighed, see footElevation.
 	private static final int FOOT_LOWEST_DIRECTIONS = 3;
 	private static final double METERS_PER_DEGREE = GeoUtils.EARTH_RADIUS_M * Math.PI / 180;
+	// How long after the last A.R. screen is gone the shared tiles are let go of. Long enough for
+	// the next screen to take over, as when the A.R. view restarts itself or the user switches
+	// to the map and back, and short enough for the memory to be back soon after.
+	private static final long SHARED_RELEASE_DELAY_MS = 10_000;
+	// The one the A.R. screens share, see acquireShared. It lives as long as the app, so it
+	// holds on to nothing of the screens, and to no tiles once they are gone.
+	private static TerrainElevation shared;
+	private static UseCount sharedUse;
 	private final File cacheDirectory;
 	private final OkHttpClient httpClient;
-	private final Map<Long, float[]> tiles =
-			new LinkedHashMap<Long, float[]>(MAX_CACHED_TILES, 0.75f, true) {
-				@Override
-				protected boolean removeEldestEntry(Map.Entry<Long, float[]> eldest) {
-					return size() > MAX_CACHED_TILES;
-				}
-			};
-	private final Set<Long> loadingTiles = new HashSet<>();
-	// Tiles that do not exist at their zoom, as the detailed data does not cover them.
-	private final Set<Long> missingTiles = new HashSet<>();
-	// Tiles that could not be fetched, by when, to retry them later.
-	private final Map<Long, Long> failedTiles = new HashMap<>();
-	// Changes whenever a tile loads or turns out to be missing, which can change lookups.
-	private int version;
+	private final TerrainTiles tiles =
+			new TerrainTiles(MAX_CACHED_TILES, SystemClock::elapsedRealtime);
 
-	public TerrainElevation(Context context) {
+	private TerrainElevation(Context context) {
 		cacheDirectory = new File(context.getCacheDir(), "terrain");
 		httpClient = new OkHttpClient.Builder()
 				.connectTimeout(TILE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
 				.readTimeout(TILE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
 				.build();
+	}
+
+	/**
+	 * The terrain all the A.R. screens share, to be given back with {@link #releaseShared} once
+	 * the screen is destroyed. Its tiles are let go of a while after the last screen gave it
+	 * back, and when the app is in the background and Android asks for memory; they load again
+	 * when looked up. To be called from the main thread.
+	 *
+	 * @param context any: only the application's is used, for the cache directory
+	 */
+	public static TerrainElevation acquireShared(Context context) {
+		if (shared == null) {
+			Context application = context.getApplicationContext();
+			TerrainElevation terrain = new TerrainElevation(application);
+			Handler handler = new Handler(Looper.getMainLooper());
+			sharedUse = new UseCount(new UseCount.Timer() {
+				@Override
+				public void schedule(Runnable task, long delayMillis) {
+					handler.postDelayed(task, delayMillis);
+				}
+
+				@Override
+				public void cancel(Runnable task) {
+					handler.removeCallbacks(task);
+				}
+			}, SHARED_RELEASE_DELAY_MS, terrain.tiles::release);
+			application.registerComponentCallbacks(new ComponentCallbacks2() {
+				@Override
+				public void onTrimMemory(int level) {
+					// Only once the app is among the cached ones, which are asked to give up
+					// what is quickly built again: no A.R. screen shows then. With one in front,
+					// its tiles would be read again at once, and what it draws would jump.
+					if (level >= TRIM_MEMORY_BACKGROUND) {
+						terrain.tiles.release();
+					}
+				}
+
+				@Override
+				public void onConfigurationChanged(Configuration newConfig) {
+				}
+
+				@Override
+				public void onLowMemory() {
+					// May come with an A.R. screen in front, see onTrimMemory.
+				}
+			});
+			shared = terrain;
+		}
+		sharedUse.acquire();
+		return shared;
+	}
+
+	/**
+	 * Gives back the terrain taken with {@link #acquireShared}, once for each time it was taken.
+	 * To be called from the main thread.
+	 */
+	public static void releaseShared() {
+		if (sharedUse != null) {
+			sharedUse.release();
+		}
 	}
 
 	private static float[] decode(byte[] data) {
@@ -252,7 +309,7 @@ public class TerrainElevation {
 	 * @return a number that changes whenever lookups may return something else than before
 	 */
 	public int getVersion() {
-		return version;
+		return tiles.getVersion();
 	}
 
 	private double sample(double latitude, double longitude, int zoom) {
@@ -270,20 +327,15 @@ public class TerrainElevation {
 	private float[] getTile(int zoom, int x, int y) {
 		long key = tileKey(zoom, x, y);
 		float[] tile = tiles.get(key);
-		if (tile != null || loadingTiles.contains(key) || missingTiles.contains(key)) {
-			return tile;
+		if (tile == null && tiles.startLoading(key)) {
+			loadTile(zoom, x, y, key);
 		}
-		Long failedAt = failedTiles.get(key);
-		if (failedAt != null && SystemClock.elapsedRealtime() - failedAt < RETRY_DELAY_MS) {
-			return null;
-		}
-
-		loadTile(zoom, x, y, key);
-		return null;
+		return tile;
 	}
 
 	private void loadTile(int zoom, int x, int y, long key) {
-		loadingTiles.add(key);
+		// The tiles may be let go of before the fetch is back, see TerrainTiles.release.
+		int generation = tiles.getGeneration();
 		Constants.WEB_EXECUTOR.execute(new UiRelatedTask<LoadedTile>() {
 			@Override
 			protected LoadedTile doWork() {
@@ -292,16 +344,12 @@ public class TerrainElevation {
 
 			@Override
 			protected void thenDoUiRelatedWork(LoadedTile result) {
-				loadingTiles.remove(key);
 				if (result == null) {
-					failedTiles.put(key, SystemClock.elapsedRealtime());
+					tiles.failed(key, generation);
 				} else if (result.elevations == null) {
-					missingTiles.add(key);
-					version++;
+					tiles.missing(key, generation);
 				} else {
-					failedTiles.remove(key);
-					tiles.put(key, result.elevations);
-					version++;
+					tiles.loaded(key, generation, result.elevations);
 				}
 			}
 		});

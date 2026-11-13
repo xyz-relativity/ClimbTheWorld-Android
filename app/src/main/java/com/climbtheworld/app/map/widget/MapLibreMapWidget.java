@@ -114,6 +114,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
 import needle.UiRelatedTask;
@@ -306,6 +307,11 @@ public class MapLibreMapWidget {
 	private LatLng renderedCenter;
 	private boolean renderedPoisCapped;
 	private boolean styleLoaded;
+	// Set by onDestroy, which also leaves the widget without a map or a style, as it was before
+	// its map was ready: whatever reaches it late (a posted fit, a sensor reading, a call from
+	// the activity) then finds nothing to draw on. Checked only where that is not enough: where
+	// the map or its style would be set again, and where a listener has the map it was added to.
+	private boolean destroyed;
 	private MapLibreMap.CancelableCallback buttonAnimation;
 	private RotationMode rotationMode;
 
@@ -375,6 +381,9 @@ public class MapLibreMapWidget {
 	}
 
 	private void onMapReady(MapLibreMap map) {
+		if (destroyed) {
+			return;
+		}
 		this.map = map;
 		map.getUiSettings().setCompassEnabled(false);
 		map.getUiSettings().setLogoEnabled(false);
@@ -386,6 +395,11 @@ public class MapLibreMapWidget {
 		map.getGesturesManager().getRotateGestureDetector()
 				.setAngleThreshold(MANUAL_ROTATION_DEADBAND_DEGREES);
 		map.addOnMapClickListener(point -> {
+			// A tap is only told once it cannot be a double tap, which can be after the screen
+			// closed.
+			if (destroyed) {
+				return false;
+			}
 			PointF screenPoint = map.getProjection().toScreenLocation(point);
 			if (onClusterClick(screenPoint)) {
 				return true;
@@ -536,6 +550,9 @@ public class MapLibreMapWidget {
 				MapStyleRegistry.getStyle(configs.getString(Configs.ConfigKey.mapStyleId));
 		loadedStyleId = style.getId();
 		map.setStyle(style.getStyleUrl(), loadedStyle -> {
+			if (destroyed) {
+				return;
+			}
 			styleLoaded = true;
 			registeredPoiImages.clear();
 			registeredHeadingAccuracyImages.clear();
@@ -1007,10 +1024,20 @@ public class MapLibreMapWidget {
 				CachedDataManager data = new CachedDataManager();
 				List<ClimbingGeometryBuilder.GeometrySpec> climbingGeometry =
 						climbingGeometryBuilder.load(parent, loadBounds, data);
+				// A cancelled load stops at its next step, so that the load replacing it, or the
+				// map of the next screen, gets the map thread sooner. What it returns is dropped,
+				// see UiRelatedTask, and what it leaves half loaded is loaded again by the load
+				// replacing it, or left as it is once the map is destroyed.
+				if (isCanceled()) {
+					return false;
+				}
 				boolean loaded = data.loadDisplayableNodesBBox(parent, loadBounds, visiblePois);
 				if (!isCanceled()) {
 					List<RouteRelation> routeRelations =
 							RouteRelation.load(parent, loadBounds, data);
+					if (isCanceled()) {
+						return false;
+					}
 					for (RouteRelation routeRelation : routeRelations) {
 						addRouteRelation(visiblePois, routeRelation);
 					}
@@ -1021,6 +1048,9 @@ public class MapLibreMapWidget {
 					// Pins only show close in, and numbering every crag of a wide view is costly.
 					Map<Long, Integer> routeNumbers = visibleZoom >= MapZoomLevels.CRAG_MIN
 							? RouteNumbers.load(parent, loadBounds, data) : Collections.emptyMap();
+					if (isCanceled()) {
+						return false;
+					}
 					for (DisplayableGeoNode poi : visiblePois.values()) {
 						// Only nodes take route numbers. A way's negative marker ID is not enough
 						// to tell, as nodes created in the app have negative IDs too.
@@ -1043,7 +1073,7 @@ public class MapLibreMapWidget {
 					zoomLevels.add(MapZoomLevels.POI_AND_ROUTE_MIN);
 					zoomLevels.add(MapZoomLevels.AREA_MIN);
 					displayZoomLevels = zoomLevels;
-					prepareClimbingGeometry(visibleZoom);
+					prepareClimbingGeometry(visibleZoom, this::isCanceled);
 				}
 				return loaded || visiblePois.isEmpty() || isCanceled();
 			}
@@ -1067,7 +1097,7 @@ public class MapLibreMapWidget {
 		updateTask = new UiRelatedTask<Boolean>() {
 			@Override
 			protected Boolean doWork() {
-				prepareClimbingGeometry(visibleZoom);
+				prepareClimbingGeometry(visibleZoom, this::isCanceled);
 				return !isCanceled();
 			}
 
@@ -1082,16 +1112,28 @@ public class MapLibreMapWidget {
 	/**
 	 * Builds what the layers draw of the loaded climbing geometry and POIs at the zoom. Runs off
 	 * the UI thread, after the data is loaded.
+	 *
+	 * @param canceled whether the task building it is cancelled: it then stops at the next layer,
+	 *                 as nothing of it is drawn, see invalidateData
 	 */
-	private void prepareClimbingGeometry(double zoom) {
+	private void prepareClimbingGeometry(double zoom, BooleanSupplier canceled) {
 		pendingClimbingZoom = zoom;
 		pendingHullGeoJson = climbingGeometryBuilder.buildHullGeoJson(
 				pendingClimbingGeometry, zoom);
+		if (canceled.getAsBoolean()) {
+			return;
+		}
 		pendingHullLabelFeatures = climbingGeometryBuilder.buildHullLabelFeatures(
 				pendingClimbingGeometry, zoom);
+		if (canceled.getAsBoolean()) {
+			return;
+		}
 		pendingWayGeoJson = climbingGeometryBuilder.buildWayGeoJson(
 				pendingClimbingGeometry, zoom,
 				geometry -> isRouteGhost(geometry, loadedPitchRoutes));
+		if (canceled.getAsBoolean()) {
+			return;
+		}
 		pendingClusterGeoJson = buildClusterGeoJson(zoom);
 	}
 
@@ -2048,7 +2090,23 @@ public class MapLibreMapWidget {
 		mapView.onLowMemory();
 	}
 
+	/**
+	 * Leaves the widget without a map, for good: nothing is drawn or moved from here on. The
+	 * tasks still queued or running are cancelled, so that they give the map thread, which every
+	 * map shares, to the next screen's map, and draw nothing on this one: a cancelled task that
+	 * has not started does no work, one that has stops at its next step, and neither comes back
+	 * to the UI thread, see UiRelatedTask.
+	 */
 	public void onDestroy() {
+		destroyed = true;
+		map = null;
+		styleLoaded = false;
+		if (updateTask != null) {
+			updateTask.cancel();
+		}
+		if (markerTask != null) {
+			markerTask.cancel();
+		}
 		mapView.onDestroy();
 	}
 
