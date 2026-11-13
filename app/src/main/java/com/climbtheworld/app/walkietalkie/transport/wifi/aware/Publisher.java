@@ -79,7 +79,10 @@ public class Publisher {
 			protected void onMessage(PeerHandle peerHandle, TransportMessage transportMessage) {
 				switch (transportMessage.command) {
 					case INSTANCE:
-						PubSubID subscriber = transportMessage.toPubSubID(0);
+						// Only the subscribing side measures the distance: this side has none
+						// for the peer, and 0 would be shown as a measured one.
+						PubSubID subscriber =
+								transportMessage.toPubSubID(PubSubID.UNKNOWN_DISTANCE);
 						if (subscriber == null) {
 							Log.w(TAG, "Ignoring malformed instance message.");
 							break;

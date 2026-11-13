@@ -17,6 +17,8 @@ import java.util.Map;
 public class Subscriber {
 	private static final String TAG = Subscriber.class.getSimpleName();
 	private final PubSubManager manager;
+	// With the callsign each publisher was discovered with, and the distance measured to it. The
+	// callsign a peer has now is the registry's, see PeerRegistry#register.
 	private final ObservableHashMap<PeerHandle, PubSubID> publishers = new ObservableHashMap<>();
 	private SubscribeDiscoverySession subscribeSession;
 	private ReliableMessageSender<PeerHandle, TransportMessage.Command> messageSender;

@@ -3,6 +3,7 @@ package com.climbtheworld.app.walkietalkie.transport.wifi.aware;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -164,6 +165,117 @@ public class PeerRegistryTest {
 		assertEquals(new HashSet<>(Arrays.asList(PEER, OTHER_PEER)), new HashSet<>(lostPeers));
 		assertNull(registry.getUUID("sub"));
 		assertTrue(registry.lose("other").lostPeers.isEmpty());
+	}
+
+	@Test
+	public void registeredPeerIsTheOneReported() {
+		PeerRegistry<String> registry = new PeerRegistry<>();
+
+		assertSame(PEER, registry.register(PeerRegistry.Role.SUBSCRIBE, "sub", PEER).peer);
+		assertNull(registry.lose("sub").peer);
+	}
+
+	@Test
+	public void distanceAfterACallsignChangeKeepsTheNewCallsign() {
+		PeerRegistry<String> registry = new PeerRegistry<>();
+		UUID uuid = UUID.randomUUID();
+		registry.register(PeerRegistry.Role.SUBSCRIBE, "sub", new PubSubID(uuid, "old", -1));
+
+		// The peer says its new callsign in a message to our publisher.
+		PeerRegistry.Change<String> change =
+				registry.register(PeerRegistry.Role.PUBLISH, "pub", new PubSubID(uuid, "new", -1));
+		assertEquals("new", change.peer.callsign);
+
+		// Our subscriber then measures the distance, and reports it with the callsign it knows.
+		change = registry.register(PeerRegistry.Role.SUBSCRIBE, "sub",
+				new PubSubID(uuid, "old", 12.5));
+
+		assertFalse(change.newPeer);
+		assertEquals(uuid, change.peer.uuid);
+		assertEquals("new", change.peer.callsign);
+		assertEquals(12.5, change.peer.distanceMeters, 0);
+	}
+
+	@Test
+	public void forgottenDistanceAndRediscoveryKeepTheNewCallsign() {
+		PeerRegistry<String> registry = new PeerRegistry<>();
+		UUID uuid = UUID.randomUUID();
+		registry.register(PeerRegistry.Role.SUBSCRIBE, "sub", new PubSubID(uuid, "old", -1));
+		registry.register(PeerRegistry.Role.PUBLISH, "pub", new PubSubID(uuid, "new", -1));
+		registry.register(PeerRegistry.Role.SUBSCRIBE, "sub", new PubSubID(uuid, "old", 12.5));
+
+		// Both come from our subscriber as a peer with the discovered callsign and no distance.
+		PeerRegistry.Change<String> change = registry.register(PeerRegistry.Role.SUBSCRIBE, "sub",
+				new PubSubID(uuid, "old", PubSubID.UNKNOWN_DISTANCE));
+
+		assertEquals("new", change.peer.callsign);
+		assertEquals(PubSubID.UNKNOWN_DISTANCE, change.peer.distanceMeters, 0);
+	}
+
+	@Test
+	public void messageBeforeDiscoveryKeepsItsCallsign() {
+		PeerRegistry<String> registry = new PeerRegistry<>();
+		UUID uuid = UUID.randomUUID();
+		registry.register(PeerRegistry.Role.PUBLISH, "pub", new PubSubID(uuid, "new", -1));
+
+		PeerRegistry.Change<String> change = registry.register(PeerRegistry.Role.SUBSCRIBE, "sub",
+				new PubSubID(uuid, "old", -1));
+
+		assertEquals("new", change.peer.callsign);
+	}
+
+	@Test
+	public void laterMessageChangesTheCallsignAgain() {
+		PeerRegistry<String> registry = new PeerRegistry<>();
+		UUID uuid = UUID.randomUUID();
+		registry.register(PeerRegistry.Role.SUBSCRIBE, "sub", new PubSubID(uuid, "old", -1));
+		registry.register(PeerRegistry.Role.PUBLISH, "pub", new PubSubID(uuid, "new", -1));
+		registry.register(PeerRegistry.Role.SUBSCRIBE, "sub", new PubSubID(uuid, "old", 12.5));
+
+		PeerRegistry.Change<String> change =
+				registry.register(PeerRegistry.Role.PUBLISH, "pub", new PubSubID(uuid, "newer", -1));
+
+		assertEquals("newer", change.peer.callsign);
+	}
+
+	@Test
+	public void discoveredCallsignCountsWhileThePeerSentNone() {
+		PeerRegistry<String> registry = new PeerRegistry<>();
+		UUID uuid = UUID.randomUUID();
+		registry.register(PeerRegistry.Role.SUBSCRIBE, "sub", new PubSubID(uuid, "old", -1));
+
+		PeerRegistry.Change<String> change = registry.register(PeerRegistry.Role.SUBSCRIBE, "sub",
+				new PubSubID(uuid, "renamed", -1));
+
+		assertEquals("renamed", change.peer.callsign);
+	}
+
+	@Test
+	public void restartedPeerIsShownWithTheCallsignItPublishes() {
+		PeerRegistry<String> registry = new PeerRegistry<>();
+		UUID uuid = UUID.randomUUID();
+		registry.register(PeerRegistry.Role.SUBSCRIBE, "sub", new PubSubID(uuid, "old", -1));
+		registry.register(PeerRegistry.Role.PUBLISH, "pub", new PubSubID(uuid, "new", -1));
+
+		// Found on a new handle: its discovery info is newer than the message it sent before.
+		PeerRegistry.Change<String> change = registry.register(PeerRegistry.Role.SUBSCRIBE, "sub2",
+				new PubSubID(uuid, "restarted", -1));
+
+		assertEquals("restarted", change.peer.callsign);
+	}
+
+	@Test
+	public void lostPeerIsReportedWithItsCurrentCallsign() {
+		PeerRegistry<String> registry = new PeerRegistry<>();
+		UUID uuid = UUID.randomUUID();
+		registry.register(PeerRegistry.Role.SUBSCRIBE, "sub", new PubSubID(uuid, "old", -1));
+		registry.register(PeerRegistry.Role.PUBLISH, "pub", new PubSubID(uuid, "new", -1));
+		registry.register(PeerRegistry.Role.SUBSCRIBE, "sub", new PubSubID(uuid, "old", 12.5));
+
+		PeerRegistry.Change<String> change = registry.lose("sub");
+
+		assertEquals(1, change.lostPeers.size());
+		assertEquals("new", change.lostPeers.get(0).callsign);
 	}
 
 	private static HashSet<String> set(String... values) {

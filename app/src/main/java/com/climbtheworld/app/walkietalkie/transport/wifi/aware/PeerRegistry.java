@@ -10,6 +10,9 @@ import java.util.UUID;
  * Tracks which discovery handles belong to which peer. A peer keeps its ID across Wi-Fi Aware
  * restarts while its handles change, so a known ID showing up on a new handle means every older
  * handle of that peer is dead.
+ * <p>
+ * It also holds what is shown of each peer. Both sessions report a peer, each with the callsign
+ * it learnt, so what they report is only shown as the registry gives it back, see register.
  */
 final class PeerRegistry<H> {
 	enum Role {
@@ -25,17 +28,32 @@ final class PeerRegistry<H> {
 		// Peers left without any handle.
 		final List<PubSubID> lostPeers = new ArrayList<>();
 		boolean newPeer;
+		// The registered peer as it is to be shown, null when none was registered.
+		PubSubID peer;
 	}
 
 	private static final class Peer<H> {
 		private PubSubID id;
 		private H subscribeHandle;
 		private H publishHandle;
+		// Whether the peer sent its callsign in a message since it was last found, see register.
+		private boolean callsignFromMessage;
 	}
 
 	private final Map<UUID, Peer<H>> peers = new HashMap<>();
 	private final Map<H, UUID> handleOwners = new HashMap<>();
 
+	/**
+	 * Registers a peer as one of the sessions reports it: found, found again, or changed.
+	 * <p>
+	 * The callsign our subscriber reports is the one of the peer's discovery info, which dates
+	 * from when the peer started publishing, and it reports it again with every distance it
+	 * measures or forgets. A message of the peer carries its callsign of the moment. So once a
+	 * peer has sent one, only its messages change its callsign: a distance or a rediscovery
+	 * would otherwise bring back the callsign it had before.
+	 *
+	 * @return what the registration changed, with the peer as it is to be shown
+	 */
 	synchronized Change<H> register(Role role, H handle, PubSubID id) {
 		Change<H> change = new Change<>();
 		UUID owner = handleOwners.get(handle);
@@ -56,7 +74,13 @@ final class PeerRegistry<H> {
 			}
 		}
 
+		if (role == Role.PUBLISH) {
+			peer.callsignFromMessage = true;
+		} else if (peer.callsignFromMessage && !peer.id.callsign.equals(id.callsign)) {
+			id = new PubSubID(id.uuid, peer.id.callsign, id.distanceMeters);
+		}
 		peer.id = id;
+		change.peer = id;
 		if (role == Role.SUBSCRIBE) {
 			peer.subscribeHandle = handle;
 		} else {
@@ -108,6 +132,9 @@ final class PeerRegistry<H> {
 	}
 
 	private void dropHandles(Peer<H> peer, Change<H> change) {
+		// The peer restarted or left: what it publishes when found again is newer than the
+		// messages it sent before.
+		peer.callsignFromMessage = false;
 		if (peer.subscribeHandle != null) {
 			handleOwners.remove(peer.subscribeHandle);
 			change.staleHandles.add(peer.subscribeHandle);

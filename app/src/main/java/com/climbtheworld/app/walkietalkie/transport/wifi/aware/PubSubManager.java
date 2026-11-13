@@ -298,7 +298,9 @@ public class PubSubManager {
 		if (opensNetwork) {
 			initiateNetworkStack(peerHandle, publisher.getDiscoverySession(), true);
 		}
-		triggerUiUpdate(uuid, change.newPeer ? ObservableHashMap.MapEvent.ADDED :
+		// As the registry holds the peer, not as the session reported it: the subscriber only
+		// knows the callsign the peer was discovered with, see PeerRegistry#register.
+		triggerUiUpdate(change.peer, change.newPeer ? ObservableHashMap.MapEvent.ADDED :
 				ObservableHashMap.MapEvent.UPDATED);
 	}
 
