@@ -9,9 +9,12 @@ import org.json.JSONObject;
 // The index serves the bounding box query (OsmNodeDao.loadBBox) on its own: a seek on the type
 // and the latitude, the rest read from the index without the table. One index on the latitude
 // and one on the longitude, as before, had SQLite walk a whole band of a wide view.
+// The name index serves the search by name (OsmNodeDao.find): walked in the order of the names,
+// it tells which rows match without reading them, and stops at the limit.
 @Entity(primaryKeys = {"osmType", "osmID"}, indices = {
 		@Index(name = "index_OsmNode_box", value = {"entityClimbingType", "decimalLatitude",
-				"decimalLongitude", "localUpdateState", "osmID"})
+				"decimalLongitude", "localUpdateState", "osmID"}),
+		@Index(name = "index_OsmNode_name", value = {"name"})
 })
 public class OsmNode extends OsmEntity {
 	public Double decimalLatitude = 0.0;

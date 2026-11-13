@@ -1,6 +1,7 @@
 package com.climbtheworld.app.storage.database;
 
 import android.content.Context;
+import android.database.Cursor;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -9,6 +10,12 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -20,7 +27,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 		OsmCollectionEntity.class,
 		EntityCountry.class,
 		DownloadedCountry.class
-}, version = 5, exportSchema = false)
+}, version = 6, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 	private static final String OSM_CACHE_DB = "offlineClimbingData.db";
 	/**
@@ -45,6 +52,60 @@ public abstract class AppDatabase extends RoomDatabase {
 					+ "bBoxEast, localUpdateState, osmID)");
 		}
 	};
+	// The name tag as the stored element's text has it, between the quotes that follow its key,
+	// empty without the key: right for all but the names holding a character JSON writes with
+	// a backslash.
+	private static final String NAME_IN_JSON_TEXT =
+			"CASE WHEN INSTR(jsonNodeInfo, '\"name\":\"') = 0 THEN '' ELSE "
+					+ "SUBSTR(SUBSTR(jsonNodeInfo, INSTR(jsonNodeInfo, '\"name\":\"') + 8), 0, "
+					+ "INSTR(SUBSTR(jsonNodeInfo, INSTR(jsonNodeInfo, '\"name\":\"') + 8), '\"')) "
+					+ "END";
+	/**
+	 * Version 6 gives the nodes and the collections their name as a column, with an index, to
+	 * search by name through, see OsmEntity.name. The downloads and the edits stay. The names
+	 * are taken out of the stored elements in one statement a table, as the searches did until
+	 * then, and the few that this gets wrong are read again from the element itself.
+	 */
+	static final Migration MIGRATION_5_6 = new Migration(5, 6) {
+		@Override
+		public void migrate(@NonNull SupportSQLiteDatabase database) {
+			for (String table : new String[]{"OsmNode", "OsmCollectionEntity"}) {
+				database.execSQL("ALTER TABLE " + table + " ADD COLUMN name TEXT");
+				database.execSQL("UPDATE " + table + " SET name = " + NAME_IN_JSON_TEXT);
+				readEscapedNames(database, table);
+				database.execSQL("CREATE INDEX IF NOT EXISTS index_" + table + "_name ON "
+						+ table + " (name)");
+			}
+		}
+	};
+
+	/**
+	 * Reads again, from the stored element, the names taken out of its text with a backslash in
+	 * them: those hold a character JSON writes with one, as a slash or a quote, and a quote
+	 * also cut the name short.
+	 */
+	private static void readEscapedNames(SupportSQLiteDatabase database, String table) {
+		List<Object[]> names = new ArrayList<>();
+		try (Cursor cursor = database.query("SELECT osmType, osmID, jsonNodeInfo FROM " + table
+				+ " WHERE INSTR(name, char(92)) > 0")) {
+			while (cursor.moveToNext()) {
+				try {
+					JSONObject tags = new JSONObject(cursor.getString(2))
+							.optJSONObject(ClimbingTags.KEY_TAGS);
+					names.add(new Object[]{
+							tags == null ? "" : tags.optString(ClimbingTags.KEY_NAME, ""),
+							cursor.getString(0), cursor.getLong(1)});
+				} catch (JSONException e) {
+					// Left as its text has it.
+				}
+			}
+		}
+		for (Object[] name : names) {
+			database.execSQL("UPDATE " + table + " SET name = ? WHERE osmType = ? AND osmID = ?",
+					name);
+		}
+	}
+
 	private static AppDatabase appDB;
 	public static AppDatabase getInstance(AppCompatActivity parent) {
 		return getInstance(parent.getApplicationContext());
@@ -65,7 +126,7 @@ public abstract class AppDatabase extends RoomDatabase {
 					// only climbing features were kept, see ClimbingFeature, and version 4 the
 					// bounding boxes that took crags across Greenwich to cross the antimeridian
 					// and the other way round, see MapBounds.around.
-					.addMigrations(MIGRATION_4_5)
+					.addMigrations(MIGRATION_4_5, MIGRATION_5_6)
 					.fallbackToDestructiveMigrationFrom(true, 1, 2, 3)
 					.build();
 		}

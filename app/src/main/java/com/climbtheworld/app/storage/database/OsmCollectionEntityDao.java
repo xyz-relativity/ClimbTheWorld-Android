@@ -5,7 +5,6 @@ import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
-import androidx.room.RoomWarnings;
 import androidx.room.TypeConverters;
 
 import java.util.List;
@@ -13,9 +12,6 @@ import java.util.List;
 @Dao
 @TypeConverters(DataConverter.class)
 public interface OsmCollectionEntityDao {
-	/** The name tag taken out of the stored JSON, as a name column for searching. */
-	String NAME_COLUMN = "SUBSTR(SUBSTR(jsonNodeInfo, INSTR(jsonNodeInfo, '\"name\":\"') + 8), 0, " +
-			"INSTR(SUBSTR(jsonNodeInfo, INSTR(jsonNodeInfo, '\"name\":\"') + 8), '\"')) name";
 	/**
 	 * Degrees east from :longitude to the middle of the bounding box, past 180 when the box
 	 * crosses the antimeridian east of :longitude.
@@ -59,26 +55,29 @@ public interface OsmCollectionEntityDao {
 	@Query(COLLECTIONS_BY_ID)
 	List<OsmCollectionEntity> resolveData(List<Long> ids);
 
-	// Route ways (drawn as a line), gym ways (shown on the map as a single marker, e.g. a gym
-	// mapped as a building) and crag/area relations (shown as a labelled outline).
-	@SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-	@Query("SELECT *, " + NAME_COLUMN + " " +
-			"FROM OsmCollectionEntity WHERE localUpdateState != 'toDelete' " +
-			"AND ((osmType = 'way' AND entityClimbingType IN ('route', 'artificial')) " +
-			"OR (osmType = 'relation' AND entityClimbingType IN ('crag', 'area'))) " +
+	/**
+	 * Route ways (drawn as a line), gym ways (shown on the map as a single marker, e.g. a gym
+	 * mapped as a building) and crag/area relations (shown as a labelled outline) whose name
+	 * holds the text, by name. Through the name index, see OsmNodeDao.NODES_BY_NAME.
+	 */
+	String COLLECTIONS_BY_NAME = "SELECT * FROM OsmCollectionEntity "
+			+ "INDEXED BY index_OsmCollectionEntity_name WHERE localUpdateState != 'toDelete' "
+			+ "AND ((osmType = 'way' AND entityClimbingType IN ('route', 'artificial')) "
+			+ "OR (osmType = 'relation' AND entityClimbingType IN ('crag', 'area'))) "
 			// An all-zero bbox means none of the members were resolved, so there's no location.
-			"AND NOT (bBoxNorth = 0 AND bBoxSouth = 0 AND bBoxEast = 0 AND bBoxWest = 0) " +
-			"AND name LIKE '%' || :searchString || '%' COLLATE NOCASE ORDER BY name LIMIT :limit")
+			+ "AND NOT (bBoxNorth = 0 AND bBoxSouth = 0 AND bBoxEast = 0 AND bBoxWest = 0) "
+			+ "AND name LIKE '%' || :searchString || '%' ORDER BY name LIMIT :limit";
+
+	@Query(COLLECTIONS_BY_NAME)
 	List<OsmCollectionEntity> findCollections(String searchString, int limit);
 
 	/** Relations of a climbing type whose name holds the text, in CHANGED_THEN_NEAREST order. */
-	@SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-	@Query("SELECT *, " + NAME_COLUMN + " " +
+	@Query("SELECT * " +
 			"FROM OsmCollectionEntity WHERE osmType = 'relation' AND entityClimbingType = :type " +
 			"AND localUpdateState != 'toDelete' " +
 			// An all-zero bbox means none of the members were resolved, so there's no location.
 			"AND NOT (bBoxNorth = 0 AND bBoxSouth = 0 AND bBoxEast = 0 AND bBoxWest = 0) " +
-			"AND name LIKE '%' || :searchString || '%' COLLATE NOCASE " +
+			"AND name LIKE '%' || :searchString || '%' " +
 			"ORDER BY " + CHANGED_THEN_NEAREST + " LIMIT :limit")
 	List<OsmCollectionEntity> findRelations(String searchString, OsmEntity.EntityClimbingType type,
 	                                        double latitude, double longitude, int limit);

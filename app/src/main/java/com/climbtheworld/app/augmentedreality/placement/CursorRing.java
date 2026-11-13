@@ -19,6 +19,8 @@ public final class CursorRing {
 	static final double SIGHTING_LINE_METERS = WallPlane.MAX_DISTANCE_METERS;
 	// Where the line starts, clear of the camera it was sighted from.
 	static final double SIGHTING_LINE_START_METERS = 0.5;
+	private static final double[] UP = {0, 1, 0};
+	private static final double[] RIGHT = {1, 0, 0};
 
 	private CursorRing() {
 		//hide
@@ -47,19 +49,24 @@ public final class CursorRing {
 		double radius = radius(hit.distance);
 		double[] normal = hit.normal;
 		// Two directions along the rock, square to each other.
-		double[] along = CursorHit.cross(normal, new double[]{0, 1, 0});
+		double[] along = CursorHit.cross(normal, UP);
 		if (CursorHit.length(along) < 1e-3) {
-			along = CursorHit.cross(normal, new double[]{1, 0, 0});
+			along = CursorHit.cross(normal, RIGHT);
 		}
 		along = CursorHit.scale(along, 1 / CursorHit.length(along));
 		double[] across = CursorHit.cross(normal, along);
 
-		double[] previous = onRing(hit.point, along, across, radius, 0);
+		// The two ends of a segment, taking turns, rather than a new point for each: the
+		// cursor is built for every frame.
+		double[] previous = new double[3];
+		double[] next = new double[3];
+		onRing(hit.point, along, across, radius, 0, previous);
 		for (int segment = 1; segment <= SEGMENTS; segment++) {
-			double[] next = onRing(hit.point, along, across, radius,
-					2 * Math.PI * segment / SEGMENTS);
+			onRing(hit.point, along, across, radius, 2 * Math.PI * segment / SEGMENTS, next);
 			out.addLine(previous, next, color);
+			double[] reused = previous;
 			previous = next;
+			next = reused;
 		}
 		double[] tip = {hit.point[0] + normal[0] * radius, hit.point[1] + normal[1] * radius,
 				hit.point[2] + normal[2] * radius};
@@ -74,12 +81,13 @@ public final class CursorRing {
 				SIGHTING_LINE_COLOR);
 	}
 
-	private static double[] onRing(double[] centre, double[] along, double[] across,
-	                               double radius, double angle) {
+	/** Puts into out the point of the ring at an angle. */
+	private static void onRing(double[] centre, double[] along, double[] across,
+	                           double radius, double angle, double[] out) {
 		double cos = Math.cos(angle) * radius;
 		double sin = Math.sin(angle) * radius;
-		return new double[]{centre[0] + along[0] * cos + across[0] * sin,
-				centre[1] + along[1] * cos + across[1] * sin,
-				centre[2] + along[2] * cos + across[2] * sin};
+		out[0] = centre[0] + along[0] * cos + across[0] * sin;
+		out[1] = centre[1] + along[1] * cos + across[1] * sin;
+		out[2] = centre[2] + along[2] * cos + across[2] * sin;
 	}
 }

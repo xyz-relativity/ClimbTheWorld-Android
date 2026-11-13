@@ -16,14 +16,16 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
- * Opening a version 4 database with the app's schema migrates it: Room then checks the tables
- * and indexes against the entities, so a migration leaving them apart fails to open.
+ * Opening a database of an earlier version with the app's schema migrates it: Room then checks
+ * the tables and indexes against the entities, so a migration leaving them apart fails to open.
  */
 @RunWith(RobolectricTestRunner.class)
 public class AppDatabaseMigrationTest {
@@ -58,6 +60,7 @@ public class AppDatabaseMigrationTest {
 		current.close();
 		SQLiteDatabase old = SQLiteDatabase.openDatabase(
 				context.getDatabasePath(NAME).getPath(), null, SQLiteDatabase.OPEN_READWRITE);
+		toVersion5(old);
 		old.execSQL("DROP INDEX index_OsmNode_box");
 		old.execSQL("CREATE INDEX index_OsmNode_decimalLatitude ON OsmNode (decimalLatitude)");
 		old.execSQL("CREATE INDEX index_OsmNode_decimalLongitude ON OsmNode (decimalLongitude)");
@@ -74,15 +77,80 @@ public class AppDatabaseMigrationTest {
 				.loadBBox(46, 25, 45, 24, OsmEntity.EntityClimbingType.route));
 		assertEquals(Collections.singletonList(10L), migrated.osmCollectionDao()
 				.loadBBox(46, 25, 45, 24, OsmEntity.EntityClimbingType.crag));
-		assertEquals(Collections.singleton("index_OsmNode_box"), indexes(migrated, "OsmNode"));
-		assertEquals(Collections.singleton("index_OsmCollectionEntity_box"),
-				indexes(migrated, "OsmCollectionEntity"));
+		assertEquals(new HashSet<>(Arrays.asList("index_OsmNode_box", "index_OsmNode_name")),
+				indexes(migrated, "OsmNode"));
+		assertEquals(new HashSet<>(Arrays.asList("index_OsmCollectionEntity_box",
+				"index_OsmCollectionEntity_name")), indexes(migrated, "OsmCollectionEntity"));
+		// Through version 6 too: found by the name it gave them.
+		assertEquals(1, migrated.osmNodeDao()
+				.find("route", 10, OsmEntity.EntityClimbingType.route).size());
+		assertEquals(1, migrated.osmCollectionDao().findCollections("crag", 10).size());
 		migrated.close();
+	}
+
+	@Test
+	public void version5KeepsItsDataAndGetsTheNames() throws Exception {
+		// The current schema, taken back to version 5: without the name column and its index.
+		AppDatabase current = open();
+		current.osmNodeDao().insertNodesWithIgnore(Arrays.asList(
+				node(1, "Route"),
+				// JSON writes the slash and the quotes with a backslash.
+				node(2, "AC/DC \"live\""),
+				node(3, null)));
+		current.close();
+		SQLiteDatabase old = SQLiteDatabase.openDatabase(
+				context.getDatabasePath(NAME).getPath(), null, SQLiteDatabase.OPEN_READWRITE);
+		toVersion5(old);
+		old.close();
+
+		AppDatabase migrated = open();
+		assertEquals("Route", nameOf(migrated, 1));
+		assertEquals("AC/DC \"live\"", nameOf(migrated, 2));
+		assertEquals("", nameOf(migrated, 3));
+		assertEquals(Collections.singletonList(2L), ids(migrated.osmNodeDao()
+				.find("dc \"li", 10, OsmEntity.EntityClimbingType.route)));
+		assertEquals(new HashSet<>(Arrays.asList("index_OsmNode_box", "index_OsmNode_name")),
+				indexes(migrated, "OsmNode"));
+		migrated.close();
+	}
+
+	/** Takes a database of the current schema back to version 5: without the names. */
+	private static void toVersion5(SQLiteDatabase database) {
+		for (String table : new String[]{"OsmNode", "OsmCollectionEntity"}) {
+			database.execSQL("DROP INDEX index_" + table + "_name");
+			database.execSQL("ALTER TABLE " + table + " DROP COLUMN name");
+		}
+		database.execSQL("PRAGMA user_version = 5");
+	}
+
+	/**
+	 * @param name null for a route without a name
+	 */
+	private static OsmNode node(long id, String name) throws Exception {
+		JSONObject tags = new JSONObject().put("sport", "climbing")
+				.put("climbing", "route_bottom");
+		if (name != null) {
+			tags.put("name", name);
+		}
+		return new OsmNode(new JSONObject().put("type", "node").put("id", id)
+				.put("lat", 45.5).put("lon", 24.5).put("tags", tags));
+	}
+
+	private static String nameOf(AppDatabase database, long nodeId) {
+		return database.osmNodeDao().find(OsmEntity.EntityOsmType.node, nodeId).name;
+	}
+
+	private static List<Long> ids(List<OsmNode> nodes) {
+		List<Long> ids = new ArrayList<>();
+		for (OsmNode node : nodes) {
+			ids.add(node.osmID);
+		}
+		return ids;
 	}
 
 	private AppDatabase open() {
 		return Room.databaseBuilder(context, AppDatabase.class, NAME)
-				.addMigrations(AppDatabase.MIGRATION_4_5)
+				.addMigrations(AppDatabase.MIGRATION_4_5, AppDatabase.MIGRATION_5_6)
 				.allowMainThreadQueries()
 				.build();
 	}

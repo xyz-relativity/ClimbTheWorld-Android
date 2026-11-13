@@ -5,7 +5,6 @@ import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
-import androidx.room.RoomWarnings;
 import androidx.room.TypeConverters;
 
 import java.util.List;
@@ -28,11 +27,16 @@ public interface OsmNodeDao {
 	@Query(NODES_BY_ID)
 	List<OsmNode> resolveNodeData(List<Long> ids);
 
-	@SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-	@Query("SELECT *, SUBSTR(SUBSTR(jsonNodeInfo, INSTR(jsonNodeInfo, '\"name\":\"') + 8), 0, " +
-			"INSTR(SUBSTR(jsonNodeInfo, INSTR(jsonNodeInfo, '\"name\":\"') + 8), '\"')) name " +
-			"FROM OsmNode WHERE localUpdateState != 'toDelete' AND entityClimbingType IN (:types) " +
-			"AND name LIKE '%' || :searchString || '%' COLLATE NOCASE ORDER BY name LIMIT :limit")
+	/**
+	 * The nodes of the types whose name holds the text, by name. Through the name index, which
+	 * SQLite does not pick on its own: it is walked in the order of the names, only the rows
+	 * whose name matches are read, and it stops at the limit.
+	 */
+	String NODES_BY_NAME = "SELECT * FROM OsmNode INDEXED BY index_OsmNode_name "
+			+ "WHERE localUpdateState != 'toDelete' AND entityClimbingType IN (:types) "
+			+ "AND name LIKE '%' || :searchString || '%' ORDER BY name LIMIT :limit";
+
+	@Query(NODES_BY_NAME)
 	List<OsmNode> find(String searchString, int limit, OsmEntity.EntityClimbingType... types);
 
 	@Query("SELECT * FROM OsmNode WHERE localUpdateState != 'clean'")

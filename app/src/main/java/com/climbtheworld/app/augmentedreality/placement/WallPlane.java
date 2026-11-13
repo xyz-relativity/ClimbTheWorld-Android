@@ -43,11 +43,14 @@ public class WallPlane {
 			return null;
 		}
 
-		// The patch on the same surface as the crosshair.
+		// The patch on the same surface as the crosshair. Its points are kept three values each
+		// in one array, and worked on in place: fitted for every frame, one array to a point
+		// and to each step of the sums made hundreds of them a frame.
 		int capacity = (2 * PATCH_PIXELS / PATCH_STEP + 1) * (2 * PATCH_PIXELS / PATCH_STEP + 1);
-		double[][] points = new double[capacity][];
+		double[] points = new double[capacity * 3];
 		int count = 0;
 		double[] middle = new double[3];
+		double[] point = new double[3];
 		for (int y = centreY - PATCH_PIXELS; y <= centreY + PATCH_PIXELS; y += PATCH_STEP) {
 			for (int x = centreX - PATCH_PIXELS; x <= centreX + PATCH_PIXELS; x += PATCH_STEP) {
 				if (x < 0 || y < 0 || x >= frame.getWidth() || y >= frame.getHeight()) {
@@ -57,12 +60,12 @@ public class WallPlane {
 				if (Double.isNaN(depth) || !DepthWireframe.sameSurface(centreDepth, depth)) {
 					continue;
 				}
-				double[] point = new double[3];
 				frame.toWorld(x, y, depth, point);
-				points[count++] = point;
 				for (int axis = 0; axis < 3; axis++) {
+					points[count * 3 + axis] = point[axis];
 					middle[axis] += point[axis];
 				}
+				count++;
 			}
 		}
 		if (count < MIN_POINTS) {
@@ -73,8 +76,12 @@ public class WallPlane {
 		}
 
 		double[][] covariance = new double[3][3];
+		// A point less the middle.
+		double[] offset = new double[3];
 		for (int i = 0; i < count; i++) {
-			double[] offset = CursorHit.subtract(points[i], middle);
+			for (int axis = 0; axis < 3; axis++) {
+				offset[axis] = points[i * 3 + axis] - middle[axis];
+			}
 			for (int row = 0; row < 3; row++) {
 				for (int column = 0; column < 3; column++) {
 					covariance[row][column] += offset[row] * offset[column] / count;
@@ -89,7 +96,10 @@ public class WallPlane {
 
 		double squares = 0;
 		for (int i = 0; i < count; i++) {
-			double off = CursorHit.dot(CursorHit.subtract(points[i], middle), normal);
+			for (int axis = 0; axis < 3; axis++) {
+				offset[axis] = points[i * 3 + axis] - middle[axis];
+			}
+			double off = CursorHit.dot(offset, normal);
 			squares += off * off;
 		}
 		if (Math.sqrt(squares / count) > MAX_RMS_METERS) {
@@ -111,12 +121,16 @@ public class WallPlane {
 	private static double[] leastSpreadDirection(double[][] covariance, double[] start) {
 		double trace = covariance[0][0] + covariance[1][1] + covariance[2][2];
 		double[] vector = start.clone();
+		double[] unit = new double[3];
 		for (int iteration = 0; iteration < POWER_ITERATIONS; iteration++) {
 			double length = CursorHit.length(vector);
 			if (length < 1e-12) {
 				return null;
 			}
-			double[] unit = CursorHit.scale(vector, 1 / length);
+			double factor = 1 / length;
+			for (int axis = 0; axis < 3; axis++) {
+				unit[axis] = vector[axis] * factor;
+			}
 			for (int row = 0; row < 3; row++) {
 				vector[row] = trace * unit[row];
 				for (int column = 0; column < 3; column++) {

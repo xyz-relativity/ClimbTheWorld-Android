@@ -83,7 +83,12 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 	private final float[] projection = new float[16];
 	private final float[] view = new float[16];
 	private final float[] viewProjection = new float[16];
+	// The camera's pose and the camera texture's intrinsics, read once for each frame ARCore
+	// tracks, see readCamera. GL thread only.
 	private final float[] cameraToWorld = new float[16];
+	private float[] textureFocalLength;
+	private float[] texturePrincipalPoint;
+	private int[] textureSize;
 	private final float[] viewCentre = new float[2];
 	// Where the middle of the view is in the camera texture, from 0 to 1, NaN until known.
 	private final float[] textureCentre = {Float.NaN, Float.NaN};
@@ -411,7 +416,9 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 			camera.getProjectionMatrix(projection, 0, NEAR_METERS, FAR_METERS);
 			camera.getViewMatrix(view, 0);
 			Matrix.multiplyMM(viewProjection, 0, projection, 0, view, 0);
-			updateSessionCamera(camera, frame.getTimestamp());
+			Pose pose = camera.getPose();
+			readCamera(camera, pose);
+			updateSessionCamera(camera, pose, frame.getTimestamp());
 			if (!wireframeFacingSet) {
 				wireframe.setFacing(sessionCamera.azimuthDegrees());
 				wireframeFacingSet = true;
@@ -423,15 +430,15 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 				frame.transformCoordinates2d(Coordinates2d.VIEW, tap,
 						Coordinates2d.TEXTURE_NORMALIZED, tapTexture);
 			}
-			DepthHits depthHits = depthMeasured ? drawDepth(frame, camera, tapTexture)
+			DepthHits depthHits = depthMeasured ? drawDepth(frame, tapTexture)
 					: new DepthHits(null, null);
 			if (aiming) {
-				hit = drawCursor(depthHits.centre(), camera);
+				hit = drawCursor(depthHits.centre());
 			} else {
 				crosshairRay = null;
 			}
 			if (tapTexture != null) {
-				listener.onTapped(resolve(depthHits.tap(), rayThrough(camera, tapTexture)));
+				listener.onTapped(resolve(depthHits.tap(), rayThrough(tapTexture)));
 			}
 			pin = projectPin();
 			if (cursorPinShown && hit != null) {
@@ -452,7 +459,9 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 	 * Moves the anchors as the main thread asked, and tells where they are now.
 	 */
 	private void updateAnchors(Session current) {
-		for (String key : new ArrayList<>(anchorRequests.keySet())) {
+		// Mostly none: nothing to list on most frames.
+		for (String key : anchorRequests.isEmpty() ? Collections.<String>emptyList()
+				: new ArrayList<String>(anchorRequests.keySet())) {
 			double[] request = anchorRequests.remove(key);
 			if (request == null) {
 				continue;
@@ -517,8 +526,8 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 	 * @param depthHit where the crosshair is on the depth, null for nowhere
 	 * @return the cursor, null where the crosshair is on nothing known
 	 */
-	private CursorHit drawCursor(CursorHit depthHit, Camera camera) {
-		ViewRay ray = Float.isNaN(textureCentre[0]) ? null : rayThrough(camera, textureCentre);
+	private CursorHit drawCursor(CursorHit depthHit) {
+		ViewRay ray = Float.isNaN(textureCentre[0]) ? null : rayThrough(textureCentre);
 		crosshairRay = ray;
 
 		CursorHit hit;
@@ -570,12 +579,22 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 	 * @param texture a point of the camera texture, from 0 to 1
 	 * @return the ray through it, from the camera
 	 */
-	private ViewRay rayThrough(Camera camera, float[] texture) {
-		CameraIntrinsics intrinsics = camera.getTextureIntrinsics();
-		int[] textureSize = intrinsics.getImageDimensions();
-		camera.getPose().toMatrix(cameraToWorld, 0);
+	private ViewRay rayThrough(float[] texture) {
 		return ViewRay.throughTexture(texture[0] * textureSize[0], texture[1] * textureSize[1],
-				intrinsics.getFocalLength(), intrinsics.getPrincipalPoint(), cameraToWorld);
+				textureFocalLength, texturePrincipalPoint, cameraToWorld);
+	}
+
+	/**
+	 * Reads the camera's pose and the camera texture's intrinsics for the frame, once: each
+	 * reading makes new objects, and the cursor's ray, the depth and a tap all go by them.
+	 * ARCore may change the intrinsics from a frame to the next, so they are not kept longer.
+	 */
+	private void readCamera(Camera camera, Pose pose) {
+		pose.toMatrix(cameraToWorld, 0);
+		CameraIntrinsics intrinsics = camera.getTextureIntrinsics();
+		textureFocalLength = intrinsics.getFocalLength();
+		texturePrincipalPoint = intrinsics.getPrincipalPoint();
+		textureSize = intrinsics.getImageDimensions();
 	}
 
 	/**
@@ -585,17 +604,14 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 	 * @param tapTexture where a tap is in the camera texture, from 0 to 1, null for none
 	 * @return where the crosshair and the tap are on the depth, null where it is unknown
 	 */
-	private DepthHits drawDepth(Frame frame, Camera camera, float[] tapTexture) {
+	private DepthHits drawDepth(Frame frame, float[] tapTexture) {
 		try (Image depthImage = frame.acquireDepthImage16Bits()) {
 			Image.Plane plane = depthImage.getPlanes()[0];
 			ShortBuffer depth = plane.getBuffer().order(ByteOrder.LITTLE_ENDIAN).asShortBuffer();
 			// The depth image shows what the camera texture shows, as the camera sensor sees it.
-			CameraIntrinsics intrinsics = camera.getTextureIntrinsics();
-			camera.getPose().toMatrix(cameraToWorld, 0);
 			DepthFrame depthFrame = new DepthFrame(depth, depthImage.getWidth(),
 					depthImage.getHeight(), plane.getRowStride() / Short.BYTES,
-					intrinsics.getFocalLength(), intrinsics.getPrincipalPoint(),
-					intrinsics.getImageDimensions(), cameraToWorld);
+					textureFocalLength, texturePrincipalPoint, textureSize, cameraToWorld);
 
 			wireframeLines.clear();
 			wireframe.build(depthFrame, wireframeLines);
@@ -625,8 +641,7 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 		}
 	}
 
-	private void updateSessionCamera(Camera camera, long timestampNanos) {
-		Pose pose = camera.getPose();
+	private void updateSessionCamera(Camera camera, Pose pose, long timestampNanos) {
 		// The pose as the display shows it: its X axis along the screen's right.
 		Pose displayPose = camera.getDisplayOrientedPose();
 		SessionViewAngles angles = SessionViewAngles.of(displayPose.getXAxis(),

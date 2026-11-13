@@ -519,7 +519,7 @@ public class OsmEditStore {
 	}
 
 	private static void markChanged(OsmEntity entity, OsmEntity stored, long now) {
-		entity.refreshClimbingType();
+		entity.refreshColumns();
 		entity.localEditDate = now;
 		entity.baseJson = baseOf(stored);
 		entity.localUpdateState = EntityState.toUpdate;

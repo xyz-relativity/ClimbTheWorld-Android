@@ -23,6 +23,12 @@ public abstract class OsmEntity {
 	@NonNull
 	public EntityOsmType osmType;
 	public EntityClimbingType entityClimbingType;
+	/**
+	 * The name tag, empty without one, as a column of its own to search by name through an
+	 * index, see OsmNodeDao.find: read out of the stored tags, every row had to be taken apart
+	 * for each search. Kept in line with the tags, see refreshColumns.
+	 */
+	public String name = "";
 	//uses type converter
 	@TypeConverters(DataConverter.class)
 	public JSONObject jsonNodeInfo;
@@ -49,12 +55,17 @@ public abstract class OsmEntity {
 
 	protected void setJSONData(JSONObject pNodeInfo) {
 		this.jsonNodeInfo = pNodeInfo;
-		refreshClimbingType();
+		refreshColumns();
 	}
 
-	/** Brings the climbing type column back in line with the tags after they changed. */
-	public void refreshClimbingType() {
+	/**
+	 * Brings the columns taken from the tags, the climbing type and the name, back in line with
+	 * them after they changed.
+	 */
+	public void refreshColumns() {
 		this.entityClimbingType = EntityClimbingType.fromElement(jsonNodeInfo);
+		JSONObject tags = jsonNodeInfo.optJSONObject(ClimbingTags.KEY_TAGS);
+		this.name = tags == null ? "" : tags.optString(ClimbingTags.KEY_NAME, "");
 	}
 
 	public JSONObject getTags() {
