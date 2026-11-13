@@ -62,7 +62,8 @@ public class PubSubManager {
 	private DatagramSocket udpReceiveSocket;
 	private Publisher publisher;
 	private Subscriber subscriber;
-	private String callsign = "";
+	// Set by the screen's thread and read by the sessions' when they send it.
+	private volatile String callsign = "";
 	private ScheduledExecutorService scheduler;
 	private boolean isHeartbeatRunning;
 	private boolean isReceiverLoopRunning = false;
@@ -144,8 +145,13 @@ public class PubSubManager {
 
 	public void setCallsign(String callsign) {
 		this.callsign = callsign;
+		// Each peer is told by the session that can message it: the subscriber for the peers
+		// this device initiates the data path to, the publisher for those that initiated it.
 		if (subscriber != null) {
 			subscriber.updateCallsign();
+		}
+		if (publisher != null) {
+			publisher.updateCallsign();
 		}
 	}
 
@@ -302,6 +308,25 @@ public class PubSubManager {
 		// knows the callsign the peer was discovered with, see PeerRegistry#register.
 		triggerUiUpdate(change.peer, change.newPeer ? ObservableHashMap.MapEvent.ADDED :
 				ObservableHashMap.MapEvent.UPDATED);
+	}
+
+	/**
+	 * The callsign a peer has now, as its publisher told our subscriber. Only what is shown of
+	 * the peer changes: its data path and its handles are left alone, unlike with a peer
+	 * reported by onPeerChanged.
+	 */
+	void onPeerCallsign(PeerHandle peerHandle, String callsign) {
+		if (destroyed) {
+			return;
+		}
+
+		PubSubID peer = peerRegistry.updateCallsign(peerHandle, callsign);
+		if (peer == null) {
+			Log.d(TAG, "Ignoring the callsign of a peer that is no longer known");
+			return;
+		}
+		Log.d(TAG, "Peer " + peer.uuid + " has the callsign: " + peer.callsign);
+		triggerUiUpdate(peer, ObservableHashMap.MapEvent.UPDATED);
 	}
 
 	private void applyRegistryChange(PeerRegistry.Change<PeerHandle> change) {

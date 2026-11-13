@@ -12,7 +12,8 @@ import java.util.UUID;
  * handle of that peer is dead.
  * <p>
  * It also holds what is shown of each peer. Both sessions report a peer, each with the callsign
- * it learnt, so what they report is only shown as the registry gives it back, see register.
+ * it learnt and only one of them with a distance, so what they report is only shown as the
+ * registry gives it back, see register.
  */
 final class PeerRegistry<H> {
 	enum Role {
@@ -38,6 +39,8 @@ final class PeerRegistry<H> {
 		private H publishHandle;
 		// Whether the peer sent its callsign in a message since it was last found, see register.
 		private boolean callsignFromMessage;
+		// The distance our subscriber last reported to the handles the peer has now, see register.
+		private double distanceMeters = PubSubID.UNKNOWN_DISTANCE;
 	}
 
 	private final Map<UUID, Peer<H>> peers = new HashMap<>();
@@ -51,6 +54,11 @@ final class PeerRegistry<H> {
 	 * measures or forgets. A message of the peer carries its callsign of the moment. So once a
 	 * peer has sent one, only its messages change its callsign: a distance or a rediscovery
 	 * would otherwise bring back the callsign it had before.
+	 * <p>
+	 * The distance is the mirror of it. Only our subscriber measures one, while our publisher,
+	 * which gets the messages, never knows it. So only our subscriber changes the distance, to the
+	 * one it measured or to unknown once it forgot it: a message would otherwise hide the measured
+	 * distance until the next ranging.
 	 *
 	 * @return what the registration changed, with the peer as it is to be shown
 	 */
@@ -76,8 +84,14 @@ final class PeerRegistry<H> {
 
 		if (role == Role.PUBLISH) {
 			peer.callsignFromMessage = true;
-		} else if (peer.callsignFromMessage && !peer.id.callsign.equals(id.callsign)) {
-			id = new PubSubID(id.uuid, peer.id.callsign, id.distanceMeters);
+			if (id.distanceMeters != peer.distanceMeters) {
+				id = new PubSubID(id.uuid, id.callsign, peer.distanceMeters);
+			}
+		} else {
+			peer.distanceMeters = id.distanceMeters;
+			if (peer.callsignFromMessage && !peer.id.callsign.equals(id.callsign)) {
+				id = new PubSubID(id.uuid, peer.id.callsign, id.distanceMeters);
+			}
 		}
 		peer.id = id;
 		change.peer = id;
@@ -89,6 +103,28 @@ final class PeerRegistry<H> {
 		handleOwners.put(handle, id.uuid);
 		change.staleHandles.remove(handle);
 		return change;
+	}
+
+	/**
+	 * Takes the callsign a peer said in a message that is no part of the handshake. The message
+	 * came through a handle of the peer registered already, so unlike register, this finds no
+	 * peer and no restart, and leaves the handles and the distance as they are. The callsign is
+	 * then kept as one register got in a message.
+	 *
+	 * @return the peer as it is to be shown, null when the handle is of no peer
+	 */
+	synchronized PubSubID updateCallsign(H handle, String callsign) {
+		UUID owner = handleOwners.get(handle);
+		if (owner == null) {
+			return null;
+		}
+
+		Peer<H> peer = peers.get(owner);
+		peer.callsignFromMessage = true;
+		if (!peer.id.callsign.equals(callsign)) {
+			peer.id = new PubSubID(owner, callsign, peer.distanceMeters);
+		}
+		return peer.id;
 	}
 
 	synchronized Change<H> lose(H handle) {
@@ -133,8 +169,10 @@ final class PeerRegistry<H> {
 
 	private void dropHandles(Peer<H> peer, Change<H> change) {
 		// The peer restarted or left: what it publishes when found again is newer than the
-		// messages it sent before.
+		// messages it sent before, and the distance was measured to the handles dropped here, so
+		// it is unknown until our subscriber measures it again.
 		peer.callsignFromMessage = false;
+		peer.distanceMeters = PubSubID.UNKNOWN_DISTANCE;
 		if (peer.subscribeHandle != null) {
 			handleOwners.remove(peer.subscribeHandle);
 			change.staleHandles.add(peer.subscribeHandle);

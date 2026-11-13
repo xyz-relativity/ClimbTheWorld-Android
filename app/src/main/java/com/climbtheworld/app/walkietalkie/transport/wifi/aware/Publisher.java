@@ -17,6 +17,10 @@ public class Publisher {
 	private final ObservableHashMap<PeerHandle, PubSubID> subscribers = new ObservableHashMap<>();
 	private PublishDiscoverySession publishSession;
 	private ReliableMessageSender<PeerHandle, TransportMessage.Command> messageSender;
+	// Whether the callsign changed since the session published it in its service info, which is
+	// not published again: a peer finding this device then reads a callsign it no longer has.
+	// Set by the screen's thread and read by the session's.
+	private volatile boolean callsignChanged;
 
 	public Publisher(PubSubManager manager) {
 		this.manager = manager;
@@ -88,10 +92,39 @@ public class Publisher {
 							break;
 						}
 						subscribers.put(peerHandle, subscriber);
+						if (callsignChanged) {
+							// The peer found this device, or found it again, and read the
+							// callsign of the service info.
+							sendCallsign(peerHandle);
+						}
 						break;
 				}
 			}
 		}, backgroundHandler);
+	}
+
+	/**
+	 * Tells the callsign of the moment to the peers that initiated the data path to this device.
+	 * They are the ones the subscriber cannot tell, see Subscriber#updateCallsign, and the ones
+	 * whose handle is known here, from their INSTANCE message.
+	 */
+	public void updateCallsign() {
+		// Before the peers are listed: one whose INSTANCE message comes meanwhile is told there.
+		callsignChanged = true;
+		for (PeerHandle peerHandle : subscribers.keySet()) {
+			sendCallsign(peerHandle);
+		}
+	}
+
+	private void sendCallsign(PeerHandle peerHandle) {
+		ReliableMessageSender<PeerHandle, TransportMessage.Command> sender = messageSender;
+		if (sender == null) {
+			Log.w(TAG, "Cannot send CALLSIGN before the publish session starts");
+			return;
+		}
+		sender.send(peerHandle, TransportMessage.Command.CALLSIGN,
+				TransportMessage.buildMessage(TransportMessage.Command.CALLSIGN,
+						manager.getCallsign()));
 	}
 
 	public void onDestroy() {

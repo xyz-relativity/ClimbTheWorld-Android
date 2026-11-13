@@ -50,6 +50,18 @@ public class TransportMessage {
 		}
 	}
 
+	/**
+	 * The callsign of a CALLSIGN message, or null when the message is not a well formed one. It
+	 * is read as the callsign of an INSTANCE message is, so that a peer has the same callsign
+	 * whichever of the two said it.
+	 */
+	public String toCallsign() {
+		if (command != Command.CALLSIGN || message.length < 1) {
+			return null;
+		}
+		return message[0];
+	}
+
 	public static byte[] buildMessage(Command command) {
 		return buildMessage(command, "");
 	}
@@ -64,6 +76,9 @@ public class TransportMessage {
 
 	public enum Command {
 		INSTANCE,
-		READY
+		READY,
+		// Only the sender's callsign, to a peer that knows the sender already. It is no part of
+		// the data path's handshake, and the versions without it drop it as an unknown command.
+		CALLSIGN
 	}
 }

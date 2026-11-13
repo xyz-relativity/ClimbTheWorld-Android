@@ -98,11 +98,25 @@ public class Subscriber {
 					case READY:
 						manager.onNetworkReady(peerHandle);
 						break;
+					case CALLSIGN:
+						String callsign = transportMessage.toCallsign();
+						if (callsign == null) {
+							Log.w(TAG, "Ignoring malformed callsign message.");
+							break;
+						}
+						manager.onPeerCallsign(peerHandle, callsign);
+						break;
 				}
 			}
 		}, backgroundHandler);
 	}
 
+	/**
+	 * Tells the callsign of the moment to the peers this device initiates the data path to, in
+	 * the INSTANCE message that also starts the path: a peer with its path up only takes the
+	 * callsign from it. The other peers would answer it by opening a second path, so they are
+	 * told by the publisher, see Publisher#updateCallsign.
+	 */
 	public void updateCallsign() {
 		for (PeerHandle peerHandle : publishers.keySet()) {
 			sendCallsign(peerHandle);
