@@ -22,6 +22,7 @@ import com.climbtheworld.app.storage.views.DataFragment;
 import com.climbtheworld.app.storage.views.RemotePagerFragment;
 import com.climbtheworld.app.utils.views.EdgeToEdge;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +33,11 @@ import needle.Needle;
  */
 
 public class DialogBuilder {
-	private static final List<Dialog> activeDialogs = new ArrayList<>();
+	// The dialogs closeAllDialogs closes. Held weakly: a dialog has only one dismiss listener, so
+	// one whose listener was set again, as the settings dialogs and the download prompt do, stays
+	// listed once dismissed, and would keep its activity from being freed. A dialog on screen is
+	// kept by its window, and one not shown yet by whoever builds it.
+	private static final List<WeakReference<Dialog>> activeDialogs = new ArrayList<>();
 	private static AlertDialog loadingDialog = null;
 
 	private DialogBuilder() {
@@ -53,15 +58,24 @@ public class DialogBuilder {
 			alertDialog = new AlertDialog.Builder(activity).create();
 		}
 
-		activeDialogs.add(alertDialog);
+		forget(alertDialog);
+		activeDialogs.add(new WeakReference<>(alertDialog));
 		alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
 			@Override
 			public void onDismiss(DialogInterface dialogInterface) {
-				activeDialogs.remove(alertDialog);
+				forget(alertDialog);
 			}
 		});
 
 		return alertDialog;
+	}
+
+	/** Takes the dialog off the dialogs to close, along with the ones freed since. */
+	private static void forget(Dialog dialog) {
+		activeDialogs.removeIf(listed -> {
+			Dialog other = listed.get();
+			return other == null || other == dialog;
+		});
 	}
 
 	/** A system dialog icon in the colour, like the alert icon in orange. */
@@ -73,8 +87,11 @@ public class DialogBuilder {
 	}
 
 	public static void closeAllDialogs() {
-		for (Dialog diag : activeDialogs) {
-			diag.dismiss();
+		for (WeakReference<Dialog> listed : activeDialogs) {
+			Dialog diag = listed.get();
+			if (diag != null) {
+				diag.dismiss();
+			}
 		}
 		activeDialogs.clear();
 	}

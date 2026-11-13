@@ -57,10 +57,10 @@ public class AugmentedRealityScene {
 	private static final double POI_CACHE_EVICTION_MARGIN = 1.5;
 	// Terrain detail only pays off close by, where an elevation error moves things the most.
 	private static final double TERRAIN_DETAIL_DISTANCE_METERS = 1000;
-	// Crags and areas are loaded again once the observer moves this share of the view distance,
-	// from POI_CACHE_EVICTION_MARGIN times the view distance around them, so the ones in view are
-	// always loaded.
-	private static final double HULL_RELOAD_SHARE = 0.25;
+	// The POIs, and the crags and areas, are loaded again once the observer moves this share of
+	// the view distance, from POI_CACHE_EVICTION_MARGIN times the view distance around them, so
+	// the ones in view are always loaded, see ReloadGuard.
+	private static final double RELOAD_SHARE = 0.25;
 
 	private final AppCompatActivity activity;
 	private final VirtualCamera camera;
@@ -92,10 +92,10 @@ public class AugmentedRealityScene {
 	private volatile List<RouteRelation> routeRelations = Collections.emptyList();
 	// The nodes the route relations start and end at, whose own pins theirs take the place of.
 	private volatile Set<Long> routeRelationEnds = Collections.emptySet();
-	private boolean loadingHulls;
-	private double hullsLatitude = Double.NaN;
-	private double hullsLongitude = Double.NaN;
-	private double hullsDistance;
+	private final ReloadGuard poisLoaded = new ReloadGuard(RELOAD_SHARE);
+	private final ReloadGuard hullsLoaded = new ReloadGuard(RELOAD_SHARE);
+	// Where refreshAround was last asked to load around, null before the first time.
+	private Vector4d requestedCenter;
 	private double maxDistance;
 	private boolean useElevation;
 	private boolean showClimbingHulls;
@@ -253,12 +253,12 @@ public class AugmentedRealityScene {
 	}
 
 	/**
-	 * Has the next refreshAround load the crags, areas and route numbers again, however little
-	 * the observer moved, for data changed since, like a route just saved.
+	 * Has the next refreshAround load the POIs, crags, areas and route numbers again, however
+	 * little the observer moved, for data changed since, like a route just saved.
 	 */
 	public void dataChanged() {
-		hullsLatitude = Double.NaN;
-		hullsLongitude = Double.NaN;
+		poisLoaded.dataChanged();
+		hullsLoaded.dataChanged();
 	}
 
 	/**
@@ -355,43 +355,55 @@ public class AugmentedRealityScene {
 
 	/**
 	 * Loads the POIs, crags, areas and routes around a point, calling onLoaded once more of
-	 * them are.
+	 * them are. They are only loaded again once the observer moved away from where they were
+	 * loaded, the view distance changed or the data did, see RELOAD_SHARE and dataChanged.
 	 */
 	public void refreshAround(final Vector4d center) {
+		requestedCenter = center;
+		refreshPois(center);
+		refreshHulls(center);
+	}
+
+	/**
+	 * Loads the POIs around the observer, further than the view distance, see RELOAD_SHARE.
+	 */
+	private void refreshPois(final Vector4d center) {
+		final double distance = maxDistance;
+		if (!poisLoaded.request(center.x, center.y, distance)) {
+			return;
+		}
+
 		Constants.DB_EXECUTOR
 				.execute(new UiRelatedTask<Boolean>() {
 					@Override
 					protected Boolean doWork() {
 						return offlineDataManager.loadAround(activity.getApplicationContext(),
-								center, maxDistance, arPOIs);
+								center, distance * POI_CACHE_EVICTION_MARGIN, arPOIs);
 					}
 
 					@Override
 					protected void thenDoUiRelatedWork(Boolean result) {
+						boolean again = poisLoaded.loaded(center.x, center.y, distance);
 						if (result) {
 							onLoaded.run();
 						}
+						if (again) {
+							refreshPois(requestedCenter);
+						}
 					}
 				});
-		refreshHulls(center);
 	}
 
 	/**
 	 * Loads the crag and area relations around the observer, as their hulls, and the numbers of
-	 * the crags' routes, see HULL_RELOAD_SHARE.
+	 * the crags' routes, see RELOAD_SHARE.
 	 */
 	private void refreshHulls(final Vector4d center) {
-		double metersPerDegree = GeoUtils.EARTH_RADIUS_M * Math.PI / 180;
-		// NaN, so not close, before the first load.
-		double moved = Math.hypot((center.x - hullsLatitude) * metersPerDegree,
-				(center.y - hullsLongitude) * metersPerDegree * Math.cos(Math.toRadians(center.x)));
-		if (loadingHulls || (hullsDistance == maxDistance
-				&& moved < maxDistance * HULL_RELOAD_SHARE)) {
+		final double distance = maxDistance;
+		if (!hullsLoaded.request(center.x, center.y, distance)) {
 			return;
 		}
 
-		loadingHulls = true;
-		final double distance = maxDistance;
 		Constants.DB_EXECUTOR
 				.execute(new UiRelatedTask<List<ClimbingHull>>() {
 					private Map<Long, Integer> routeNumbers;
@@ -432,10 +444,7 @@ public class AugmentedRealityScene {
 
 					@Override
 					protected void thenDoUiRelatedWork(List<ClimbingHull> hulls) {
-						loadingHulls = false;
-						hullsLatitude = center.x;
-						hullsLongitude = center.y;
-						hullsDistance = distance;
+						boolean again = hullsLoaded.loaded(center.x, center.y, distance);
 						Map<String, GeoNode> earlierPins = new HashMap<>();
 						for (ClimbingHull earlier : climbingHulls.getHulls()) {
 							earlierPins.put(earlier.key, earlier.pin);
@@ -457,6 +466,9 @@ public class AugmentedRealityScene {
 						}
 						setRouteRelations(relations);
 						onLoaded.run();
+						if (again) {
+							refreshHulls(requestedCenter);
+						}
 					}
 				});
 	}

@@ -164,7 +164,10 @@ public class DataManager {
 
 	public boolean loadDisplayableNodesBBox(Context context, MapBounds bounds,
 	                                        Map<Long, DisplayableGeoNode> poiMap) {
-		List<Long> ids = loadNodeBBox(context, bounds, PIN_TYPES);
+		// Only what the map does not hold yet is read: a view loading again after a move, like
+		// the A.R. one, already has most of it.
+		List<Long> ids = new ArrayList<>(loadNodeBBox(context, bounds, PIN_TYPES));
+		ids.removeIf(poiMap::containsKey);
 		boolean changed = false;
 		for (OsmNode node : loadNodeData(context, ids).values()) {
 			if (!isDisplayablePoi(node) || poiMap.containsKey(node.osmID)) {
@@ -173,8 +176,10 @@ public class DataManager {
 			poiMap.put(node.osmID, toDisplayableNode(node));
 			changed = true;
 		}
-		for (OsmCollectionEntity collection : loadCollectionData(context,
-				loadCollectionBBox(context, bounds, OsmEntity.EntityClimbingType.artificial)).values()) {
+		List<Long> wayIds = new ArrayList<>(loadCollectionBBox(context, bounds,
+				OsmEntity.EntityClimbingType.artificial));
+		wayIds.removeIf(id -> poiMap.containsKey(-id));
+		for (OsmCollectionEntity collection : loadCollectionData(context, wayIds).values()) {
 			if (collection.osmType != OsmEntity.EntityOsmType.way) {
 				continue;
 			}

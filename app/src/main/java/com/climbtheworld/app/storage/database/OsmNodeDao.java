@@ -19,7 +19,13 @@ public interface OsmNodeDao {
 	@Insert(onConflict = OnConflictStrategy.IGNORE)
 	void insertNodesWithIgnore(List<OsmNode> nodes);
 
-	@Query("SELECT * FROM OsmNode WHERE osmID IN (:ids)")
+	/**
+	 * The nodes of the IDs. With the type, they are looked up through the primary key, which
+	 * starts with it: on the IDs alone, SQLite reads the whole table for each query.
+	 */
+	String NODES_BY_ID = "SELECT * FROM OsmNode WHERE osmType = 'node' AND osmID IN (:ids)";
+
+	@Query(NODES_BY_ID)
 	List<OsmNode> resolveNodeData(List<Long> ids);
 
 	@SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)

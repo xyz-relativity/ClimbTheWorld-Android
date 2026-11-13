@@ -48,7 +48,15 @@ public interface OsmCollectionEntityDao {
 	@Insert(onConflict = OnConflictStrategy.IGNORE)
 	void insertCollectionWithIgnore(List<OsmCollectionEntity> relations);
 
-	@Query("SELECT * FROM OsmCollectionEntity WHERE osmID IN (:ids)")
+	/**
+	 * The ways and relations of the IDs, both of an ID they share. With the types, they are
+	 * looked up through the primary key, which starts with the type: on the IDs alone, SQLite
+	 * reads the whole table for each query.
+	 */
+	String COLLECTIONS_BY_ID = "SELECT * FROM OsmCollectionEntity "
+			+ "WHERE osmType IN ('way', 'relation') AND osmID IN (:ids)";
+
+	@Query(COLLECTIONS_BY_ID)
 	List<OsmCollectionEntity> resolveData(List<Long> ids);
 
 	// Route ways (drawn as a line), gym ways (shown on the map as a single marker, e.g. a gym
