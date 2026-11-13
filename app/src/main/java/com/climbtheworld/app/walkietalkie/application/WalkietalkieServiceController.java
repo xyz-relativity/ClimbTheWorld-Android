@@ -42,6 +42,8 @@ public class WalkietalkieServiceController {
 	// kept while Bluetooth is off.
 	private BluetoothProfile headsetProxy;
 	private boolean destroyed;
+	// Whether the screen is showing, kept to tell the service once it is bound.
+	private boolean started;
 	private boolean serviceBound;
 	private boolean bluetoothReceiverRegistered;
 	private boolean audioRoutingConfigured;
@@ -104,6 +106,7 @@ public class WalkietalkieServiceController {
 				backgroundService =
 						((WalkietalkieBackgroundService.LocalBinder) iBinder).getService();
 				backgroundService.startIntercom(eventReceiver, configs);
+				backgroundService.setUiVisible(eventReceiver, started);
 				backgroundService.setRecordingState(activeState);
 			}
 
@@ -170,7 +173,19 @@ public class WalkietalkieServiceController {
 	}
 
 	public void onStart() {
+		started = true;
+		notifyUiVisible();
+	}
 
+	public void onStop() {
+		started = false;
+		notifyUiVisible();
+	}
+
+	private void notifyUiVisible() {
+		if (backgroundService != null) {
+			backgroundService.setUiVisible(uiEventListener, started);
+		}
 	}
 
 	public List<Client> getUiClientList() {

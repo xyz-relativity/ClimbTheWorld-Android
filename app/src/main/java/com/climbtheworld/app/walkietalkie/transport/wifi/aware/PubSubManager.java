@@ -67,6 +67,8 @@ public class PubSubManager {
 	private boolean isHeartbeatRunning;
 	private boolean isReceiverLoopRunning = false;
 	private volatile boolean destroyed;
+	// Set by the screen's thread and read by the heartbeat's, see setRangingEnabled.
+	private volatile boolean rangingEnabled;
 
 	public PubSubManager(Handler backgroundHandler, Context context,
 	                     String channel,
@@ -105,6 +107,35 @@ public class PubSubManager {
 
 	public RangingManager getRangingManager() {
 		return rangingManager;
+	}
+
+	boolean isRangingEnabled() {
+		return rangingEnabled;
+	}
+
+	/**
+	 * Whether the heartbeat measures the distance to the peers. A ranging is a radio burst to
+	 * each of them, and the distance is all it gives: it is only worth it while the distance is
+	 * shown, not for the hours the walkie-talkie runs with its screen off. Nothing else stops
+	 * with it: the peers stay known through discovery, and the heartbeat keeps sending its
+	 * datagram.
+	 */
+	public void setRangingEnabled(boolean enabled) {
+		if (rangingEnabled == enabled) {
+			return;
+		}
+		rangingEnabled = enabled;
+
+		Subscriber rangingSubscriber = subscriber;
+		if (rangingSubscriber == null) {
+			return;
+		}
+		if (enabled) {
+			// Now, as the next heartbeat may be half a minute away.
+			rangingSubscriber.requestRanging();
+		} else {
+			rangingSubscriber.forgetDistances();
+		}
 	}
 
 	public String getCallsign() {
@@ -170,7 +201,8 @@ public class PubSubManager {
 		scheduler = Executors.newSingleThreadScheduledExecutor();
 		isHeartbeatRunning = true;
 
-		// Periodically refresh the distance to the peers and keep the data paths busy.
+		// Periodically keep the data paths busy and, while it is shown, refresh the distance to
+		// the peers, see Subscriber#onHeartBeat.
 		scheduler.scheduleWithFixedDelay(new Runnable() {
 			@Override
 			public void run() {

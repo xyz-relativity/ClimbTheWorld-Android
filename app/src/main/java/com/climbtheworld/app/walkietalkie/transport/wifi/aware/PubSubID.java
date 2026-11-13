@@ -3,6 +3,8 @@ package com.climbtheworld.app.walkietalkie.transport.wifi.aware;
 import java.util.UUID;
 
 public class PubSubID {
+	/** The distance to a peer that has not been measured: the screen shows none for it. */
+	public static final double UNKNOWN_DISTANCE = -1;
 	public final UUID uuid;
 	public final String callsign;
 	public final Double distanceMeters;

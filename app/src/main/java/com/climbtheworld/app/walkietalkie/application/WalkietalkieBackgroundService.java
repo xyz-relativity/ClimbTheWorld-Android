@@ -122,6 +122,11 @@ public class WalkietalkieBackgroundService extends Service {
 	}
 
 	private void startPlayback(UUID clientUUID) {
+		// Every update of a peer comes through here: a thread is only built for one without.
+		if (playbackThreads.containsKey(clientUUID)) {
+			return;
+		}
+
 		PlaybackThread newPlaybackThread = new PlaybackThread(clientUUID);
 		PlaybackThread existingPlaybackThread = playbackThreads.putIfAbsent(clientUUID,
 				newPlaybackThread);
@@ -174,9 +179,33 @@ public class WalkietalkieBackgroundService extends Service {
 		// What another screen has put in place since, by binding in its turn, stays.
 		if (this.uiEventListener == uiEventListener) {
 			this.uiEventListener = null;
+			// A screen that is gone shows nothing, even if it never said so, see setUiVisible.
+			setDistanceShown(false);
 		}
 		if (recordingThread != null && recordingState != null) {
 			recordingThread.removeAudioListener((IRecordingListener) recordingState);
+		}
+	}
+
+	/**
+	 * Says whether the screen is showing. The distance to the peers is only measured while it
+	 * is: with the screen off, or another app in front, nobody reads it, and measuring it is a
+	 * radio burst to every peer, which the service would repeat for as long as it runs.
+	 *
+	 * @param uiEventListener the screen's listener, as given to startIntercom
+	 */
+	public synchronized void setUiVisible(IUiClientEvent uiEventListener, boolean visible) {
+		// A screen that another one has replaced, by binding in its turn, no longer has a say:
+		// it is stopped after the new one has started.
+		if (this.uiEventListener != uiEventListener) {
+			return;
+		}
+		setDistanceShown(visible);
+	}
+
+	private void setDistanceShown(boolean shown) {
+		for (ITransportLayer transport : transportLayers) {
+			transport.setDistanceShown(shown);
 		}
 	}
 
@@ -200,6 +229,7 @@ public class WalkietalkieBackgroundService extends Service {
 		// hands the same binder to the later binds and no longer says when they are gone. So the
 		// screens are let go of in detachUi, and this is left for one that did not call it.
 		uiEventListener = null;
+		setDistanceShown(false);
 		if (recordingThread != null) {
 			recordingThread.setAudioListener(null);
 		}

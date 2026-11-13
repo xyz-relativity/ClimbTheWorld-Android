@@ -59,6 +59,8 @@ public class WifiAwareTransport implements ITransportLayer {
 	private boolean attachInProgress;
 	private boolean restartScheduled;
 	private boolean destroyed;
+	// Kept for the sessions to come: a recovery starts a new PubSubManager.
+	private boolean distanceShown;
 	private int sessionGeneration;
 	private volatile LayerStatus layerStatus = LayerStatus.GRAY;
 
@@ -170,6 +172,7 @@ public class WifiAwareTransport implements ITransportLayer {
 
 		pubSubManager = new PubSubManager(backgroundHandler, context, channel, awareSession,
 				transportEventsListener, this).withCallsign(callsign);
+		pubSubManager.setRangingEnabled(distanceShown);
 		pubSubManager.startPubSub();
 	}
 
@@ -302,6 +305,15 @@ public class WifiAwareTransport implements ITransportLayer {
 			if (manager != null) {
 				manager.setCallsign(callsign);
 			}
+		}
+	}
+
+	@Override
+	public void setDistanceShown(boolean shown) {
+		distanceShown = shown;
+		PubSubManager manager = pubSubManager;
+		if (manager != null) {
+			manager.setRangingEnabled(shown);
 		}
 	}
 

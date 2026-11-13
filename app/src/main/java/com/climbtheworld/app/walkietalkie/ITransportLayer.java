@@ -12,6 +12,13 @@ public interface ITransportLayer {
 
 	void notifyConfigChange();
 
+	/**
+	 * Says whether the distance to the peers is being shown. Measuring it costs battery, so a
+	 * transport only does it while it is shown, and forgets what it measured once it is not: a
+	 * distance from before is not the one to show when the screen comes back.
+	 */
+	void setDistanceShown(boolean shown);
+
 	void onDestroy();
 
 	enum LayerStatus {

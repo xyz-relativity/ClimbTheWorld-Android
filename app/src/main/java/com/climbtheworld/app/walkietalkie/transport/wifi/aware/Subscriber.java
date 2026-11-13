@@ -65,7 +65,8 @@ public class Subscriber {
 						"!");
 
 				TransportMessage message = TransportMessage.fromData(serviceSpecificInfo);
-				PubSubID publisher = message == null ? null : message.toPubSubID(-1);
+				PubSubID publisher =
+						message == null ? null : message.toPubSubID(PubSubID.UNKNOWN_DISTANCE);
 				if (publisher == null) {
 					Log.w(TAG, "Ignoring publisher with malformed service info.");
 					return;
@@ -163,11 +164,25 @@ public class Subscriber {
 	}
 
 	public void onHeartBeat() {
+		if (manager.isRangingEnabled()) {
+			requestRanging();
+		}
+	}
+
+	/** Measures the distance to every publisher found. Each one measured is a peer update. */
+	void requestRanging() {
 		Map<PeerHandle, PubSubID> publisherSnapshot = publishers.snapshot();
 		manager.getRangingManager().requestRanging(publisherSnapshot.keySet(),
 				new RangingManager.IRangingEvent() {
 					@Override
 					public void onRangingData(PeerHandle peerHandle, double distanceMeters) {
+						if (!manager.isRangingEnabled()) {
+							// Asked for as the distances stopped being shown: it would be kept,
+							// and shown as the current one when they are shown again.
+							Log.d(TAG, "Ignoring ranging result: the distance is not shown");
+							return;
+						}
+
 						PubSubID expectedPublisher = publisherSnapshot.get(peerHandle);
 						if (expectedPublisher == null) {
 							Log.w(TAG, "Ignoring ranging result for an unrequested peer");
@@ -183,6 +198,23 @@ public class Subscriber {
 						}
 					}
 				});
+	}
+
+	/**
+	 * Forgets the distances measured, once they are no longer refreshed: they would be shown as
+	 * the current ones, however old. Each one forgotten is a peer update.
+	 */
+	void forgetDistances() {
+		for (Map.Entry<PeerHandle, PubSubID> entry : publishers.snapshot().entrySet()) {
+			PubSubID publisher = entry.getValue();
+			if (publisher.distanceMeters < 0) {
+				continue;
+			}
+			// Not replaced if the peer was found again or lost since: its distance is then
+			// unknown already.
+			publishers.replaceIfSame(entry.getKey(), publisher,
+					new PubSubID(publisher.uuid, publisher.callsign, PubSubID.UNKNOWN_DISTANCE));
+		}
 	}
 
 	public DiscoverySession getDiscoverySession() {

@@ -218,6 +218,12 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 	}
 
 	@Override
+	protected void onStop() {
+		serviceController.onStop();
+		super.onStop();
+	}
+
+	@Override
 	protected void onDestroy() {
 		serviceController.onDestroy(isFinishing());
 		super.onDestroy();
