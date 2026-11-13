@@ -22,6 +22,7 @@ import com.climbtheworld.app.utils.GeoUtils;
 import com.google.ar.core.Anchor;
 import com.google.ar.core.Camera;
 import com.google.ar.core.CameraIntrinsics;
+import com.google.ar.core.Config;
 import com.google.ar.core.Coordinates2d;
 import com.google.ar.core.Frame;
 import com.google.ar.core.Pose;
@@ -131,6 +132,12 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 	private boolean wireframeFacingSet;
 	// The session last given the camera texture and the display geometry, null to give them again.
 	private Session configuredSession;
+	// The session last told whether to measure depth, null to tell it again, what it was told,
+	// and whether it measures depth, which it does not if it could not be told, see
+	// applyDepthMode. GL thread only.
+	private Session depthModeSession;
+	private boolean depthAsked;
+	private boolean depthMeasured;
 	private int viewWidth;
 	private int viewHeight;
 	private TrackingState trackingState;
@@ -313,6 +320,29 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 		configuredSession = null;
 	}
 
+	/**
+	 * Has the session measure depth, or stop, before its next frame. On the GL thread, so that
+	 * it does not change under a frame being drawn. A session that cannot measure depth is left
+	 * as it is.
+	 */
+	private void applyDepthMode(Session current, boolean measure) {
+		depthModeSession = current;
+		depthAsked = measure;
+		depthMeasured = false;
+		if (!depthEnabled) {
+			return;
+		}
+		try {
+			Config config = current.getConfig();
+			config.setDepthMode(measure ? Config.DepthMode.AUTOMATIC : Config.DepthMode.DISABLED);
+			current.configure(config);
+			depthMeasured = measure;
+		} catch (RuntimeException e) {
+			// Without depth to read, whichever way it is left.
+			Log.w(TAG, "Could not turn ARCore's depth " + (measure ? "on" : "off"), e);
+		}
+	}
+
 	@Override
 	public void onDrawFrame(GL10 gl) {
 		GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
@@ -333,6 +363,9 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 			// The session's world may be new.
 			wallPlane = null;
 			wireframeFacingSet = false;
+			// Another renderer may have had the session measure depth or not since, see
+			// takeAnchors.
+			depthModeSession = null;
 		}
 		if (displayChanged) {
 			displayChanged = false;
@@ -342,6 +375,13 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 			current.setCameraTextureName(background.getTextureId());
 			current.setDisplayGeometry(display.getRotation(), viewWidth, viewHeight);
 			configuredSession = current;
+		}
+		// Depth is measured only while the aiming tools show, as nothing else uses it: ARCore
+		// works it out for every frame otherwise, whether it is read or not.
+		boolean aiming = aimingShown;
+		boolean measureDepth = depthEnabled && aiming;
+		if (current != depthModeSession || measureDepth != depthAsked) {
+			applyDepthMode(current, measureDepth);
 		}
 
 		Frame frame;
@@ -383,8 +423,7 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 				frame.transformCoordinates2d(Coordinates2d.VIEW, tap,
 						Coordinates2d.TEXTURE_NORMALIZED, tapTexture);
 			}
-			boolean aiming = aimingShown;
-			DepthHits depthHits = depthEnabled && aiming ? drawDepth(frame, camera, tapTexture)
+			DepthHits depthHits = depthMeasured ? drawDepth(frame, camera, tapTexture)
 					: new DepthHits(null, null);
 			if (aiming) {
 				hit = drawCursor(depthHits.centre(), camera);

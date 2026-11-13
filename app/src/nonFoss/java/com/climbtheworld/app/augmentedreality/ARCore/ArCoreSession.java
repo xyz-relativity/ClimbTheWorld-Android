@@ -503,7 +503,8 @@ class ArCoreSession {
 
 	/**
 	 * Shows the rock's wireframe and the cursor, as at first, or hides them, the cursor then
-	 * being nowhere.
+	 * being nowhere. ARCore only measures depth while they show, see
+	 * ArSessionRenderer.applyDepthMode.
 	 */
 	void setAimingShown(boolean shown) {
 		renderer.setAimingShown(shown);
@@ -1021,13 +1022,24 @@ class ArCoreSession {
 		if (!running) {
 			return;
 		}
+		CursorHit before = cursor;
 		cursor = hit;
+		// The cursor moving along what it is on only changes how far it is, many times a second
+		// while aiming: nothing else of the status goes by its distance, so only that is shown
+		// again, rather than the whole status worked out and set each time.
+		if (before != null && hit != null && before.source == hit.source) {
+			if (isAiming()) {
+				cursorDistance.setText(distanceText(hit));
+			}
+			return;
+		}
 		updateStatus();
 	}
 
 	/**
 	 * Shows what the user is to do next, how far the cursor is, and what can be aimed with, then
-	 * lets the host show the rest.
+	 * lets the host show the rest. Of the cursor, it goes by whether there is one and what it is
+	 * on; its distance alone is shown as it changes, see cursorChanged.
 	 */
 	void updateStatus() {
 		refreshLandmarks();
