@@ -28,6 +28,7 @@ import com.climbtheworld.app.storage.database.OsmEntity.EntityClimbingType;
 import com.climbtheworld.app.storage.database.OsmEntity.EntityOsmType;
 import com.climbtheworld.app.storage.edit.OsmEditStore;
 import com.climbtheworld.app.storage.edit.RelationMembers;
+import com.climbtheworld.app.utils.ScreenLoads;
 import com.climbtheworld.app.utils.Vector4d;
 import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.constants.UIConstants;
@@ -110,6 +111,8 @@ public class ParentMembership {
 	}
 
 	private final AppCompatActivity parent;
+	/** The editor's loads, which every task here is: nothing is stored before the editor saves. */
+	private final ScreenLoads screenLoads;
 	private final Kind kind;
 	private final OsmEditStore store;
 	private final long memberId;
@@ -175,6 +178,7 @@ public class ParentMembership {
 	}
 
 	/**
+	 * @param screenLoads   the editor's loads, cancelled when it closes, which the tasks here join.
 	 * @param editedElement the element as the form has it now, placed where it is, for the
 	 *                      distances to the parents.
 	 * @param shownBounds   the part of the editor's map on screen, where the parents to choose from
@@ -182,10 +186,12 @@ public class ParentMembership {
 	 * @param editedParents parents changed earlier in the same edit, which the element may be in or
 	 *                      have left; see changedGrandparents.
 	 */
-	public ParentMembership(AppCompatActivity parent, ViewGroup container, Kind kind, long memberId,
-	                        Supplier<GeoNode> editedElement, Supplier<MapBounds> shownBounds,
+	public ParentMembership(AppCompatActivity parent, ScreenLoads screenLoads, ViewGroup container,
+	                        Kind kind, long memberId, Supplier<GeoNode> editedElement,
+	                        Supplier<MapBounds> shownBounds,
 	                        List<OsmCollectionEntity> editedParents) {
 		this.parent = parent;
+		this.screenLoads = screenLoads;
 		this.kind = kind;
 		this.store = new OsmEditStore(parent);
 		this.memberId = memberId;
@@ -346,7 +352,7 @@ public class ParentMembership {
 	}
 
 	private void loadMemberships() {
-		Constants.DB_EXECUTOR.execute(new UiRelatedTask<List<Membership>>() {
+		Constants.DB_EXECUTOR.execute(screenLoads.add(new UiRelatedTask<List<Membership>>() {
 			/** The stored parents the element left earlier in the edit. */
 			private final List<OsmCollectionEntity> left = new ArrayList<>();
 
@@ -379,7 +385,7 @@ public class ParentMembership {
 				leftParents.addAll(left);
 				render();
 			}
-		});
+		}));
 	}
 
 	private boolean listsElement(OsmCollectionEntity relation) {
@@ -570,7 +576,7 @@ public class ParentMembership {
 
 		private void search() {
 			String name = filter.getText().toString().trim();
-			Constants.DB_EXECUTOR.execute(new UiRelatedTask<List<ListedParent>>() {
+			Constants.DB_EXECUTOR.execute(screenLoads.add(new UiRelatedTask<List<ListedParent>>() {
 				@Override
 				protected List<ListedParent> doWork() {
 					List<OsmCollectionEntity> found = name.isEmpty()
@@ -598,7 +604,7 @@ public class ParentMembership {
 					relations.addAll(result);
 					adapter.notifyDataSetChanged();
 				}
-			});
+			}));
 		}
 	}
 
@@ -615,7 +621,7 @@ public class ParentMembership {
 
 	/** Loads the relation's pin, see pinOf, off the UI thread and hands it to then on it. */
 	private void loadPin(OsmCollectionEntity relation, Consumer<DisplayableGeoNode> then) {
-		Constants.DB_EXECUTOR.execute(new UiRelatedTask<DisplayableGeoNode>() {
+		Constants.DB_EXECUTOR.execute(screenLoads.add(new UiRelatedTask<DisplayableGeoNode>() {
 			@Override
 			protected DisplayableGeoNode doWork() {
 				return pinOf(relation, ClimbingRouteCounter.forDatabase(parent));
@@ -625,7 +631,7 @@ public class ParentMembership {
 			protected void thenDoUiRelatedWork(DisplayableGeoNode pin) {
 				then.accept(pin);
 			}
-		});
+		}));
 	}
 
 	/**
@@ -643,7 +649,7 @@ public class ParentMembership {
 	 * the section when that editor saves it.
 	 */
 	private void createParent() {
-		Constants.DB_EXECUTOR.execute(new UiRelatedTask<OsmCollectionEntity>() {
+		Constants.DB_EXECUTOR.execute(screenLoads.add(new UiRelatedTask<OsmCollectionEntity>() {
 			private DisplayableGeoNode pin;
 
 			@Override
@@ -672,7 +678,7 @@ public class ParentMembership {
 					join(new Membership(relation, pin, true));
 				}
 			}
-		});
+		}));
 	}
 
 	/** Adds the element at the end of the parent, unless the parent lists it already. */

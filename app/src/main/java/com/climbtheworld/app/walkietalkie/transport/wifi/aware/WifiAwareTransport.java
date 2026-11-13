@@ -129,9 +129,12 @@ public class WifiAwareTransport implements ITransportLayer {
 			return;
 		}
 
-		awareThread = new HandlerThread("WiFiAwareSingleWorker");
-		awareThread.start();
-		backgroundHandler = new Handler(awareThread.getLooper());
+		// The callback keeps its own thread: a reset may have put another one in the field, or
+		// none, by the time the attach is answered.
+		final HandlerThread thread = new HandlerThread("WiFiAwareSingleWorker");
+		thread.start();
+		awareThread = thread;
+		backgroundHandler = new Handler(thread.getLooper());
 		attachInProgress = true;
 		setLayerStatus(LayerStatus.YELLOW);
 		final int generation = ++sessionGeneration;
@@ -140,20 +143,24 @@ public class WifiAwareTransport implements ITransportLayer {
 			@Override
 			public void onAttached(WifiAwareSession session) {
 				super.onAttached(session);
-				lifecycleHandler.post(() -> handleAttached(session, generation));
+				lifecycleHandler.post(() -> handleAttached(session, generation, thread));
 			}
 
 			@Override
 			public void onAttachFailed() {
 				super.onAttachFailed();
-				lifecycleHandler.post(() -> handleAttachFailed(generation));
+				lifecycleHandler.post(() -> handleAttachFailed(generation, thread));
 			}
 		}, backgroundHandler);
 	}
 
-	private void handleAttached(WifiAwareSession session, int generation) {
+	private void handleAttached(WifiAwareSession session, int generation, HandlerThread thread) {
 		if (destroyed || generation != sessionGeneration) {
+			// A reset gave up on this attach and left its thread running for this answer. Nobody
+			// uses the session: until it is closed, the system keeps this app attached to Wi-Fi
+			// Aware, with the radio on.
 			session.close();
+			thread.quitSafely();
 			return;
 		}
 
@@ -166,8 +173,10 @@ public class WifiAwareTransport implements ITransportLayer {
 		pubSubManager.startPubSub();
 	}
 
-	private void handleAttachFailed(int generation) {
+	private void handleAttachFailed(int generation, HandlerThread thread) {
 		if (destroyed || generation != sessionGeneration) {
+			// The thread of an attach a reset gave up on only waited for this answer.
+			thread.quitSafely();
 			return;
 		}
 
@@ -206,6 +215,7 @@ public class WifiAwareTransport implements ITransportLayer {
 
 	private void resetAwareResources() {
 		++sessionGeneration;
+		boolean attachPending = attachInProgress;
 		attachInProgress = false;
 
 		PubSubManager manager = pubSubManager;
@@ -222,6 +232,15 @@ public class WifiAwareTransport implements ITransportLayer {
 
 		HandlerThread threadToQuit = awareThread;
 		Handler handlerToDrain = backgroundHandler;
+		awareThread = null;
+		backgroundHandler = null;
+		if (attachPending) {
+			// The system answers the attach on this thread, and a looper that has quit drops the
+			// answer: the session would never be closed, and this app would stay attached to
+			// Wi-Fi Aware until the process dies. So the thread stays until handleAttached or
+			// handleAttachFailed gets the answer and quits it.
+			return;
+		}
 		if (handlerToDrain != null && threadToQuit != null) {
 			if (!handlerToDrain.post(threadToQuit::quitSafely)) {
 				threadToQuit.quitSafely();
@@ -229,8 +248,6 @@ public class WifiAwareTransport implements ITransportLayer {
 		} else if (threadToQuit != null) {
 			threadToQuit.quitSafely();
 		}
-		awareThread = null;
-		backgroundHandler = null;
 	}
 
 	@Override

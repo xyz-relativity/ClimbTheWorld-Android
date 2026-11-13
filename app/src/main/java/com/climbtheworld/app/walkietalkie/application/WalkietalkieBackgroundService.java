@@ -158,6 +158,28 @@ public class WalkietalkieBackgroundService extends Service {
 		});
 	}
 
+	/**
+	 * Lets go of a screen that is going away: its listener and its recording state hold the
+	 * activity and its views, and the service outlives them. The screen says so itself, before
+	 * each unbind, as Android does not tell the service of every unbind, see onUnbind.
+	 * <p>
+	 * With no screen, voice is still received and played. None is sent until a screen binds
+	 * again, as the recorder then has no state to hand its audio to.
+	 *
+	 * @param uiEventListener the screen's listener, as given to startIntercom
+	 * @param recordingState  the screen's state, as last given to setRecordingState, if any
+	 */
+	public synchronized void detachUi(IUiClientEvent uiEventListener,
+	                                  WalkietalkieHandler recordingState) {
+		// What another screen has put in place since, by binding in its turn, stays.
+		if (this.uiEventListener == uiEventListener) {
+			this.uiEventListener = null;
+		}
+		if (recordingThread != null && recordingState != null) {
+			recordingThread.removeAudioListener((IRecordingListener) recordingState);
+		}
+	}
+
 	private long getLastAudioPlayedMs() {
 		long lastAudioPlayedMs = 0;
 		for (PlaybackThread playbackThread : playbackThreads.values()) {
@@ -174,6 +196,9 @@ public class WalkietalkieBackgroundService extends Service {
 
 	@Override
 	public boolean onUnbind(Intent intent) {
+		// Only the first unbind of the service's life gets here: as this returns false, Android
+		// hands the same binder to the later binds and no longer says when they are gone. So the
+		// screens are let go of in detachUi, and this is left for one that did not call it.
 		uiEventListener = null;
 		if (recordingThread != null) {
 			recordingThread.setAudioListener(null);

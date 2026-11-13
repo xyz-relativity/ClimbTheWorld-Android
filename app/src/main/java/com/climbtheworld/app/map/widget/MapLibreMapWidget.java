@@ -310,7 +310,8 @@ public class MapLibreMapWidget {
 	// Set by onDestroy, which also leaves the widget without a map or a style, as it was before
 	// its map was ready: whatever reaches it late (a posted fit, a sensor reading, a call from
 	// the activity) then finds nothing to draw on. Checked only where that is not enough: where
-	// the map or its style would be set again, and where a listener has the map it was added to.
+	// the map or its style would be set again, where a listener has the map it was added to, and
+	// where a place asked for without a map is kept for the map to open on.
 	private boolean destroyed;
 	private MapLibreMap.CancelableCallback buttonAnimation;
 	private RotationMode rotationMode;
@@ -887,6 +888,11 @@ public class MapLibreMapWidget {
 	}
 
 	private void centerOn(MapCoordinate location, double zoom, boolean animate) {
+		// Asked late, as by a task of a closed screen: without a map, the place would be kept as
+		// the camera the profile's next map opens on, and its following of the GPS as off.
+		if (destroyed) {
+			return;
+		}
 		// The last place asked for wins over bounds still waiting to be fitted.
 		pendingFit = null;
 		tapLocation = location;

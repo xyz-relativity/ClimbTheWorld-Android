@@ -49,6 +49,16 @@ public class RecordingThread extends CancelableTask {
 		this.audioListener = audioListener;
 	}
 
+	/**
+	 * Stops handing the audio to a listener, when it is still the one that gets it: one set
+	 * since stays. Called on the thread that sets them, the main one.
+	 */
+	public void removeAudioListener(IRecordingListener audioListener) {
+		if (this.audioListener == audioListener) {
+			this.audioListener = null;
+		}
+	}
+
 	@Override
 	protected void doWork() {
 		android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO);

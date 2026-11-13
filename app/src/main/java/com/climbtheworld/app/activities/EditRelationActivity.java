@@ -189,7 +189,7 @@ public class EditRelationActivity extends MapWidgetActivity {
 
 	private void load() {
 		Intent intent = getIntent();
-		Constants.DB_EXECUTOR.execute(new UiRelatedTask<Loaded>() {
+		Constants.DB_EXECUTOR.execute(screenLoads.add(new UiRelatedTask<Loaded>() {
 			@Override
 			protected Loaded doWork() {
 				try {
@@ -235,7 +235,7 @@ public class EditRelationActivity extends MapWidgetActivity {
 				}
 				buildUi(loaded);
 			}
-		});
+		}));
 	}
 
 	private void buildUi(Loaded loaded) {
@@ -250,9 +250,9 @@ public class EditRelationActivity extends MapWidgetActivity {
 				relation.getMembers(), loaded.members, loaded.routes, loaded.highlightedKey,
 				this::updateMapMarkers);
 		if (!area) {
-			areaMembership = new ParentMembership(this, findViewById(R.id.containerParents),
-					ParentMembership.Kind.AREA, relation.osmID, this::locatedRelation,
-					mapWidget::getVisibleBounds, loaded.editedParents);
+			areaMembership = new ParentMembership(this, screenLoads,
+					findViewById(R.id.containerParents), ParentMembership.Kind.AREA, relation.osmID,
+					this::locatedRelation, mapWidget::getVisibleBounds, loaded.editedParents);
 			areaMembership.setParentEditor(this::openAreaEditor);
 		}
 		buildTagSections();
@@ -421,7 +421,7 @@ public class EditRelationActivity extends MapWidgetActivity {
 	}
 
 	private void addTapped(EntityOsmType osmType, long osmId) {
-		Constants.DB_EXECUTOR.execute(new UiRelatedTask<OsmEntity>() {
+		Constants.DB_EXECUTOR.execute(screenLoads.add(new UiRelatedTask<OsmEntity>() {
 			private ClimbingRouteCounter.RouteSummary routes;
 
 			@Override
@@ -447,7 +447,7 @@ public class EditRelationActivity extends MapWidgetActivity {
 				Toast.makeText(EditRelationActivity.this,
 						getString(R.string.member_added, name), Toast.LENGTH_SHORT).show();
 			}
-		});
+		}));
 	}
 
 	public void onClick(View v) {
@@ -487,7 +487,7 @@ public class EditRelationActivity extends MapWidgetActivity {
 					.setMessage(message)
 					.setIcon(android.R.drawable.ic_dialog_alert)
 					.setPositiveButton(android.R.string.yes, (dialog, which) ->
-							Constants.DB_EXECUTOR.execute(new UiRelatedTask<Boolean>() {
+							Constants.DB_EXECUTOR.execute(new WriteTask<Boolean>() {
 								@Override
 								protected Boolean doWork() {
 									store.deleteRelation(relation.osmID);
@@ -495,7 +495,7 @@ public class EditRelationActivity extends MapWidgetActivity {
 								}
 
 								@Override
-								protected void thenDoUiRelatedWork(Boolean result) {
+								protected void thenOnOpenScreen(Boolean result) {
 									finish();
 								}
 							}))
@@ -525,7 +525,7 @@ public class EditRelationActivity extends MapWidgetActivity {
 		if (saved.getMembers().length() > 0 && areaMembership != null) {
 			relations.addAll(areaMembership.changedParents());
 		}
-		Constants.DB_EXECUTOR.execute(new UiRelatedTask<Boolean>() {
+		Constants.DB_EXECUTOR.execute(new WriteTask<Boolean>() {
 			@Override
 			protected Boolean doWork() {
 				store.save(Collections.emptyList(), relations);
@@ -533,7 +533,7 @@ public class EditRelationActivity extends MapWidgetActivity {
 			}
 
 			@Override
-			protected void thenDoUiRelatedWork(Boolean result) {
+			protected void thenOnOpenScreen(Boolean result) {
 				finish();
 			}
 		});

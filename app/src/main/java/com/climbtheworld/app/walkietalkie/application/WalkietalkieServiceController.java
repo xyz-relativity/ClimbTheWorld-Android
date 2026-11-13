@@ -32,10 +32,16 @@ public class WalkietalkieServiceController {
 	private ServiceConnection intercomServiceConnection;
 	private Intent intercomServiceIntent;
 	private WalkietalkieBackgroundService backgroundService;
+	// The screen's listener, kept to tell the service which one to let go of, see onDestroy.
+	private IUiClientEvent uiEventListener;
 	private WalkietalkieHandler activeState;
 	private AudioManager audioManager;
 	private BluetoothAdapter bluetoothAdapter;
 	private BluetoothHeadset bluetoothHeadset;
+	// The headset proxy to close, from when it first connects: unlike bluetoothHeadset, it is
+	// kept while Bluetooth is off.
+	private BluetoothProfile headsetProxy;
+	private boolean destroyed;
 	private boolean serviceBound;
 	private boolean bluetoothReceiverRegistered;
 	private boolean audioRoutingConfigured;
@@ -45,10 +51,18 @@ public class WalkietalkieServiceController {
 	private final BluetoothProfile.ServiceListener profileListener =
 			new BluetoothProfile.ServiceListener() {
 				public void onServiceConnected(int profile, BluetoothProfile proxy) {
-					if (profile == BluetoothProfile.HEADSET) {
-						bluetoothHeadset = (BluetoothHeadset) proxy;
-						routeCommunicationAudio();
+					if (profile != BluetoothProfile.HEADSET) {
+						return;
 					}
+					if (destroyed) {
+						// The screen went away before the proxy connected, with nothing yet to
+						// close: a proxy can only be closed once it is there, so it is now.
+						closeHeadsetProxy(proxy);
+						return;
+					}
+					headsetProxy = proxy;
+					bluetoothHeadset = (BluetoothHeadset) proxy;
+					routeCommunicationAudio();
 				}
 
 				public void onServiceDisconnected(int profile) {
@@ -81,6 +95,7 @@ public class WalkietalkieServiceController {
 		configureCommunicationAudio();
 		registerBluetoothRouting(context);
 
+		uiEventListener = eventReceiver;
 		intercomServiceIntent = new Intent(context, WalkietalkieBackgroundService.class);
 		ContextCompat.startForegroundService(applicationContext, intercomServiceIntent);
 		intercomServiceConnection = new ServiceConnection() {
@@ -108,16 +123,30 @@ public class WalkietalkieServiceController {
 	}
 
 	public void onDestroy(boolean stopService) {
+		destroyed = true;
+		WalkietalkieHandler lastState = activeState;
+		activeState = null;
+
+		// The service outlives the screen, and Android only tells it of the first unbind of its
+		// life: it is told here, each time, to let go of this screen.
+		if (backgroundService != null) {
+			backgroundService.detachUi(uiEventListener, lastState);
+		}
+
 		Context context = parent.get();
 		if (context != null && serviceBound && intercomServiceConnection != null) {
 			context.getApplicationContext().unbindService(intercomServiceConnection);
 			serviceBound = false;
 		}
 		backgroundService = null;
+		// Both reach the activity, which the controller may outlive: a headset proxy that has
+		// not connected yet keeps profileListener, and so the controller, until it does.
+		intercomServiceConnection = null;
+		uiEventListener = null;
 
-		if (activeState != null) {
-			activeState.finish();
-			activeState = null;
+		// Finished only once the recorder no longer feeds it, as in setRecordingState.
+		if (lastState != null) {
+			lastState.finish();
 		}
 
 		if (stopService && context != null && intercomServiceIntent != null) {
@@ -174,7 +203,11 @@ public class WalkietalkieServiceController {
 
 		bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 		if (bluetoothAdapter != null) {
-			bluetoothAdapter.getProfileProxy(context, profileListener, BluetoothProfile.HEADSET);
+			// With the application's context, not the activity's: the proxy keeps its context
+			// until it is closed, which may be long after the activity is gone, see
+			// profileListener.
+			bluetoothAdapter.getProfileProxy(context.getApplicationContext(), profileListener,
+					BluetoothProfile.HEADSET);
 		}
 	}
 
@@ -250,6 +283,13 @@ public class WalkietalkieServiceController {
 		return false;
 	}
 
+	private static void closeHeadsetProxy(BluetoothProfile proxy) {
+		BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+		if (adapter != null) {
+			adapter.closeProfileProxy(BluetoothProfile.HEADSET, proxy);
+		}
+	}
+
 	private void releaseCommunicationAudio() {
 		Context context = parent.get();
 		if (context != null && bluetoothReceiverRegistered) {
@@ -261,9 +301,11 @@ public class WalkietalkieServiceController {
 			bluetoothReceiverRegistered = false;
 		}
 
-		if (bluetoothAdapter != null && bluetoothHeadset != null) {
-			bluetoothAdapter.closeProfileProxy(BluetoothProfile.HEADSET, bluetoothHeadset);
+		// One that has not connected yet is closed as it does, see profileListener.
+		if (headsetProxy != null) {
+			closeHeadsetProxy(headsetProxy);
 		}
+		headsetProxy = null;
 		bluetoothHeadset = null;
 		bluetoothAdapter = null;
 

@@ -172,7 +172,7 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 
 	private void doDatabaseWork(final long poiId) {
 		Constants.DB_EXECUTOR
-				.execute(new UiRelatedTask<GeoNode>() {
+				.execute(screenLoads.add(new UiRelatedTask<GeoNode>() {
 					@Override
 					protected GeoNode doWork() {
 						if (poiId == 0) {
@@ -214,7 +214,7 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 							dropdownType.performClick();
 						}
 					}
-				});
+				}));
 	}
 
 	/**
@@ -228,8 +228,9 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 		nameRequired = editNodeID == 0 || !node.getName().trim().isEmpty();
 		ViewGroup containerCrags = findViewById(R.id.containerCrags);
 		containerCrags.removeAllViews();
-		cragMembership = new ParentMembership(this, containerCrags, ParentMembership.Kind.CRAG,
-				editNode.osmID, () -> editNode, () -> mapWidget.getVisibleBounds(), joinedCrags);
+		cragMembership = new ParentMembership(this, screenLoads, containerCrags,
+				ParentMembership.Kind.CRAG, editNode.osmID, () -> editNode,
+				() -> mapWidget.getVisibleBounds(), joinedCrags);
 		cragMembership.setParentEditor(crag -> openCragEditor(crag));
 		buildUi();
 		updateMapMarker();
@@ -477,7 +478,7 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 
 						public void onClick(DialogInterface dialog, int whichButton) {
 							Constants.DB_EXECUTOR
-									.execute(new UiRelatedTask<Boolean>() {
+									.execute(new WriteTask<Boolean>() {
 										@Override
 										protected Boolean doWork() {
 											return new OsmEditStore(EditNodeActivity.this)
@@ -485,7 +486,7 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 										}
 
 										@Override
-										protected void thenDoUiRelatedWork(Boolean deleted) {
+										protected void thenOnOpenScreen(Boolean deleted) {
 											if (deleted) {
 												finish();
 											} else {
@@ -500,7 +501,10 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 		}
 	}
 
-	/** Saves the node with its crags, then runs then on the UI thread. */
+	/**
+	 * Saves the node with its crags, then runs then on the UI thread, unless the user has left the
+	 * screen by then, see WriteTask.
+	 */
 	private void save(Runnable then) {
 		JSONObject edited = resolveEdits();
 		if (edited == null) {
@@ -513,7 +517,7 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 		// The crags, then their areas.
 		final List<OsmCollectionEntity> relations = cragMembership.changedParents();
 		Constants.DB_EXECUTOR
-				.execute(new UiRelatedTask<Boolean>() {
+				.execute(new WriteTask<Boolean>() {
 					@Override
 					protected Boolean doWork() {
 						new OsmEditStore(EditNodeActivity.this)
@@ -522,7 +526,7 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 					}
 
 					@Override
-					protected void thenDoUiRelatedWork(Boolean result) {
+					protected void thenOnOpenScreen(Boolean result) {
 						then.run();
 					}
 				});
@@ -545,7 +549,7 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 		mapWidget.invalidateData();
 		arPlacement.nextNode();
 		Constants.DB_EXECUTOR
-				.execute(new UiRelatedTask<GeoNode>() {
+				.execute(screenLoads.add(new UiRelatedTask<GeoNode>() {
 					@Override
 					protected GeoNode doWork() {
 						OsmEditStore store = new OsmEditStore(EditNodeActivity.this);
@@ -560,7 +564,7 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 						// Back to the map, to place it.
 						((ScrollView) findViewById(R.id.geoNodeEditView)).smoothScrollTo(0, 0);
 					}
-				});
+				}));
 	}
 
 	private void hideKeyboard() {
