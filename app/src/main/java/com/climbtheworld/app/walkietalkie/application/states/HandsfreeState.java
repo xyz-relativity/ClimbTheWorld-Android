@@ -124,7 +124,7 @@ public class HandsfreeState extends WalkietalkieHandler
 		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
-				feedbackView.energyDisplay.setProgress(0);
+				clearEnergy();
 			}
 		});
 	}

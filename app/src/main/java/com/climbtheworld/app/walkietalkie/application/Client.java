@@ -23,10 +23,6 @@ public class Client {
 		return this;
 	}
 
-	public void sendData(byte[] data) {
-		transportClientSet.first().sendData(data);
-	}
-
 	public void onDestroy() {
 	}
 }

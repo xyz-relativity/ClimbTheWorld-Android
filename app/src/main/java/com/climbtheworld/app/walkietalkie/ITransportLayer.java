@@ -3,6 +3,7 @@ package com.climbtheworld.app.walkietalkie;
 import android.graphics.Color;
 
 public interface ITransportLayer {
+	/** Sends the data to every peer connected through this transport. */
 	void sendData(byte[] data);
 
 	ClientType getType();

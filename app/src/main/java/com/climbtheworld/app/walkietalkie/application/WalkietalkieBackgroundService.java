@@ -31,13 +31,13 @@ import com.climbtheworld.app.walkietalkie.application.audiotools.RecordingThread
 import com.climbtheworld.app.walkietalkie.application.states.WalkietalkieHandler;
 import com.climbtheworld.app.walkietalkie.transport.wifi.aware.WifiAwareTransport;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 public class WalkietalkieBackgroundService extends Service {
@@ -45,7 +45,8 @@ public class WalkietalkieBackgroundService extends Service {
 	private static final int SERVICE_ID = 682987;
 	private final Map<UUID, Client> activeClients = new ConcurrentHashMap<>();
 	private final Map<UUID, PlaybackThread> playbackThreads = new ConcurrentHashMap<>();
-	private final List<ITransportLayer> transportLayers = new ArrayList<>();
+	// Read by the audio thread as it sends, see sendData, while the service may be ending.
+	private final List<ITransportLayer> transportLayers = new CopyOnWriteArrayList<>();
 	private RecordingThread recordingThread;
 	private Context parent;
 	private PowerManager.WakeLock wakeLock;
@@ -251,9 +252,17 @@ public class WalkietalkieBackgroundService extends Service {
 		super.onDestroy();
 	}
 
+	/**
+	 * Sends a voice packet to every peer: once through each transport, which sends it to all of
+	 * its peers. Sent once for each peer, it would reach each of them as many times as there
+	 * are peers.
+	 */
 	public void sendData(byte[] data) {
-		for (Client client : activeClients.values()) {
-			client.sendData(data);
+		if (activeClients.isEmpty()) {
+			return;
+		}
+		for (ITransportLayer transport : transportLayers) {
+			transport.sendData(data);
 		}
 	}
 

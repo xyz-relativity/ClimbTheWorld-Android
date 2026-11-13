@@ -34,7 +34,7 @@ public class PushToTalkState extends WalkietalkieHandler
 
 		feedbackView.mic.setColorFilter(MIC_DISABLED_COLOR,
 				android.graphics.PorterDuff.Mode.MULTIPLY);
-		feedbackView.energyDisplay.setProgress(0);
+		clearEnergy();
 	}
 
 	@Override
@@ -64,7 +64,7 @@ public class PushToTalkState extends WalkietalkieHandler
 			public void run() {
 				feedbackView.mic.setColorFilter(MIC_DISABLED_COLOR,
 						android.graphics.PorterDuff.Mode.MULTIPLY);
-				feedbackView.energyDisplay.setProgress(0);
+				clearEnergy();
 			}
 		});
 	}

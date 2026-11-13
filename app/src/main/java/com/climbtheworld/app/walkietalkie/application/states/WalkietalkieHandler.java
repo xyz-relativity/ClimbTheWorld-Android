@@ -7,6 +7,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Lifecycle;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.utils.constants.Constants;
@@ -29,7 +30,7 @@ abstract public class WalkietalkieHandler {
 	FeedBackDisplay feedbackView = new FeedBackDisplay();
 	private IDataEvent dataChannelListener;
 	private volatile IPlaybackMonitor playbackMonitor;
-	private double lastPeak = 0f;
+	private final LevelMeter levelMeter = new LevelMeter();
 	private boolean finished;
 
 	WalkietalkieHandler(AppCompatActivity parent) {
@@ -72,17 +73,23 @@ abstract public class WalkietalkieHandler {
 		}
 	}
 
+	/**
+	 * Shows the peak of an audio frame on the level bar, when it changes what the bar shows and
+	 * the screen is there to see it, see LevelMeter.
+	 */
 	void updateEnergy(double energy) {
-		double peak = energy;
-		if (lastPeak > peak) {
-			peak = lastPeak * 0.575f;
+		boolean visible = parent.getLifecycle().getCurrentState()
+				.isAtLeast(Lifecycle.State.STARTED);
+		final int level = levelMeter.next(energy, SystemClock.elapsedRealtime(), visible);
+		if (level != LevelMeter.NONE) {
+			runOnUiThread(() -> feedbackView.energyDisplay.setProgress(level));
 		}
+	}
 
-		lastPeak = peak;
-
-		final double displayPeak = peak;
-
-		runOnUiThread(() -> feedbackView.energyDisplay.setProgress((int) (displayPeak * 100)));
+	/** Empties the level bar, as once a recording is done. Runs on the UI thread. */
+	void clearEnergy() {
+		levelMeter.barChanged();
+		feedbackView.energyDisplay.setProgress(0);
 	}
 
 	void runOnUiThread(Runnable r) {
