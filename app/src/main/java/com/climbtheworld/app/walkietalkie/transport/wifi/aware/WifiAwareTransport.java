@@ -173,7 +173,17 @@ public class WifiAwareTransport implements ITransportLayer {
 		pubSubManager = new PubSubManager(backgroundHandler, context, channel, awareSession,
 				transportEventsListener, this).withCallsign(callsign);
 		pubSubManager.setRangingEnabled(distanceShown);
-		pubSubManager.startPubSub();
+		try {
+			pubSubManager.startPubSub();
+		} catch (RuntimeException e) {
+			// The system refused the publish or the subscribe: Android 11 takes no "_" in the
+			// service name, and a permission may have been revoked since the check. It would
+			// refuse an attach and start again just the same, so none is scheduled: the next
+			// start is a channel change, Wi-Fi Aware coming back or the walkie-talkie restarted.
+			Log.e(TAG, "Failed to start publishing and subscribing; not retrying.", e);
+			resetAwareResources();
+			showAttachFailure();
+		}
 	}
 
 	private void handleAttachFailed(int generation, HandlerThread thread) {
@@ -185,9 +195,13 @@ public class WifiAwareTransport implements ITransportLayer {
 
 		attachInProgress = false;
 		Log.e(TAG, "Failed to attach to Wi-Fi Aware service; scheduling recovery.");
+		showAttachFailure();
+		scheduleRecoveryOnMain("attach failed");
+	}
+
+	private void showAttachFailure() {
 		setLayerStatus(LayerStatus.RED);
 		DialogBuilder.toastOnMainThread(context, "Failed to attach to Wi-Fi Aware service.");
-		scheduleRecoveryOnMain("attach failed");
 	}
 
 	void requestRecovery(PubSubManager source, String reason) {
