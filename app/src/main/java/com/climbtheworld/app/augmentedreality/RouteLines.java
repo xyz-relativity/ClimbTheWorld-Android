@@ -1,11 +1,14 @@
 package com.climbtheworld.app.augmentedreality;
 
+import com.climbtheworld.app.map.widget.climbing.RouteWay;
 import com.climbtheworld.app.storage.database.GeoNode;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -25,6 +28,8 @@ public class RouteLines {
 
 	private List<RouteLine> routes = Collections.emptyList();
 	private final Set<Long> topIds = new HashSet<>();
+	// The tops that show along with their own route, by their node, see getTop.
+	private final Map<Long, RouteWay.Top> ownTops = new HashMap<>();
 	private boolean changed;
 	private final LayoutOrigin origin = new LayoutOrigin();
 	private int terrainVersion;
@@ -37,8 +42,13 @@ public class RouteLines {
 	 */
 	public List<RouteLine> setRoutes(List<RouteLine> loaded) {
 		Set<Long> loadedTops = new HashSet<>();
+		ownTops.clear();
 		for (RouteLine route : loaded) {
 			loadedTops.add(route.top.getID());
+			// A pitch of a route relation leaves its top to the relation.
+			if (route.routeRelation == null) {
+				ownTops.put(route.top.getID(), route.top);
+			}
 		}
 		List<RouteLine> removed = new ArrayList<>();
 		for (RouteLine route : routes) {
@@ -92,6 +102,18 @@ public class RouteLines {
 	 */
 	public boolean isTop(long nodeId) {
 		return topIds.contains(nodeId);
+	}
+
+	/**
+	 * The top that shows at a node along with its own route, and not with a route relation the
+	 * route is a pitch of. Of the routes ending at the node, it is the last one's: pins as far
+	 * as each other are stacked last first, and they share the one view of their node, which is
+	 * drawn from the first of them.
+	 *
+	 * @return the top, null when no route of its own ends at the node
+	 */
+	public RouteWay.Top getTop(long nodeId) {
+		return ownTops.get(nodeId);
 	}
 
 	/** Where the routes were laid out from, as of the last {@link #update} */

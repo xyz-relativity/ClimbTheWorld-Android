@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import com.climbtheworld.app.map.widget.climbing.RouteRelation;
 import com.climbtheworld.app.map.widget.climbing.RouteWay;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
@@ -117,6 +118,37 @@ public class RouteLineTest {
 		assertTrue(routeLines.isTop(14288355603L));
 		assertFalse(routeLines.isTop(3));
 		assertFalse(routeLines.isTop(bottom.osmID));
+	}
+
+	@Test
+	public void topIsThatOfTheLastRouteOfItsOwnEndingThere() throws JSONException {
+		OsmNode bottom = bottom();
+		OsmNode top = top();
+		RouteLine first = RouteLine.fromWay(way(routeWayTags(), bottom, top), nodes);
+		RouteLine last = RouteLine.fromWay(way(routeWayTags(),
+				node(3, 46.226, -73.7403, new JSONObject()), top), nodes);
+		RouteLines routeLines = new RouteLines();
+		routeLines.setRoutes(Arrays.asList(first, last));
+		assertSame(last.top, routeLines.getTop(top.osmID));
+		assertNull(routeLines.getTop(bottom.osmID));
+
+		// A pitch of a route relation leaves its top to the relation.
+		OsmCollectionEntity relation = new OsmCollectionEntity(new JSONObject()
+				.put("type", "relation").put("id", 21237508L)
+				.put("members", new JSONArray().put(new JSONObject().put("type", "way")
+						.put("ref", 1568644445L).put("role", "")))
+				.put("tags", routeWayTags().put("type", "route").put("route", "climbing")));
+		relation.osmNodes = Arrays.asList(bottom.osmID, top.osmID);
+		RouteLine pitch = RouteLine.fromWay(way(routeWayTags(), bottom, top), nodes,
+				RouteRelation.fromRelation(relation, nodes));
+		assertEquals(relation.osmID, pitch.routeRelation.route.osmID);
+		routeLines.setRoutes(Collections.singletonList(pitch));
+		assertTrue(routeLines.isTop(top.osmID));
+		assertNull(routeLines.getTop(top.osmID));
+
+		// Along with a route of its own, the top is that route's.
+		routeLines.setRoutes(Arrays.asList(first, pitch));
+		assertSame(first.top, routeLines.getTop(top.osmID));
 	}
 
 	@Test

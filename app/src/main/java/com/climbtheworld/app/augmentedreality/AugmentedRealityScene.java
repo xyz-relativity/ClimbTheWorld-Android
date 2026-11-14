@@ -715,7 +715,12 @@ public class AugmentedRealityScene {
 							&& placeInView(poi, true, useTerrain, observerElevation,
 							maxViewAngleFor(seeThrough, entry.getKey(), maxViewAngle))) {
 						visible.add(poi);
-					} else {
+					} else if (!arViewManager.isDrawnFrom(routeLines.getTop(entry.getKey()))) {
+						// The top of a route mapped as a way shares the view of its node, and is
+						// shown or hidden along with the route, below. Its pin is left to that:
+						// hidden here only to be shown again there, on every frame, it would let
+						// go of every press, and a tap would never open the route. A pin drawn
+						// from anything else still goes, for the top's to be drawn in its place.
 						arViewManager.hidePOIFromView(poi);
 					}
 				}

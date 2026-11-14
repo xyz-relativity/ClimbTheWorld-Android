@@ -339,6 +339,19 @@ public class AugmentedRealityViewManager {
 	}
 
 	/**
+	 * @param poi null for none
+	 * @return whether the pin on display for the POI's node is drawn from this very POI, rather
+	 * than from another POI of the same node, see addOrUpdatePOIToView
+	 */
+	public boolean isDrawnFrom(GeoNode poi) {
+		if (poi == null) {
+			return false;
+		}
+		View button = toDisplay.get(poi);
+		return button != null && button.getTag() == poi;
+	}
+
+	/**
 	 * Drops all the pins kept out of view, as after a change of what the pins are drawn from.
 	 */
 	public void removeHiddenPOIs() {
