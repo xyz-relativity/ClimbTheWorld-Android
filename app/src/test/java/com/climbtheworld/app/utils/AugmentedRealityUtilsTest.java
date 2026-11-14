@@ -224,30 +224,30 @@ public class AugmentedRealityUtilsTest {
 
 	@Test
 	public void remapScale() {
-		assertEquals("Negative origin scale Min", 0.0f,
-				AugmentedRealityUtils.remapScale(-30f, 30f, 0f, 2000f, -30f));
-		assertEquals("Negative origin scale Max", 2000f,
-				AugmentedRealityUtils.remapScale(-30f, 30f, 0f, 2000f, 30f));
-		assertEquals("Negative origin scale Mid", 1000f,
-				AugmentedRealityUtils.remapScale(-30f, 30f, 0f, 2000f, 0f));
+		assertEquals("Negative origin scale Min", 0.0,
+				AugmentedRealityUtils.remapScale(-30f, 30f, 0f, 2000f, -30f), 1e-9);
+		assertEquals("Negative origin scale Max", 2000.0,
+				AugmentedRealityUtils.remapScale(-30f, 30f, 0f, 2000f, 30f), 1e-9);
+		assertEquals("Negative origin scale Mid", 1000.0,
+				AugmentedRealityUtils.remapScale(-30f, 30f, 0f, 2000f, 0f), 1e-9);
 
-		assertEquals("Positive origin scale Min", 0.0f,
-				AugmentedRealityUtils.remapScale(0f, 30f, 0f, 2000f, 0f));
-		assertEquals("Positive origin scale Max", 2000f,
-				AugmentedRealityUtils.remapScale(0f, 30f, 0f, 2000f, 30f));
-		assertEquals("Positive origin scale Mid", 1000f,
-				AugmentedRealityUtils.remapScale(0f, 30f, 0f, 2000f, 15f));
+		assertEquals("Positive origin scale Min", 0.0,
+				AugmentedRealityUtils.remapScale(0f, 30f, 0f, 2000f, 0f), 1e-9);
+		assertEquals("Positive origin scale Max", 2000.0,
+				AugmentedRealityUtils.remapScale(0f, 30f, 0f, 2000f, 30f), 1e-9);
+		assertEquals("Positive origin scale Mid", 1000.0,
+				AugmentedRealityUtils.remapScale(0f, 30f, 0f, 2000f, 15f), 1e-9);
 
-		assertEquals("Negative dest scale Min", -1000f,
-				AugmentedRealityUtils.remapScale(0f, 30f, -1000f, 1000f, 0f));
-		assertEquals("Negative dest scale Max", 1000f,
-				AugmentedRealityUtils.remapScale(0f, 30f, -1000f, 1000f, 30f));
-		assertEquals("Negative dest scale Mid", 0f,
-				AugmentedRealityUtils.remapScale(0f, 30f, -1000f, 1000f, 15f));
+		assertEquals("Negative dest scale Min", -1000.0,
+				AugmentedRealityUtils.remapScale(0f, 30f, -1000f, 1000f, 0f), 1e-9);
+		assertEquals("Negative dest scale Max", 1000.0,
+				AugmentedRealityUtils.remapScale(0f, 30f, -1000f, 1000f, 30f), 1e-9);
+		assertEquals("Negative dest scale Mid", 0.0,
+				AugmentedRealityUtils.remapScale(0f, 30f, -1000f, 1000f, 15f), 1e-9);
 
-		assertEquals("Under scale", -333.33334f,
-				AugmentedRealityUtils.remapScale(-30f, 30f, 0f, 2000f, -40f));
-		assertEquals("Over scale", 2333.3333f,
-				AugmentedRealityUtils.remapScale(-30f, 30f, 0f, 2000f, 40f));
+		assertEquals("Under scale", -1000.0 / 3,
+				AugmentedRealityUtils.remapScale(-30f, 30f, 0f, 2000f, -40f), 1e-9);
+		assertEquals("Over scale", 7000.0 / 3,
+				AugmentedRealityUtils.remapScale(-30f, 30f, 0f, 2000f, 40f), 1e-9);
 	}
 }
