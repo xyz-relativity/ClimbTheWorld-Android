@@ -31,6 +31,7 @@ import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.map.widget.climbing.ClimbingParent;
 import com.climbtheworld.app.map.widget.climbing.ClimbingRouteCounter;
 import com.climbtheworld.app.map.widget.climbing.RouteStandIn;
+import com.climbtheworld.app.storage.CachedDataManager;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
@@ -324,8 +325,14 @@ public class NodeDialogBuilder {
 		return result;
 	}
 
+	/**
+	 * @param dataManager  reads the members, and routeCounter's reads go through it too
+	 * @param routeCounter summarizes the routes of each member
+	 */
 	private static List<CollectionMember> loadCollectionMembers(AppCompatActivity activity,
-	                                                            OsmCollectionEntity collection)
+	                                                            OsmCollectionEntity collection,
+	                                                            DataManager dataManager,
+	                                                            ClimbingRouteCounter routeCounter)
 			throws JSONException {
 		List<JSONObject> members = RelationMembers.of(collection.jsonNodeInfo);
 		if (members.isEmpty()) {
@@ -334,12 +341,10 @@ public class NodeDialogBuilder {
 
 		List<Long> nodeIds = RelationMembers.nodeRefs(members);
 		List<Long> collectionIds = RelationMembers.collectionRefs(members);
-		DataManager dataManager = new DataManager();
 		Map<Long, OsmNode> nodes = nodeIds.isEmpty()
 				? Collections.emptyMap() : dataManager.loadNodeData(activity, nodeIds);
 		Map<String, OsmCollectionEntity> collections = collectionIds.isEmpty()
 				? Collections.emptyMap() : dataManager.loadCollectionData(activity, collectionIds);
-		ClimbingRouteCounter routeCounter = ClimbingRouteCounter.forDatabase(activity);
 		List<CollectionMember> result = new ArrayList<>();
 		for (JSONObject member : members) {
 			long id = RelationMembers.ref(member);
@@ -626,11 +631,16 @@ public class NodeDialogBuilder {
 			@Override
 			protected Void doWork() {
 				try {
-					ClimbingRouteCounter.RouteSummary routes =
-							ClimbingRouteCounter.forDatabase(parent).summarize(collection);
+					// The collection's summary reads all of its nodes and nested collections,
+					// which its members and their summaries read again.
+					DataManager dataManager = new CachedDataManager();
+					ClimbingRouteCounter routeCounter =
+							ClimbingRouteCounter.forDatabase(parent, dataManager);
+					ClimbingRouteCounter.RouteSummary routes = routeCounter.summarize(collection);
 					GeoNode relation = ClimbingRouteCounter.pin(collection, labelCoordinate,
 							routes);
-					List<CollectionMember> members = loadCollectionMembers(parent, collection);
+					List<CollectionMember> members = loadCollectionMembers(parent, collection,
+							dataManager, routeCounter);
 					dialogueView = buildCollectionDialog(parent, alertDialog.getListView(),
 							new CollectionMember(relation, collection, labelCoordinate, routes),
 							members);
