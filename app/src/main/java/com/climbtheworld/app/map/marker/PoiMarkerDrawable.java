@@ -9,6 +9,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -188,7 +189,9 @@ public class PoiMarkerDrawable extends Drawable {
 				poi.getGeoNode().getKey(ClimbingTags.KEY_LENGTH), Locale.getDefault()) : null;
 		this.lengthMargin = lengthLabel != null ? LENGTH_MARGIN : 0;
 
-		prepareBackground(parentRef.get(), poi);
+		// Only the size is needed until the pin is drawn, and prepareForRender works out the
+		// background again, as the alpha, the node or the grade system may change in between.
+		prepareBackgroundIcon(parentRef.get(), poi);
 	}
 
 	@Override
@@ -197,6 +200,16 @@ public class PoiMarkerDrawable extends Drawable {
 	}
 
 	private void renderDrawable(Canvas canvas, int offsetX, int offsetY, float scale) {
+		renderDrawable(canvas, offsetX, offsetY, scale, originalBitmap, styleIcon);
+	}
+
+	/**
+	 * @param background the pin, originalBitmap or the same drawn bigger, which takes the place of
+	 *                   originalBitmap
+	 * @param styleBitmap the style icon, styleIcon or the same drawn bigger, null without one
+	 */
+	private void renderDrawable(Canvas canvas, int offsetX, int offsetY, float scale,
+	                            Bitmap background, Bitmap styleBitmap) {
 		if (isRendererPrepared) {
 			canvas.save();
 			canvas.translate(offsetX, offsetY);
@@ -205,7 +218,8 @@ public class PoiMarkerDrawable extends Drawable {
 			drawLength(canvas);
 
 			//draw background
-			canvas.drawBitmap(originalBitmap, lengthMargin, 0, backgroundPaint);
+			drawBitmap(canvas, background, lengthMargin, 0, originalBitmap.getWidth(),
+					originalBitmap.getHeight(), backgroundPaint);
 
 			//draw grade text
 			//outline
@@ -245,7 +259,7 @@ public class PoiMarkerDrawable extends Drawable {
 						routeCountTextPaint);
 			}
 
-			if (styleIcon != null) {
+			if (styleBitmap != null) {
 				float styleCenterY;
 				if (slim) {
 					styleCenterY = SLIM_STYLE_CENTER_Y;
@@ -254,8 +268,9 @@ public class PoiMarkerDrawable extends Drawable {
 				} else {
 					styleCenterY = STYLE_TOP_OFFSET;
 				}
-				canvas.drawBitmap(styleIcon, centerX - (styleIcon.getWidth() / 2f),
-						styleCenterY - (styleIcon.getHeight() / 2f), styleIconPaint);
+				drawBitmap(canvas, styleBitmap, centerX - (styleIcon.getWidth() / 2f),
+						styleCenterY - (styleIcon.getHeight() / 2f), styleIcon.getWidth(),
+						styleIcon.getHeight(), styleIconPaint);
 			}
 
 			// Over the rest, on the bottom right of the main circle.
@@ -273,6 +288,18 @@ public class PoiMarkerDrawable extends Drawable {
 			canvas.restore();
 		} else {
 			prepareForRender(true);
+		}
+	}
+
+	// A bitmap drawn bigger than the given size goes into it, where the canvas is scaled up as much,
+	// so that it lands pixel for pixel.
+	private static void drawBitmap(Canvas canvas, Bitmap bitmap, float left, float top, int width,
+	                               int height, Paint paint) {
+		if (bitmap.getWidth() == width && bitmap.getHeight() == height) {
+			canvas.drawBitmap(bitmap, left, top, paint);
+		} else {
+			canvas.drawBitmap(bitmap, null, new RectF(left, top, left + width, top + height),
+					paint);
 		}
 	}
 
@@ -493,6 +520,11 @@ public class PoiMarkerDrawable extends Drawable {
 		this.backgroundPaint.setTextAlign(Paint.Align.CENTER);
 
 		this.gradeString = getGradeString();
+		prepareBackgroundIcon(parent, poi);
+	}
+
+	// The tinted pin and the size it gives the drawable.
+	private void prepareBackgroundIcon(AppCompatActivity parent, DisplayableGeoNode poi) {
 		this.color = ColorStateList.valueOf(DisplayableGeoNode.POI_DEFAULT_COLOR).withAlpha(255);
 		if (poi.geoNode.getNodeType() == OsmEntity.EntityClimbingType.route) {
 			color = Globals.gradeToColorState(poi.geoNode.getLevelId(ClimbingTags.KEY_GRADE_TAG));
@@ -505,13 +537,19 @@ public class PoiMarkerDrawable extends Drawable {
 					DisplayableGeoNode.getArtificialPinColor(poi.geoNode.getArtificialKind()));
 		}
 
-		Drawable drawable = slim
-				? MarkerUtils.getSlimRouteIcon(parent, color, routeTop)
-				: MarkerUtils.getPoiIcon(parent, poi.geoNode, color);
+		Drawable drawable = getBackgroundIcon(parent, poi, 1);
 		this.IntrinsicWidth = drawable.getIntrinsicWidth() + 2 * lengthMargin;
 		this.IntrinsicHeight = drawable.getIntrinsicHeight();
 		this.originalBitmap = ((BitmapDrawable) drawable).getBitmap();
 		this.centerX = IntrinsicWidth / 2;
+	}
+
+	// The tinted pin in the colour prepareBackgroundIcon worked out, the given times its size.
+	private Drawable getBackgroundIcon(AppCompatActivity parent, DisplayableGeoNode poi,
+	                                   float scale) {
+		return slim
+				? MarkerUtils.getSlimRouteIcon(parent, color, routeTop, scale)
+				: MarkerUtils.getPoiIcon(parent, poi.geoNode, color, scale);
 	}
 
 	private void prepareNameText() {
@@ -643,5 +681,35 @@ public class PoiMarkerDrawable extends Drawable {
 		Canvas canvas = new Canvas(newBitmap);
 		renderDrawable(canvas, 0, 0, 1);
 		return new BitmapDrawable(parentRef.get().getResources(), newBitmap);
+	}
+
+	/**
+	 * The pin in a bitmap the given times its size, for a view that shows it that big: the texts
+	 * and lines are drawn at that size, and the pin and its style icon are taken from their vectors
+	 * at that size, so that it is the pin of getDrawable() made bigger without being stretched.
+	 * Its intrinsic size is the bitmap's, the given times getDrawable()'s.
+	 */
+	public Drawable getDrawable(float scale) {
+		if (scale == 1) {
+			return getDrawable();
+		}
+		if (!isRendererPrepared) {
+			prepareForRender(false);
+		}
+		AppCompatActivity parent = parentRef.get();
+		Bitmap background = ((BitmapDrawable) getBackgroundIcon(parent, poi, scale)).getBitmap();
+		Bitmap styleBitmap = styleIcon == null ? null : ((BitmapDrawable) MarkerUtils.getStyleIcon(
+				parent, poi.geoNode.getClimbingStyles(), (int) STYLE_ICON_SIZE, scale)).getBitmap();
+
+		Bitmap newBitmap = Bitmap.createBitmap(IconScale.px(getIntrinsicWidth(), scale),
+				IconScale.px(getIntrinsicHeight(), scale), Bitmap.Config.ARGB_8888);
+		Canvas canvas = new Canvas(newBitmap);
+		// Every position and size is worked out at 1, so the pin keeps its proportions.
+		canvas.scale(scale, scale);
+		renderDrawable(canvas, 0, 0, 1, background, styleBitmap);
+		// Only once drawn, as the canvas scales what it draws by the bitmap's density: at the
+		// resources' density the drawable's size is the bitmap's in pixels.
+		newBitmap.setDensity(parent.getResources().getDisplayMetrics().densityDpi);
+		return new BitmapDrawable(parent.getResources(), newBitmap);
 	}
 }

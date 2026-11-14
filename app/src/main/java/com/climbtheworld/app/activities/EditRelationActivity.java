@@ -11,6 +11,8 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
+
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.editor.EditSnapshot;
@@ -38,6 +40,7 @@ import com.climbtheworld.app.storage.edit.ElementNotStoredException;
 import com.climbtheworld.app.storage.edit.FormChanges;
 import com.climbtheworld.app.storage.edit.OsmEditStore;
 import com.climbtheworld.app.storage.edit.RelationMembers;
+import com.climbtheworld.app.storage.services.DownloadService;
 import com.climbtheworld.app.storage.upload.OsmElements;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector4d;
@@ -127,6 +130,11 @@ public class EditRelationActivity extends MapWidgetActivity {
 	 * relation with a member that doesn't exist. See addTapped and busy.
 	 */
 	private int memberLoads;
+	/**
+	 * DownloadService.importCount from before the relation and its members were read: a download
+	 * written since then replaced what the form started from. See refusedForDownload.
+	 */
+	private long loadedImportCount;
 
 	private static final class Loaded {
 		final OsmCollectionEntity relation;
@@ -172,6 +180,23 @@ public class EditRelationActivity extends MapWidgetActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		// A download rewrites the elements an edit starts from; nothing is set up, see
+		// MapWidgetActivity.onDestroy. A member's editor that opened this one gets it back
+		// cancelled.
+		if (DownloadService.isActive()) {
+			DialogBuilder.toastOnMainThread(this, getString(R.string.edit_blocked_by_download));
+			finish();
+			return;
+		}
+		// Before the relation is read, so that any download written after that changes it.
+		loadedImportCount = DownloadService.importCount();
+		// Back leaves as Cancel does.
+		getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+			@Override
+			public void handleOnBackPressed() {
+				leave();
+			}
+		});
 		MapLibre.getInstance(this);
 		setContentView(R.layout.activity_edit_relation);
 
@@ -367,6 +392,15 @@ public class EditRelationActivity extends MapWidgetActivity {
 	}
 
 	/**
+	 * Cancel and back: closes the editor, after asking when that loses changes, as in the node
+	 * editor. Opened from a member's editor, only what was changed here is lost: that editor gets
+	 * the relation back cancelled and keeps its own changes.
+	 */
+	private void leave() {
+		DiscardQuestion.ask(this, !writing && isEdited(), this::finish);
+	}
+
+	/**
 	 * Opens the area, one the crag is in or a new one, as part of this edit, with the crag as the
 	 * form has it; the area comes back to be saved with the crag.
 	 */
@@ -528,7 +562,7 @@ public class EditRelationActivity extends MapWidgetActivity {
 	public void onClick(View v) {
 		int id = v.getId();
 		if (id == R.id.ButtonCancel) {
-			finish();
+			leave();
 		} else if (relation == null) {
 			// Still loading.
 			return;
@@ -553,6 +587,9 @@ public class EditRelationActivity extends MapWidgetActivity {
 					.setNegativeButton(android.R.string.cancel, null)
 					.show();
 		} else if (id == R.id.ButtonDelete) {
+			if (refusedForDownload(false)) {
+				return;
+			}
 			String message = getString(R.string.delete_relation_message);
 			List<String> areas = areaMembership != null
 					? areaMembership.storedParentNames() : Collections.emptyList();
@@ -564,6 +601,10 @@ public class EditRelationActivity extends MapWidgetActivity {
 					.setMessage(message)
 					.setIcon(android.R.drawable.ic_dialog_alert)
 					.setPositiveButton(android.R.string.yes, (dialog, which) -> {
+						// A download may have started while the question was open.
+						if (refusedForDownload(false)) {
+							return;
+						}
 						writing = true;
 						Constants.DB_EXECUTOR.execute(new WriteTask<Boolean>() {
 							@Override
@@ -596,6 +637,10 @@ public class EditRelationActivity extends MapWidgetActivity {
 			}
 			setResult(RESULT_OK, result);
 			finish();
+			return;
+		}
+		// Only when storing: a member's editor checks when it stores this with the member.
+		if (refusedForDownload(true)) {
 			return;
 		}
 		// The members as they are at the press: the list goes on changing them on the UI thread,
@@ -634,6 +679,24 @@ public class EditRelationActivity extends MapWidgetActivity {
 						null);
 			}
 		});
+	}
+
+	/**
+	 * Whether a download keeps the relation from being written, as in the node editor: one is
+	 * running, or, for a save, one was written since the relation was loaded. The user is told,
+	 * and the form stays as it is.
+	 */
+	private boolean refusedForDownload(boolean saving) {
+		int message;
+		if (DownloadService.isActive()) {
+			message = R.string.edit_blocked_by_download;
+		} else if (saving && DownloadService.importCount() != loadedImportCount) {
+			message = R.string.edit_outdated_by_download;
+		} else {
+			return false;
+		}
+		DialogBuilder.showErrorDialog(this, getString(message), null);
+		return true;
 	}
 
 	private void buildPopupMenu() {

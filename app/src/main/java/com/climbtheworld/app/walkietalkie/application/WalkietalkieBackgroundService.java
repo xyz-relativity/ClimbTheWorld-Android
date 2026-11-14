@@ -248,7 +248,8 @@ public class WalkietalkieBackgroundService extends Service {
 
 		String channelId = "intercomService";
 		NotificationChannel channel = new NotificationChannel(channelId,
-				"Walkie-talkie", NotificationManager.IMPORTANCE_DEFAULT);
+				getString(R.string.walkie_talkie_notification_channel),
+				NotificationManager.IMPORTANCE_DEFAULT);
 		((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE))
 				.createNotificationChannel(channel);
 

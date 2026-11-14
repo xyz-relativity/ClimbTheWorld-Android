@@ -18,6 +18,7 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
@@ -569,11 +570,14 @@ public class NodeDialogBuilder {
 	 * climbing info title: a relation with its icon, which opens it, or the country. Runs off the
 	 * UI thread.
 	 *
-	 * @param location a point of the feature
+	 * @param location     a point of the feature
+	 * @param routeCounter counts the relation's routes for its pin, so that a dialogue's load can
+	 *                     share what it read with it; null for one reading from the database
 	 */
 	private static void setClimbingParent(AppCompatActivity activity, View result,
 	                                      OsmEntity.EntityOsmType osmType, long osmId,
-	                                      GeoNode location) {
+	                                      GeoNode location,
+	                                      @Nullable ClimbingRouteCounter routeCounter) {
 		TextView parentText = result.findViewById(R.id.textClimbingParent);
 		ImageView parentIcon = result.findViewById(R.id.imageClimbingParent);
 		TextView countryText = result.findViewById(R.id.textClimbingCountry);
@@ -589,7 +593,8 @@ public class NodeDialogBuilder {
 
 			// The same pin as on the map, with the route count.
 			DisplayableGeoNode parentPin = DataManager.toDisplayableNode(parent.relation,
-					ClimbingRouteCounter.forDatabase(activity));
+					routeCounter != null ? routeCounter
+							: ClimbingRouteCounter.forDatabase(activity));
 			GeoNode center = parentPin.getGeoNode();
 			MapCoordinate coordinate = new MapCoordinate(center.decimalLatitude,
 					center.decimalLongitude, 0);
@@ -645,7 +650,7 @@ public class NodeDialogBuilder {
 							new CollectionMember(relation, collection, labelCoordinate, routes),
 							members);
 					setClimbingParent(parent, dialogueView, collection.osmType,
-							collection.osmID, relation);
+							collection.osmID, relation, routeCounter);
 					Drawable relationIcon = new PoiMarkerDrawable(
 							parent, new DisplayableGeoNode(relation)).getDrawable();
 					// Crags and areas have their own editor; other relations are left to OSM editors.
@@ -755,7 +760,7 @@ public class NodeDialogBuilder {
 				}
 				try {
 					setClimbingParent(parent, dialogueView,
-							OsmEntity.EntityOsmType.valueOf(osmEntityType), poi.osmID, poi);
+							OsmEntity.EntityOsmType.valueOf(osmEntityType), poi.osmID, poi, null);
 				} catch (IllegalArgumentException ignore) {
 					// Not an OSM entity type, so not a member of anything.
 				}

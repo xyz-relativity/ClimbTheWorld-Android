@@ -80,19 +80,21 @@ public class CountryOsmImporter {
 			membershipsToWrite.add(new EntityCountry(collection.osmType, collection.osmID,
 					normalizedCountryIso));
 		}
-		List<OsmNode> dirtyNodes = database.osmNodeDao().loadDirty();
-		List<OsmCollectionEntity> dirtyCollections = database.osmCollectionDao().loadDirty();
-		replaceWithDirtyLocalEntities(nodes, collections, dirtyNodes, dirtyCollections);
-		computeCollectionCaches(nodes, collections, dirtyNodes, dirtyCollections);
-
-		List<OsmNode> nodesToWrite = new ArrayList<>(nodes.values());
-		List<OsmCollectionEntity> collectionsToWrite = new ArrayList<>(collections.values());
 		beforeWrite.run();
 		database.runInTransaction(() -> {
 			cancellation.throwIfCanceled();
+			// Read in the transaction that writes, so that a change saved, uploaded or reverted
+			// just before is what gets written, rather than the downloaded or an older local
+			// version of the element.
+			List<OsmNode> dirtyNodes = database.osmNodeDao().loadDirty();
+			List<OsmCollectionEntity> dirtyCollections = database.osmCollectionDao().loadDirty();
+			replaceWithDirtyLocalEntities(nodes, collections, dirtyNodes, dirtyCollections);
+			computeCollectionCaches(nodes, collections, dirtyNodes, dirtyCollections);
+
 			database.entityCountryDao().deleteCleanForCountry(normalizedCountryIso);
-			database.osmNodeDao().insertNodesWithReplace(nodesToWrite);
-			database.osmCollectionDao().insertCollectionWithReplace(collectionsToWrite);
+			database.osmNodeDao().insertNodesWithReplace(new ArrayList<>(nodes.values()));
+			database.osmCollectionDao().insertCollectionWithReplace(
+					new ArrayList<>(collections.values()));
 			database.entityCountryDao().insertAll(membershipsToWrite);
 			database.osmNodeDao().deleteUnownedCleanNodes();
 			database.osmCollectionDao().deleteUnownedCleanCollections();

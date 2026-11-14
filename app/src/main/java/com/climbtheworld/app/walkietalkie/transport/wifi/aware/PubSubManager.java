@@ -10,6 +10,7 @@ import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.net.NetworkSpecifier;
+import android.net.TransportInfo;
 import android.net.wifi.aware.DiscoverySession;
 import android.net.wifi.aware.PeerHandle;
 import android.net.wifi.aware.WifiAwareNetworkInfo;
@@ -234,15 +235,10 @@ public class PubSubManager {
 	private synchronized void stopHeartbeat() {
 		if (!isHeartbeatRunning || scheduler == null) return;
 
+		// Cancels the beats to come without waiting for one under way, as this runs on the main
+		// thread. A beat finishing late finds the data paths already torn down by onDestroy and
+		// sends nothing, and the manager that replaces this one has its own scheduler.
 		scheduler.shutdown();
-		try {
-			// Wait briefly for the current task to finish if it's running
-			if (!scheduler.awaitTermination(500, TimeUnit.MILLISECONDS)) {
-				scheduler.shutdownNow();
-			}
-		} catch (InterruptedException e) {
-			scheduler.shutdownNow();
-		}
 
 		isHeartbeatRunning = false;
 	}
@@ -445,9 +441,22 @@ public class PubSubManager {
 						}
 
 						Log.d(TAG, "Network capabilities changed. Is Publisher:" + isPublisher);
-						WifiAwareNetworkInfo peerAwareInfo =
-								(WifiAwareNetworkInfo) networkCapabilities.getTransportInfo();
-						peerIPv6Addresses.put(peerHandle, peerAwareInfo.getPeerIpv6Addr());
+						// The system calls this on its own connectivity thread, where an exception
+						// would crash the app. Without the peer's address nothing is sent to it,
+						// see sendData, until a later change of the capabilities brings it.
+						TransportInfo transportInfo = networkCapabilities.getTransportInfo();
+						if (!(transportInfo instanceof WifiAwareNetworkInfo)) {
+							Log.w(TAG, "No Wi-Fi Aware info on the data path yet: " +
+									transportInfo);
+							return;
+						}
+						InetAddress peerAddress =
+								((WifiAwareNetworkInfo) transportInfo).getPeerIpv6Addr();
+						if (peerAddress == null) {
+							Log.w(TAG, "No peer address on the data path yet");
+							return;
+						}
+						peerIPv6Addresses.put(peerHandle, peerAddress);
 					}
 
 					@Override

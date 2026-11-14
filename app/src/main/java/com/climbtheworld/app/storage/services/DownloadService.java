@@ -32,6 +32,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import needle.Needle;
 
@@ -57,6 +58,8 @@ public class DownloadService extends Service {
 	private static final Map<String, String> lastErrors = new ConcurrentHashMap<>();
 	/** The queued or running request per country, so repeated requests do not download twice. */
 	private static final Map<String, DownloadRequest> activeRequests = new ConcurrentHashMap<>();
+	/** Goes up each time a download has written a country into the database. */
+	private static final AtomicLong importsWritten = new AtomicLong();
 	private final ExecutorService worker = Executors.newSingleThreadExecutor();
 	private OverpassCountryDownloader countryDownloader;
 	private NotificationManager notificationManager;
@@ -79,6 +82,26 @@ public class DownloadService extends Service {
 		intent.putExtra(EXTRA_COUNTRY_ISO, countryIso);
 		intent.putExtra(EXTRA_ALLOW_MOBILE_DATA, allowMobileData);
 		ContextCompat.startForegroundService(context, intent);
+	}
+
+	/**
+	 * Whether a download is queued or running, so the local OSM data must not be edited: a
+	 * download rewrites the elements an edit starts from. A cancelled download counts until its
+	 * worker lets go of it, as it may be in the middle of writing. Not yet once start is called,
+	 * only once the service has queued the request, a moment later; see importCount for that.
+	 */
+	public static boolean isActive() {
+		return !activeRequests.isEmpty();
+	}
+
+	/**
+	 * How many downloads have written their country since the app started. An editor keeps the
+	 * value it had when it loaded its element: if it differs at save, a download replaced the
+	 * element's stored version under the editor, which saving would take as what the edit
+	 * started from.
+	 */
+	public static long importCount() {
+		return importsWritten.get();
 	}
 
 	/** Why the country's last download failed, or null if it did not or was retried since. */
@@ -275,6 +298,8 @@ public class DownloadService extends Service {
 					updateNotification();
 				}
 			}, request.cancellation);
+			// After the write, so an editor that read the element before it sees a new value.
+			importsWritten.incrementAndGet();
 		} catch (Exception | OutOfMemoryError exception) {
 			if (request.cancellation.isCanceled()) {
 				Log.d(TAG, "Download cancelled for " + countryIso);

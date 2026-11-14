@@ -14,9 +14,27 @@ final class LocationFixChooser {
 	// Another provider takes over only with a fix at least this much more accurate, so two
 	// providers about as accurate as each other do not keep swapping places.
 	private static final double SWITCH_ACCURACY_RATIO = 2.0 / 3.0;
+	// The system's last fix is used on resume only when it is at most this old. It can be hours
+	// old and far away (the phone was in a bag on the drive to the crag), and the views would take
+	// it as current. A climber on foot is within a couple of hundred metres of a fix this old,
+	// which the ageing above already allows for, and a fresh fix normally comes within seconds.
+	static final long LAST_KNOWN_FIX_MAX_AGE_NANOS = 2 * 60 * 1_000_000_000L;
 
 	private LocationFixChooser() {
 		//hide constructor
+	}
+
+	/**
+	 * @return true when a fix taken at fixElapsedNanos is at most maxAgeNanos old at
+	 * nowElapsedNanos, both on the elapsed realtime clock. A fix a little ahead of now, from clock
+	 * skew between the provider and the app, counts as fresh. A fix with no time (0) is too old:
+	 * its age is unknown.
+	 */
+	static boolean isRecentEnough(long fixElapsedNanos, long nowElapsedNanos, long maxAgeNanos) {
+		if (fixElapsedNanos <= 0) {
+			return false;
+		}
+		return nowElapsedNanos - fixElapsedNanos <= maxAgeNanos;
 	}
 
 	/**

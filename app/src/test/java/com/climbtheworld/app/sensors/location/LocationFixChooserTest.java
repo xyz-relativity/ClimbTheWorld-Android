@@ -65,8 +65,62 @@ public class LocationFixChooserTest {
 	}
 
 	@Test
-	public void placeholderIsReplacedByTheFirstFix() {
-		assertTrue(LocationFixChooser.shouldReplace("passive", 999, 0, NETWORK, 40,
-				SECOND_NANOS));
+	public void systemLastFixThatIsTheFixInUseIsTakenAgain() {
+		assertTrue(LocationFixChooser.shouldReplace(GPS, 5, 100 * SECOND_NANOS, GPS, 5,
+				100 * SECOND_NANOS));
+	}
+
+	@Test
+	public void newerButCoarserSystemLastFixDoesNotReplaceRecentGpsFix() {
+		// Back from a pause: another app's network fix came after the gps fix in use.
+		assertFalse(LocationFixChooser.shouldReplace(GPS, 5, 100 * SECOND_NANOS, NETWORK, 30,
+				110 * SECOND_NANOS));
+	}
+
+	@Test
+	public void olderSystemLastFixFromAnotherProviderDoesNotReplaceTheFixInUse() {
+		assertFalse(LocationFixChooser.shouldReplace(GPS, 5, 100 * SECOND_NANOS, FUSED, 4,
+				90 * SECOND_NANOS));
+	}
+
+	private static final long NOW_NANOS = 3600 * SECOND_NANOS;
+	private static final long MAX_AGE_NANOS = LocationFixChooser.LAST_KNOWN_FIX_MAX_AGE_NANOS;
+
+	@Test
+	public void lastFixJustInsideTheAgeLimitIsRecentEnough() {
+		assertTrue(LocationFixChooser.isRecentEnough(NOW_NANOS - MAX_AGE_NANOS + 1, NOW_NANOS,
+				MAX_AGE_NANOS));
+	}
+
+	@Test
+	public void lastFixExactlyAtTheAgeLimitIsRecentEnough() {
+		assertTrue(LocationFixChooser.isRecentEnough(NOW_NANOS - MAX_AGE_NANOS, NOW_NANOS,
+				MAX_AGE_NANOS));
+	}
+
+	@Test
+	public void lastFixJustOutsideTheAgeLimitIsTooOld() {
+		assertFalse(LocationFixChooser.isRecentEnough(NOW_NANOS - MAX_AGE_NANOS - 1, NOW_NANOS,
+				MAX_AGE_NANOS));
+	}
+
+	@Test
+	public void lastFixFromHoursAgoIsTooOld() {
+		// The phone was in a bag on the drive to the crag.
+		assertFalse(LocationFixChooser.isRecentEnough(SECOND_NANOS, 3 * NOW_NANOS,
+				MAX_AGE_NANOS));
+	}
+
+	@Test
+	public void lastFixWithNoTimeIsTooOld() {
+		assertFalse(LocationFixChooser.isRecentEnough(0, NOW_NANOS, MAX_AGE_NANOS));
+		// Even right after boot, when the age would look small.
+		assertFalse(LocationFixChooser.isRecentEnough(0, SECOND_NANOS, MAX_AGE_NANOS));
+	}
+
+	@Test
+	public void lastFixSlightlyAheadOfNowIsRecentEnough() {
+		assertTrue(LocationFixChooser.isRecentEnough(NOW_NANOS + SECOND_NANOS / 2, NOW_NANOS,
+				MAX_AGE_NANOS));
 	}
 }

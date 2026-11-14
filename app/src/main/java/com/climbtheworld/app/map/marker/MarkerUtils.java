@@ -9,6 +9,7 @@ import android.graphics.PaintFlagsDrawFilter;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -32,6 +33,8 @@ public class MarkerUtils {
 
 	// Read from the UI thread and the map's executor, which draws the map pins, at once.
 	private static final Map<String, Drawable> iconCache = new ConcurrentHashMap<>();
+	// getTallestPinHeight's, keyed by the density it was worked out at.
+	private static final Map<String, Integer> tallestPinHeights = new ConcurrentHashMap<>();
 	// The bottom right of ic_clusters' main circle, as a share of its size, where the filter badge
 	// goes.
 	private static final float CLUSTER_BADGE_CENTER_X = 0.71f;
@@ -108,16 +111,30 @@ public class MarkerUtils {
 
 	public static Drawable getStyleIcon(AppCompatActivity parent,
 	                                    List<GeoNode.ClimbingStyle> styles, int iconSIze) {
-		final String cacheKey = "style" + "|" + iconSIze + "|" + stylesToString(parent, styles);
+		return getStyleIcon(parent, styles, iconSIze, 1);
+	}
+
+	/**
+	 * @param scale how many times bigger than iconSIze to draw it, the cells keeping their place
+	 *              on the grid of iconSIze, so that it is that one drawn bigger, and as sharp
+	 */
+	public static Drawable getStyleIcon(AppCompatActivity parent,
+	                                    List<GeoNode.ClimbingStyle> styles, int iconSIze,
+	                                    float scale) {
+		final String cacheKey = IconScale.key(
+				"style" + "|" + iconSIze + "|" + stylesToString(parent, styles), scale);
 		if (!iconCache.containsKey(cacheKey)) {
 			synchronized (iconCache) {
 				if (!iconCache.containsKey(cacheKey)) {
-					Bitmap bitmap =
-							Bitmap.createBitmap(iconSIze, iconSIze, Bitmap.Config.ARGB_8888);
+					Bitmap bitmap = Bitmap.createBitmap(IconScale.px(iconSIze, scale),
+							IconScale.px(iconSIze, scale), Bitmap.Config.ARGB_8888);
 					if (!styles.isEmpty()) {
 						Canvas canvas = new Canvas(bitmap);
 						canvas.setDrawFilter(new PaintFlagsDrawFilter(0,
 								Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG));
+						if (scale != 1) {
+							canvas.scale(scale, scale);
+						}
 
 						// White background square behind the style cells
 						Paint fillPaint = new Paint();
@@ -206,11 +223,20 @@ public class MarkerUtils {
 
 	public static Drawable getPoiIcon(AppCompatActivity parent, GeoNode poi,
 	                                  ColorStateList color) {
+		return getPoiIcon(parent, poi, color, 1);
+	}
+
+	/**
+	 * @param scale how many times bigger than on the map to draw it, from the same layout, so
+	 *              that it is as sharp
+	 */
+	public static Drawable getPoiIcon(AppCompatActivity parent, GeoNode poi,
+	                                  ColorStateList color, float scale) {
 		// Artificial kinds differ in shape and glyph even where they share a colour.
 		String kind = poi.getNodeType() == OsmEntity.EntityClimbingType.artificial
 				? poi.getArtificialKind().name() : "";
-		final String cacheKey = "route" + "|" + poi.getNodeType().asString(parent) + "|" + kind
-				+ "|" + color;
+		final String cacheKey = IconScale.key("route" + "|" + poi.getNodeType().asString(parent)
+				+ "|" + kind + "|" + color, scale);
 		if (!iconCache.containsKey(cacheKey)) {
 			synchronized (iconCache) {
 				if (!iconCache.containsKey(cacheKey)) {
@@ -218,17 +244,19 @@ public class MarkerUtils {
 					switch (poi.getNodeType()) {
 						case area:
 						case crag:
-							bitmap = createBitmapWithPinTint(parent, poi.getNodeType().getIconId(), color);
+							bitmap = createBitmapWithPinTint(parent, poi.getNodeType().getIconId(),
+									color, scale);
 							break;
 
 						case artificial:
-							bitmap = createArtificialBitmap(parent, poi.getArtificialKind(), color);
+							bitmap = createArtificialBitmap(parent, poi.getArtificialKind(), color,
+									scale);
 							break;
 
 						case route:
 						case others:
 						default:
-							bitmap = createRouteBitmapWithTint(parent, color);
+							bitmap = createRouteBitmapWithTint(parent, color, scale);
 							break;
 					}
 					iconCache.put(cacheKey, new BitmapDrawable(parent.getResources(), bitmap));
@@ -247,7 +275,16 @@ public class MarkerUtils {
 	 */
 	public static Drawable getSlimRouteIcon(AppCompatActivity parent, ColorStateList color,
 	                                        boolean routeTop) {
-		final String cacheKey = "slimRoute" + "|" + routeTop + "|" + color;
+		return getSlimRouteIcon(parent, color, routeTop, 1);
+	}
+
+	/**
+	 * @param scale how many times bigger than on the map to draw it, from the vector, so that it
+	 *              is as sharp
+	 */
+	public static Drawable getSlimRouteIcon(AppCompatActivity parent, ColorStateList color,
+	                                        boolean routeTop, float scale) {
+		final String cacheKey = IconScale.key("slimRoute" + "|" + routeTop + "|" + color, scale);
 		if (!iconCache.containsKey(cacheKey)) {
 			synchronized (iconCache) {
 				if (!iconCache.containsKey(cacheKey)) {
@@ -257,8 +294,10 @@ public class MarkerUtils {
 					pin.setTintList(color);
 					pin.setTintMode(PorterDuff.Mode.MULTIPLY);
 
-					Bitmap bitmap = Bitmap.createBitmap(pin.getIntrinsicWidth(),
-							pin.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+					// The map's size times the scale, rather than the vector's size at that scale,
+					// which can round a pixel off, so that it is exactly the map's pin made bigger.
+					Bitmap bitmap = Bitmap.createBitmap(IconScale.px(pin.getIntrinsicWidth(), scale),
+							IconScale.px(pin.getIntrinsicHeight(), scale), Bitmap.Config.ARGB_8888);
 					Canvas canvas = new Canvas(bitmap);
 					pin.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
 					pin.draw(canvas);
@@ -274,11 +313,19 @@ public class MarkerUtils {
 	 * on one line.
 	 */
 	public static int getTallestPinHeight(AppCompatActivity parent) {
+		// The slim pins are vectors sized in dp, so their height follows the screen density alone.
+		DisplayMetrics metrics = parent.getResources().getDisplayMetrics();
+		String key = metrics.density + "|" + metrics.densityDpi;
+		Integer cached = tallestPinHeights.get(key);
+		if (cached != null) {
+			return cached;
+		}
 		int height = IconType.poiRouteIcon.getIconPxHeight();
 		for (int slimPin : new int[]{R.drawable.ic_poi_route, R.drawable.ic_poi_route_top}) {
 			height = Math.max(height, ResourcesCompat.getDrawable(parent.getResources(), slimPin,
 					null).getIntrinsicHeight());
 		}
+		tallestPinHeights.put(key, height);
 		return height;
 	}
 
@@ -302,16 +349,17 @@ public class MarkerUtils {
 	}
 
 	private static Bitmap createRouteBitmapWithTint(AppCompatActivity parent,
-	                                                ColorStateList color) {
-		return createBitmapWithPinTint(parent, OsmEntity.EntityClimbingType.route.getIconId(), color);
+	                                                ColorStateList color, float scale) {
+		return createBitmapWithPinTint(parent, OsmEntity.EntityClimbingType.route.getIconId(), color,
+				scale);
 	}
 
 	private static Bitmap createBitmapWithPinTint(AppCompatActivity parent, int layoutId,
-	                                              ColorStateList color) {
+	                                              ColorStateList color, float scale) {
 		View newViewElement = View.inflate(parent, layoutId, null);
 		((ImageView) newViewElement.findViewById(R.id.imagePin)).setImageTintList(color);
 
-		return createBitmapFromLayout(newViewElement);
+		return createBitmapFromLayout(newViewElement, scale);
 	}
 
 	/**
@@ -319,13 +367,14 @@ public class MarkerUtils {
 	 * kind's glyph drawn over it in the same viewport.
 	 */
 	private static Bitmap createArtificialBitmap(AppCompatActivity parent,
-	                                             GeoNode.ArtificialKind kind, ColorStateList color) {
+	                                             GeoNode.ArtificialKind kind, ColorStateList color,
+	                                             float scale) {
 		View newViewElement = View.inflate(parent, OsmEntity.EntityClimbingType.artificial.getIconId(), null);
 		((ImageView) newViewElement.findViewById(R.id.imagePin)).setImageTintList(color);
 		((ImageView) newViewElement.findViewById(R.id.imagePinIcon))
 				.setImageResource(getArtificialGlyphId(kind));
 
-		return createBitmapFromLayout(newViewElement);
+		return createBitmapFromLayout(newViewElement, scale);
 	}
 
 	private static int getArtificialGlyphId(GeoNode.ArtificialKind kind) {
@@ -344,7 +393,9 @@ public class MarkerUtils {
 		}
 	}
 
-	private static Bitmap createBitmapFromLayout(View newViewElement) {
+	// The layout is drawn far bigger than the pin, so the pin is a reduction of it at any scale up
+	// to that size.
+	private static Bitmap createBitmapFromLayout(View newViewElement, float scale) {
 		newViewElement.measure(IconType.poiRouteIcon.measuredWidth,
 				IconType.poiRouteIcon.measuredHeight);
 		newViewElement.layout(0, 0, newViewElement.getMeasuredWidth(),
@@ -364,8 +415,9 @@ public class MarkerUtils {
 		}
 		newViewElement.draw(canvas);
 
-		return Bitmap.createScaledBitmap(bitmap, IconType.poiRouteIcon.iconPxWith,
-				IconType.poiRouteIcon.iconPxHeight, true);
+		return Bitmap.createScaledBitmap(bitmap,
+				IconScale.px(IconType.poiRouteIcon.iconPxWith, scale),
+				IconScale.px(IconType.poiRouteIcon.iconPxHeight, scale), true);
 	}
 
 	public enum IconType {

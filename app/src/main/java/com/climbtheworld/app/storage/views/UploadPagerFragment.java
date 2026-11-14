@@ -29,6 +29,7 @@ import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
 import com.climbtheworld.app.storage.edit.OsmEditStore;
 import com.climbtheworld.app.storage.logbook.LogBookFilter;
+import com.climbtheworld.app.storage.services.DownloadService;
 import com.climbtheworld.app.storage.upload.ChangeSummary;
 import com.climbtheworld.app.storage.upload.OsmApi;
 import com.climbtheworld.app.storage.upload.OsmUploader;
@@ -210,6 +211,9 @@ public class UploadPagerFragment extends DataFragment
 		final List<String> toChange = new ArrayList<>();
 
 		int id = v.getId();
+		if ((id == R.id.ButtonRevert || id == R.id.ButtonPush) && refusedForDownload()) {
+			return;
+		}
 		if (id == R.id.ButtonRevert) {
 			aggregateSelectedItems(findViewById(R.id.changesView), toChange);
 
@@ -224,6 +228,10 @@ public class UploadPagerFragment extends DataFragment
 							new DialogInterface.OnClickListener() {
 
 						public void onClick(DialogInterface dialog, int whichButton) {
+							// A download may have started while the question was open.
+							if (refusedForDownload()) {
+								return;
+							}
 							Constants.DB_EXECUTOR
 									.execute(new UiRelatedTask<Boolean>() {
 										@Override
@@ -314,9 +322,26 @@ public class UploadPagerFragment extends DataFragment
 						return;
 					}
 					dialog.dismiss();
+					// A download may have started while the comment was typed.
+					if (refusedForDownload()) {
+						return;
+					}
 					prepareUpload(selection, comment);
 				}));
 		dialog.show();
+	}
+
+	/**
+	 * Whether a download keeps the changes from being uploaded or reverted, as it rewrites the
+	 * local OSM data, like the editors' saves; the user is told.
+	 */
+	private boolean refusedForDownload() {
+		if (!DownloadService.isActive()) {
+			return false;
+		}
+		DialogBuilder.showErrorDialog(parent.get(),
+				parent.get().getString(R.string.upload_blocked_by_download), null);
+		return true;
 	}
 
 	private void prepareUpload(List<String> selection, String comment) {

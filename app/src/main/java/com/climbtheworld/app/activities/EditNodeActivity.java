@@ -15,6 +15,8 @@ import android.widget.PopupMenu;
 import android.widget.ScrollView;
 import android.widget.Spinner;
 
+import androidx.activity.OnBackPressedCallback;
+
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.augmentedreality.ArCoreFeatures;
 import com.climbtheworld.app.augmentedreality.placement.ArPlacement;
@@ -47,6 +49,7 @@ import com.climbtheworld.app.storage.database.OsmNode;
 import com.climbtheworld.app.storage.edit.ElementNotStoredException;
 import com.climbtheworld.app.storage.edit.FormChanges;
 import com.climbtheworld.app.storage.edit.OsmEditStore;
+import com.climbtheworld.app.storage.services.DownloadService;
 import com.climbtheworld.app.storage.upload.OsmElements;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector4d;
@@ -94,6 +97,11 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 	 */
 	private boolean cragEditorOpen;
 	/**
+	 * DownloadService.importCount from before the node and its crags were read: a download written
+	 * since then replaced what the form started from. See refusedForDownload.
+	 */
+	private long loadedImportCount;
+	/**
 	 * Whether the node can't be saved without a name: a new one, or one that had a name. Nodes
 	 * mapped without one, such as most route tops, still save as they are.
 	 */
@@ -134,6 +142,22 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		// A download rewrites the elements an edit starts from; nothing is set up, see onDestroy.
+		if (DownloadService.isActive()) {
+			DialogBuilder.toastOnMainThread(this, getString(R.string.edit_blocked_by_download));
+			finish();
+			return;
+		}
+		// Before the node is read, so that any download written after that changes it.
+		loadedImportCount = DownloadService.importCount();
+		// Back leaves as Cancel does. Before the A.R. placement adds its own: the one added last
+		// goes first, so that back still ends an alignment there rather than asking to leave.
+		getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+			@Override
+			public void handleOnBackPressed() {
+				leave();
+			}
+		});
 		MapLibre.getInstance(this);
 		setContentView(R.layout.activity_edit_node);
 
@@ -297,7 +321,7 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 						} else if (id == R.id.openStreetMapEditor) {
 							if (editNodeID > 0) {
 								urlFormat = String.format(Locale.ROOT, "https://www.openstreetmap.org/edit?node=%d",
-										editNode.getID());
+										editNodeID);
 							} else {
 								urlFormat = String.format(Locale.ROOT, "https://www.openstreetmap.org/edit#map=21/%f/%f",
 										editNode.decimalLatitude, editNode.decimalLongitude);
@@ -311,8 +335,7 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 
 							if (editNodeID > 0) {
 								// In the form JOSM's remote control documents, which Vespucci
-								// follows: "node" and the id. The id the node was loaded by, as
-								// the advanced editor can change the one in its JSON.
+								// follows: "node" and the id the node was loaded by.
 								urlFormat = urlFormat + "&select=node" + editNodeID;
 							}
 
@@ -519,10 +542,19 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 		return EditSnapshot.changed(loadedEdits, currentEdits()) || cragMembership.isEdited();
 	}
 
+	/**
+	 * Cancel and back: closes the editor, after asking when that loses changes. Not while a save
+	 * or a delete is written: what the form has is being stored, so nothing is lost, and the
+	 * editor closes at once, as the write goes on without it.
+	 */
+	private void leave() {
+		DiscardQuestion.ask(this, !writing && isEdited(), this::finish);
+	}
+
 	public void onClick(View v) {
 		int id = v.getId();
 		if (id == R.id.ButtonCancel) {
-			finish();
+			leave();
 		} else if (editNode == null) {
 			// Still loading.
 			return;
@@ -533,6 +565,9 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 		} else if (id == R.id.ButtonSaveAndAdd) {
 			save(this::addAnother);
 		} else if (id == R.id.ButtonDelete) {
+			if (refusedForDownload(false)) {
+				return;
+			}
 			String message = getString(R.string.delete_confirmation_message);
 			List<String> crags = cragMembership.storedParentNames();
 			if (!crags.isEmpty()) {
@@ -545,6 +580,10 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 					.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 
 						public void onClick(DialogInterface dialog, int whichButton) {
+							// A download may have started while the question was open.
+							if (refusedForDownload(false)) {
+								return;
+							}
 							writing = true;
 							Constants.DB_EXECUTOR
 									.execute(new WriteTask<Boolean>() {
@@ -578,6 +617,9 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 	 * Cancel.
 	 */
 	private void save(Runnable then) {
+		if (refusedForDownload(true)) {
+			return;
+		}
 		JSONObject edited = resolveEdits();
 		if (edited == null) {
 			return;
@@ -618,6 +660,25 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 	}
 
 	/**
+	 * Whether a download keeps the form from being written, as it rewrites the stored elements the
+	 * form started from; the user is told, and the form stays as it is. One is running: the user can
+	 * try again once it has finished. One was written since the node was loaded, which only matters
+	 * for a save, as a delete starts from the stored node: the form has to be opened again.
+	 */
+	private boolean refusedForDownload(boolean saving) {
+		int message;
+		if (DownloadService.isActive()) {
+			message = R.string.edit_blocked_by_download;
+		} else if (saving && DownloadService.importCount() != loadedImportCount) {
+			message = R.string.edit_outdated_by_download;
+		} else {
+			return false;
+		}
+		DialogBuilder.showErrorDialog(this, getString(message), null);
+		return true;
+	}
+
+	/**
 	 * Starts the form over on a new node where the saved one is, of its type, in no crag: the user
 	 * picks its crags, as for any new node. The map and the A.R. stay as they are, the A.R. still
 	 * tied to the map, so that it need not be aligned again.
@@ -629,6 +690,8 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 		// Loading again until the new node is in.
 		editNode = null;
 		editNodeID = 0;
+		// The next node's crags are read from now on.
+		loadedImportCount = DownloadService.importCount();
 		hideKeyboard();
 		// The saved node now shows among the others.
 		mapWidget.invalidateData();
@@ -758,7 +821,10 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 
 	@Override
 	protected void onDestroy() {
-		arPlacement.onDestroy();
+		// Null when onCreate turned the editor away during a download.
+		if (arPlacement != null) {
+			arPlacement.onDestroy();
+		}
 		super.onDestroy();
 	}
 

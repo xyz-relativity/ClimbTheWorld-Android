@@ -109,7 +109,11 @@ abstract class MapWidgetActivity extends AppCompatActivity
 	protected void onDestroy() {
 		// Again, for a screen the system closes without finish.
 		screenLoads.cancel();
-		mapWidget.onDestroy();
+		// Null for a screen that finished in onCreate before making it, as an editor does during
+		// a download; onDestroy follows onCreate straight away then.
+		if (mapWidget != null) {
+			mapWidget.onDestroy();
+		}
 		super.onDestroy();
 	}
 

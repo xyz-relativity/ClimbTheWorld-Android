@@ -1,6 +1,5 @@
 package com.climbtheworld.app.activities;
 
-import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
@@ -25,17 +24,7 @@ final class ExternalEditor {
 	 * @param edited whether the user changed anything in the app's editor that leaving it loses
 	 */
 	static void open(AppCompatActivity editor, String url, boolean edited) {
-		if (!edited) {
-			start(editor, url);
-			return;
-		}
-		new AlertDialog.Builder(editor)
-				.setTitle(R.string.discard_changes)
-				.setMessage(R.string.discard_changes_message)
-				.setIcon(android.R.drawable.ic_dialog_alert)
-				.setPositiveButton(R.string.discard, (dialog, which) -> start(editor, url))
-				.setNegativeButton(android.R.string.cancel, null)
-				.show();
+		DiscardQuestion.ask(editor, edited, () -> start(editor, url));
 	}
 
 	/** Without an app for the link the app's editor stays open, with the user's changes. */

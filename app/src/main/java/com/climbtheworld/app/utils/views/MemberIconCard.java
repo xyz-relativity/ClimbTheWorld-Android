@@ -21,6 +21,8 @@ import com.climbtheworld.app.utils.Globals;
 public final class MemberIconCard {
 	/** How narrow the name may get, so that a short name still makes a card wide enough to tap. */
 	private static final int NAME_MIN_WIDTH = Globals.convertDpToPixel(80).intValue();
+	/** How many times bigger than on the map the cards show the pins. */
+	private static final int PIN_SCALE = 2;
 
 	private MemberIconCard() {
 	}
@@ -33,15 +35,16 @@ public final class MemberIconCard {
 	 */
 	public static String show(AppCompatActivity activity, View card, DisplayableGeoNode pin, String name,
 	                          int routeNumber) {
+		// Drawn at the size it is shown, rather than stretched, so that it is as sharp as on the map.
 		Drawable icon = new PoiMarkerDrawable(activity, pin, PoiMarkerDrawable.PinShape.slim)
-				.getDrawable();
-		int iconWidth = Math.max(icon.getIntrinsicWidth() * 2, 1);
+				.getDrawable(PIN_SCALE);
+		int iconWidth = Math.max(icon.getIntrinsicWidth(), 1);
 		ImageView image = card.findViewById(R.id.memberIconImage);
 		image.setImageDrawable(icon);
 		image.getLayoutParams().width = iconWidth;
 		// All as tall as the tallest pin, which the image puts at the bottom, so that the tips and
 		// the names line up along the row whatever the pin.
-		image.getLayoutParams().height = MarkerUtils.getTallestPinHeight(activity) * 2;
+		image.getLayoutParams().height = MarkerUtils.getTallestPinHeight(activity) * PIN_SCALE;
 		card.findViewById(R.id.memberIconLabel).getLayoutParams().width =
 				Math.max(iconWidth, NAME_MIN_WIDTH);
 

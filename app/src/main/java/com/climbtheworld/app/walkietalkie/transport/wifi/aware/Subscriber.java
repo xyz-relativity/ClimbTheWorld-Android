@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 
 import com.climbtheworld.app.walkietalkie.transport.ObservableHashMap;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 public class Subscriber {
@@ -63,8 +64,8 @@ public class Subscriber {
 			public void onServiceDiscovered(PeerHandle peerHandle, byte[] serviceSpecificInfo,
 			                                java.util.List<byte[]> matchFilter) {
 				super.onServiceDiscovered(peerHandle, serviceSpecificInfo, matchFilter);
-				Log.d(TAG, "Publisher service " + new String(serviceSpecificInfo) + " discovered" +
-						"!");
+				Log.d(TAG, "Publisher service " +
+						new String(serviceSpecificInfo, StandardCharsets.UTF_8) + " discovered!");
 
 				TransportMessage message = TransportMessage.fromData(serviceSpecificInfo);
 				PubSubID publisher =

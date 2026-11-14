@@ -41,7 +41,11 @@ import org.shredzone.commons.suncalc.SunTimes;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
@@ -94,6 +98,8 @@ public class EnvironmentActivity extends MapWidgetActivity implements IEnvironme
 	// written again.
 	private Float unsavedBazelAngle;
 	private DateTimeFormatter dateTimeFormater;
+	// The date of a sunrise or sunset that is after tomorrow.
+	private DateTimeFormatter dateFormatter;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -144,6 +150,8 @@ public class EnvironmentActivity extends MapWidgetActivity implements IEnvironme
 
 		DateFormat format = android.text.format.DateFormat.getTimeFormat(this);
 		dateTimeFormater = DateTimeFormatter.ofPattern(((SimpleDateFormat) format).toLocalizedPattern(), Locale.getDefault());
+		dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
+				.withLocale(Locale.getDefault());
 
 		navigation = findViewById(R.id.buttonsNavigationBar);
 		navigation.setItemIconTintList(null);
@@ -282,20 +290,50 @@ public class EnvironmentActivity extends MapWidgetActivity implements IEnvironme
 		editLongitudeDMS.setText(CoordinatesConverter.processCoordinates(Globals.virtualCamera.decimalLongitude, orientationLong));
 		editElevation.setText(String.format(Locale.getDefault(), "%.2f (m)", Globals.virtualCamera.elevationMeters));
 
+		Date now = new Date();
 		SunTimes times = SunTimes.compute()
-				.on(new Date())   // set a date
+				.on(now)   // set a date
 				.at(pDecLatitude, pDecLongitude)   // set a location
 				.execute();     // get the results
 
+		ZonedDateTime deviceNow = ZonedDateTime.ofInstant(now.toInstant(), ZoneId.systemDefault());
 		if (times.getRise() != null) {
-			editSunrise.setText(times.getRise().format(dateTimeFormater));
+			editSunrise.setText(sunTimeText(times.getRise(), deviceNow));
 		}
 
 		if (times.getSet() != null) {
-			editSunset.setText(times.getSet().format(dateTimeFormater));
+			editSunset.setText(sunTimeText(times.getSet(), deviceNow));
 		}
 
 		mapWidget.onLocationChange(new MapCoordinate(pDecLatitude, pDecLongitude, pMetersAltitude));
+	}
+
+	/**
+	 * The text of a sunrise or sunset time. The times are the next rise and the next set, so
+	 * after today's they are tomorrow's, or weeks away near the poles: a time that is not today
+	 * says which day it is, or the evening's fields read as if the sun rose after it set.
+	 */
+	private String sunTimeText(ZonedDateTime time, ZonedDateTime now) {
+		// Shown and compared in the device's zone, whatever zone the time comes in.
+		ZonedDateTime local = time.withZoneSameInstant(now.getZone());
+		String shown = local.format(dateTimeFormater);
+		long days = calendarDaysAfter(now, local);
+		if (days <= 0) {
+			return shown;
+		}
+		if (days == 1) {
+			return getString(R.string.sun_time_tomorrow, shown);
+		}
+		return getString(R.string.sun_time_on_date, shown, local.format(dateFormatter));
+	}
+
+	/**
+	 * How many calendar days {@code time} is after the day of {@code now}, in the zone of
+	 * {@code now}: 0 today, 1 tomorrow, whatever the hours between them.
+	 */
+	private static long calendarDaysAfter(ZonedDateTime now, ZonedDateTime time) {
+		return ChronoUnit.DAYS.between(now.toLocalDate(),
+				time.withZoneSameInstant(now.getZone()).toLocalDate());
 	}
 
 	@Override

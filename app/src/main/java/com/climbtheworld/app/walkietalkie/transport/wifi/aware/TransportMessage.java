@@ -1,5 +1,6 @@
 package com.climbtheworld.app.walkietalkie.transport.wifi.aware;
 
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 public class TransportMessage {
@@ -25,7 +26,7 @@ public class TransportMessage {
 		if (data == null) {
 			return null;
 		}
-		return fromData(new String(data));
+		return fromData(new String(data, StandardCharsets.UTF_8));
 	}
 
 	public static TransportMessage fromData(String data) {
@@ -100,7 +101,7 @@ public class TransportMessage {
 		for (String msg : message) {
 			result.append(COMMAND_SEPARATOR).append(msg);
 		}
-		return result.toString().getBytes();
+		return result.toString().getBytes(StandardCharsets.UTF_8);
 	}
 
 	public enum Command {

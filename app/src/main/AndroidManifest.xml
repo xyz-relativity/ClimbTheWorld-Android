@@ -147,11 +147,7 @@
             android:screenOrientation="nosensor" />
         <activity
             android:name=".activities.WalkieTalkieActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MEDIA_BUTTON" />
-            </intent-filter>
-        </activity>
+            android:exported="false" />
         <activity android:name=".activities.FirstRunActivity" />
         <activity
             android:name=".activities.EditNodeAdvancedActivity"

@@ -7,6 +7,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.SystemClock;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -45,13 +46,16 @@ public class FuseLocationProvider implements LocationListener {
 		if (!hasLocationPermission()) {
 			return;
 		}
-		lastLocation = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
+		Location lastKnown = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
 
-		if (lastLocation != null) {
-			updateListeners();
-		} else {
-			lastLocation = new Location(LocationManager.PASSIVE_PROVIDER);
-			lastLocation.setAccuracy(999);
+		// A last fix too old to be where the phone is now would be taken as current by the views:
+		// it is left out, and the screen keeps its saved position until a fresh fix comes.
+		if (lastKnown != null && LocationFixChooser.isRecentEnough(
+				lastKnown.getElapsedRealtimeNanos(), SystemClock.elapsedRealtimeNanos(),
+				LocationFixChooser.LAST_KNOWN_FIX_MAX_AGE_NANOS)) {
+			// The fix in use is kept across a pause, and the system's last fix can be older or
+			// less accurate than it, so it has to win like any other fix.
+			onLocationChanged(lastKnown);
 		}
 	}
 
@@ -86,9 +90,11 @@ public class FuseLocationProvider implements LocationListener {
 
 	@Override
 	public void onLocationChanged(@NonNull Location location) {
-		if (LocationFixChooser.shouldReplace(lastLocation.getProvider(), lastLocation.getAccuracy(),
-				lastLocation.getElapsedRealtimeNanos(), location.getProvider(),
-				location.getAccuracy(), location.getElapsedRealtimeNanos())) {
+		// The first fix is taken whatever it is: there is nothing to compare it with.
+		if (lastLocation == null || LocationFixChooser.shouldReplace(lastLocation.getProvider(),
+				lastLocation.getAccuracy(), lastLocation.getElapsedRealtimeNanos(),
+				location.getProvider(), location.getAccuracy(),
+				location.getElapsedRealtimeNanos())) {
 			lastLocation = new Location(location);
 			// Only a fix that is kept is told: one turned down would tell the last one again,
 			// once for each provider reporting, and have the views move to where they are.

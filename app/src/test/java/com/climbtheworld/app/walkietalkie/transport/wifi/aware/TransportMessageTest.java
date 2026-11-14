@@ -74,6 +74,17 @@ public class TransportMessageTest {
 	}
 
 	@Test
+	public void callsignIsSentAndReadInUtf8() {
+		// What Android sends and reads, whatever the charset of the machine running this test.
+		String callsign = "Adéla €";
+		byte[] utf8 = ("CALLSIGN:" + callsign).getBytes(StandardCharsets.UTF_8);
+
+		assertArrayEquals(utf8,
+				TransportMessage.buildMessage(TransportMessage.Command.CALLSIGN, callsign));
+		assertEquals(callsign, TransportMessage.fromData(utf8).toCallsign());
+	}
+
+	@Test
 	public void instanceMessageWithoutACallsignIsMalformed() {
 		// An empty callsign stays none, as it is for the released versions.
 		assertNull(TransportMessage.fromData("INSTANCE").toPubSubID(PubSubID.UNKNOWN_DISTANCE));

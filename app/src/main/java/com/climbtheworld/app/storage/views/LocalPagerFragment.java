@@ -77,10 +77,16 @@ public class LocalPagerFragment extends DataFragment {
 		findViewById(R.id.filterContainer)
 				.setVisibility(installedCountries.isEmpty() ? View.GONE : View.VISIBLE);
 
-		// A new adapter scrolls the list back to the top, so the same countries keep this one: the
-		// notify that follows redraws their rows. The pager may give this tab a new list view.
-		if (adapter != null && listView.getAdapter() == adapter
-				&& installedCountries.equals(shownCountries)) {
+		// A new adapter scrolls the list back to the top, so the list view keeps this one, and its
+		// place, when a download or a delete changes the countries: they are swapped in the list
+		// the adapter filters, which is shownCountries itself. With the same countries, the notify
+		// that follows redraws their rows. The pager may give this tab a new list view.
+		if (adapter != null && listView.getAdapter() == adapter) {
+			if (!installedCountries.equals(shownCountries)) {
+				shownCountries.clear();
+				shownCountries.addAll(installedCountries);
+				adapter.applyFilter(filter.getText().toString());
+			}
 			return;
 		}
 		shownCountries = installedCountries;

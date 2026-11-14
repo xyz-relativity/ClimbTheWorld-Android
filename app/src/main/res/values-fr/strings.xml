@@ -56,6 +56,8 @@
     <string name="azimuth">Azimut</string>
     <string name="sunrise">Lever du soleil</string>
     <string name="sunset">Coucher du soleil</string>
+    <string name="sun_time_tomorrow">%1$s (demain)</string>
+    <string name="sun_time_on_date">%1$s (%2$s)</string>
     <string name="name">Nom</string>
     <string name="name_required">Saisissez un nom.</string>
     <string name="type">Type</string>
@@ -233,6 +235,9 @@
     <string name="node_not_found">Impossible de trouver cet élément dans la base de données locale.</string>
     <string name="element_not_stored">Cet élément ne fait plus partie des données téléchargées, les modifications n’ont donc pas pu être enregistrées.</string>
     <string name="parent_not_stored">Un secteur ou un site modifié avec cet élément ne fait plus partie des données téléchargées, les modifications n’ont donc pas pu être enregistrées.</string>
+    <string name="edit_blocked_by_download">La modification n’est pas possible pendant le téléchargement des données d’escalade. Réessayez une fois le téléchargement terminé.</string>
+    <string name="edit_outdated_by_download">Un téléchargement a mis à jour les données pendant que cet élément était ouvert, les modifications n’ont donc pas pu être enregistrées. Fermez-le et rouvrez-le pour le modifier.</string>
+    <string name="upload_blocked_by_download">Les modifications locales ne peuvent être ni envoyées ni annulées pendant le téléchargement des données d’escalade. Réessayez une fois le téléchargement terminé.</string>
 
     <string name="ar_warning">La réalité augmentée peut être dangereuse</string>
     <string name="ar_warning_message">Lorsque vous utilisez la vue en réalité augmentée, tenez compte de ce qui suit :&lt;br /&gt;&lt;br /&gt;
@@ -454,6 +459,7 @@
     <string name="walkie_talkie_bluetooth_permission_rational">Le talkie-walkie peut lire et enregistrer le son via un casque Bluetooth.</string>
     <string name="walkie_talkie_nearby_devices_needed">Le talkie-walkie a besoin de l’autorisation de trouver les appareils à proximité et de communiquer avec eux (Appareils à proximité, ou Position sur Android 12 et versions antérieures).</string>
     <string name="walkie_talkie_notification">Service de talkie-walkie.</string>
+    <string name="walkie_talkie_notification_channel">Talkie-walkie</string>
     <string name="walkie_talkie_notification_rational">Permet les communications par talkie-walkie lorsque l’écran de l’appareil est éteint.</string>
     <string name="wifi_aware_not_supported">Wi-Fi Aware n’est pas pris en charge par cet appareil.</string>
     <string name="wifi_aware_attach_failed">Impossible de se connecter au service Wi-Fi Aware.</string>

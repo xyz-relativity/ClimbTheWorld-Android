@@ -4,6 +4,8 @@ import android.net.wifi.aware.DiscoverySessionCallback;
 import android.net.wifi.aware.PeerHandle;
 import android.util.Log;
 
+import java.nio.charset.StandardCharsets;
+
 /**
  * What the publisher's and the subscriber's discovery sessions do alike: their sends are
  * tracked by their message sender, and the messages they get are parsed before being handled.
@@ -46,7 +48,8 @@ abstract class MessageSessionCallback extends DiscoverySessionCallback {
 	public void onMessageReceived(PeerHandle peerHandle, byte[] message) {
 		super.onMessageReceived(peerHandle, message);
 
-		Log.d(tag, logName + " message received: " + new String(message));
+		Log.d(tag, logName + " message received: " +
+				new String(message, StandardCharsets.UTF_8));
 
 		TransportMessage transportMessage = TransportMessage.fromData(message);
 		if (transportMessage == null) {

@@ -189,6 +189,29 @@ public class CountryOsmImporterTest {
 		assertEquals(OsmEntity.EntityState.toUpdate, second.localUpdateState);
 	}
 
+	@Test
+	public void aChangeSavedWhileTheResponseIsReadIsKept() throws Exception {
+		importer.importResponse(new StringReader("{\"elements\":[" + node(1, ROUTE) + "]}"), "CA");
+
+		// Saved by an editor once the response is read, before the import writes it.
+		importer.importResponse(new StringReader("{\"elements\":[" + node(1, ROUTE) + "]}"), "CA",
+				() -> {
+					try {
+						OsmNode edited = new OsmNode(new JSONObject(node(1,
+								"{\"sport\":\"climbing\",\"climbing\":\"route_bottom\","
+										+ "\"name\":\"Renamed\"}")));
+						edited.localUpdateState = OsmEntity.EntityState.toUpdate;
+						database.osmNodeDao().insertNodesWithReplace(Arrays.asList(edited));
+					} catch (Exception e) {
+						throw new IllegalStateException(e);
+					}
+				});
+
+		OsmNode stored = database.osmNodeDao().find(OsmEntity.EntityOsmType.node, 1L);
+		assertEquals("Renamed", stored.getTags().optString("name"));
+		assertEquals(OsmEntity.EntityState.toUpdate, stored.localUpdateState);
+	}
+
 	private static String node(long id, String tags) {
 		return "{\"type\":\"node\",\"id\":" + id + ",\"lat\":45.0,\"lon\":-75.0,\"tags\":" + tags + "}";
 	}

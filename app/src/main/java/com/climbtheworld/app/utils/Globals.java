@@ -36,7 +36,9 @@ import com.google.android.material.bottomnavigation.BottomNavigationMenuView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import needle.UiRelatedTask;
 
@@ -46,8 +48,13 @@ import needle.UiRelatedTask;
 
 public class Globals {
 	public static boolean showDownloadPopup = true;
-	/** Refreshes the notifications of the screen in front when a download ends, see onResume. */
-	private static DownloadProgressListener downloadListener;
+	/**
+	 * Refreshes a resumed screen's notifications when a download ends, see onResume. One per
+	 * screen, as two can be resumed at once in split screen: a single field would lose the first
+	 * one's listener, and with it the screen, to the download service's static list.
+	 */
+	private static final Map<AppCompatActivity, DownloadProgressListener> downloadListeners =
+			new HashMap<>();
 
 	private Globals() {
 		//hide constructor
@@ -116,7 +123,10 @@ public class Globals {
 		showNotifications(parent);
 		// A download can finish while the screen stays in front, as under the download popup,
 		// which does not pause it.
-		downloadListener = new DownloadProgressListener() {
+		if (downloadListeners.containsKey(parent)) {
+			return;
+		}
+		DownloadProgressListener downloadListener = new DownloadProgressListener() {
 			@Override
 			public void onProgressChanged(String eventOwner, int progressEvent) {
 				if (progressEvent == DownloadProgressListener.STATUS_DONE) {
@@ -128,15 +138,16 @@ public class Globals {
 			public void onProgressRestored(String eventOwner, int progressEvent) {
 			}
 		};
+		downloadListeners.put(parent, downloadListener);
 		DownloadService.addListener(downloadListener);
 	}
 
 	public static void onPause(final AppCompatActivity parent) {
 		parent.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		virtualCamera.onPause(parent);
+		DownloadProgressListener downloadListener = downloadListeners.remove(parent);
 		if (downloadListener != null) {
 			DownloadService.removeListener(downloadListener);
-			downloadListener = null;
 		}
 	}
 
@@ -161,7 +172,14 @@ public class Globals {
 				if (downloadNotification) {
 					infoLevel = ColorStateList.valueOf(parent.getResources().getColor(android.R.color.holo_green_light));
 
-					if (showDownloadPopup
+					// Only on the screens that show the notification mark: the home, the tools,
+					// the map and the A.R. view. Not over an editor, whose Save a download started
+					// from the popup would refuse, nor the downloads screen itself. Skipped, it
+					// stays due, for the next of those screens to resume.
+					boolean showsNotificationMark =
+							parent.findViewById(R.id.icon_notification) != null
+							|| parent.findViewById(R.id.toolsButton) != null;
+					if (showDownloadPopup && showsNotificationMark
 							&& !configs.getBoolean(Configs.ConfigKey.isFirstRun)
 							&& configs.getBoolean(Configs.ConfigKey.showDownloadClimbingData)) {
 						DialogBuilder.buildDownloadRegionAlert(parent).show();
