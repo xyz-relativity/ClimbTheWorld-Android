@@ -69,6 +69,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
+import needle.UiRelatedTask;
+
 public class AugmentedRealityActivity extends MapWidgetActivity
 		implements ConfigFragment.OnConfigChangeListener {
 
@@ -152,7 +154,10 @@ public class AugmentedRealityActivity extends MapWidgetActivity
 					updateBoundingBox();
 					updateNearestRoute();
 				});
-		terrainWireframe = new TerrainWireframe(scene::getGroundElevation);
+		// Sampled off the main thread, see sampleTerrain, and drawn on the next frame once
+		// sampled.
+		terrainWireframe = new TerrainWireframe(scene::snapshotGroundElevations,
+				AugmentedRealityActivity::sampleTerrain, this::requestFrame);
 
 		//others
 		Globals.virtualCamera.screenRotation =
@@ -258,6 +263,26 @@ public class AugmentedRealityActivity extends MapWidgetActivity
 		mapWidget.setInitialZoomToFitRadius(scene.getMaxDistance());
 		updateFilterIcon();
 		showWarning();
+	}
+
+	/**
+	 * Runs a sampling of the terrain wireframe off the main thread, then hands it back on the
+	 * main thread, see TerrainWireframe.Sampler. Static, so that what it runs holds on to the
+	 * sampling alone, and not to this screen, which may be destroyed by then.
+	 */
+	private static void sampleTerrain(Runnable work, Runnable done) {
+		Constants.AR_EXECUTOR.execute(new UiRelatedTask<Void>() {
+			@Override
+			protected Void doWork() {
+				work.run();
+				return null;
+			}
+
+			@Override
+			protected void thenDoUiRelatedWork(Void result) {
+				done.run();
+			}
+		});
 	}
 
 	/**
@@ -383,6 +408,9 @@ public class AugmentedRealityActivity extends MapWidgetActivity
 	@Override
 	public void onDestroy() {
 		arCore.onDestroy();
+		// Before the scene gives the terrain back: a sampling under way is dropped once back,
+		// and asks the terrain for nothing more.
+		terrainWireframe.destroy();
 		scene.onDestroy();
 		for (AlertDialog startupDialog : startupDialogs) {
 			startupDialog.dismiss();
@@ -620,18 +648,26 @@ public class AugmentedRealityActivity extends MapWidgetActivity
 
 	/**
 	 * In terrain mode, the terrain around the observer, as a wireframe, takes the place of the
-	 * flat virtual horizon once the terrain under the observer is known.
+	 * flat virtual horizon once the terrain under the observer is known and sampled.
 	 */
 	private void updateHorizon(boolean useTerrain, double eyeElevation) {
-		boolean showTerrain = horizonMode == HorizonMode.TERRAIN && useTerrain;
+		boolean terrain = horizonMode == HorizonMode.TERRAIN && useTerrain;
+		double latitude = Globals.virtualCamera.decimalLatitude;
+		double longitude = Globals.virtualCamera.decimalLongitude;
+		if (terrain) {
+			terrainWireframe.update(latitude, longitude,
+					scene.getTerrainElevation().getVersion(), SystemClock.elapsedRealtime());
+		} else {
+			// Nothing is sampled for a wireframe that does not show.
+			terrainWireframe.hide();
+		}
+		// The terrain is sampled off the main thread, so a first sampling is only back a few
+		// frames later: the flat horizon stays until then.
+		boolean showTerrain = terrain && terrainWireframe.isSampled();
 		horizon.setVisibility(horizonMode != HorizonMode.OFF && !showTerrain
 				? View.VISIBLE : View.INVISIBLE);
 		terrainWireframeView.setVisibility(showTerrain ? View.VISIBLE : View.INVISIBLE);
 		if (showTerrain) {
-			double latitude = Globals.virtualCamera.decimalLatitude;
-			double longitude = Globals.virtualCamera.decimalLongitude;
-			terrainWireframe.update(latitude, longitude,
-					scene.getTerrainElevation().getVersion(), SystemClock.elapsedRealtime());
 			terrainWireframeView.show(terrainWireframe, latitude, longitude, eyeElevation,
 					AugmentedRealityScene.EYE_HEIGHT_METERS, scene.getViewManager().getViewSize());
 		}

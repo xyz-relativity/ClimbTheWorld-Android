@@ -19,6 +19,7 @@ import com.climbtheworld.app.sensors.camera.VirtualCamera;
 import com.climbtheworld.app.storage.CachedDataManager;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.TerrainElevation;
+import com.climbtheworld.app.storage.TerrainSnapshot;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
@@ -992,9 +993,24 @@ public class AugmentedRealityScene {
 	 * @return the elevation above sea level, NaN while unknown
 	 */
 	public double getGroundElevation(double latitude, double longitude, double distance) {
-		return terrainElevation.getElevation(latitude, longitude,
-				distance < TERRAIN_DETAIL_DISTANCE_METERS
-						? TerrainElevation.DETAIL_ZOOM : TerrainElevation.BASE_ZOOM);
+		return terrainElevation.getElevation(latitude, longitude, groundZoom(distance));
+	}
+
+	/**
+	 * @return the tile zoom the ground is read at, at a distance from the observer in meters
+	 */
+	private static int groundZoom(double distance) {
+		return distance < TERRAIN_DETAIL_DISTANCE_METERS
+				? TerrainElevation.DETAIL_ZOOM : TerrainElevation.BASE_ZOOM;
+	}
+
+	/**
+	 * The ground elevations as getGroundElevation gives them now, for the terrain wireframe to
+	 * sample them off the main thread, where the terrain model itself cannot be read. To be
+	 * called from the main thread, before onDestroy.
+	 */
+	public TerrainWireframe.ElevationSnapshot snapshotGroundElevations() {
+		return new GroundSnapshot(terrainElevation.snapshot());
 	}
 
 	/**
@@ -1017,5 +1033,24 @@ public class AugmentedRealityScene {
 	}
 
 	private record FootElevation(double meters, int terrainVersion) {
+	}
+
+	/**
+	 * See snapshotGroundElevations. It holds nothing of the scene, so a sampling reads nothing
+	 * of it off the main thread, nor keeps it once its screen is destroyed.
+	 */
+	private record GroundSnapshot(TerrainSnapshot terrain)
+			implements TerrainWireframe.ElevationSnapshot {
+		@Override
+		public double getElevation(double latitude, double longitude, double distance) {
+			return terrain.getElevation(latitude, longitude, groundZoom(distance));
+		}
+
+		@Override
+		public void applied() {
+			// Has the tiles found missing fetched, and the others kept, as getGroundElevation
+			// does when it reads them.
+			terrain.request();
+		}
 	}
 }

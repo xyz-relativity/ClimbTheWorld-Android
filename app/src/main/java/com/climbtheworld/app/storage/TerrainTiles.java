@@ -10,7 +10,8 @@ import java.util.function.LongSupplier;
 /**
  * The decoded terrain tiles held in memory, and what is known of the others: being fetched,
  * missing at their zoom, or failed. Apart from {@link TerrainElevation}, which fetches them, so
- * that it runs without Android. Only to be used from one thread.
+ * that it runs without Android. Only to be used from one thread: another reads the tiles from a
+ * {@link TerrainSnapshot}.
  */
 final class TerrainTiles {
 	static final long RETRY_DELAY_MS = 60_000;
@@ -43,6 +44,26 @@ final class TerrainTiles {
 	 */
 	float[] get(long key) {
 		return tiles.get(key);
+	}
+
+	/**
+	 * @return how many tiles are held
+	 */
+	int size() {
+		return tiles.size();
+	}
+
+	/**
+	 * Copies the tiles held into the arrays, which have room for {@link #size} of them. Unlike
+	 * {@link #get}, it does not count as reading them: they make way as if it had not been
+	 * called.
+	 */
+	void copyTo(long[] keys, float[][] elevations) {
+		int index = 0;
+		for (Map.Entry<Long, float[]> tile : tiles.entrySet()) {
+			keys[index] = tile.getKey();
+			elevations[index++] = tile.getValue();
+		}
 	}
 
 	/**

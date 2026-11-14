@@ -2,6 +2,9 @@ package com.climbtheworld.app.augmentedreality;
 
 import com.climbtheworld.app.utils.GeoUtils;
 
+import java.util.Arrays;
+import java.util.function.Supplier;
+
 /**
  * Terrain around the observer, sampled on a polar grid: rays at regular azimuths, crossed by rings
  * that get further apart with the distance, as farther terrain covers less of the view. It is
@@ -10,6 +13,10 @@ import com.climbtheworld.app.utils.GeoUtils;
  * <p>
  * Elevations are sampled around a centre and kept while the observer stays close to it, so
  * following the camera only takes the projection.
+ * <p>
+ * A sampling reads thousands of elevations, which is too much for the frame it would hold up, so
+ * it runs off the main thread, see {@link Sampler}: one at a time, while the samples before it
+ * stay on display. All the rest is only to be used from the main thread.
  */
 public class TerrainWireframe {
 	public static final int RAY_COUNT = 144;
@@ -32,6 +39,11 @@ public class TerrainWireframe {
 	// with every sampling. The far rings are seen from about the observer, so they stay on the
 	// terrain they show. Half way at this distance.
 	private static final double VIEWPOINT_HALFWAY_METERS = 5;
+	// Up to this far from the centre of the samples, each ring's viewpoint stays closer to the
+	// centre than the ring is, so every sample is ahead of it along its ray, see project. Past
+	// it, as after the observer moved on while the view was hidden or paused, the samples
+	// cannot be drawn for them any more, and go, see update.
+	static final double MAX_VIEWPOINT_DISTANCE_METERS = 2 * VIEWPOINT_HALFWAY_METERS;
 	// The terrain is sampled again once more of it loaded, this long after the last sampling at
 	// the soonest, as its tiles come in one after the other.
 	static final long TERRAIN_RESAMPLE_DELAY_MS = 1000;
@@ -68,9 +80,16 @@ public class TerrainWireframe {
 		}
 	}
 
-	private final ElevationSource source;
-	// Per sample, indexed by ray * RING_COUNT + ring. NaN while unknown.
-	private final float[] elevations = new float[RAY_COUNT * RING_COUNT];
+	private final Supplier<ElevationSnapshot> snapshots;
+	private final Sampler sampler;
+	private final Runnable onSampled;
+	// Per sample, indexed by ray * RING_COUNT + ring. NaN while unknown, as all are before the
+	// first sampling, so that nothing is drawn until then.
+	private float[] elevations = new float[RAY_COUNT * RING_COUNT];
+	// What the sampling under way writes, off the main thread. It takes the place of the
+	// elevations once the sampling is back, and they become the spare ones: the samples on
+	// display are never half written, and no sampling allocates its own.
+	private float[] spareElevations = new float[RAY_COUNT * RING_COUNT];
 	private final float[] screenX = new float[RAY_COUNT * RING_COUNT];
 	private final float[] screenY = new float[RAY_COUNT * RING_COUNT];
 	private final boolean[] drawable = new boolean[RAY_COUNT * RING_COUNT];
@@ -88,6 +107,17 @@ public class TerrainWireframe {
 	private long sampledAtMillis;
 	// The version of the terrain as of the last sampling, see update.
 	private int terrainVersion;
+	// The sampling under way, null when none. One that was given up on still keeps the next
+	// from starting until it is back, as it may be writing the spare elevations until then.
+	private Sampling running;
+	// Whether an update came while a sampling was under way, and where the observer was then,
+	// with the terrain's version, for the sampling to make once that one is back.
+	private boolean updateWaiting;
+	private double observerLatitude;
+	private double observerLongitude;
+	private int observerTerrainVersion;
+	private long observerMillis;
+	private boolean destroyed;
 	// The camera of the last projection, see toScreen.
 	private double sinAzimuth;
 	private double cosAzimuth;
@@ -98,8 +128,17 @@ public class TerrainWireframe {
 	private double viewCentreX;
 	private double viewCentreY;
 
-	public TerrainWireframe(ElevationSource source) {
-		this.source = source;
+	/**
+	 * @param snapshots gives the elevations to sample, as they are when asked, on the main thread
+	 * @param sampler   runs the samplings off the main thread
+	 * @param onSampled run on the main thread once a sampling is on display, to draw it
+	 */
+	public TerrainWireframe(Supplier<ElevationSnapshot> snapshots, Sampler sampler,
+	                        Runnable onSampled) {
+		this.snapshots = snapshots;
+		this.sampler = sampler;
+		this.onSampled = onSampled;
+		Arrays.fill(elevations, Float.NaN);
 	}
 
 	private static double[] ringDistances() {
@@ -117,52 +156,134 @@ public class TerrainWireframe {
 	}
 
 	/**
-	 * Samples the terrain again when the observer moved away from the centre of the samples,
+	 * Has the terrain sampled again when the observer moved away from the centre of the samples,
 	 * once more of the terrain loaded, and now and then while some of it is missing, see
-	 * MISSING_RETRY_DELAY_MS.
+	 * MISSING_RETRY_DELAY_MS. The samples before stay on display until the sampling is back,
+	 * which onSampled tells, unless they are too far from the observer to be drawn for them, see
+	 * MAX_VIEWPOINT_DISTANCE_METERS. While a sampling is under way, none starts: the update
+	 * waits for it to be back, and the terrain is then sampled again if the observer and the
+	 * terrain, as of the last update, still call for it.
 	 *
 	 * @param terrainVersion changes whenever the elevations may have changed
-	 * @return whether the terrain was sampled again
+	 * @return whether a sampling started
 	 */
 	public boolean update(double latitude, double longitude, int terrainVersion,
 	                      long nowMillis) {
-		boolean moved = Double.isNaN(centreLatitude)
-				|| Math.hypot(eastOfCentre(longitude), northOfCentre(latitude))
-				> RECENTRE_DISTANCE_METERS;
-		long sinceSampled = nowMillis - sampledAtMillis;
-		boolean terrainChanged = terrainVersion != this.terrainVersion
+		if (destroyed) {
+			return false;
+		}
+		if (isSampled()
+				&& metersFromCentre(latitude, longitude) >= MAX_VIEWPOINT_DISTANCE_METERS) {
+			forget();
+		}
+		observerLatitude = latitude;
+		observerLongitude = longitude;
+		observerTerrainVersion = terrainVersion;
+		observerMillis = nowMillis;
+		if (running != null) {
+			updateWaiting = true;
+			return false;
+		}
+		return sampleIfNeeded();
+	}
+
+	/**
+	 * To be called while the wireframe does not show: the sampling under way is given up on,
+	 * and none starts until the next update, so that nothing is sampled for a hidden wireframe.
+	 */
+	public void hide() {
+		updateWaiting = false;
+		giveUp();
+	}
+
+	/**
+	 * To be called when the screen of the wireframe is destroyed: the sampling under way is
+	 * given up on and comes back to nobody, without a word to the snapshot it read or to
+	 * onSampled, and no other starts. Until it is done, it holds on to nothing of the screen.
+	 */
+	public void destroy() {
+		destroyed = true;
+		if (running != null) {
+			giveUp();
+			running.owner = null;
+			running = null;
+		}
+	}
+
+	/**
+	 * @return whether a sampling is on display. Before the first one, nothing is drawn.
+	 */
+	public boolean isSampled() {
+		return !Double.isNaN(centreLatitude);
+	}
+
+	private void giveUp() {
+		if (running != null) {
+			running.givenUp = true;
+		}
+	}
+
+	/** Lets go of the samples on display, as before the first sampling. */
+	private void forget() {
+		centreLatitude = Double.NaN;
+		centreLongitude = Double.NaN;
+		centreElevation = Double.NaN;
+		Arrays.fill(elevations, Float.NaN);
+	}
+
+	/**
+	 * Starts a sampling for where the observer is as of the last update, when that calls for
+	 * one. Only while none is under way.
+	 */
+	private boolean sampleIfNeeded() {
+		boolean moved = !isSampled()
+				|| metersFromCentre(observerLatitude, observerLongitude) > RECENTRE_DISTANCE_METERS;
+		long sinceSampled = observerMillis - sampledAtMillis;
+		boolean terrainChanged = observerTerrainVersion != terrainVersion
 				&& sinceSampled >= TERRAIN_RESAMPLE_DELAY_MS;
 		boolean retry = !complete && sinceSampled >= MISSING_RETRY_DELAY_MS;
 		if (!moved && !terrainChanged && !retry) {
 			return false;
 		}
 
-		if (moved) {
-			centreLatitude = latitude;
-			centreLongitude = longitude;
-		}
-		sample();
-		this.terrainVersion = terrainVersion;
-		sampledAtMillis = nowMillis;
+		// The snapshot is taken here, on the main thread. It is no older than the terrain's
+		// version as of the last update, so no change of the terrain goes unnoticed.
+		Sampling sampling = new Sampling(this, moved ? observerLatitude : centreLatitude,
+				moved ? observerLongitude : centreLongitude, observerTerrainVersion,
+				observerMillis, snapshots.get(), spareElevations);
+		running = sampling;
+		sampler.run(sampling, sampling::handBack);
 		return true;
 	}
 
-	private void sample() {
-		double metersPerDegreeLongitude =
-				METERS_PER_DEGREE * Math.cos(Math.toRadians(centreLatitude));
-		centreElevation = source.getElevation(centreLatitude, centreLongitude, 0);
-		complete = !Double.isNaN(centreElevation);
-		for (int ray = 0; ray < RAY_COUNT; ray++) {
-			for (int ring = 0; ring < RING_COUNT; ring++) {
-				double distance = RING_DISTANCES[ring];
-				float elevation = (float) source.getElevation(
-						centreLatitude + distance * RAY_COS[ray] / METERS_PER_DEGREE,
-						centreLongitude + distance * RAY_SIN[ray] / metersPerDegreeLongitude,
-						distance);
-				elevations[sampleIndex(ray, ring)] = elevation;
-				complete &= !Float.isNaN(elevation);
-			}
+	/**
+	 * Takes a sampling back on the main thread, and puts it on display unless it was given up
+	 * on since. The samples it replaces were on display until now.
+	 */
+	private void finished(Sampling sampling) {
+		running = null;
+		if (!sampling.givenUp) {
+			spareElevations = elevations;
+			elevations = sampling.elevations;
+			centreLatitude = sampling.latitude;
+			centreLongitude = sampling.longitude;
+			centreElevation = sampling.centreElevation;
+			complete = sampling.complete;
+			// As of when the snapshot was taken, which is how old the elevations are.
+			sampledAtMillis = sampling.startedAtMillis;
+			terrainVersion = sampling.terrainVersion;
+			sampling.snapshot.applied();
+			onSampled.run();
 		}
+		// The observer may have moved on, or more terrain loaded, while it ran.
+		if (updateWaiting) {
+			updateWaiting = false;
+			sampleIfNeeded();
+		}
+	}
+
+	private double metersFromCentre(double latitude, double longitude) {
+		return Math.hypot(eastOfCentre(longitude), northOfCentre(latitude));
 	}
 
 	private double northOfCentre(double latitude) {
@@ -226,7 +347,8 @@ public class TerrainWireframe {
 				}
 
 				// Relative to the eye at the viewpoint of the ring, in meters. The viewpoint stays
-				// close enough to the centre for every sample to be ahead of it along its ray.
+				// close enough to the centre for every sample to be ahead of it along its ray,
+				// see MAX_VIEWPOINT_DISTANCE_METERS.
 				double share = VIEWPOINT_SHARE[ring];
 				double east = RING_DISTANCES[ring] * RAY_SIN[ray] - share * observerEast;
 				double north = RING_DISTANCES[ring] * RAY_COS[ray] - share * observerNorth;
@@ -345,5 +467,85 @@ public class TerrainWireframe {
 		 * @return the ground elevation above sea level in meters, or NaN while it is not known
 		 */
 		double getElevation(double latitude, double longitude, double distanceMeters);
+	}
+
+	/**
+	 * The elevations as they are known at one time. Unlike the source they are taken from, they
+	 * may be read off the main thread, from one thread at a time.
+	 */
+	public interface ElevationSnapshot extends ElevationSource {
+		/**
+		 * Called on the main thread once what was read is on display, for the elevations found
+		 * missing to be looked for, as reading them from their source would have.
+		 */
+		void applied();
+	}
+
+	/** Runs the samplings off the main thread. */
+	public interface Sampler {
+		/**
+		 * Runs the work off the main thread, then done on the main thread, which thereby sees
+		 * all the work wrote.
+		 */
+		void run(Runnable work, Runnable done);
+	}
+
+	/**
+	 * One sampling: where and of what, and what came of it. It runs off the main thread, which
+	 * only reads what it wrote once it is back, see finished.
+	 */
+	private static final class Sampling implements Runnable {
+		// Who the sampling comes back to, on the main thread, which alone reads and sets it:
+		// nobody once the screen is destroyed, see destroy.
+		private TerrainWireframe owner;
+		private final double latitude;
+		private final double longitude;
+		private final int terrainVersion;
+		private final long startedAtMillis;
+		private final ElevationSnapshot snapshot;
+		private final float[] elevations;
+		// Ground elevation at the centre, NaN while unknown.
+		private double centreElevation;
+		private boolean complete;
+		// Set on the main thread once the result is not wanted any more, for the sampling to
+		// stop short. What it wrote by then is not used.
+		private volatile boolean givenUp;
+
+		Sampling(TerrainWireframe owner, double latitude, double longitude, int terrainVersion,
+		         long startedAtMillis, ElevationSnapshot snapshot, float[] elevations) {
+			this.owner = owner;
+			this.latitude = latitude;
+			this.longitude = longitude;
+			this.terrainVersion = terrainVersion;
+			this.startedAtMillis = startedAtMillis;
+			this.snapshot = snapshot;
+			this.elevations = elevations;
+		}
+
+		@Override
+		public void run() {
+			double metersPerDegreeLongitude =
+					METERS_PER_DEGREE * Math.cos(Math.toRadians(latitude));
+			centreElevation = snapshot.getElevation(latitude, longitude, 0);
+			complete = !Double.isNaN(centreElevation);
+			for (int ray = 0; ray < RAY_COUNT && !givenUp; ray++) {
+				for (int ring = 0; ring < RING_COUNT; ring++) {
+					double distance = RING_DISTANCES[ring];
+					float elevation = (float) snapshot.getElevation(
+							latitude + distance * RAY_COS[ray] / METERS_PER_DEGREE,
+							longitude + distance * RAY_SIN[ray] / metersPerDegreeLongitude,
+							distance);
+					elevations[sampleIndex(ray, ring)] = elevation;
+					complete &= !Float.isNaN(elevation);
+				}
+			}
+		}
+
+		/** Gives the sampling back once it ran, on the main thread. */
+		void handBack() {
+			if (owner != null) {
+				owner.finished(this);
+			}
+		}
 	}
 }

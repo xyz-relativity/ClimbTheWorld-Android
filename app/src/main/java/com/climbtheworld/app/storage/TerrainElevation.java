@@ -35,7 +35,9 @@ import okhttp3.Response;
  * The A.R. screens share one, see {@link #acquireShared}, so that they hold the decoded tiles
  * once, and a screen finds the ones the screen before it loaded.
  * <p>
- * Prototype: not tied into the offline downloads yet. Only to be used from the main thread.
+ * Prototype: not tied into the offline downloads yet. Only to be used from the main thread: a
+ * lookup moves the tile it reads among the recently used, and has a tile not held fetched. Off
+ * the main thread, the elevations are read from a {@link #snapshot}.
  */
 public class TerrainElevation {
 	// Available everywhere.
@@ -75,6 +77,8 @@ public class TerrainElevation {
 	private final OkHttpClient httpClient;
 	private final TerrainTiles tiles =
 			new TerrainTiles(MAX_CACHED_TILES, SystemClock::elapsedRealtime);
+	// Kept, as lookups run by the thousand: made on the spot, each would allocate one.
+	private final TileSource heldTiles = this::getTile;
 
 	private TerrainElevation(Context context) {
 		cacheDirectory = new File(context.getCacheDir(), "terrain");
@@ -213,7 +217,7 @@ public class TerrainElevation {
 		return topElevation * (1 - fractionY) + bottomElevation * fractionY;
 	}
 
-	private static long tileKey(int zoom, int x, int y) {
+	static long tileKey(int zoom, int x, int y) {
 		return ((long) zoom << 58) | ((long) x << 29) | y;
 	}
 
@@ -222,12 +226,29 @@ public class TerrainElevation {
 	 * @return the ground elevation above sea level in meters, or NaN while it is not known
 	 */
 	public double getElevation(double latitude, double longitude, int zoom) {
-		double elevation = sample(latitude, longitude, zoom);
+		return getElevation(heldTiles, latitude, longitude, zoom);
+	}
+
+	/**
+	 * The elevation as the tiles of a source give it: the same from the tiles held as from a
+	 * snapshot of them, see {@link TerrainSnapshot}.
+	 */
+	static double getElevation(TileSource source, double latitude, double longitude, int zoom) {
+		double elevation = sample(source, latitude, longitude, zoom);
 		if (Double.isNaN(elevation) && zoom != BASE_ZOOM) {
 			// Detailed tiles only exist in some regions, and may still be loading.
-			elevation = sample(latitude, longitude, BASE_ZOOM);
+			elevation = sample(source, latitude, longitude, BASE_ZOOM);
 		}
 		return elevation;
+	}
+
+	/**
+	 * The elevations as the tiles held now give them, for a thread other than the main one to
+	 * read, such as the A.R. terrain wireframe sampling the terrain all around the observer. To
+	 * be called from the main thread.
+	 */
+	public TerrainSnapshot snapshot() {
+		return new TerrainSnapshot(tiles, heldTiles);
 	}
 
 	/**
@@ -312,11 +333,12 @@ public class TerrainElevation {
 		return tiles.getVersion();
 	}
 
-	private double sample(double latitude, double longitude, int zoom) {
+	private static double sample(TileSource source, double latitude, double longitude,
+	                             int zoom) {
 		double[] tileCoordinates = toTileCoordinates(latitude, longitude, zoom);
 		int x = (int) Math.floor(tileCoordinates[0]);
 		int y = (int) Math.floor(tileCoordinates[1]);
-		float[] tile = getTile(zoom, x, y);
+		float[] tile = source.getTile(zoom, x, y);
 		if (tile == null) {
 			return Double.NaN;
 		}
@@ -403,6 +425,17 @@ public class TerrainElevation {
 			Log.d(TAG, "Terrain tile " + zoom + "/" + x + "/" + y + " not loaded", e);
 			return null;
 		}
+	}
+
+	/**
+	 * Where a lookup reads its tiles: among the ones held, which fetches the others, or in a
+	 * snapshot of them.
+	 */
+	interface TileSource {
+		/**
+		 * @return the elevations of the tile, null while they are not known
+		 */
+		float[] getTile(int zoom, int x, int y);
 	}
 
 	private record LoadedTile(float[] elevations) {
