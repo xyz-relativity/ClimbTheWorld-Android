@@ -919,6 +919,9 @@ class ArCoreSession {
 				// anyway, they pile up over a walk around a crag, and each frame refits them all,
 				// which slows ARCore down more and more.
 				config.setPlaneFindingMode(Config.PlaneFindingMode.DISABLED);
+				// Its light estimate goes unused too, as nothing drawn over the camera is lit.
+				// Left on, as it is by default, ARCore works one out for every frame.
+				config.setLightEstimationMode(Config.LightEstimationMode.DISABLED);
 				if (depth) {
 					config.setDepthMode(Config.DepthMode.AUTOMATIC);
 				}
