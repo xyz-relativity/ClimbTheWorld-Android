@@ -194,7 +194,13 @@ public class EnvironmentActivity extends MapWidgetActivity implements IEnvironme
 		findViewById(R.id.azimuthContainer).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				float angle = Float.parseFloat((String) editAzimuthValue.getText().subSequence(0, 6));
+				// The azimuth shown, from the number rather than its text: the text is written
+				// in the user's locale, with a decimal comma or other digits, and is empty
+				// until the first reading.
+				if (shownAzimuthHundredths == Long.MIN_VALUE) {
+					return;
+				}
+				float angle = shownAzimuthHundredths / 100f;
 				rotateBazel(configs, 360 - angle, true);
 			}
 		});
