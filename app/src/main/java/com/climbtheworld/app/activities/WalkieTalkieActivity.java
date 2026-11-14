@@ -21,6 +21,7 @@ import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.utils.views.EdgeToEdge;
 import com.climbtheworld.app.utils.views.TextViewSwitcher;
 import com.climbtheworld.app.utils.views.dialogs.SettingsDialogue;
+import com.climbtheworld.app.walkietalkie.Callsigns;
 import com.climbtheworld.app.walkietalkie.application.Client;
 import com.climbtheworld.app.walkietalkie.application.IUiClientEvent;
 import com.climbtheworld.app.walkietalkie.application.WalkietalkieServiceController;
@@ -153,10 +154,16 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 				});
 
 		callSignSwitcher = new TextViewSwitcher(this, findViewById(R.id.intercomCallsignLayout),
-				configs.getString(Configs.ConfigKey.intercomCallsign),
+				configs.getCallsign(),
 				new TextViewSwitcher.ISwitcherCallback() {
 					@Override
 					public void onChange(String value) {
+						if (Callsigns.isBlank(value)) {
+							// A blank callsign is never sent, see Callsigns: the field shows again
+							// the name the others still see.
+							callSignSwitcher.setText(callSign);
+							return;
+						}
 						configs.setString(Configs.ConfigKey.intercomCallsign, value);
 						callSign = value;
 						serviceController.updateConfigs();
@@ -172,7 +179,7 @@ public class WalkieTalkieActivity extends AppCompatActivity {
 	}
 
 	private void initConfigs() {
-		callSign = configs.getString(Configs.ConfigKey.intercomCallsign);
+		callSign = configs.getCallsign();
 		channel = configs.getString(Configs.ConfigKey.intercomChannel);
 
 		refreshUI();

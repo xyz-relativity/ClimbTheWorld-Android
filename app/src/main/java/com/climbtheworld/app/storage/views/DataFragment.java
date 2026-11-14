@@ -7,6 +7,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -134,44 +136,71 @@ public abstract class DataFragment implements DownloadProgressListener, IPagerVi
 	 * delete in flight keeps its state until it finishes.
 	 */
 	void refreshInstalledCountries() {
-		Constants.DB_EXECUTOR.execute(new UiRelatedTask<InstalledCountries>() {
-			@Override
-			protected InstalledCountries doWork() {
-				AppDatabase database = AppDatabase.getInstance(appContext);
-				InstalledCountries result = new InstalledCountries();
-				for (DownloadedCountry download : database.downloadedCountryDao().loadAll()) {
-					result.downloads.put(download.countryIso, download);
-				}
-				for (EntityCountryDao.CountryEntityCount routes : database.entityCountryDao()
-						.countPerCountry(OsmEntity.EntityClimbingType.route)) {
-					result.routeCounts.put(routes.countryIso, routes.entityCount);
-				}
-				return result;
-			}
+		if (INSTALLED_COUNTRIES.join(this)) {
+			// Queued once the UI thread is done with what it is doing, so that the tabs asking
+			// together, both created by the pager or both told a download ended, share one count of
+			// the routes instead of holding up the other database loads with two.
+			MAIN_THREAD.post(() -> Constants.DB_EXECUTOR.execute(
+					new InstalledCountriesLoad(appContext)));
+		}
+	}
 
-			@Override
-			protected void thenDoUiRelatedWork(InstalledCountries result) {
-				List<String> installedCountries = new ArrayList<>();
-				for (CountryViewState country : countryMap.values()) {
-					country.download = result.downloads.get(country.countryISO);
-					Integer routeCount = result.routeCounts.get(country.countryISO);
-					country.routeCount = routeCount != null ? routeCount : 0;
-					boolean installed = country.download != null;
-					if (installed) {
-						installedCountries.add(country.countryISO);
-					}
-					if (country.countryState == CountryState.ADD
-							|| country.countryState == CountryState.REMOVE) {
-						country.countryState = installed ? CountryState.REMOVE : CountryState.ADD;
-					}
-				}
-				onInstalledCountriesLoaded(installedCountries);
-				listViewNotifyDataChange();
+	/** One read of the installed countries for every tab that asked before it started. */
+	private static final SharedLoad<DataFragment> INSTALLED_COUNTRIES = new SharedLoad<>();
+	private static final Handler MAIN_THREAD = new Handler(Looper.getMainLooper());
+
+	private static final class InstalledCountriesLoad extends UiRelatedTask<InstalledCountries> {
+		private final Context appContext;
+
+		InstalledCountriesLoad(Context appContext) {
+			this.appContext = appContext;
+		}
+
+		@Override
+		protected InstalledCountries doWork() {
+			InstalledCountries result = new InstalledCountries();
+			// Before reading, so a tab asking from here on gets a read of its own.
+			result.fragments = INSTALLED_COUNTRIES.begin();
+			AppDatabase database = AppDatabase.getInstance(appContext);
+			for (DownloadedCountry download : database.downloadedCountryDao().loadAll()) {
+				result.downloads.put(download.countryIso, download);
 			}
-		});
+			for (EntityCountryDao.CountryEntityCount routes : database.entityCountryDao()
+					.countPerCountry(OsmEntity.EntityClimbingType.route)) {
+				result.routeCounts.put(routes.countryIso, routes.entityCount);
+			}
+			return result;
+		}
+
+		@Override
+		protected void thenDoUiRelatedWork(InstalledCountries result) {
+			for (DataFragment fragment : result.fragments) {
+				fragment.showInstalledCountries(result);
+			}
+		}
+	}
+
+	private void showInstalledCountries(InstalledCountries result) {
+		List<String> installedCountries = new ArrayList<>();
+		for (CountryViewState country : countryMap.values()) {
+			country.download = result.downloads.get(country.countryISO);
+			Integer routeCount = result.routeCounts.get(country.countryISO);
+			country.routeCount = routeCount != null ? routeCount : 0;
+			boolean installed = country.download != null;
+			if (installed) {
+				installedCountries.add(country.countryISO);
+			}
+			if (country.countryState == CountryState.ADD
+					|| country.countryState == CountryState.REMOVE) {
+				country.countryState = installed ? CountryState.REMOVE : CountryState.ADD;
+			}
+		}
+		onInstalledCountriesLoaded(installedCountries);
+		listViewNotifyDataChange();
 	}
 
 	private static final class InstalledCountries {
+		List<DataFragment> fragments;
 		final Map<String, DownloadedCountry> downloads = new HashMap<>();
 		final Map<String, Integer> routeCounts = new HashMap<>();
 	}

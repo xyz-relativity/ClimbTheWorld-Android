@@ -9,9 +9,11 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.utils.views.TextViewSwitcher;
+import com.climbtheworld.app.walkietalkie.Callsigns;
 
 public class IntercomFragment extends ConfigFragment implements SeekBar.OnSeekBarChangeListener, CompoundButton.OnCheckedChangeListener {
 	private final Configs configs;
+	private TextViewSwitcher callsignSwitcher;
 
 	public IntercomFragment(AppCompatActivity parent, View view) {
 		super(parent, view);
@@ -29,9 +31,15 @@ public class IntercomFragment extends ConfigFragment implements SeekBar.OnSeekBa
 		((SeekBar) findViewById(R.id.noiseFilterSeek)).setOnSeekBarChangeListener(this);
 		((TextView) findViewById(R.id.noiseFilterValue)).setText(String.valueOf(configs.getInt(Configs.ConfigKey.intercomHandsFreeNoiseFilter)));
 
-		new TextViewSwitcher(parent, findViewById(R.id.callsignLayout), configs.getString(Configs.ConfigKey.intercomCallsign), new TextViewSwitcher.ISwitcherCallback() {
+		callsignSwitcher = new TextViewSwitcher(parent, findViewById(R.id.callsignLayout), configs.getCallsign(), new TextViewSwitcher.ISwitcherCallback() {
 			@Override
 			public void onChange(String value) {
+				if (Callsigns.isBlank(value)) {
+					// A blank callsign is never sent, see Callsigns: the field shows again the
+					// name the others still see.
+					callsignSwitcher.setText(configs.getCallsign());
+					return;
+				}
 				configs.setString(Configs.ConfigKey.intercomCallsign, value);
 			}
 		});

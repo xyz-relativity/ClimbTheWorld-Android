@@ -13,6 +13,7 @@ import com.climbtheworld.app.converter.tools.WeightSystem;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.utils.constants.UIConstants;
+import com.climbtheworld.app.walkietalkie.Callsigns;
 
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
@@ -132,6 +133,21 @@ public class Configs {
 
 			editor.apply();
 		}
+	}
+
+	/**
+	 * The walkie-talkie's callsign, never blank, see Callsigns. Released versions could store an
+	 * empty one, which made the phone invisible to the others: it is replaced by the default
+	 * callsign, stored so the name stays the same from then on.
+	 */
+	public String getCallsign() {
+		String stored = getString(ConfigKey.intercomCallsign);
+		String callsign = Callsigns.orFallback(stored,
+				(String) ConfigKey.intercomCallsign.defaultVal);
+		if (!callsign.equals(stored)) {
+			setString(ConfigKey.intercomCallsign, callsign);
+		}
+		return callsign;
 	}
 
 	public HorizonMode getHorizonMode() {

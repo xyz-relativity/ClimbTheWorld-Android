@@ -70,7 +70,7 @@ public class WifiAwareTransport implements ITransportLayer {
 		this.configs = configs;
 		this.transportEventsListener = transportEventsListener;
 		this.channel = configs.getString(Configs.ConfigKey.intercomChannel);
-		this.callsign = configs.getString(Configs.ConfigKey.intercomCallsign);
+		this.callsign = configs.getCallsign();
 
 		initWifiAware();
 	}
@@ -298,7 +298,7 @@ public class WifiAwareTransport implements ITransportLayer {
 			scheduleRecovery("channel changed");
 		}
 
-		String configuredCallsign = configs.getString(Configs.ConfigKey.intercomCallsign);
+		String configuredCallsign = configs.getCallsign();
 		if (!callsign.equals(configuredCallsign)) {
 			callsign = configuredCallsign;
 			PubSubManager manager = pubSubManager;
