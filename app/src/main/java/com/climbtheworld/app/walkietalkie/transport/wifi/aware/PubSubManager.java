@@ -165,11 +165,12 @@ public class PubSubManager {
 	}
 
 	public String getEncryptionKey() {
-		return TransportUtilities.computeDigest("ctw.walkietalkie." + channel).toUpperCase();
+		return ChannelKeys.encryptionKey(
+				TransportUtilities.computeDigest("ctw.walkietalkie." + channel));
 	}
 
 	public String getServiceName() {
-		return getEncryptionKey().substring(0, 8);
+		return ChannelKeys.serviceName(getEncryptionKey());
 	}
 
 	public void startPubSub() {
@@ -388,14 +389,14 @@ public class PubSubManager {
 				networkSpecifier =
 						new WifiAwareNetworkSpecifier.Builder(discoverySession,
 								peerHandle)
-								.setPmk(getEncryptionKey().substring(0, 32).getBytes())
+								.setPmk(ChannelKeys.pmk(getEncryptionKey()))
 								.setPort(UDP_PORT)
 								.build();
 			} else {
 				networkSpecifier =
 						new WifiAwareNetworkSpecifier.Builder(discoverySession,
 								peerHandle)
-								.setPmk(getEncryptionKey().substring(0, 32).getBytes())
+								.setPmk(ChannelKeys.pmk(getEncryptionKey()))
 								.build();
 			}
 			networkRequest = new NetworkRequest.Builder()
