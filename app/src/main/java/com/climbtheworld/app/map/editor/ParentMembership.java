@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.DisplayableGeoNode;
+import com.climbtheworld.app.map.editor.ParentEdits.Membership;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.map.model.MapBounds;
 import com.climbtheworld.app.map.widget.climbing.ClimbingParent;
@@ -123,9 +124,8 @@ public class ParentMembership {
 	private final TextView noParent;
 	private final TextView addButton;
 
-	private final List<Membership> memberships = new ArrayList<>();
-	/** Stored parents the element was taken out of; saving them records the change. */
-	private final List<OsmCollectionEntity> leftParents = new ArrayList<>();
+	/** The parents the element is in and the ones it left, which the user's picks change. */
+	private final ParentEdits edits;
 	/**
 	 * Parents changed earlier in the same edit, by id, standing in for their stored versions: the
 	 * areas a route's editor kept from the crag's editor, when it opens again.
@@ -161,22 +161,6 @@ public class ParentMembership {
 		}
 	}
 
-	private static final class Membership {
-		OsmCollectionEntity relation;
-		/**
-		 * The relation as its pin draws it, with the count of its routes as they are stored, see
-		 * pinOf; null until it is loaded.
-		 */
-		DisplayableGeoNode pin;
-		boolean changed;
-
-		Membership(OsmCollectionEntity relation, DisplayableGeoNode pin, boolean changed) {
-			this.relation = relation;
-			this.pin = pin;
-			this.changed = changed;
-		}
-	}
-
 	/**
 	 * @param screenLoads   the editor's loads, cancelled when it closes, which the tasks here join.
 	 * @param editedElement the element as the form has it now, placed where it is, for the
@@ -195,6 +179,7 @@ public class ParentMembership {
 		this.kind = kind;
 		this.store = new OsmEditStore(parent);
 		this.memberId = memberId;
+		this.edits = new ParentEdits(kind.memberType, memberId);
 		this.editedElement = editedElement;
 		this.shownBounds = shownBounds;
 		for (OsmCollectionEntity relation : editedParents) {
@@ -232,12 +217,7 @@ public class ParentMembership {
 	 * stored. The grandparents no longer list the parents this edit drops.
 	 */
 	public List<OsmCollectionEntity> changedParents() {
-		List<OsmCollectionEntity> result = new ArrayList<>(leftParents);
-		for (Membership membership : memberships) {
-			if (membership.changed) {
-				result.add(membership.relation);
-			}
-		}
+		List<OsmCollectionEntity> result = edits.changed();
 		Set<Long> dropped = droppedParents();
 		for (OsmCollectionEntity grandparent : grandparents.values()) {
 			OsmCollectionEntity saved = copy(grandparent);
@@ -251,6 +231,7 @@ public class ParentMembership {
 
 	/** The ids of the parents the element is in now. */
 	public long[] parentIds() {
+		List<Membership> memberships = edits.memberships();
 		long[] result = new long[memberships.size()];
 		for (int index = 0; index < result.length; index++) {
 			result[index] = memberships.get(index).relation.osmID;
@@ -272,12 +253,12 @@ public class ParentMembership {
 	 */
 	private Set<Long> droppedParents() {
 		Set<Long> result = new HashSet<>(parentsEdited);
-		for (Membership membership : memberships) {
+		for (Membership membership : edits.memberships()) {
 			if (membership.relation.getMembers().length() > 0) {
 				result.remove(membership.relation.osmID);
 			}
 		}
-		for (OsmCollectionEntity relation : leftParents) {
+		for (OsmCollectionEntity relation : edits.leftParents()) {
 			if (relation.getMembers().length() > 0) {
 				result.remove(relation.osmID);
 			}
@@ -288,12 +269,12 @@ public class ParentMembership {
 	/** The names of the stored parents listing the element, which deleting it takes it out of. */
 	public List<String> storedParentNames() {
 		List<String> result = new ArrayList<>();
-		for (Membership membership : memberships) {
+		for (Membership membership : edits.memberships()) {
 			if (!membership.relation.isNew()) {
 				result.add(nameOf(membership.relation));
 			}
 		}
-		for (OsmCollectionEntity relation : leftParents) {
+		for (OsmCollectionEntity relation : edits.leftParents()) {
 			result.add(nameOf(relation));
 		}
 		return result;
@@ -312,19 +293,12 @@ public class ParentMembership {
 	 * left in its editor, which replace the ones changed in an earlier visit.
 	 */
 	public void parentEdited(OsmCollectionEntity relation, List<OsmCollectionEntity> relationParents) {
-		Membership membership = null;
-		for (Membership candidate : memberships) {
-			if (candidate.relation.osmID == relation.osmID) {
-				membership = candidate;
-			}
-		}
+		Membership membership = edits.membershipIn(relation.osmID);
 		boolean listsElement = listsElement(relation);
 		if (membership == null) {
 			if (listsElement) {
 				// Changes in its editor happen in the same edit.
-				leftParents.removeIf(left -> left.osmID == relation.osmID);
-				membership = new Membership(relation, null, true);
-				memberships.add(membership);
+				membership = edits.join(relation);
 			} else {
 				return;
 			}
@@ -333,17 +307,14 @@ public class ParentMembership {
 		for (OsmCollectionEntity grandparent : relationParents) {
 			grandparents.put(grandparent.osmID, grandparent);
 		}
-		if (!listsElement) {
-			memberships.remove(membership);
-			if (!relation.isNew()) {
-				leftParents.add(relation);
-			}
-			render();
-			return;
-		}
 		Membership updated = membership;
 		updated.relation = relation;
 		updated.changed = true;
+		if (!listsElement) {
+			edits.leave(updated);
+			render();
+			return;
+		}
 		render();
 		loadPin(relation, pin -> {
 			updated.pin = pin;
@@ -381,18 +352,18 @@ public class ParentMembership {
 
 			@Override
 			protected void thenDoUiRelatedWork(List<Membership> result) {
-				memberships.addAll(result);
-				leftParents.addAll(left);
+				edits.addLoaded(result, left);
 				render();
 			}
 		}));
 	}
 
 	private boolean listsElement(OsmCollectionEntity relation) {
-		return RelationMembers.contains(relation.getMembers(), kind.memberType.name(), memberId);
+		return edits.listsElement(relation);
 	}
 
 	private void render() {
+		List<Membership> memberships = edits.memberships();
 		parentsContainer.removeAllViews();
 		for (Membership membership : memberships) {
 			parentsContainer.addView(buildRow(membership));
@@ -433,11 +404,7 @@ public class ParentMembership {
 	private void remove(Membership membership) {
 		OsmCollectionEntity relation = membership.relation;
 		Runnable removal = () -> {
-			RelationMembers.removeAll(relation.getMembers(), kind.memberType.name(), memberId);
-			memberships.remove(membership);
-			if (!relation.isNew()) {
-				leftParents.add(relation);
-			}
+			edits.leave(membership);
 			render();
 		};
 
@@ -493,7 +460,7 @@ public class ParentMembership {
 			if (shown != null) {
 				areas.add(shown);
 			}
-			for (Membership membership : memberships) {
+			for (Membership membership : edits.memberships()) {
 				listed.add(membership.relation.osmID);
 			}
 
@@ -612,10 +579,16 @@ public class ParentMembership {
 		// Joins the parent as changed earlier in the edit, keeping those changes.
 		OsmCollectionEntity relation = editedParents.containsKey(listed.osmID)
 				? editedParents.get(listed.osmID) : listed;
-		loadPin(relation, pin -> {
-			// Taken out and added back in the same edit, it is still listed in the stored one.
-			leftParents.removeIf(left -> left.osmID == relation.osmID);
-			join(new Membership(relation, pin, true));
+		// The pin shows the parent as it was picked, before the element joins it, and is loaded
+		// while the edit may go on changing the parent: from a copy.
+		OsmCollectionEntity picked = snapshot(relation);
+		// Joined right away rather than once the pin is loaded: a save coming in between would
+		// leave the parent out.
+		Membership membership = edits.join(relation);
+		render();
+		loadPin(picked, pin -> {
+			membership.pin = pin;
+			render();
 		});
 	}
 
@@ -675,19 +648,11 @@ public class ParentMembership {
 				if (parentEditor != null) {
 					parentEditor.editParent(relation);
 				} else {
-					join(new Membership(relation, pin, true));
+					edits.join(relation).pin = pin;
+					render();
 				}
 			}
 		}));
-	}
-
-	/** Adds the element at the end of the parent, unless the parent lists it already. */
-	private void join(Membership membership) {
-		if (!listsElement(membership.relation)) {
-			RelationMembers.append(membership.relation.getMembers(), kind.memberType.name(), memberId, "");
-		}
-		memberships.add(membership);
-		render();
 	}
 
 	/**
@@ -710,6 +675,22 @@ public class ParentMembership {
 		} catch (JSONException e) {
 			throw new IllegalStateException(e);
 		}
+	}
+
+	/**
+	 * The relation as it is now, with what its pin goes by besides its JSON, its type, the stored
+	 * nodes and the box around them, see pinOf: for a load to read off the UI thread, whatever the
+	 * edit does to the relation meanwhile.
+	 */
+	private static OsmCollectionEntity snapshot(OsmCollectionEntity relation) {
+		OsmCollectionEntity result = copy(relation);
+		result.entityClimbingType = relation.entityClimbingType;
+		result.osmNodes = new ArrayList<>(relation.osmNodes);
+		result.bBoxNorth = relation.bBoxNorth;
+		result.bBoxSouth = relation.bBoxSouth;
+		result.bBoxEast = relation.bBoxEast;
+		result.bBoxWest = relation.bBoxWest;
+		return result;
 	}
 
 	private String nameOf(OsmCollectionEntity relation) {

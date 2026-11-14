@@ -27,7 +27,7 @@ import needle.UiRelatedTask;
 abstract class MapWidgetActivity extends AppCompatActivity
 		implements IOrientationListener, ILocationListener {
 	protected MapLibreMapWidget mapWidget;
-	/** The loads to cancel in onDestroy, see ScreenLoads. */
+	/** The loads to cancel when the screen closes, see finish and ScreenLoads. */
 	protected final ScreenLoads screenLoads = new ScreenLoads();
 
 	/**
@@ -93,8 +93,21 @@ abstract class MapWidgetActivity extends AppCompatActivity
 		mapWidget.onLowMemory();
 	}
 
+	/**
+	 * Closes the screen, and cancels its loads right away: onDestroy only comes once the next
+	 * screen is up, sometimes seconds later, and until then a load would still fill the form,
+	 * start further loads, or open a dialog or another screen from one that is closing. A
+	 * WriteTask is no load, so what the user saved or deleted before leaving is still stored.
+	 */
+	@Override
+	public void finish() {
+		screenLoads.cancel();
+		super.finish();
+	}
+
 	@Override
 	protected void onDestroy() {
+		// Again, for a screen the system closes without finish.
 		screenLoads.cancel();
 		mapWidget.onDestroy();
 		super.onDestroy();
