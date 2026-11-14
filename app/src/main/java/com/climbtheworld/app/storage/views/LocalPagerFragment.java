@@ -20,6 +20,8 @@ import java.util.Map;
 public class LocalPagerFragment extends DataFragment {
 	private EditText filter;
 	private FilteredListAdapter<String> adapter;
+	/** The installed countries the adapter lists, in the country list's order. */
+	private List<String> shownCountries;
 
 	public LocalPagerFragment(AppCompatActivity parent, @LayoutRes int viewID, Map<String, CountryViewState> countryMap) {
 		super(parent, viewID, countryMap);
@@ -75,6 +77,13 @@ public class LocalPagerFragment extends DataFragment {
 		findViewById(R.id.filterContainer)
 				.setVisibility(installedCountries.isEmpty() ? View.GONE : View.VISIBLE);
 
+		// A new adapter scrolls the list back to the top, so the same countries keep this one: the
+		// notify that follows redraws their rows. The pager may give this tab a new list view.
+		if (adapter != null && listView.getAdapter() == adapter
+				&& installedCountries.equals(shownCountries)) {
+			return;
+		}
+		shownCountries = installedCountries;
 		adapter = new FilteredListAdapter<String>(installedCountries) {
 			@Override
 			protected boolean isVisible(int i, String filter) {
