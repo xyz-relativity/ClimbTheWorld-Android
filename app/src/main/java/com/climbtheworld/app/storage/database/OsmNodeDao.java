@@ -39,10 +39,20 @@ public interface OsmNodeDao {
 	@Query(NODES_BY_NAME)
 	List<OsmNode> find(String searchString, int limit, OsmEntity.EntityClimbingType... types);
 
-	@Query("SELECT * FROM OsmNode WHERE localUpdateState != 'clean'")
+	/**
+	 * Changed in the app and waiting for upload: any state but clean, as the two ranges on either
+	 * side of it, which SQLite seeks in the state index (see OsmNode). A != cannot seek an index,
+	 * so it read the whole table, and a list of the other states would miss one added later.
+	 * Like the !=, it leaves out a row without a state.
+	 */
+	String DIRTY = "(localUpdateState < 'clean' OR localUpdateState > 'clean')";
+	String LOAD_DIRTY = "SELECT * FROM OsmNode WHERE " + DIRTY;
+	String COUNT_DIRTY = "SELECT COUNT(*) FROM OsmNode WHERE " + DIRTY;
+
+	@Query(LOAD_DIRTY)
 	List<OsmNode> loadDirty();
 
-	@Query("SELECT COUNT(*) FROM OsmNode WHERE localUpdateState != 'clean'")
+	@Query(COUNT_DIRTY)
 	int countDirty();
 
 	/**
@@ -57,9 +67,17 @@ public interface OsmNodeDao {
 	@Query("DELETE FROM OsmNode WHERE osmType = :osmType AND osmID = :osmID")
 	void delete(OsmEntity.EntityOsmType osmType, long osmID);
 
-	@Query("DELETE FROM OsmNode WHERE localUpdateState = 'clean' AND NOT EXISTS (" +
-			"SELECT 1 FROM EntityCountry WHERE EntityCountry.osmType = OsmNode.osmType " +
-			"AND EntityCountry.osmID = OsmNode.osmID)")
+	/**
+	 * The clean nodes no downloaded country holds any more. The + keeps SQLite off the state
+	 * index: without statistics, it takes the equality for a narrow one and would walk the index
+	 * over nearly every row, looking each up in the table, where reading the table is cheaper.
+	 */
+	String DELETE_UNOWNED_CLEAN = "DELETE FROM OsmNode WHERE +localUpdateState = 'clean' "
+			+ "AND NOT EXISTS (SELECT 1 FROM EntityCountry "
+			+ "WHERE EntityCountry.osmType = OsmNode.osmType "
+			+ "AND EntityCountry.osmID = OsmNode.osmID)";
+
+	@Query(DELETE_UNOWNED_CLEAN)
 	void deleteUnownedCleanNodes();
 
 	@Query("SELECT COUNT(*) FROM OsmNode")

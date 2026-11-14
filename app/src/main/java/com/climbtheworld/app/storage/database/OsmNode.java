@@ -11,10 +11,13 @@ import org.json.JSONObject;
 // and one on the longitude, as before, had SQLite walk a whole band of a wide view.
 // The name index serves the search by name (OsmNodeDao.find): walked in the order of the names,
 // it tells which rows match without reading them, and stops at the limit.
+// The state index serves the changes waiting for upload (OsmNodeDao.DIRTY): a handful of rows,
+// found without reading the whole table each time a screen comes back.
 @Entity(primaryKeys = {"osmType", "osmID"}, indices = {
 		@Index(name = "index_OsmNode_box", value = {"entityClimbingType", "decimalLatitude",
 				"decimalLongitude", "localUpdateState", "osmID"}),
-		@Index(name = "index_OsmNode_name", value = {"name"})
+		@Index(name = "index_OsmNode_name", value = {"name"}),
+		@Index(name = "index_OsmNode_localUpdateState", value = {"localUpdateState"})
 })
 public class OsmNode extends OsmEntity {
 	public Double decimalLatitude = 0.0;

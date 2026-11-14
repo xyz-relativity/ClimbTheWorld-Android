@@ -77,10 +77,11 @@ public class AppDatabaseMigrationTest {
 				.loadBBox(46, 25, 45, 24, OsmEntity.EntityClimbingType.route));
 		assertEquals(Collections.singletonList(10L), migrated.osmCollectionDao()
 				.loadBBox(46, 25, 45, 24, OsmEntity.EntityClimbingType.crag));
-		assertEquals(new HashSet<>(Arrays.asList("index_OsmNode_box", "index_OsmNode_name")),
-				indexes(migrated, "OsmNode"));
+		assertEquals(new HashSet<>(Arrays.asList("index_OsmNode_box", "index_OsmNode_name",
+				"index_OsmNode_localUpdateState")), indexes(migrated, "OsmNode"));
 		assertEquals(new HashSet<>(Arrays.asList("index_OsmCollectionEntity_box",
-				"index_OsmCollectionEntity_name")), indexes(migrated, "OsmCollectionEntity"));
+				"index_OsmCollectionEntity_name", "index_OsmCollectionEntity_localUpdateState")),
+				indexes(migrated, "OsmCollectionEntity"));
 		// Through version 6 too: found by the name it gave them.
 		assertEquals(1, migrated.osmNodeDao()
 				.find("route", 10, OsmEntity.EntityClimbingType.route).size());
@@ -109,13 +110,74 @@ public class AppDatabaseMigrationTest {
 		assertEquals("", nameOf(migrated, 3));
 		assertEquals(Collections.singletonList(2L), ids(migrated.osmNodeDao()
 				.find("dc \"li", 10, OsmEntity.EntityClimbingType.route)));
-		assertEquals(new HashSet<>(Arrays.asList("index_OsmNode_box", "index_OsmNode_name")),
-				indexes(migrated, "OsmNode"));
+		assertEquals(new HashSet<>(Arrays.asList("index_OsmNode_box", "index_OsmNode_name",
+				"index_OsmNode_localUpdateState")), indexes(migrated, "OsmNode"));
 		migrated.close();
+	}
+
+	@Test
+	public void version6KeepsItsEditsAndGetsTheStateIndexes() throws Exception {
+		// The current schema, holding a node of each state, one made in the app, and a changed
+		// crag, taken back to version 6: without the state indexes.
+		AppDatabase current = open();
+		List<OsmNode> nodes = new ArrayList<>();
+		for (OsmEntity.EntityState state : OsmEntity.EntityState.values()) {
+			OsmNode node = node(nodes.size() + 1, "Route " + state.name());
+			node.localUpdateState = state;
+			node.localEditDate = nodes.size();
+			nodes.add(node);
+		}
+		OsmNode created = node(-1, "New");
+		created.localUpdateState = OsmEntity.EntityState.toUpdate;
+		nodes.add(created);
+		current.osmNodeDao().insertNodesWithIgnore(nodes);
+		OsmCollectionEntity crag = new OsmCollectionEntity(new JSONObject()
+				.put("type", "relation").put("id", 10)
+				.put("tags", new JSONObject().put("sport", "climbing").put("climbing", "crag")
+						.put("type", "site").put("name", "Crag")));
+		crag.localUpdateState = OsmEntity.EntityState.toUpdate;
+		crag.baseJson = new JSONObject().put("type", "relation").put("id", 10);
+		current.osmCollectionDao().insertCollectionWithIgnore(Collections.singletonList(crag));
+		current.close();
+		SQLiteDatabase old = SQLiteDatabase.openDatabase(
+				context.getDatabasePath(NAME).getPath(), null, SQLiteDatabase.OPEN_READWRITE);
+		toVersion6(old);
+		old.close();
+
+		AppDatabase migrated = open();
+		assertEquals(nodes.size(), migrated.osmNodeDao().count());
+		for (OsmNode node : nodes) {
+			OsmNode stored = migrated.osmNodeDao().find(OsmEntity.EntityOsmType.node, node.osmID);
+			assertEquals(node.localUpdateState, stored.localUpdateState);
+			assertEquals(node.localEditDate, stored.localEditDate);
+			assertEquals(node.jsonNodeInfo.toString(), stored.jsonNodeInfo.toString());
+		}
+		OsmCollectionEntity storedCrag = migrated.osmCollectionDao()
+				.find(OsmEntity.EntityOsmType.relation, 10);
+		assertEquals(OsmEntity.EntityState.toUpdate, storedCrag.localUpdateState);
+		assertEquals(crag.baseJson.toString(), storedCrag.baseJson.toString());
+		// All but the clean one, and the one made in the app.
+		assertEquals(OsmEntity.EntityState.values().length, migrated.osmNodeDao().countDirty());
+		assertEquals(1, migrated.osmCollectionDao().countDirty());
+		assertEquals(new HashSet<>(Arrays.asList("index_OsmNode_box", "index_OsmNode_name",
+				"index_OsmNode_localUpdateState")), indexes(migrated, "OsmNode"));
+		assertEquals(new HashSet<>(Arrays.asList("index_OsmCollectionEntity_box",
+				"index_OsmCollectionEntity_name", "index_OsmCollectionEntity_localUpdateState")),
+				indexes(migrated, "OsmCollectionEntity"));
+		migrated.close();
+	}
+
+	/** Takes a database of the current schema back to version 6: without the state indexes. */
+	private static void toVersion6(SQLiteDatabase database) {
+		for (String table : new String[]{"OsmNode", "OsmCollectionEntity"}) {
+			database.execSQL("DROP INDEX index_" + table + "_localUpdateState");
+		}
+		database.execSQL("PRAGMA user_version = 6");
 	}
 
 	/** Takes a database of the current schema back to version 5: without the names. */
 	private static void toVersion5(SQLiteDatabase database) {
+		toVersion6(database);
 		for (String table : new String[]{"OsmNode", "OsmCollectionEntity"}) {
 			database.execSQL("DROP INDEX index_" + table + "_name");
 			database.execSQL("ALTER TABLE " + table + " DROP COLUMN name");
@@ -150,7 +212,8 @@ public class AppDatabaseMigrationTest {
 
 	private AppDatabase open() {
 		return Room.databaseBuilder(context, AppDatabase.class, NAME)
-				.addMigrations(AppDatabase.MIGRATION_4_5, AppDatabase.MIGRATION_5_6)
+				.addMigrations(AppDatabase.MIGRATION_4_5, AppDatabase.MIGRATION_5_6,
+						AppDatabase.MIGRATION_6_7)
 				.allowMainThreadQueries()
 				.build();
 	}

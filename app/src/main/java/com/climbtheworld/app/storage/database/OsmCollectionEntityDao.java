@@ -94,10 +94,14 @@ public interface OsmCollectionEntityDao {
 	                                              double longWest, OsmEntity.EntityClimbingType type,
 	                                              double latitude, double longitude, int limit);
 
-	@Query("SELECT * FROM OsmCollectionEntity WHERE localUpdateState != 'clean'")
+	/** Changed in the app and waiting for upload, through the state index, see OsmNodeDao.DIRTY. */
+	String LOAD_DIRTY = "SELECT * FROM OsmCollectionEntity WHERE " + OsmNodeDao.DIRTY;
+	String COUNT_DIRTY = "SELECT COUNT(*) FROM OsmCollectionEntity WHERE " + OsmNodeDao.DIRTY;
+
+	@Query(LOAD_DIRTY)
 	List<OsmCollectionEntity> loadDirty();
 
-	@Query("SELECT COUNT(*) FROM OsmCollectionEntity WHERE localUpdateState != 'clean'")
+	@Query(COUNT_DIRTY)
 	int countDirty();
 
 	/**
@@ -127,9 +131,16 @@ public interface OsmCollectionEntityDao {
 	@Query("SELECT * FROM OsmCollectionEntity WHERE osmNodes LIKE '% ' || :nodeId || ' %'")
 	List<OsmCollectionEntity> findContainingNode(long nodeId);
 
-	@Query("DELETE FROM OsmCollectionEntity WHERE localUpdateState = 'clean' AND NOT EXISTS (" +
-			"SELECT 1 FROM EntityCountry WHERE EntityCountry.osmType = OsmCollectionEntity.osmType " +
-			"AND EntityCountry.osmID = OsmCollectionEntity.osmID)")
+	/**
+	 * The clean ways and relations no downloaded country holds any more, without the state index,
+	 * see OsmNodeDao.DELETE_UNOWNED_CLEAN.
+	 */
+	String DELETE_UNOWNED_CLEAN = "DELETE FROM OsmCollectionEntity "
+			+ "WHERE +localUpdateState = 'clean' AND NOT EXISTS (SELECT 1 FROM EntityCountry "
+			+ "WHERE EntityCountry.osmType = OsmCollectionEntity.osmType "
+			+ "AND EntityCountry.osmID = OsmCollectionEntity.osmID)";
+
+	@Query(DELETE_UNOWNED_CLEAN)
 	void deleteUnownedCleanCollections();
 
 	@Query("SELECT COUNT(*) FROM OsmCollectionEntity")

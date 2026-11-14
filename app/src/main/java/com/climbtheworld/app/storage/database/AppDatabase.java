@@ -27,7 +27,7 @@ import java.util.List;
 		OsmCollectionEntity.class,
 		EntityCountry.class,
 		DownloadedCountry.class
-}, version = 6, exportSchema = false)
+}, version = 7, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 	private static final String OSM_CACHE_DB = "offlineClimbingData.db";
 	/**
@@ -80,6 +80,21 @@ public abstract class AppDatabase extends RoomDatabase {
 	};
 
 	/**
+	 * Version 7 indexes the nodes and the collections on their state, to find the changes waiting
+	 * for upload without reading every row, see OsmNodeDao.DIRTY. Only indexes are added: the
+	 * downloads and the edits stay as they are. Made as Room makes them, see MIGRATION_4_5.
+	 */
+	static final Migration MIGRATION_6_7 = new Migration(6, 7) {
+		@Override
+		public void migrate(@NonNull SupportSQLiteDatabase database) {
+			for (String table : new String[]{"OsmNode", "OsmCollectionEntity"}) {
+				database.execSQL("CREATE INDEX IF NOT EXISTS index_" + table + "_localUpdateState ON "
+						+ table + " (localUpdateState)");
+			}
+		}
+	};
+
+	/**
 	 * Reads again, from the stored element, the names taken out of its text with a backslash in
 	 * them: those hold a character JSON writes with one, as a slash or a quote, and a quote
 	 * also cut the name short.
@@ -126,7 +141,7 @@ public abstract class AppDatabase extends RoomDatabase {
 					// only climbing features were kept, see ClimbingFeature, and version 4 the
 					// bounding boxes that took crags across Greenwich to cross the antimeridian
 					// and the other way round, see MapBounds.around.
-					.addMigrations(MIGRATION_4_5, MIGRATION_5_6)
+					.addMigrations(MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
 					.fallbackToDestructiveMigrationFrom(true, 1, 2, 3)
 					.build();
 		}

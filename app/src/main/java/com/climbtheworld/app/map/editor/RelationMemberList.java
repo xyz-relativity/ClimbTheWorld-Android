@@ -40,6 +40,7 @@ public class RelationMemberList {
 
 	private final AppCompatActivity parent;
 	private final JSONArray members;
+	private final MemberEdits edits;
 	private final Map<String, OsmEntity> resolved;
 	private final Map<String, ClimbingRouteCounter.RouteSummary> routes;
 	private final String highlightedKey;
@@ -63,6 +64,7 @@ public class RelationMemberList {
 	                          OnMembersChangedListener listener) {
 		this.parent = parent;
 		this.members = members;
+		edits = new MemberEdits(members);
 		this.resolved = resolved;
 		this.routes = routes;
 		this.highlightedKey = highlightedKey;
@@ -124,24 +126,45 @@ public class RelationMemberList {
 		}
 	}
 
-	public boolean contains(OsmEntity entity) {
-		return RelationMembers.contains(members, entity.osmType.name(), entity.osmID);
+	/**
+	 * Adds the element at the end, unless the relation lists it already, before it is loaded:
+	 * see MemberEdits. Its row shows it as not downloaded until loaded brings it.
+	 *
+	 * @return whether it was added
+	 */
+	public boolean join(OsmEntity.EntityOsmType osmType, long osmId) {
+		if (!edits.join(osmType.name(), osmId)) {
+			return false;
+		}
+		adapter.notifyItemInserted(members.length() - 1);
+		list.scrollToPosition(members.length() - 1);
+		membersChanged();
+		return true;
 	}
 
 	/**
-	 * Adds the entity at the end, with its routes for a crag, see the constructor.
+	 * The element that joined, as stored, with its routes for a crag, see the constructor; a null
+	 * entity, one not stored, is taken out again.
 	 *
 	 * @param entityRoutes null for a route
 	 */
-	public void add(OsmEntity entity, ClimbingRouteCounter.RouteSummary entityRoutes) {
-		String key = RelationMembers.key(entity.osmType.name(), entity.osmID);
+	public void loaded(OsmEntity.EntityOsmType osmType, long osmId, OsmEntity entity,
+	                   ClimbingRouteCounter.RouteSummary entityRoutes) {
+		if (entity == null) {
+			if (edits.notStored(osmType.name(), osmId)) {
+				// Told at once, and not only with the rest in membersChanged: the list must
+				// not be laid out with a row less than it was told of.
+				adapter.notifyDataSetChanged();
+				membersChanged();
+			}
+			return;
+		}
+		String key = RelationMembers.key(osmType.name(), osmId);
 		resolved.put(key, entity);
 		if (entityRoutes != null) {
 			routes.put(key, entityRoutes);
 		}
-		RelationMembers.append(members, entity.osmType.name(), entity.osmID, "");
-		adapter.notifyItemInserted(members.length() - 1);
-		list.scrollToPosition(members.length() - 1);
+		// Its row and its pin on the map, with the route numbers.
 		membersChanged();
 	}
 
@@ -149,7 +172,7 @@ public class RelationMemberList {
 		return members.length();
 	}
 
-	/** The stored member at the index, null when it is not downloaded. */
+	/** The stored member at the index, null when it is not downloaded or not loaded yet. */
 	public OsmEntity memberAt(int index) {
 		return resolved.get(keyAt(index));
 	}
@@ -169,7 +192,7 @@ public class RelationMemberList {
 
 	/**
 	 * The member at the index as the map and the strip show it, placed where it is, or null when
-	 * it is not downloaded.
+	 * it is not downloaded or not loaded yet.
 	 */
 	public DisplayableGeoNode pinAt(int index) {
 		OsmEntity member = memberAt(index);
@@ -197,7 +220,7 @@ public class RelationMemberList {
 	}
 
 	private void remove(int index) {
-		members.remove(index);
+		edits.remove(index);
 		adapter.notifyItemRemoved(index);
 		membersChanged();
 	}

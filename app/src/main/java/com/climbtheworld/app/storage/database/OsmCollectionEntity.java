@@ -19,10 +19,12 @@ import java.util.List;
 // The index serves the bounding box query (OsmCollectionEntityDao.loadBBox) on its own: a seek
 // on the type and the north edge, the rest read from the index without the table, see OsmNode.
 // The name index serves the search by name (OsmCollectionEntityDao.findCollections), see OsmNode.
+// The state index serves the changes waiting for upload (OsmNodeDao.DIRTY), see OsmNode.
 @Entity(primaryKeys = {"osmType", "osmID"}, indices = {
 		@Index(name = "index_OsmCollectionEntity_box", value = {"entityClimbingType", "bBoxNorth",
 				"bBoxSouth", "bBoxWest", "bBoxEast", "localUpdateState", "osmID"}),
-		@Index(name = "index_OsmCollectionEntity_name", value = {"name"})
+		@Index(name = "index_OsmCollectionEntity_name", value = {"name"}),
+		@Index(name = "index_OsmCollectionEntity_localUpdateState", value = {"localUpdateState"})
 })
 public class OsmCollectionEntity extends OsmEntity {
 	//https://developer.android.com/reference/androidx/room/Embedded
