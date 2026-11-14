@@ -20,15 +20,12 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * An OSM element as the screens show and edit it: an OsmNode, or a way or relation placed at its
  * center. It is not stored; edits go back through OsmEditStore.
  */
 public class GeoNode implements Comparable {
-	private static final Pattern ELEVATION_NUMBER = Pattern.compile("-?\\d+(?:\\.\\d+)?");
 	public long osmID;
 	public String countryIso;
 	// Whether a crag's or area's pin counts only the routes matching the display filters, see
@@ -58,7 +55,7 @@ public class GeoNode implements Comparable {
 
 		this.decimalLatitude = Double.parseDouble(this.jsonNodeInfo.optString(ClimbingTags.KEY_LAT, "0"));
 		this.decimalLongitude = Double.parseDouble(this.jsonNodeInfo.optString(ClimbingTags.KEY_LON, "0"));
-		this.elevationMeters = parseElevation(getTags().optString(ClimbingTags.KEY_ELEVATION));
+		this.elevationMeters = ElevationTag.parse(getTags().optString(ClimbingTags.KEY_ELEVATION));
 
 		this.osmID = this.jsonNodeInfo.optLong(ClimbingTags.KEY_ID, 0);
 		this.nodeType = OsmEntity.EntityClimbingType.ofPin(this.jsonNodeInfo);
@@ -114,7 +111,7 @@ public class GeoNode implements Comparable {
 					? oldSport : ClimbingTags.VALUE_CLIMBING);
 			switch (nodeType) {
 				case route:
-					if (oldClimbingTag.toLowerCase().startsWith("route_")) {
+					if (oldClimbingTag.toLowerCase(Locale.ROOT).startsWith("route_")) {
 						tagsMap.put(ClimbingTags.KEY_CLIMBING, oldClimbingTag);
 					} else {
 						tagsMap.put(ClimbingTags.KEY_CLIMBING, "route_bottom");
@@ -293,7 +290,7 @@ public class GeoNode implements Comparable {
 		Iterator<String> keyIt = tags.keys();
 		while (keyIt.hasNext()) {
 			String key = keyIt.next();
-			String noCaseKey = key.toLowerCase();
+			String noCaseKey = key.toLowerCase(Locale.ROOT);
 			if (!matchKey(regex, noCaseKey)) {
 				continue;
 			}
@@ -323,7 +320,7 @@ public class GeoNode implements Comparable {
 		Iterator<String> keyIt = tags.keys();
 		while (keyIt.hasNext()) {
 			String key = keyIt.next();
-			if (!matchKey(regex, key.toLowerCase())
+			if (!matchKey(regex, key.toLowerCase(Locale.ROOT))
 					|| GradeSystem.fromOsmKey(key.split(ClimbingTags.KEY_SEPARATOR)[2]) != system) {
 				continue;
 			}
@@ -347,7 +344,7 @@ public class GeoNode implements Comparable {
 		Iterator<String> keyIt = tags.keys();
 		while (keyIt.hasNext()) {
 			String key = keyIt.next();
-			if (!matchKey(regex, key.toLowerCase())) {
+			if (!matchKey(regex, key.toLowerCase(Locale.ROOT))) {
 				continue;
 			}
 			GradeSystem system = GradeSystem.fromOsmKey(key.split(ClimbingTags.KEY_SEPARATOR)[2]);
@@ -371,7 +368,7 @@ public class GeoNode implements Comparable {
 		Iterator<String> keyIt = getTags().keys();
 		while (keyIt.hasNext()) {
 			String key = keyIt.next();
-			if (matchKey(regex, key.toLowerCase())) {
+			if (matchKey(regex, key.toLowerCase(Locale.ROOT))) {
 				result.put(key, getTags().optString(key));
 			}
 		}
@@ -420,7 +417,7 @@ public class GeoNode implements Comparable {
 		Iterator<String> keyIt = getTags().keys();
 		while (keyIt.hasNext()) {
 			String key = keyIt.next();
-			if (matchKey(regex, key.toLowerCase()) && GradeSystem.fromOsmKey(
+			if (matchKey(regex, key.toLowerCase(Locale.ROOT)) && GradeSystem.fromOsmKey(
 					key.split(ClimbingTags.KEY_SEPARATOR)[2]) == system) {
 				return;
 			}
@@ -449,7 +446,7 @@ public class GeoNode implements Comparable {
 
 		try {
 			for (String key : keys) {
-				if (!matchKey(regex, key.toLowerCase())) {
+				if (!matchKey(regex, key.toLowerCase(Locale.ROOT))) {
 					continue;
 				}
 				GradeSystem system = GradeSystem.fromOsmKey(key.split(ClimbingTags.KEY_SEPARATOR)[2]);
@@ -476,8 +473,8 @@ public class GeoNode implements Comparable {
 	}
 
 	private static boolean matchKey(String keyFilter, String keyJson) {
-		String[] keyFilterSplit = keyFilter.toLowerCase().split(ClimbingTags.KEY_SEPARATOR);
-		String[] keyJsonSplit = keyJson.toLowerCase().split(ClimbingTags.KEY_SEPARATOR);
+		String[] keyFilterSplit = keyFilter.toLowerCase(Locale.ROOT).split(ClimbingTags.KEY_SEPARATOR);
+		String[] keyJsonSplit = keyJson.toLowerCase(Locale.ROOT).split(ClimbingTags.KEY_SEPARATOR);
 
 		if (keyFilterSplit.length != keyJsonSplit.length) {
 			return false;
@@ -501,7 +498,7 @@ public class GeoNode implements Comparable {
 		Iterator<String> keyIt = getTags().keys();
 		while (keyIt.hasNext()) {
 			String key = keyIt.next();
-			String noCaseKey = key.toLowerCase();
+			String noCaseKey = key.toLowerCase(Locale.ROOT);
 			if (matchKey(regex, noCaseKey)) {
 				toRemove.add(key);
 			}
@@ -549,15 +546,6 @@ public class GeoNode implements Comparable {
 	/** As text, the way OSM holds it: 1234 rather than 1234.0. */
 	private static String formatElevation(double meters) {
 		return BigDecimal.valueOf(meters).stripTrailingZeros().toPlainString();
-	}
-
-	/**
-	 * The first number of an ele value, with its sign: 1234 for "1,234 m", -5 for "-5"; 0 when
-	 * there is none.
-	 */
-	static double parseElevation(String ele) {
-		Matcher number = ELEVATION_NUMBER.matcher(ele.replace(",", ""));
-		return number.find() ? Double.parseDouble(number.group()) : 0;
 	}
 
 	private void setJSONData(JSONObject pNodeInfo) {

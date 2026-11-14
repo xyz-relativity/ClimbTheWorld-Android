@@ -264,7 +264,10 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 		fab.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				if (editNode == null) {
+				// Nor while busy: the advanced editor's node would come back to a form that has
+				// closed or moved on to the next node, and another editor would get a node whose
+				// save is still being written.
+				if (editNode == null || busy()) {
 					return;
 				}
 				//Creating the instance of PopupMenu
@@ -273,8 +276,9 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 
 				popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
 					public boolean onMenuItemClick(MenuItem item) {
-						// The menu stays open while "Save and add another" loads the next node.
-						if (editNode == null) {
+						// The menu stays open while a save is written and while "Save and add
+						// another" loads the next node.
+						if (editNode == null || busy()) {
 							return true;
 						}
 						String urlFormat;
@@ -305,7 +309,10 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 									bbox.getWest(), bbox.getSouth(), bbox.getEast(), bbox.getNorth());
 
 							if (editNodeID > 0) {
-								urlFormat = urlFormat + "&select=" + editNodeID;
+								// In the form JOSM's remote control documents, which Vespucci
+								// follows: "node" and the id. The id the node was loaded by, as
+								// the advanced editor can change the one in its JSON.
+								urlFormat = urlFormat + "&select=node" + editNodeID;
 							}
 
 							ExternalEditor.open(EditNodeActivity.this, urlFormat, isEdited());

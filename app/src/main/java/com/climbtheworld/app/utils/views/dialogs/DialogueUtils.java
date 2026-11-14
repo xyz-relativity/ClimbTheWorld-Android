@@ -76,10 +76,14 @@ public class DialogueUtils {
 							DialogBuilder.closeAllDialogs();
 							MapActivity.showOnMap(activity, location);
 						} else if (id == R.id.navigate) {
-							urlFormat = String.format(Locale.ROOT, "geo:0,0?q=%f,%f (%s)",
+							urlFormat = String.format(Locale.ROOT, "geo:0,0?q=%f,%f",
 									location.decimalLatitude,
-									location.decimalLongitude,
-									name);
+									location.decimalLongitude);
+							// Encoded, as a & or # in a name would end the query; an unnamed
+							// place, titled " ", gets no label.
+							if (!name.trim().isEmpty()) {
+								urlFormat += " (" + Uri.encode(name) + ")";
+							}
 							intent = new Intent(Intent.ACTION_VIEW,
 									Uri.parse(urlFormat));
 							intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

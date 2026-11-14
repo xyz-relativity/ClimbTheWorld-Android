@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -251,10 +252,20 @@ public class WalkietalkieBackgroundService extends Service {
 		((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE))
 				.createNotificationChannel(channel);
 
+		// The walkie-talkie screen is the only one that controls or stops the service, and runs
+		// as long as it does, in the app's task: the tap brings that task back, and the flags
+		// reuse the screen there rather than open a second one, which would bind again.
+		Intent screenIntent = new Intent(this, WalkieTalkieActivity.class)
+				.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP
+						| Intent.FLAG_ACTIVITY_SINGLE_TOP);
+		PendingIntent openScreen = PendingIntent.getActivity(this, 0, screenIntent,
+				PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+
 		Notification notification = new NotificationCompat.Builder(this, channelId)
 				.setContentTitle(getText(R.string.walkie_talkie_notification))
 				.setContentText(getText(R.string.walkie_talkie_notification_rational))
 				.setSmallIcon(R.drawable.ic_walkietalkie)
+				.setContentIntent(openScreen)
 				.build();
 
 		// Without explicit types every manifest type is claimed, and starting a location or

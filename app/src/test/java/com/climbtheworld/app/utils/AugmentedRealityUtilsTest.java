@@ -1,6 +1,7 @@
 package com.climbtheworld.app.utils;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 
@@ -14,19 +15,25 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class AugmentedRealityUtilsTest {
 
+	/**
+	 * The phone can be turned and rolled any way, and a point anywhere around it still has to get
+	 * a place on the screen.
+	 */
 	@Test
-	public void getXYPosition() {
+	public void getXYPositionIsFiniteAllTheWayRound() {
 		Vector2d objSize = new Vector2d(1, 1);
 		Vector2d fieldOfViewDeg = new Vector2d(60, 60);
-
 		Vector2d viewSize = new Vector2d(1000, 1000);
 		Vector2d containerSize = new Vector2d(2000, 2000);
 
 		for (int i = 0; i <= 360; ++i) {
-			Vector4d pos =
-					AugmentedRealityUtils.getXYPosition(-10, 0, 0, i, 0, objSize, fieldOfViewDeg,
-							viewSize, containerSize);
-			System.out.println(pos.x + "," + pos.y + "," + pos.w);
+			Vector4d rolled = AugmentedRealityUtils.getXYPosition(-10, 0, 0, i, 0, objSize,
+					fieldOfViewDeg, viewSize, containerSize);
+			assertTrue("Rolled " + i, Double.isFinite(rolled.x) && Double.isFinite(rolled.y));
+
+			Vector4d turned = AugmentedRealityUtils.getXYPosition(i, 0, 0, 0, 0, objSize,
+					fieldOfViewDeg, viewSize, containerSize);
+			assertTrue("Turned " + i, Double.isFinite(turned.x) && Double.isFinite(turned.y));
 		}
 	}
 
@@ -212,14 +219,6 @@ public class AugmentedRealityUtilsTest {
 			assertEquals(expected, AugmentedRealityUtils.perspectiveSizeAlong(distance, 10, 100,
 					5000, exponent), 0);
 		}
-	}
-
-	@Test
-	public void remapScaleToLog() {
-//        for (int i = 0; i<= 500; ++i) {
-//            System.out.println(i + ", " + AugmentedRealityUtils.remapScaleToLog(0f, 500f, 200f,
-//            5f, i));
-//        }
 	}
 
 	@Test

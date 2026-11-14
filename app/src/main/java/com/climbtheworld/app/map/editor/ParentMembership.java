@@ -217,9 +217,15 @@ public class ParentMembership {
 	 * The parents whose members changed, then the grandparents changed in the parents' editors, to
 	 * save together with the element in this order: a new area is placed by its crags once they are
 	 * stored. The grandparents no longer list the parents this edit drops.
+	 * <p>
+	 * Copies, as they are now: the save writes them on the database thread while the section goes
+	 * on changing its own on the UI thread, as a row's remove does until the editor closes.
 	 */
 	public List<OsmCollectionEntity> changedParents() {
-		List<OsmCollectionEntity> result = edits.changed();
+		List<OsmCollectionEntity> result = new ArrayList<>();
+		for (OsmCollectionEntity relation : edits.changed()) {
+			result.add(copy(relation));
+		}
 		Set<Long> dropped = droppedParents();
 		for (OsmCollectionEntity grandparent : grandparents.values()) {
 			OsmCollectionEntity saved = copy(grandparent);

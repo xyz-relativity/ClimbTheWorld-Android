@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -110,7 +111,7 @@ public final class RouteWay {
 		}
 		for (Iterator<String> keys = gradeTags.keys(); keys.hasNext(); ) {
 			String key = keys.next();
-			if (key.toLowerCase().startsWith(GRADE_TAG_PREFIX)) {
+			if (key.toLowerCase(Locale.ROOT).startsWith(GRADE_TAG_PREFIX)) {
 				topTags.put(key, gradeTags.get(key));
 			}
 		}

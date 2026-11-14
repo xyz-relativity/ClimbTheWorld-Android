@@ -120,6 +120,12 @@ public class EditRelationActivity extends MapWidgetActivity {
 	 * part of this edit. See busy.
 	 */
 	private boolean areaEditorOpen;
+	/**
+	 * How many elements tapped on the map joined and are still being loaded: one may turn out not
+	 * to be stored and is then taken out again, which a save before that would miss, storing the
+	 * relation with a member that doesn't exist. See addTapped and busy.
+	 */
+	private int memberLoads;
 
 	private static final class Loaded {
 		final OsmCollectionEntity relation;
@@ -390,10 +396,11 @@ public class EditRelationActivity extends MapWidgetActivity {
 	/**
 	 * Whether the form is saving or deleting, or an area's editor is being opened or is open, so
 	 * that it starts no other write, hands nothing back, and opens no other area's editor, as in the
-	 * node editor: the second of two taps that come together is ignored.
+	 * node editor: the second of two taps that come together is ignored. Likewise while an element
+	 * tapped on the map is still being loaded, which takes a moment.
 	 */
 	private boolean busy() {
-		return writing || areaEditorOpen
+		return writing || areaEditorOpen || memberLoads > 0
 				|| (areaMembership != null && areaMembership.isCreatingParent());
 	}
 
@@ -490,6 +497,9 @@ public class EditRelationActivity extends MapWidgetActivity {
 			return;
 		}
 		Toast.makeText(this, getString(R.string.member_added, name), Toast.LENGTH_SHORT).show();
+		// Each join that went through is loaded once, which counts it down. Not if the load is
+		// cancelled: that is only when the editor closes.
+		memberLoads++;
 		Constants.DB_EXECUTOR.execute(screenLoads.add(new UiRelatedTask<OsmEntity>() {
 			private ClimbingRouteCounter.RouteSummary routes;
 
@@ -503,6 +513,7 @@ public class EditRelationActivity extends MapWidgetActivity {
 
 			@Override
 			protected void thenDoUiRelatedWork(OsmEntity member) {
+				memberLoads--;
 				memberList.loaded(osmType, osmId, member, routes);
 				if (member == null) {
 					// Taken out again, after the toast that said it was added.
@@ -613,12 +624,18 @@ public class EditRelationActivity extends MapWidgetActivity {
 	private void buildPopupMenu() {
 		FloatingActionButton fab = findViewById(R.id.fab);
 		fab.setOnClickListener(view -> {
-			if (relation == null) {
+			// Nor while busy: the advanced editor's tags would come back to a form that has
+			// closed, and another editor would get a relation whose save is still being written.
+			if (relation == null || busy()) {
 				return;
 			}
 			PopupMenu popup = new PopupMenu(EditRelationActivity.this, view);
 			popup.getMenuInflater().inflate(R.menu.edit_options, popup.getMenu());
 			popup.setOnMenuItemClickListener(item -> {
+				// The menu stays open while a save is written.
+				if (busy()) {
+					return true;
+				}
 				int id = item.getItemId();
 				GeoNode located = locatedRelation();
 				if (id == R.id.advanceEditor) {
@@ -642,7 +659,8 @@ public class EditRelationActivity extends MapWidgetActivity {
 							"josm:/load_and_zoom?left=%f&bottom=%f&right=%f&top=%f",
 							bbox.getWest(), bbox.getSouth(), bbox.getEast(), bbox.getNorth());
 					if (!relation.isNew()) {
-						url = url + "&select=r" + relation.osmID;
+						// In the form JOSM's remote control documents, which Vespucci follows.
+						url = url + "&select=relation" + relation.osmID;
 					}
 					ExternalEditor.open(this, url, isEdited());
 				}

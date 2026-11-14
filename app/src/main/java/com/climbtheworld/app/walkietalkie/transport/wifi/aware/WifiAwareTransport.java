@@ -187,7 +187,9 @@ public class WifiAwareTransport implements ITransportLayer {
 			// start is a channel change, Wi-Fi Aware coming back or the walkie-talkie restarted.
 			Log.e(TAG, "Failed to start publishing and subscribing; not retrying.", e);
 			resetAwareResources();
-			showAttachFailure();
+			// The attach worked, so the message is not the attach one: it points at the channel
+			// name, which the user can change.
+			showFailure(R.string.wifi_aware_channel_refused);
 		}
 	}
 
@@ -203,17 +205,16 @@ public class WifiAwareTransport implements ITransportLayer {
 		// The status stays red while it fails, but the toast is for the first failure only: the
 		// attach is retried until it works, and a toast each time would pile up.
 		if (attachBackoff.showFailure()) {
-			showAttachFailure();
+			showFailure(R.string.wifi_aware_attach_failed);
 		} else {
 			setLayerStatus(LayerStatus.RED);
 		}
 		scheduleRecoveryOnMain("attach failed", attachBackoff.nextDelayMs());
 	}
 
-	private void showAttachFailure() {
+	private void showFailure(int messageId) {
 		setLayerStatus(LayerStatus.RED);
-		DialogBuilder.toastOnMainThread(context,
-				context.getString(R.string.wifi_aware_attach_failed));
+		DialogBuilder.toastOnMainThread(context, context.getString(messageId));
 	}
 
 	void requestRecovery(PubSubManager source, String reason) {
