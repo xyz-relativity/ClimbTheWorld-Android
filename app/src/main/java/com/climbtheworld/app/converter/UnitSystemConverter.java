@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.converter.tools.UnitSystem;
+import com.climbtheworld.app.utils.DecimalInput;
 import com.climbtheworld.app.utils.views.SpinnerUtils;
 import com.climbtheworld.app.utils.views.TextWatchers;
 
@@ -61,7 +62,7 @@ public class UnitSystemConverter<T extends Enum<T> & UnitSystem> extends Convert
 			T fromSystem = units[dropdownSystem.getSelectedItemPosition()];
 			String result = "";
 			try {
-				double value = Double.parseDouble(inputValue.getText().toString());
+				double value = DecimalInput.parse(inputValue.getText());
 				double converted = fromSystem.convertTo(units[i], value);
 				if (Math.abs(converted) > SCIENTIFIC_NOTATION_ABOVE
 						|| Math.abs(converted) < SCIENTIFIC_NOTATION_BELOW) {

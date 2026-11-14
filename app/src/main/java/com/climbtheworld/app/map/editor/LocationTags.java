@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.utils.DecimalInput;
 
 import java.math.BigDecimal;
 import java.util.Locale;
@@ -85,8 +86,7 @@ public class LocationTags extends Tags implements ITags {
 		node.setElevation(elevation.isEmpty() ? null : parseDecimal(editElevation));
 	}
 
-	/** Takes a decimal comma too, which keyboards in some languages type. */
 	private static double parseDecimal(EditText field) {
-		return Double.parseDouble(field.getText().toString().trim().replace(',', '.'));
+		return DecimalInput.parse(field.getText());
 	}
 }
