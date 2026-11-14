@@ -264,12 +264,19 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 		fab.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
+				if (editNode == null) {
+					return;
+				}
 				//Creating the instance of PopupMenu
 				PopupMenu popup = new PopupMenu(EditNodeActivity.this, view);
 				popup.getMenuInflater().inflate(R.menu.edit_options, popup.getMenu());
 
 				popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
 					public boolean onMenuItemClick(MenuItem item) {
+						// The menu stays open while "Save and add another" loads the next node.
+						if (editNode == null) {
+							return true;
+						}
 						String urlFormat;
 						Intent intent;
 
@@ -284,17 +291,17 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 							startActivityForResult(intent, REQUEST_ADVANCED_EDITOR);
 						} else if (id == R.id.openStreetMapEditor) {
 							if (editNodeID > 0) {
-								urlFormat = String.format(Locale.getDefault(), "https://www.openstreetmap.org/edit?node=%d",
+								urlFormat = String.format(Locale.ROOT, "https://www.openstreetmap.org/edit?node=%d",
 										editNode.getID());
 							} else {
-								urlFormat = String.format(Locale.getDefault(), "https://www.openstreetmap.org/edit#map=21/%f/%f",
+								urlFormat = String.format(Locale.ROOT, "https://www.openstreetmap.org/edit#map=21/%f/%f",
 										editNode.decimalLatitude, editNode.decimalLongitude);
 							}
 
 							ExternalEditor.open(EditNodeActivity.this, urlFormat, isEdited());
 						} else if (id == R.id.vespucci) {
 							MapBounds bbox = DataManager.computeBoundingBox(new Vector4d(editNode.decimalLatitude, editNode.decimalLongitude, editNode.elevationMeters, 0), 10);
-							urlFormat = String.format(Locale.getDefault(), "josm:/load_and_zoom?left=%f&bottom=%f&right=%f&top=%f",
+							urlFormat = String.format(Locale.ROOT, "josm:/load_and_zoom?left=%f&bottom=%f&right=%f&top=%f",
 									bbox.getWest(), bbox.getSouth(), bbox.getEast(), bbox.getNorth());
 
 							if (editNodeID > 0) {

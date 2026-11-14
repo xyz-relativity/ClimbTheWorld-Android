@@ -288,7 +288,7 @@ public class GeoNode implements Comparable {
 	 * Tags with an unknown system or value are skipped; the standard system wins over others.
 	 */
 	public static int getLevelId(JSONObject tags, String gradeKey) {
-		String regex = String.format(Locale.getDefault(), gradeKey, "*");
+		String regex = String.format(Locale.ROOT, gradeKey, "*");
 		int result = -1;
 		Iterator<String> keyIt = tags.keys();
 		while (keyIt.hasNext()) {
@@ -319,7 +319,7 @@ public class GeoNode implements Comparable {
 	 * element has no grade in system the app can read.
 	 */
 	public static int getLevelId(JSONObject tags, String gradeKey, GradeSystem system) {
-		String regex = String.format(Locale.getDefault(), gradeKey, "*");
+		String regex = String.format(Locale.ROOT, gradeKey, "*");
 		Iterator<String> keyIt = tags.keys();
 		while (keyIt.hasNext()) {
 			String key = keyIt.next();
@@ -342,7 +342,7 @@ public class GeoNode implements Comparable {
 	 * unknown system or value are skipped; preferred is also the answer when none is left.
 	 */
 	public static GradeSystem getLevelSystem(JSONObject tags, String gradeKey, GradeSystem preferred) {
-		String regex = String.format(Locale.getDefault(), gradeKey, "*");
+		String regex = String.format(Locale.ROOT, gradeKey, "*");
 		GradeSystem result = null;
 		Iterator<String> keyIt = tags.keys();
 		while (keyIt.hasNext()) {
@@ -366,7 +366,7 @@ public class GeoNode implements Comparable {
 
 	/** The climbing:grade:&lt;system&gt;-style tags matching gradeKey, as they are. */
 	public Map<String, String> getLevelTags(String gradeKey) {
-		String regex = String.format(Locale.getDefault(), gradeKey, "*");
+		String regex = String.format(Locale.ROOT, gradeKey, "*");
 		Map<String, String> result = new LinkedHashMap<>();
 		Iterator<String> keyIt = getTags().keys();
 		while (keyIt.hasNext()) {
@@ -416,7 +416,7 @@ public class GeoNode implements Comparable {
 			return;
 		}
 
-		String regex = String.format(Locale.getDefault(), gradeKey, "*");
+		String regex = String.format(Locale.ROOT, gradeKey, "*");
 		Iterator<String> keyIt = getTags().keys();
 		while (keyIt.hasNext()) {
 			String key = keyIt.next();
@@ -438,7 +438,7 @@ public class GeoNode implements Comparable {
 	 * removes the grades in the systems the app can read.
 	 */
 	private void writeLevel(int id, String gradeKey, GradeSystem savedIn) {
-		String regex = String.format(Locale.getDefault(), gradeKey, "*");
+		String regex = String.format(Locale.ROOT, gradeKey, "*");
 		boolean unknown = savedIn.getGrade(id).equalsIgnoreCase(ClimbingTags.UNKNOWN_GRADE_STRING);
 		boolean hasSaved = false;
 		List<String> keys = new ArrayList<>();
@@ -472,7 +472,7 @@ public class GeoNode implements Comparable {
 	}
 
 	private static String levelKey(String gradeKey, GradeSystem system) {
-		return String.format(Locale.getDefault(), gradeKey, system.getOsmKey());
+		return String.format(Locale.ROOT, gradeKey, system.getOsmKey());
 	}
 
 	private static boolean matchKey(String keyFilter, String keyJson) {
@@ -496,7 +496,7 @@ public class GeoNode implements Comparable {
 	}
 
 	public void removeLevelTags(String gradeKey) {
-		String regex = String.format(Locale.getDefault(), gradeKey, "*");
+		String regex = String.format(Locale.ROOT, gradeKey, "*");
 		List<String> toRemove = new ArrayList<>();
 		Iterator<String> keyIt = getTags().keys();
 		while (keyIt.hasNext()) {

@@ -76,7 +76,7 @@ public class DialogueUtils {
 							DialogBuilder.closeAllDialogs();
 							MapActivity.showOnMap(activity, location);
 						} else if (id == R.id.navigate) {
-							urlFormat = String.format(Locale.getDefault(), "geo:0,0?q=%f,%f (%s)",
+							urlFormat = String.format(Locale.ROOT, "geo:0,0?q=%f,%f (%s)",
 									location.decimalLatitude,
 									location.decimalLongitude,
 									name);
@@ -85,12 +85,12 @@ public class DialogueUtils {
 							intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 							activity.startActivity(intent);
 						} else if (id == R.id.climbTheWorldUrlLocation) {
-							urlFormat = String.format(Locale.getDefault(), "climbtheworld://map_view/location/%s",
+							urlFormat = String.format(Locale.ROOT, "climbtheworld://map_view/location/%s",
 									new MapCoordinate(location.decimalLatitude, location.decimalLongitude,
 											location.elevationMeters).toDelimitedString());
 							copyLocation(activity, name, urlFormat);
 						} else if (id == R.id.openStreetMapUrlLocation) {
-							urlFormat = String.format(Locale.getDefault(),
+							urlFormat = String.format(Locale.ROOT,
 									"https://www.openstreetmap.org/%s/%d#map=19/%f/%f",
 									osmEntityType,
 									osmId,
@@ -99,14 +99,14 @@ public class DialogueUtils {
 							copyLocation(activity, name, urlFormat);
 						} else if (id == R.id.googleMapsUrlLocation) {
 							//Docs: https://developers.google.com/maps/documentation/urls/guide#search-action
-							urlFormat = String.format(Locale.getDefault(), "https://www.google.com/maps/place/%f,%f/@%f,%f,19z/data=!5m1!1e4",
+							urlFormat = String.format(Locale.ROOT, "https://www.google.com/maps/place/%f,%f/@%f,%f,19z/data=!5m1!1e4",
 									location.decimalLatitude,
 									location.decimalLongitude,
 									location.decimalLatitude,
 									location.decimalLongitude);
 							copyLocation(activity, name, urlFormat);
 						} else if (id == R.id.geoUrlLocation) {
-							urlFormat = String.format(Locale.getDefault(), "geo:%f,%f,%f",
+							urlFormat = String.format(Locale.ROOT, "geo:%f,%f,%f",
 									location.decimalLatitude,
 									location.decimalLongitude,
 									location.elevationMeters);
