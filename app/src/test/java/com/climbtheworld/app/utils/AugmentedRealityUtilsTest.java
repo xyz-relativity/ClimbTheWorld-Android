@@ -129,6 +129,40 @@ public class AugmentedRealityUtilsTest {
 		assertEquals("Off axis, still on the horizon", 250, offAxis.y, 1e-6);
 	}
 
+	/**
+	 * The A.R. pins are placed into one position kept from pin to pin, rather than a new one
+	 * for each pin on every frame. It has to take each point as a new one does, to the last bit.
+	 */
+	@Test
+	public void getXYPositionIntoAKeptPositionIsTheSame() {
+		Vector2d objSize = new Vector2d(47, 111);
+		Vector2d fieldOfViewDeg = new Vector2d(60, 80);
+		Vector2d viewSize = new Vector2d(1000, 1500);
+		Vector2d containerSize = new Vector2d(1803, 1803);
+		Vector4d kept = new Vector4d(1, 2, 3, 4);
+
+		for (double yaw = -180; yaw <= 180; yaw += 22.5) {
+			for (double elevation = -90; elevation <= 90; elevation += 15) {
+				for (double pitch = -90; pitch <= 90; pitch += 30) {
+					for (double roll = 0; roll < 360; roll += 45) {
+						Vector4d expected = AugmentedRealityUtils.getXYPosition(yaw, elevation,
+								pitch, 0, roll, objSize, fieldOfViewDeg, viewSize, containerSize);
+
+						AugmentedRealityUtils.getXYPosition(yaw, elevation, pitch, 0, roll,
+								objSize.x, objSize.y, fieldOfViewDeg, viewSize, containerSize,
+								kept);
+
+						String point = yaw + ", " + elevation + ", " + pitch + ", " + roll;
+						assertEquals(point, expected.x, kept.x, 0);
+						assertEquals(point, expected.y, kept.y, 0);
+						assertEquals(point, expected.z, kept.z, 0);
+						assertEquals(point, expected.w, kept.w, 0);
+					}
+				}
+			}
+		}
+	}
+
 	@Test
 	public void angleFromCameraAxis() {
 		assertEquals(0, AugmentedRealityUtils.angleFromCameraAxis(0, 25, 25), 1e-6);
@@ -157,6 +191,27 @@ public class AugmentedRealityUtilsTest {
 
 		// With sizes as far apart as the distances, it is the true perspective.
 		assertEquals(25, AugmentedRealityUtils.perspectiveSize(40, 10, 100, 1000, 1), 1e-9);
+	}
+
+	/**
+	 * The A.R. pins are sized along an exponent worked out once, rather than for each pin on
+	 * every frame. The sizes have to be those of the whole formula, to the last bit.
+	 */
+	@Test
+	public void perspectiveSizeAlongAnExponentAtHandIsTheSame() {
+		double exponent = AugmentedRealityUtils.perspectiveExponent(10, 100, 5000, 20);
+		assertEquals(Math.log(100.0 / 20) / Math.log(5000.0 / 10), exponent, 0);
+
+		for (double distance = -10; distance <= 6000; distance += 0.37) {
+			double clamped = Math.max(10, Math.min(5000, distance));
+			double expected =
+					100 * Math.pow(10 / clamped, Math.log(100.0 / 20) / Math.log(5000.0 / 10));
+
+			assertEquals(expected,
+					AugmentedRealityUtils.perspectiveSize(distance, 10, 100, 5000, 20), 0);
+			assertEquals(expected, AugmentedRealityUtils.perspectiveSizeAlong(distance, 10, 100,
+					5000, exponent), 0);
+		}
 	}
 
 	@Test

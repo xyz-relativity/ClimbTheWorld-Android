@@ -44,6 +44,14 @@ public class AugmentedRealityViewManager {
 	// either side of the one on display, enough for turning back and forth along a crag, in
 	// 20 to 30 megabytes.
 	private static final int MAX_HIDDEN_PINS = 200;
+	// Where the pins reach their far size, the farthest view distance the settings allow, and
+	// the exponent they shrink along up to there, see calculateScale. Neither changes, so they
+	// are worked out once rather than for each pin on every frame.
+	private static final double FAR_PIN_DISTANCE_METERS =
+			(int) Configs.ConfigKey.maxNodesShowDistanceLimit.maxValue;
+	private static final double PIN_SIZE_EXPONENT = AugmentedRealityUtils.perspectiveExponent(
+			UIConstants.UI_NEAR_PIN_DISTANCE_METERS, UIConstants.UI_NEAR_PIN_HEIGHT_DP,
+			FAR_PIN_DISTANCE_METERS, UIConstants.UI_FAR_PIN_HEIGHT_DP);
 
 	private final Map<GeoNode, View> toDisplay = new HashMap<>(); //Visible POIs
 	// The pins out of view for now, invisible in the container, see hidePOIFromView.
@@ -57,6 +65,9 @@ public class AugmentedRealityViewManager {
 	private final VirtualCamera camera;
 	private Vector2d viewSize = new Vector2d(0, 0);
 	private Vector2d containerSize = new Vector2d(0, 0);
+	// Takes the position of each pin in turn, see updateViewElement, rather than one more
+	// object to collect for each pin on every frame. The pins are only placed on the UI thread.
+	private final Vector4d pinPosition = new Vector4d();
 
 	public AugmentedRealityViewManager(ViewGroup container, VirtualCamera camera) {
 		this.container = container;
@@ -249,15 +260,17 @@ public class AugmentedRealityViewManager {
 
 	private void updateViewElement(View pButton, GeoNode poi, float stackOrder) {
 		Drawable icon = ((ImageButton) pButton).getDrawable();
-		Vector2d iconSize = new Vector2d(icon.getIntrinsicWidth(), icon.getIntrinsicHeight());
+		double iconWidth = icon.getIntrinsicWidth();
+		double iconHeight = icon.getIntrinsicHeight();
 
-		Vector4d pos = AugmentedRealityUtils.getXYPosition(poi.difDegAngle, poi.elevationDegAngle,
+		Vector4d pos = pinPosition;
+		AugmentedRealityUtils.getXYPosition(poi.difDegAngle, poi.elevationDegAngle,
 				-camera.degPitch,
-				0, camera.screenRotation, iconSize,
-				camera.angleOfViewDeg, viewSize, containerSize);
+				0, camera.screenRotation, iconWidth, iconHeight,
+				camera.angleOfViewDeg, viewSize, containerSize, pos);
 
 		// The position centres the icon on the POI.
-		placePin(pButton, pos.x + iconSize.x / 2, pos.y + iconSize.y / 2, poi.distanceMeters,
+		placePin(pButton, pos.x + iconWidth / 2, pos.y + iconHeight / 2, poi.distanceMeters,
 				(float) pos.w);
 
 		// Z decides both draw order and touch dispatch order, so the caller's stacking is kept
@@ -292,11 +305,11 @@ public class AugmentedRealityViewManager {
 	 * the taller route pins are scaled alike, so that they keep their size relative to it.
 	 */
 	private static float calculateScale(double distance) {
-		double heightDp = AugmentedRealityUtils.perspectiveSize(distance,
+		double heightDp = AugmentedRealityUtils.perspectiveSizeAlong(distance,
 				UIConstants.UI_NEAR_PIN_DISTANCE_METERS, UIConstants.UI_NEAR_PIN_HEIGHT_DP,
-				(int) Configs.ConfigKey.maxNodesShowDistanceLimit.maxValue,
-				UIConstants.UI_FAR_PIN_HEIGHT_DP);
-		return (float) (Globals.convertDpToPixel(heightDp)
+				FAR_PIN_DISTANCE_METERS, PIN_SIZE_EXPONENT);
+		// The density is still read for each pin, as nothing tells this of the display changing.
+		return (float) (Globals.dpToPixel(heightDp)
 				/ MarkerUtils.IconType.poiRouteIcon.getIconPxHeight());
 	}
 

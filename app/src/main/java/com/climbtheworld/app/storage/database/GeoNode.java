@@ -7,7 +7,6 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.utils.constants.UIConstants;
 
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -600,10 +599,10 @@ public class GeoNode implements Comparable {
 	@Override
 	public int hashCode() {
 		// Keyed on osmID alone, so that it stays consistent with equals() and stable while the
-		// node's tags and measured distance change.
-		return new HashCodeBuilder(17, 31). // two randomly chosen prime numbers
-				append(this.osmID).
-				toHashCode();
+		// node's tags and measured distance change. The A.R. view asks for it for every POI
+		// around on every frame, so it is plain arithmetic rather than a builder to collect
+		// each time; the value is the one HashCodeBuilder(17, 31).append(osmID) gave.
+		return 17 * 31 + (int) (this.osmID ^ (this.osmID >> 32));
 	}
 
 	/**

@@ -287,6 +287,14 @@ public class Globals {
 	 * @return A float value to represent px equivalent to dp depending on device density
 	 */
 	public static Double convertDpToPixel(double dp) {
+		return dpToPixel(dp);
+	}
+
+	/**
+	 * convertDpToPixel as a plain double, for what converts on every frame: it makes no Double
+	 * to collect.
+	 */
+	public static double dpToPixel(double dp) {
 		return dp * ((double)Resources.getSystem().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT);
 	}
 

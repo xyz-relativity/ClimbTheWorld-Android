@@ -16,6 +16,12 @@ public class AugmentedRealityUtils {
 	// view centre instead, as far out as a point at this angle: off the view, the way to turn to
 	// it. Nothing in view is that far from the axis.
 	public static final double MAX_PROJECTED_DEGREES = 80;
+	// How far forward a point at that angle is, and how far out it is laid: the same for every
+	// point, so worked out once rather than for each one placed.
+	private static final double MIN_PROJECTED_FORWARD =
+			Math.cos(Math.toRadians(MAX_PROJECTED_DEGREES));
+	private static final double MAX_PROJECTED_STRETCH =
+			Math.tan(Math.toRadians(MAX_PROJECTED_DEGREES));
 
 	private AugmentedRealityUtils() {
 		//hide constructor
@@ -38,6 +44,21 @@ public class AugmentedRealityUtils {
 	 * from the camera axis to project, see MAX_PROJECTED_DEGREES
 	 */
 	public static Vector4d getXYPosition(double yawDegAngle, double elevationDegAngle, double pitch, double pRoll, double screenRot, Vector2d objSize, Vector2d fov, Vector2d viewSize, Vector2d containerSize) {
+		Vector4d result = new Vector4d();
+		getXYPosition(yawDegAngle, elevationDegAngle, pitch, pRoll, screenRot, objSize.x,
+				objSize.y, fov, viewSize, containerSize, result);
+		return result;
+	}
+
+	/**
+	 * getXYPosition into a position the caller keeps, for what places many objects on every
+	 * frame: it makes nothing to collect.
+	 *
+	 * @param objWidth  width of the object to be positioned
+	 * @param objHeight height of the object to be positioned
+	 * @param result    takes the position of the object
+	 */
+	public static void getXYPosition(double yawDegAngle, double elevationDegAngle, double pitch, double pRoll, double screenRot, double objWidth, double objHeight, Vector2d fov, Vector2d viewSize, Vector2d containerSize, Vector4d result) {
 		double roll = (pRoll + screenRot);
 
 		// Pinhole projection through the camera without its roll, which the caller applies by
@@ -53,30 +74,25 @@ public class AugmentedRealityUtils {
 		// MAX_PROJECTED_DEGREES.
 		double stretch;
 		double lateral = Math.hypot(right, down);
-		if (forward > Math.cos(Math.toRadians(MAX_PROJECTED_DEGREES))) {
+		if (forward > MIN_PROJECTED_FORWARD) {
 			stretch = 1 / forward;
 		} else if (lateral > 1e-9) {
-			stretch = Math.tan(Math.toRadians(MAX_PROJECTED_DEGREES)) / lateral;
+			stretch = MAX_PROJECTED_STRETCH / lateral;
 		} else {
 			// Right behind the camera: to the right, as well as any other way.
 			right = 1;
-			stretch = Math.tan(Math.toRadians(MAX_PROJECTED_DEGREES));
+			stretch = MAX_PROJECTED_STRETCH;
 		}
 
-		Vector2d point = new Vector2d(
-				containerSize.x / 2 + focalLength(fov.x, viewSize.x) * right * stretch,
-				containerSize.y / 2 + focalLength(fov.y, viewSize.y) * down * stretch);
+		double pointX = containerSize.x / 2 + focalLength(fov.x, viewSize.x) * right * stretch;
+		double pointY = containerSize.y / 2 + focalLength(fov.y, viewSize.y) * down * stretch;
 
-		// Roll pivots horizontally around the screen centre, but vertically around the point itself.
-		Vector2d origin = new Vector2d(containerSize.x / 2, point.y);
+		// Rotate the coordinates to match the roll. Roll pivots horizontally around the screen
+		// centre, but vertically around the point itself.
+		rotatePoint(pointX, pointY, containerSize.x / 2, pointY, roll, result);
 
-		// Rotate the coordinates to match the roll.
-		Vector4d result = rotatePoint(point, origin, roll);
-
-		result.x = result.x - objSize.x / 2;
-		result.y = result.y - objSize.y / 2;
-
-		return result;
+		result.x = result.x - objWidth / 2;
+		result.y = result.y - objHeight / 2;
 	}
 
 	/**
@@ -120,18 +136,27 @@ public class AugmentedRealityUtils {
 	 */
 	public static Vector4d rotatePoint(Vector2d p, Vector2d origin, double roll) {
 		Vector4d result = new Vector4d();
+		rotatePoint(p.x, p.y, origin.x, origin.y, roll, result);
+		return result;
+	}
+
+	/**
+	 * rotatePoint into coordinates the caller keeps, see getXYPosition.
+	 */
+	private static void rotatePoint(double x, double y, double originX, double originY,
+	                                double roll, Vector4d result) {
+		// The coordinates may have held another point.
+		result.z = 0;
 		result.w = roll;
 
-		double pX = p.x - origin.x;
-		double pY = p.y - origin.y;
+		double pX = x - originX;
+		double pY = y - originY;
 
 		double sinRoll = Math.sin(Math.toRadians(roll));
 		double cosRoll = Math.cos(Math.toRadians(roll));
 
-		result.x = (pX * cosRoll - pY * sinRoll) + origin.x;
-		result.y = (pY * cosRoll + pX * sinRoll) + origin.y;
-
-		return result;
+		result.x = (pX * cosRoll - pY * sinRoll) + originX;
+		result.y = (pY * cosRoll + pX * sinRoll) + originY;
 	}
 
 	/**
@@ -150,8 +175,27 @@ public class AugmentedRealityUtils {
 	 */
 	public static double perspectiveSize(double distance, double nearDistance, double nearSize,
 	                                     double farDistance, double farSize) {
+		return perspectiveSizeAlong(distance, nearDistance, nearSize, farDistance,
+				perspectiveExponent(nearDistance, nearSize, farDistance, farSize));
+	}
+
+	/**
+	 * The exponent of the power law of perspectiveSize. It only depends on the two ends, so
+	 * what sizes many objects between the same ends on every frame works it out once, for
+	 * perspectiveSizeAlong.
+	 */
+	public static double perspectiveExponent(double nearDistance, double nearSize,
+	                                         double farDistance, double farSize) {
+		return Math.log(nearSize / farSize) / Math.log(farDistance / nearDistance);
+	}
+
+	/**
+	 * perspectiveSize along a power law whose exponent is at hand, see perspectiveExponent.
+	 */
+	public static double perspectiveSizeAlong(double distance, double nearDistance,
+	                                          double nearSize, double farDistance,
+	                                          double exponent) {
 		double clamped = Math.max(nearDistance, Math.min(farDistance, distance));
-		double exponent = Math.log(nearSize / farSize) / Math.log(farDistance / nearDistance);
 		return nearSize * Math.pow(nearDistance / clamped, exponent);
 	}
 
