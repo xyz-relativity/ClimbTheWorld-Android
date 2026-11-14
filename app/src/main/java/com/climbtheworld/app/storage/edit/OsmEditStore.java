@@ -113,11 +113,11 @@ public class OsmEditStore {
 		return new OsmCollectionEntity(json);
 	}
 
-	public void saveNode(OsmNode node) {
+	public void saveNode(OsmNode node) throws ElementNotStoredException {
 		save(Collections.singletonList(node), Collections.emptyList());
 	}
 
-	public void saveRelation(OsmCollectionEntity relation) {
+	public void saveRelation(OsmCollectionEntity relation) throws ElementNotStoredException {
 		save(Collections.emptyList(), Collections.singletonList(relation));
 	}
 
@@ -125,17 +125,54 @@ public class OsmEditStore {
 	 * Saves edited or new entities together, like a new route and the crag it was added to. Nodes
 	 * go first, so the relations' bounding boxes include them. An entity edited back to its
 	 * downloaded version is clean again, and a relation left without members is deleted.
+	 *
+	 * @throws ElementNotStoredException writing nothing, if an entity downloaded from OSM is no
+	 *                                   longer stored, as a download can drop one while its editor
+	 *                                   is open: its changes have no downloaded version to start
+	 *                                   from. Names the first such entity.
 	 */
-	public void save(List<OsmNode> nodes, List<OsmCollectionEntity> relations) {
+	public void save(List<OsmNode> nodes, List<OsmCollectionEntity> relations)
+			throws ElementNotStoredException {
 		long now = System.currentTimeMillis();
-		database.runInTransaction(() -> {
+		OsmEntity missing = database.runInTransaction(() -> {
+			// All checked before the first write, in the same transaction, so that the save is
+			// whole or not at all, and no download drops one in between.
+			OsmEntity notStored = firstNotStored(nodes, relations);
+			if (notStored != null) {
+				return notStored;
+			}
 			for (OsmNode node : nodes) {
 				writeNode(node, now);
 			}
 			for (OsmCollectionEntity relation : relations) {
 				writeRelation(relation, now);
 			}
+			return null;
 		});
+		if (missing != null) {
+			throw new ElementNotStoredException(missing.osmType, missing.osmID);
+		}
+	}
+
+	/**
+	 * The first of the entities to save that was downloaded from OSM and is no longer stored, or
+	 * null. A relation saved without members is left out, as saving only deletes it, nor is a way
+	 * looked for, which writeRelation refuses.
+	 */
+	private OsmEntity firstNotStored(List<OsmNode> nodes, List<OsmCollectionEntity> relations) {
+		for (OsmNode node : nodes) {
+			if (!node.isNew() && find(EntityOsmType.node, node.osmID) == null) {
+				return node;
+			}
+		}
+		for (OsmCollectionEntity relation : relations) {
+			if (!relation.isNew() && relation.osmType == EntityOsmType.relation
+					&& relation.getMembers().length() > 0
+					&& find(EntityOsmType.relation, relation.osmID) == null) {
+				return relation;
+			}
+		}
+		return null;
 	}
 
 	/**

@@ -252,9 +252,10 @@ public class WalkietalkieBackgroundService extends Service {
 		((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE))
 				.createNotificationChannel(channel);
 
-		// The walkie-talkie screen is the only one that controls or stops the service, and runs
-		// as long as it does, in the app's task: the tap brings that task back, and the flags
-		// reuse the screen there rather than open a second one, which would bind again.
+		// The walkie-talkie screen is the only one that controls or stops the service, and closing
+		// it stops the service: while this shows, the screen is in the app's task. The tap brings
+		// that task back and reuses the screen in it, rather than open a second one that would
+		// bind again.
 		Intent screenIntent = new Intent(this, WalkieTalkieActivity.class)
 				.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP
 						| Intent.FLAG_ACTIVITY_SINGLE_TOP);

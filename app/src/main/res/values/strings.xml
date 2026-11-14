@@ -233,6 +233,8 @@
     <string name="compass_missing">Compass Missing</string>
     <string name="compass_missing_message">No compass found on this device. The map cannot turn with you, and the augmented reality view cannot place the routes around you.</string>
     <string name="node_not_found">Could not find this item in the local database.</string>
+    <string name="element_not_stored">This item is no longer in the downloaded data, so the changes could not be saved.</string>
+    <string name="parent_not_stored">A crag or area changed with this item is no longer in the downloaded data, so the changes could not be saved.</string>
 
     <string name="ar_warning">Augmented Reality May Be Dangerous</string>
     <string name="ar_warning_message">When using the Augmented Reality view please consider the followings:&lt;br /&gt;&lt;br /&gt;

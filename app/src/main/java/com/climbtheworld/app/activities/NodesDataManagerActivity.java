@@ -31,6 +31,11 @@ public class NodesDataManagerActivity extends AppCompatActivity {
 
 	private BottomNavigationView navigation;
 	private final List<IPagerViewFragment> views = new ArrayList<>();
+	private final Runnable showDownloadTab = () -> {
+		// Only once, so coming back to the activity keeps the tab the user chose since.
+		getIntent().setData(null);
+		navigation.setSelectedItemId(R.id.navigation_download);
+	};
 
 	/** Opens the activity on the tab that lists every country and its download progress. */
 	public static Intent downloadTabIntent(Context context) {
@@ -62,17 +67,32 @@ public class NodesDataManagerActivity extends AppCompatActivity {
 
 	@Override
 	protected void onStart() {
+		showRequestedTab();
+		super.onStart();
+	}
+
+	/** The download notification reaches the screen here when it is already on top of its task. */
+	@Override
+	protected void onNewIntent(Intent intent) {
+		super.onNewIntent(intent);
+		setIntent(intent);
+		showRequestedTab();
+	}
+
+	@Override
+	protected void onStop() {
+		// The intent still asks for the tab until it is shown, so it is shown on the next start.
+		navigation.removeCallbacks(showDownloadTab);
+		super.onStop();
+	}
+
+	private void showRequestedTab() {
 		Uri data = getIntent().getData();
 		if (data != null && DOWNLOAD_TAB_ID.equalsIgnoreCase(data.getQueryParameter(TAB_ID_PARAMETER))) {
-			// Only once, so coming back to the activity keeps the tab the user chose since.
-			getIntent().setData(null);
-			navigation.postDelayed(new Runnable() {
-				public void run() {
-					navigation.setSelectedItemId(R.id.navigation_download);
-				}
-			}, 500);
+			// A new intent and the start that follows it both ask: the tab is shown once.
+			navigation.removeCallbacks(showDownloadTab);
+			navigation.postDelayed(showDownloadTab, 500);
 		}
-		super.onStart();
 	}
 
 	@Override

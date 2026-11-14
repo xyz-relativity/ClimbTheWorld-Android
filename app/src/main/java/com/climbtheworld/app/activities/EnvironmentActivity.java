@@ -383,17 +383,25 @@ public class EnvironmentActivity extends MapWidgetActivity implements IEnvironme
 	}
 
 	private static class CoordinatesConverter {
+		private static final long HUNDREDTHS_PER_MINUTE = 60 * 100;
+		private static final long HUNDREDTHS_PER_DEGREE = 60 * HUNDREDTHS_PER_MINUTE;
+
 		public static String processCoordinates(double coordinate, String[] orientations) {
-			final String dmsLat = coordinate > 0 ? orientations[0] : orientations[1];
-			return decimalToDMS(coordinate) + " " + dmsLat;
+			// Rounded to the hundredth of a second shown before it is split, so that 59.999"
+			// carries into the next minute rather than showing as 60.00".
+			long hundredths = Math.round(Math.abs(coordinate) * HUNDREDTHS_PER_DEGREE);
+			// What shows as 0 is on the equator or the prime meridian, named N or E.
+			final String dmsLat = coordinate > 0 || hundredths == 0
+					? orientations[0] : orientations[1];
+			return decimalToDMS(hundredths) + " " + dmsLat;
 		}
 
-		private static String decimalToDMS(double dd) {
-			int d = (int)dd;
-			int m = (int)((dd - d) * 60);
-			double s = (dd - d - m / 60.0) * 3600;
+		private static String decimalToDMS(long hundredths) {
+			long d = hundredths / HUNDREDTHS_PER_DEGREE;
+			long m = hundredths / HUNDREDTHS_PER_MINUTE % 60;
+			double s = hundredths % HUNDREDTHS_PER_MINUTE / 100.0;
 
-			return Math.abs(d) + "°" + Math.abs(m) + "'" + String.format(Locale.getDefault(), "%.2f", Math.abs(s)) + "\"";
+			return d + "°" + m + "'" + String.format(Locale.getDefault(), "%.2f", s) + "\"";
 		}
 	}
 }

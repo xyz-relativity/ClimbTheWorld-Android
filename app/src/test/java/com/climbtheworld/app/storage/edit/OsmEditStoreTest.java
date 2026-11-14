@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import androidx.room.Room;
 
@@ -119,7 +120,7 @@ public class OsmEditStoreTest {
 	}
 
 	@Test
-	public void placeholderIdsAreUniqueAcrossTypes() {
+	public void placeholderIdsAreUniqueAcrossTypes() throws Exception {
 		OsmNode node = store.newNode(45.53, -73.63);
 		store.saveNode(node);
 		OsmCollectionEntity relation = store.newRelation();
@@ -154,7 +155,7 @@ public class OsmEditStoreTest {
 	}
 
 	@Test
-	public void movingARouteUpdatesTheBoxesOfItsCragAndArea() {
+	public void movingARouteUpdatesTheBoxesOfItsCragAndArea() throws Exception {
 		OsmNode node = node(1);
 		node.updatePOILocation(45.40, -73.60, 0);
 		store.saveNode(node);
@@ -167,7 +168,7 @@ public class OsmEditStoreTest {
 	}
 
 	@Test
-	public void routeAddedToACragGoesToTheEndAndComesOutOnRevert() {
+	public void routeAddedToACragGoesToTheEndAndComesOutOnRevert() throws Exception {
 		OsmNode node = store.newNode(45.60, -73.70);
 		OsmCollectionEntity crag = relation(100);
 		RelationMembers.append(crag.getMembers(), "node", node.osmID, "");
@@ -192,7 +193,7 @@ public class OsmEditStoreTest {
 	}
 
 	@Test
-	public void reorderingMembersIsAChangeUntilPutBack() {
+	public void reorderingMembersIsAChangeUntilPutBack() throws Exception {
 		OsmCollectionEntity crag = relation(100);
 		RelationMembers.move(crag.getMembers(), 0, 1);
 		store.saveRelation(crag);
@@ -234,7 +235,7 @@ public class OsmEditStoreTest {
 	}
 
 	@Test
-	public void newCragGoesAwayWithItsOnlyNewRoute() {
+	public void newCragGoesAwayWithItsOnlyNewRoute() throws Exception {
 		OsmNode node = store.newNode(45.60, -73.70);
 		OsmCollectionEntity crag = store.newRelation();
 		RelationMembers.append(crag.getMembers(), "node", node.osmID, "");
@@ -250,7 +251,7 @@ public class OsmEditStoreTest {
 	}
 
 	@Test
-	public void newAreaSavedAfterItsNewCragIsPlacedByTheRoute() {
+	public void newAreaSavedAfterItsNewCragIsPlacedByTheRoute() throws Exception {
 		OsmNode node = store.newNode(45.60, -73.70);
 		OsmCollectionEntity crag = store.newRelation();
 		RelationMembers.append(crag.getMembers(), "node", node.osmID, "");
@@ -269,7 +270,7 @@ public class OsmEditStoreTest {
 	}
 
 	@Test
-	public void newCragJoinsAStoredAreaInTheRoutesSave() {
+	public void newCragJoinsAStoredAreaInTheRoutesSave() throws Exception {
 		OsmNode node = store.newNode(45.60, -73.70);
 		OsmCollectionEntity crag = store.newRelation();
 		RelationMembers.append(crag.getMembers(), "node", node.osmID, "");
@@ -557,7 +558,7 @@ public class OsmEditStoreTest {
 	}
 
 	@Test
-	public void cragSavedWithoutMembersIsDeleted() {
+	public void cragSavedWithoutMembersIsDeleted() throws Exception {
 		OsmCollectionEntity crag = relation(100);
 		RelationMembers.removeAll(crag.getMembers(), "node", 1);
 		RelationMembers.removeAll(crag.getMembers(), "node", 2);
@@ -570,7 +571,7 @@ public class OsmEditStoreTest {
 	}
 
 	@Test
-	public void newCragWithoutMembersIsNotSaved() {
+	public void newCragWithoutMembersIsNotSaved() throws Exception {
 		OsmCollectionEntity crag = store.newRelation();
 
 		store.saveRelation(crag);
@@ -589,6 +590,59 @@ public class OsmEditStoreTest {
 		Map<String, OsmEntity> cragMembers = store.loadMembers(crag.getMembers());
 		assertEquals(new HashSet<>(Arrays.asList("node|1", "node|2")), cragMembers.keySet());
 		assertEquals(2, cragMembers.get("node|2").osmID);
+	}
+
+	@Test
+	public void editOfARouteADownloadDroppedIsNotSaved() throws Exception {
+		// Open in its editor while a download leaves it out, as deleted on OSM.
+		OsmNode renamed = node(3);
+		renamed.getTags().put("name", "Renamed");
+		importer.importResponse(new StringReader(
+				DOWNLOAD.replace(route(3, 45.52, -73.62, "Three") + ",", "")), "CA");
+		assertNull(node(3));
+
+		try {
+			store.saveNode(renamed);
+			fail("Saved a route that is no longer stored");
+		} catch (ElementNotStoredException e) {
+			assertEquals(EntityOsmType.node, e.osmType);
+			assertEquals(3, e.osmId);
+		}
+
+		assertNull(node(3));
+		assertFalse(store.hasChanges());
+	}
+
+	@Test
+	public void routeAddedToACragADownloadDroppedSavesNothingButANewRouteStillSaves()
+			throws Exception {
+		OsmNode added = store.newNode(45.60, -73.70);
+		OsmCollectionEntity crag = relation(100);
+		RelationMembers.append(crag.getMembers(), "node", added.osmID, "");
+		// The crag and its area are no longer in the country's data.
+		importer.importResponse(new StringReader("{\"elements\":["
+				+ route(1, 45.50, -73.60, "One") + ","
+				+ route(2, 45.51, -73.61, "Two") + ","
+				+ route(3, 45.52, -73.62, "Three") + "]}"), "CA");
+		assertNull(relation(100));
+
+		try {
+			store.save(Collections.singletonList(added), Collections.singletonList(crag));
+			fail("Saved into a crag that is no longer stored");
+		} catch (ElementNotStoredException e) {
+			assertEquals(EntityOsmType.relation, e.osmType);
+			assertEquals(100, e.osmId);
+		}
+
+		// The route goes first, yet nothing of the save is kept.
+		assertNull(node(added.osmID));
+		assertNull(relation(100));
+		assertFalse(store.hasChanges());
+
+		store.saveNode(added);
+
+		assertNotNull(node(added.osmID));
+		assertEquals(EntityState.toUpdate, node(added.osmID).localUpdateState);
 	}
 
 	private static List<Long> ids(List<OsmCollectionEntity> collections) {

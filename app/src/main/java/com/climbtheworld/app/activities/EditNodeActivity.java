@@ -44,6 +44,7 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
+import com.climbtheworld.app.storage.edit.ElementNotStoredException;
 import com.climbtheworld.app.storage.edit.FormChanges;
 import com.climbtheworld.app.storage.edit.OsmEditStore;
 import com.climbtheworld.app.storage.upload.OsmElements;
@@ -572,7 +573,9 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 
 	/**
 	 * Saves the node with its crags, then runs then on the UI thread, unless the user has left the
-	 * screen by then, see WriteTask.
+	 * screen by then, see WriteTask. If the node or one of its crags or areas is no longer stored,
+	 * nothing is saved: the user is told, and the form stays open as it is, to be left with
+	 * Cancel.
 	 */
 	private void save(Runnable then) {
 		JSONObject edited = resolveEdits();
@@ -587,17 +590,29 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 		final List<OsmCollectionEntity> relations = cragMembership.changedParents();
 		writing = true;
 		Constants.DB_EXECUTOR
-				.execute(new WriteTask<Boolean>() {
+				.execute(new WriteTask<ElementNotStoredException>() {
 					@Override
-					protected Boolean doWork() {
-						new OsmEditStore(EditNodeActivity.this)
-								.save(Collections.singletonList(savedNode), relations);
-						return true;
+					protected ElementNotStoredException doWork() {
+						try {
+							new OsmEditStore(EditNodeActivity.this)
+									.save(Collections.singletonList(savedNode), relations);
+							return null;
+						} catch (ElementNotStoredException e) {
+							return e;
+						}
 					}
 
 					@Override
-					protected void thenOnOpenScreen(Boolean result) {
-						then.run();
+					protected void thenOnOpenScreen(ElementNotStoredException notStored) {
+						if (notStored == null) {
+							then.run();
+							return;
+						}
+						writing = false;
+						DialogBuilder.showErrorDialog(EditNodeActivity.this,
+								getString(notStored.osmType == OsmEntity.EntityOsmType.node
+										? R.string.element_not_stored : R.string.parent_not_stored),
+								null);
 					}
 				});
 	}

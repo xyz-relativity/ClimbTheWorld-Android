@@ -34,6 +34,7 @@ import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmEntity.EntityClimbingType;
 import com.climbtheworld.app.storage.database.OsmEntity.EntityOsmType;
 import com.climbtheworld.app.storage.database.OsmNode;
+import com.climbtheworld.app.storage.edit.ElementNotStoredException;
 import com.climbtheworld.app.storage.edit.FormChanges;
 import com.climbtheworld.app.storage.edit.OsmEditStore;
 import com.climbtheworld.app.storage.edit.RelationMembers;
@@ -607,16 +608,30 @@ public class EditRelationActivity extends MapWidgetActivity {
 			relations.addAll(areaMembership.changedParents());
 		}
 		writing = true;
-		Constants.DB_EXECUTOR.execute(new WriteTask<Boolean>() {
+		Constants.DB_EXECUTOR.execute(new WriteTask<ElementNotStoredException>() {
 			@Override
-			protected Boolean doWork() {
-				store.save(Collections.emptyList(), relations);
-				return true;
+			protected ElementNotStoredException doWork() {
+				try {
+					store.save(Collections.emptyList(), relations);
+					return null;
+				} catch (ElementNotStoredException e) {
+					return e;
+				}
 			}
 
 			@Override
-			protected void thenOnOpenScreen(Boolean result) {
-				finish();
+			protected void thenOnOpenScreen(ElementNotStoredException notStored) {
+				if (notStored == null) {
+					finish();
+					return;
+				}
+				// Nothing was saved; the form stays as it is, to be left with Cancel.
+				writing = false;
+				DialogBuilder.showErrorDialog(EditRelationActivity.this,
+						getString(notStored.osmType == EntityOsmType.relation
+								&& notStored.osmId == saved.osmID
+								? R.string.element_not_stored : R.string.parent_not_stored),
+						null);
 			}
 		});
 	}
