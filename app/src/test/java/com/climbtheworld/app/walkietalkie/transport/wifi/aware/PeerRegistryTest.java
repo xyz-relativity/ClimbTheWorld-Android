@@ -388,6 +388,56 @@ public class PeerRegistryTest {
 	}
 
 	@Test
+	public void lostPeerIsReportedWithoutItsLastDistance() {
+		PeerRegistry<String> registry = new PeerRegistry<>();
+		UUID uuid = UUID.randomUUID();
+		registry.register(PeerRegistry.Role.SUBSCRIBE, "sub", new PubSubID(uuid, "peer", 12.5));
+		registry.register(PeerRegistry.Role.PUBLISH, "pub",
+				new PubSubID(uuid, "peer", PubSubID.UNKNOWN_DISTANCE));
+
+		// Its publisher is no longer discovered: the peer left.
+		PeerRegistry.Change<String> change = registry.lose("sub");
+
+		assertEquals(1, change.lostPeers.size());
+		assertEquals(uuid, change.lostPeers.get(0).uuid);
+		assertEquals("peer", change.lostPeers.get(0).callsign);
+		assertEquals(PubSubID.UNKNOWN_DISTANCE, change.lostPeers.get(0).distanceMeters, 0);
+	}
+
+	@Test
+	public void peerLostToAnotherIdIsReportedWithoutItsLastDistance() {
+		PeerRegistry<String> registry = new PeerRegistry<>();
+		UUID uuid = UUID.randomUUID();
+		registry.register(PeerRegistry.Role.SUBSCRIBE, "sub", new PubSubID(uuid, "peer", 12.5));
+
+		// Another device is found on the handle, with the distance measured to it.
+		PeerRegistry.Change<String> change = registry.register(PeerRegistry.Role.SUBSCRIBE, "sub",
+				new PubSubID(OTHER_PEER.uuid, "other", 3.5));
+
+		assertEquals(1, change.lostPeers.size());
+		assertEquals(uuid, change.lostPeers.get(0).uuid);
+		assertEquals(PubSubID.UNKNOWN_DISTANCE, change.lostPeers.get(0).distanceMeters, 0);
+		assertEquals(3.5, change.peer.distanceMeters, 0);
+	}
+
+	@Test
+	public void clearReturnsEveryPeerWithoutItsLastDistance() {
+		PeerRegistry<String> registry = new PeerRegistry<>();
+		UUID uuid = UUID.randomUUID();
+		registry.register(PeerRegistry.Role.SUBSCRIBE, "sub", new PubSubID(uuid, "peer", 12.5));
+		registry.register(PeerRegistry.Role.SUBSCRIBE, "other", OTHER_PEER);
+
+		List<PubSubID> lostPeers = registry.clear();
+
+		assertEquals(2, lostPeers.size());
+		for (PubSubID lostPeer : lostPeers) {
+			assertEquals(PubSubID.UNKNOWN_DISTANCE, lostPeer.distanceMeters, 0);
+		}
+		// One that had no distance is reported as it was registered.
+		assertTrue(lostPeers.contains(OTHER_PEER));
+	}
+
+	@Test
 	public void callsignSaidThroughAKnownHandleIsShownWithTheMeasuredDistance() {
 		PeerRegistry<String> registry = new PeerRegistry<>();
 		UUID uuid = UUID.randomUUID();

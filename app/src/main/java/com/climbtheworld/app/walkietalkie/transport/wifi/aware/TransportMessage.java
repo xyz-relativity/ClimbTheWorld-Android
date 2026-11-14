@@ -1,16 +1,20 @@
 package com.climbtheworld.app.walkietalkie.transport.wifi.aware;
 
-import java.util.Arrays;
 import java.util.UUID;
 
 public class TransportMessage {
 	private static final String COMMAND_SEPARATOR = ":";
 	public final Command command;
-	public final String[] message;
+	/**
+	 * What follows the command and its separator, as it was sent, empty when nothing does. The
+	 * fields are read from it by the command's own method, see toPubSubID and toCallsign: only
+	 * the command knows which separators are between its fields, and which are in its last one.
+	 */
+	public final String arguments;
 
-	private TransportMessage(Command command, String... message) {
+	private TransportMessage(Command command, String arguments) {
 		this.command = command;
-		this.message = message;
+		this.arguments = arguments;
 	}
 
 	/**
@@ -25,26 +29,36 @@ public class TransportMessage {
 	}
 
 	public static TransportMessage fromData(String data) {
-		String[] split = data.split(COMMAND_SEPARATOR);
+		int commandEnd = data.indexOf(COMMAND_SEPARATOR);
 
 		Command command;
 		try {
-			command = Command.valueOf(split[0]);
+			command = Command.valueOf(commandEnd < 0 ? data : data.substring(0, commandEnd));
 		} catch (IllegalArgumentException e) {
 			return null;
 		}
-		return new TransportMessage(command, Arrays.copyOfRange(split, 1, split.length));
+		return new TransportMessage(command,
+				commandEnd < 0 ? "" : data.substring(commandEnd + COMMAND_SEPARATOR.length()));
 	}
 
 	/**
 	 * The sender of an INSTANCE message, or null when the message is not a well formed one.
 	 */
 	public PubSubID toPubSubID(double distanceMeters) {
-		if (command != Command.INSTANCE || message.length < 2) {
+		if (command != Command.INSTANCE) {
+			return null;
+		}
+		int idEnd = arguments.indexOf(COMMAND_SEPARATOR);
+		if (idEnd < 0) {
+			return null;
+		}
+		String callsign = lastField(idEnd + COMMAND_SEPARATOR.length());
+		if (callsign == null) {
 			return null;
 		}
 		try {
-			return new PubSubID(UUID.fromString(message[0]), message[1], distanceMeters);
+			return new PubSubID(UUID.fromString(arguments.substring(0, idEnd)), callsign,
+					distanceMeters);
 		} catch (IllegalArgumentException e) {
 			return null;
 		}
@@ -56,10 +70,25 @@ public class TransportMessage {
 	 * whichever of the two said it.
 	 */
 	public String toCallsign() {
-		if (command != Command.CALLSIGN || message.length < 1) {
+		if (command != Command.CALLSIGN) {
 			return null;
 		}
-		return message[0];
+		return lastField(0);
+	}
+
+	/**
+	 * The last field of the message, from where it starts in the arguments, or null when there
+	 * is none. It is all that is left of the text, and not only what comes before the next
+	 * separator: the callsign is any text, and one with a separator in it is sent as it is. So
+	 * no field can be added after a callsign, which the versions reading it this way would take
+	 * for the end of it: what is to be said besides goes in a command of its own, which the
+	 * versions without it drop.
+	 * <p>
+	 * An empty one is none, as it has always been for the versions that cut the text at every
+	 * separator: they drop an INSTANCE message without a callsign.
+	 */
+	private String lastField(int start) {
+		return start < arguments.length() ? arguments.substring(start) : null;
 	}
 
 	public static byte[] buildMessage(Command command) {

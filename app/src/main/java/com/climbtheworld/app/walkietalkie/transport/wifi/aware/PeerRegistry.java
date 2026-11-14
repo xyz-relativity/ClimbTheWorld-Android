@@ -26,7 +26,7 @@ final class PeerRegistry<H> {
 	static final class Change<H> {
 		// Handles whose sessions and data paths must be torn down.
 		final List<H> staleHandles = new ArrayList<>();
-		// Peers left without any handle.
+		// Peers left without any handle, and so without a distance, see lostPeer.
 		final List<PubSubID> lostPeers = new ArrayList<>();
 		boolean newPeer;
 		// The registered peer as it is to be shown, null when none was registered.
@@ -143,7 +143,7 @@ final class PeerRegistry<H> {
 	synchronized List<PubSubID> clear() {
 		List<PubSubID> lostPeers = new ArrayList<>();
 		for (Peer<H> peer : peers.values()) {
-			lostPeers.add(peer.id);
+			lostPeers.add(lostPeer(peer.id));
 		}
 		peers.clear();
 		handleOwners.clear();
@@ -163,8 +163,20 @@ final class PeerRegistry<H> {
 
 		if (peer.subscribeHandle == null && peer.publishHandle == null) {
 			peers.remove(owner);
-			change.lostPeers.add(peer.id);
+			change.lostPeers.add(lostPeer(peer.id));
 		}
+	}
+
+	/**
+	 * A peer as it is reported lost: with the callsign it had, and no distance. The distance was
+	 * measured to the handles the peer no longer has, as in dropHandles, and whoever keeps what
+	 * is reported would have it for the distance of a peer that is gone.
+	 */
+	private static PubSubID lostPeer(PubSubID id) {
+		if (id.distanceMeters == PubSubID.UNKNOWN_DISTANCE) {
+			return id;
+		}
+		return new PubSubID(id.uuid, id.callsign, PubSubID.UNKNOWN_DISTANCE);
 	}
 
 	private void dropHandles(Peer<H> peer, Change<H> change) {

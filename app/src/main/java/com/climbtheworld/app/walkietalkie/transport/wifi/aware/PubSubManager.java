@@ -246,7 +246,18 @@ public class PubSubManager {
 		isHeartbeatRunning = false;
 	}
 
-	public synchronized void sendData(byte[] data) {
+	/**
+	 * Sends the data to every peer with a data path: the voice, from the audio worker, and the
+	 * heartbeat's datagram, from its scheduler.
+	 * <p>
+	 * It does not take the manager's monitor, which the setup and the teardown of every peer's
+	 * sockets take: a send waits for as long as the socket's buffer is full, and the peers found,
+	 * lost or recovered meanwhile would wait with it. The sockets and the addresses are read from
+	 * concurrent maps instead. A peer torn down during the loop is either skipped or has its
+	 * socket closed under the send, which then fails as a send to a peer out of reach does. The
+	 * voice all comes from one thread, so each peer still gets it in the order it was recorded.
+	 */
+	public void sendData(byte[] data) {
 		if (peerSendSockets.isEmpty()) {
 			Log.w(TAG, "Drop voice packet: No active client data channels connected.");
 			return;
@@ -263,7 +274,13 @@ public class PubSubManager {
 							new DatagramPacket(data, data.length, targetAddress, UDP_PORT);
 					socket.send(packet);
 				} catch (Exception e) {
-					Log.e(TAG, "Failed sending voice packet to client session: " + peer, e);
+					if (socket.isClosed()) {
+						// Torn down during the send: nothing failed that a recovery is not
+						// already taking care of.
+						Log.d(TAG, "Drop voice packet: data channel closed meanwhile: " + peer);
+					} else {
+						Log.e(TAG, "Failed sending voice packet to client session: " + peer, e);
+					}
 				}
 			}
 		}

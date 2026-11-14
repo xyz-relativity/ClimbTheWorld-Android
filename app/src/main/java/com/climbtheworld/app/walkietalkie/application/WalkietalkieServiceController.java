@@ -41,7 +41,9 @@ public class WalkietalkieServiceController {
 	// The headset proxy to close, from when it first connects: unlike bluetoothHeadset, it is
 	// kept while Bluetooth is off.
 	private BluetoothProfile headsetProxy;
-	private boolean destroyed;
+	// Whether initIntercom has set all of this up, with no onDestroy since to release it. All
+	// that reads and writes it is on the main thread: the screen and Android's callbacks.
+	private boolean initialized;
 	// Whether the screen is showing, kept to tell the service once it is bound.
 	private boolean started;
 	private boolean serviceBound;
@@ -56,11 +58,17 @@ public class WalkietalkieServiceController {
 					if (profile != BluetoothProfile.HEADSET) {
 						return;
 					}
-					if (destroyed) {
+					if (!initialized) {
 						// The screen went away before the proxy connected, with nothing yet to
 						// close: a proxy can only be closed once it is there, so it is now.
 						closeHeadsetProxy(proxy);
 						return;
+					}
+					if (headsetProxy != null && headsetProxy != proxy) {
+						// Asked for before an onDestroy and connected after the initIntercom
+						// that followed, which asked for its own: only one is closed in the
+						// end, so only one is kept.
+						closeHeadsetProxy(headsetProxy);
 					}
 					headsetProxy = proxy;
 					bluetoothHeadset = (BluetoothHeadset) proxy;
@@ -86,11 +94,25 @@ public class WalkietalkieServiceController {
 		this.configs = configs;
 	}
 
+	/**
+	 * Sets the walkie-talkie up for the screen: the audio routing, and the service, started and
+	 * bound. onDestroy releases it all, after which it can be set up again.
+	 * <p>
+	 * Asked again before that, it does nothing, and the first listener stays: a second time
+	 * round would bind the service again and ask for another headset proxy, while onDestroy
+	 * only knows of the last of each. The first binding would then keep the service running
+	 * after the screen stopped it, and keep the screen with it.
+	 */
 	public void initIntercom(IUiClientEvent eventReceiver) {
+		if (initialized) {
+			Log.w(TAG, "The walkie-talkie is set up already.");
+			return;
+		}
 		Context context = parent.get();
 		if (context == null) {
 			return;
 		}
+		initialized = true;
 		Context applicationContext = context.getApplicationContext();
 		audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
 
@@ -126,7 +148,7 @@ public class WalkietalkieServiceController {
 	}
 
 	public void onDestroy(boolean stopService) {
-		destroyed = true;
+		initialized = false;
 		WalkietalkieHandler lastState = activeState;
 		activeState = null;
 
@@ -155,6 +177,8 @@ public class WalkietalkieServiceController {
 		if (stopService && context != null && intercomServiceIntent != null) {
 			context.getApplicationContext().stopService(intercomServiceIntent);
 		}
+		// Not kept for another onDestroy, which would stop the service of a later screen.
+		intercomServiceIntent = null;
 
 		releaseCommunicationAudio();
 	}
