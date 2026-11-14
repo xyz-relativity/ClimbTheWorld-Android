@@ -5,6 +5,8 @@ import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity.EntityOsmType;
 import com.climbtheworld.app.storage.edit.RelationMembers;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -44,6 +46,11 @@ final class ParentEdits {
 	private final List<Membership> memberships = new ArrayList<>();
 	/** Stored parents the element was taken out of; saving them records the change. */
 	private final List<OsmCollectionEntity> leftParents = new ArrayList<>();
+	/**
+	 * What changed gave as the parents came in, before the user changed any: the parents changed
+	 * earlier in the same edit, in another editor. None until they are loaded.
+	 */
+	private EditSnapshot loadedChanges = EditSnapshot.of(Collections.emptyList());
 
 	ParentEdits(EntityOsmType memberType, long memberId) {
 		this.memberType = memberType.name();
@@ -82,6 +89,13 @@ final class ParentEdits {
 	void addLoaded(List<Membership> loaded, List<OsmCollectionEntity> left) {
 		memberships.addAll(loaded);
 		leftParents.addAll(left);
+		List<OsmCollectionEntity> changedAsLoaded = new ArrayList<>(left);
+		for (Membership membership : loaded) {
+			if (membership.changed) {
+				changedAsLoaded.add(membership.relation);
+			}
+		}
+		loadedChanges = EditSnapshot.of(json(changedAsLoaded));
 	}
 
 	/**
@@ -119,6 +133,23 @@ final class ParentEdits {
 			if (membership.changed) {
 				result.add(membership.relation);
 			}
+		}
+		return result;
+	}
+
+	/**
+	 * Whether the user changed the parents since they were loaded, so that leaving the edit
+	 * without saving would lose it. Joining a stored parent and leaving it again counts, as the
+	 * parent is then saved again.
+	 */
+	boolean edited() {
+		return EditSnapshot.changed(loadedChanges, json(changed()));
+	}
+
+	private static List<JSONObject> json(List<OsmCollectionEntity> relations) {
+		List<JSONObject> result = new ArrayList<>();
+		for (OsmCollectionEntity relation : relations) {
+			result.add(relation.jsonNodeInfo);
 		}
 		return result;
 	}

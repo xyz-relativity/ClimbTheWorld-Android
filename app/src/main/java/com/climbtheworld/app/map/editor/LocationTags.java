@@ -68,6 +68,22 @@ public class LocationTags extends Tags implements ITags {
 		return true;
 	}
 
+	/**
+	 * Whether saveToNode can read the position, found out without the message it shows when it
+	 * can't, nor changing the edited node.
+	 */
+	public boolean canSave() {
+		if (!isVisible()) {
+			return true;
+		}
+		try {
+			writeLocation(new GeoNode(0, 0, 0));
+			return true;
+		} catch (NumberFormatException e) {
+			return false;
+		}
+	}
+
 	@Override
 	public void cancelNode(GeoNode editNode) {
 

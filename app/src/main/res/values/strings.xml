@@ -78,6 +78,9 @@
     <string name="advanced_json_editor">Advanced JSON Editor</string>
     <string name="edit_with_openstreetmap_id_editor">Edit With OpenStreetMap Id Editor</string>
     <string name="edit_with_vespucci_map_editor">Edit With Vespucci Map Editor</string>
+    <string name="discard_changes">Discard changes?</string>
+    <string name="discard_changes_message">The changes made here have not been saved and will be lost.</string>
+    <string name="discard">Discard</string>
     <string name="pitches">Pitches</string>
     <string name="bolts">Bolts/Gear</string>
     <string name="number_of_routes">Number of Routes</string>

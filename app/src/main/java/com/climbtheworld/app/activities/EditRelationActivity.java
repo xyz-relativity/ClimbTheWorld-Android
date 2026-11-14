@@ -1,10 +1,8 @@
 package com.climbtheworld.app.activities;
 
 import android.app.AlertDialog;
-import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.hardware.SensorManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -15,6 +13,7 @@ import android.widget.Toast;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.DisplayableGeoNode;
+import com.climbtheworld.app.map.editor.EditSnapshot;
 import com.climbtheworld.app.map.editor.GeneralTags;
 import com.climbtheworld.app.map.editor.NameTags;
 import com.climbtheworld.app.map.editor.ITags;
@@ -99,6 +98,11 @@ public class EditRelationActivity extends MapWidgetActivity {
 	/** The relation before the form changed its tags; see FormChanges. */
 	private JSONObject originalJson;
 	private JSONObject untouchedJson;
+	/**
+	 * What saving gave once the relation was in the form, before the user changed anything; null
+	 * if the form could not be read then. See isEdited.
+	 */
+	private EditSnapshot loadedEdits;
 	private GeoNode editNode;
 	/**
 	 * Whether the relation can't be saved without a name: a new one, or one that had a name, as in
@@ -109,6 +113,13 @@ public class EditRelationActivity extends MapWidgetActivity {
 	private final List<ITags> tagSections = new ArrayList<>();
 	private RelationMemberList memberList;
 	private ParentMembership areaMembership;
+	/** Whether a save or a delete is being written, until the screen closes. See busy. */
+	private boolean writing;
+	/**
+	 * Whether an area's editor was opened and has not come back yet: what the user does there is
+	 * part of this edit. See busy.
+	 */
+	private boolean areaEditorOpen;
 
 	private static final class Loaded {
 		final OsmCollectionEntity relation;
@@ -261,6 +272,9 @@ public class EditRelationActivity extends MapWidgetActivity {
 		mapWidget.centerOnLocation(new MapCoordinate(
 				located.decimalLatitude, located.decimalLongitude, 0), MAP_ZOOM_LEVEL);
 		updateMapMarkers();
+		// Not again when the advanced editor hands the tags back: its changes are the user's.
+		JSONObject loadedEdit = currentEdits();
+		loadedEdits = loadedEdit == null ? null : EditSnapshot.of(loadedEdit);
 	}
 
 	private void buildTagSections() {
@@ -303,10 +317,25 @@ public class EditRelationActivity extends MapWidgetActivity {
 
 	/** The relation with the user's changes and its members in their new order, or null. */
 	private JSONObject resolveEdits() {
-		if (!saveSections(editNode)) {
+		return readEdits(editNode);
+	}
+
+	/**
+	 * What resolveEdits would give now, read into a copy of the form's node, which stays as it is.
+	 */
+	private JSONObject currentEdits() {
+		return readEdits(new GeoNode(OsmElements.copy(editNode.jsonNodeInfo)));
+	}
+
+	/**
+	 * The relation with the form written into node and its members in their new order, or null
+	 * when a field can't be read.
+	 */
+	private JSONObject readEdits(GeoNode node) {
+		if (!saveSections(node)) {
 			return null;
 		}
-		JSONObject result = FormChanges.resolve(originalJson, untouchedJson, editNode.jsonNodeInfo);
+		JSONObject result = FormChanges.resolve(originalJson, untouchedJson, node.jsonNodeInfo);
 		try {
 			result.put(ClimbingTags.KEY_MEMBERS, relation.getMembers());
 		} catch (JSONException e) {
@@ -316,10 +345,28 @@ public class EditRelationActivity extends MapWidgetActivity {
 	}
 
 	/**
+	 * Whether the user changed anything since the relation was loaded, so that leaving without
+	 * saving would lose it: in the form, in the advanced editor, its members or their order, or
+	 * the areas of a crag. A form that can't be read counts as changed. Shows nothing and leaves
+	 * the relation as it is.
+	 */
+	private boolean isEdited() {
+		if (relation == null) {
+			// Still loading: nothing to lose.
+			return false;
+		}
+		return EditSnapshot.changed(loadedEdits, currentEdits())
+				|| (areaMembership != null && areaMembership.isEdited());
+	}
+
+	/**
 	 * Opens the area, one the crag is in or a new one, as part of this edit, with the crag as the
 	 * form has it; the area comes back to be saved with the crag.
 	 */
 	private void openAreaEditor(OsmCollectionEntity area) {
+		if (busy()) {
+			return;
+		}
 		JSONObject edited = resolveEdits();
 		if (edited == null) {
 			return;
@@ -336,7 +383,18 @@ public class EditRelationActivity extends MapWidgetActivity {
 		Intent intent = new Intent(this, EditRelationActivity.class);
 		intent.putExtra(EXTRA_RELATION_JSON, area.jsonNodeInfo.toString());
 		intent.putExtra(EXTRA_MEMBER_JSON, edited.toString());
+		areaEditorOpen = true;
 		startActivityForResult(intent, REQUEST_AREA_EDITOR);
+	}
+
+	/**
+	 * Whether the form is saving or deleting, or an area's editor is being opened or is open, so
+	 * that it starts no other write, hands nothing back, and opens no other area's editor, as in the
+	 * node editor: the second of two taps that come together is ignored.
+	 */
+	private boolean busy() {
+		return writing || areaEditorOpen
+				|| (areaMembership != null && areaMembership.isCreatingParent());
 	}
 
 	private boolean isArea() {
@@ -462,6 +520,8 @@ public class EditRelationActivity extends MapWidgetActivity {
 		} else if (relation == null) {
 			// Still loading.
 			return;
+		} else if (busy()) {
+			return;
 		} else if (id == R.id.ButtonSave) {
 			JSONObject edited = resolveEdits();
 			if (edited == null) {
@@ -491,19 +551,21 @@ public class EditRelationActivity extends MapWidgetActivity {
 					.setTitle(getString(R.string.delete_confirmation, editNode.getName()))
 					.setMessage(message)
 					.setIcon(android.R.drawable.ic_dialog_alert)
-					.setPositiveButton(android.R.string.yes, (dialog, which) ->
-							Constants.DB_EXECUTOR.execute(new WriteTask<Boolean>() {
-								@Override
-								protected Boolean doWork() {
-									store.deleteRelation(relation.osmID);
-									return true;
-								}
+					.setPositiveButton(android.R.string.yes, (dialog, which) -> {
+						writing = true;
+						Constants.DB_EXECUTOR.execute(new WriteTask<Boolean>() {
+							@Override
+							protected Boolean doWork() {
+								store.deleteRelation(relation.osmID);
+								return true;
+							}
 
-								@Override
-								protected void thenOnOpenScreen(Boolean result) {
-									finish();
-								}
-							}))
+							@Override
+							protected void thenOnOpenScreen(Boolean result) {
+								finish();
+							}
+						});
+					})
 					.setNegativeButton(android.R.string.no, null)
 					.show();
 		}
@@ -533,6 +595,7 @@ public class EditRelationActivity extends MapWidgetActivity {
 		if (saved.getMembers().length() > 0 && areaMembership != null) {
 			relations.addAll(areaMembership.changedParents());
 		}
+		writing = true;
 		Constants.DB_EXECUTOR.execute(new WriteTask<Boolean>() {
 			@Override
 			protected Boolean doWork() {
@@ -571,7 +634,7 @@ public class EditRelationActivity extends MapWidgetActivity {
 							located.decimalLatitude, located.decimalLongitude)
 							: String.format(Locale.ROOT, "https://www.openstreetmap.org/edit?relation=%d",
 							relation.osmID);
-					openExternalEditor(url);
+					ExternalEditor.open(this, url, isEdited());
 				} else if (id == R.id.vespucci) {
 					MapBounds bbox = DataManager.computeBoundingBox(new Vector4d(
 							located.decimalLatitude, located.decimalLongitude, 0, 0), 100);
@@ -581,23 +644,12 @@ public class EditRelationActivity extends MapWidgetActivity {
 					if (!relation.isNew()) {
 						url = url + "&select=r" + relation.osmID;
 					}
-					openExternalEditor(url);
+					ExternalEditor.open(this, url, isEdited());
 				}
 				return true;
 			});
 			popup.show();
 		});
-	}
-
-	private void openExternalEditor(String url) {
-		try {
-			Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			startActivity(intent);
-			finish();
-		} catch (ActivityNotFoundException e) {
-			DialogBuilder.showErrorDialog(this, getString(R.string.no_josm_app), null);
-		}
 	}
 
 	/**
@@ -650,7 +702,12 @@ public class EditRelationActivity extends MapWidgetActivity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		if (requestCode == REQUEST_AREA_EDITOR && resultCode == RESULT_OK) {
+		if (requestCode == REQUEST_AREA_EDITOR) {
+			// Back, saved or not.
+			areaEditorOpen = false;
+			if (resultCode != RESULT_OK) {
+				return;
+			}
 			try {
 				areaMembership.parentEdited(new OsmCollectionEntity(
 						new JSONObject(data.getStringExtra(EXTRA_RELATION_JSON))));

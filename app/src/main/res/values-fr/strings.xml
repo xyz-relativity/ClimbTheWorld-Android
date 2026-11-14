@@ -76,6 +76,9 @@
     <string name="advanced_json_editor">Éditeur JSON avancé</string>
     <string name="edit_with_openstreetmap_id_editor">Modifier avec l’éditeur iD d’OpenStreetMap</string>
     <string name="edit_with_vespucci_map_editor">Modifier avec l’éditeur Vespucci</string>
+    <string name="discard_changes">Abandonner les modifications ?</string>
+    <string name="discard_changes_message">Les modifications faites ici n’ont pas été enregistrées et seront perdues.</string>
+    <string name="discard">Abandonner</string>
     <string name="pitches">Longueurs</string>
     <string name="bolts">Ancrages/Protections</string>
     <string name="number_of_routes">Nombre de voies</string>

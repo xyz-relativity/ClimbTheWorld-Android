@@ -137,6 +137,8 @@ public class ParentMembership {
 	private final Set<Long> parentsEdited = new HashSet<>();
 	private boolean canAdd = true;
 	private ParentEditor parentEditor;
+	/** Whether a new parent is being made, to open in its editor; see createParent. */
+	private boolean creatingParent;
 
 	/**
 	 * Opens a parent's editor as part of the element's edit, for one the element is in or a new
@@ -227,6 +229,22 @@ public class ParentMembership {
 			result.add(saved);
 		}
 		return result;
+	}
+
+	/**
+	 * Whether the user changed the parents in this edit, here or in their editors, so that leaving
+	 * it without saving would lose it.
+	 */
+	public boolean isEdited() {
+		return edits.edited() || !grandparents.isEmpty();
+	}
+
+	/**
+	 * Whether a new parent is being made, which opens in its editor or joins once it is: until then
+	 * the element's editor neither saves nor opens another editor, which would leave it out.
+	 */
+	public boolean isCreatingParent() {
+		return creatingParent;
 	}
 
 	/** The ids of the parents the element is in now. */
@@ -622,6 +640,12 @@ public class ParentMembership {
 	 * the section when that editor saves it.
 	 */
 	private void createParent() {
+		if (creatingParent) {
+			// A second tap on the choice, as the picker closed.
+			return;
+		}
+		// Not cleared if the load is cancelled: that is only when the editor closes.
+		creatingParent = true;
 		Constants.DB_EXECUTOR.execute(screenLoads.add(new UiRelatedTask<OsmCollectionEntity>() {
 			private DisplayableGeoNode pin;
 
@@ -645,6 +669,8 @@ public class ParentMembership {
 
 			@Override
 			protected void thenDoUiRelatedWork(OsmCollectionEntity relation) {
+				// Before the editor opens, which it doesn't while one is being made.
+				creatingParent = false;
 				if (parentEditor != null) {
 					parentEditor.editParent(relation);
 				} else {

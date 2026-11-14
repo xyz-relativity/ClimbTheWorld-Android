@@ -137,6 +137,71 @@ public class ParentEditsTest {
 		assertTrue(areas.listsElement(area));
 	}
 
+	@Test
+	public void parentsAsLoadedAreNotEdited() {
+		assertFalse(edits.edited());
+
+		edits.addLoaded(Collections.singletonList(new Membership(crag(10, ROUTE), null, false)),
+				Collections.emptyList());
+
+		assertFalse(edits.edited());
+	}
+
+	@Test
+	public void parentsChangedInAnotherEditorAreNotEditedHere() {
+		// The areas a crag's editor opens with, changed in the route's editor before.
+		OsmCollectionEntity joined = crag(20, 1, ROUTE);
+		OsmCollectionEntity left = crag(21, 1);
+		edits.addLoaded(Collections.singletonList(new Membership(joined, null, true)),
+				Collections.singletonList(left));
+
+		assertFalse(edits.edited());
+
+		edits.leave(edits.membershipIn(20));
+
+		assertTrue(edits.edited());
+	}
+
+	@Test
+	public void aParentPickedIsEdited() {
+		edits.addLoaded(Collections.emptyList(), Collections.emptyList());
+
+		edits.join(crag(10, 1));
+
+		assertTrue(edits.edited());
+	}
+
+	@Test
+	public void aParentPickedBeforeTheOthersLoadedIsEdited() {
+		edits.join(crag(10, 1));
+
+		edits.addLoaded(Collections.singletonList(new Membership(crag(11, ROUTE), null, false)),
+				Collections.emptyList());
+
+		assertTrue(edits.edited());
+	}
+
+	@Test
+	public void aStoredParentLeftIsEdited() {
+		Membership membership = new Membership(crag(10, ROUTE), null, false);
+		edits.addLoaded(Collections.singletonList(membership), Collections.emptyList());
+
+		edits.leave(membership);
+
+		assertTrue(edits.edited());
+	}
+
+	@Test
+	public void aNewParentPickedThenLeftIsNotEdited() {
+		edits.addLoaded(Collections.emptyList(), Collections.emptyList());
+		Membership membership = edits.join(crag(-1));
+
+		edits.leave(membership);
+
+		// A new parent is never saved, so nothing would be lost.
+		assertFalse(edits.edited());
+	}
+
 	/** What the editor saves with the element are these relations, in this order. */
 	private void assertSaved(OsmCollectionEntity... relations) {
 		List<OsmCollectionEntity> saved = edits.changed();

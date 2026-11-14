@@ -1,12 +1,10 @@
 package com.climbtheworld.app.activities;
 
 import android.app.AlertDialog;
-import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.hardware.SensorManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.MenuItem;
@@ -24,6 +22,7 @@ import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.editor.ArtificialTags;
 import com.climbtheworld.app.map.editor.ContactTags;
 import com.climbtheworld.app.map.editor.CragTags;
+import com.climbtheworld.app.map.editor.EditSnapshot;
 import com.climbtheworld.app.map.editor.GeneralTags;
 import com.climbtheworld.app.map.editor.LocationTags;
 import com.climbtheworld.app.map.editor.NameTags;
@@ -77,7 +76,22 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 	private JSONObject originalJson;
 	/** What the form writes when nothing was changed in it; see FormChanges. */
 	private JSONObject untouchedJson;
+	/**
+	 * What saving gave once the node was in the form, before the user changed anything; null if
+	 * the form could not be read then. See isEdited.
+	 */
+	private EditSnapshot loadedEdits;
 	private ParentMembership cragMembership;
+	/**
+	 * Whether a save or a delete is being written: until the screen closes, or the form has the next
+	 * node after "Save and add another". See busy.
+	 */
+	private boolean writing;
+	/**
+	 * Whether a crag's editor was opened and has not come back yet: what the user does there is
+	 * part of this edit. See busy.
+	 */
+	private boolean cragEditorOpen;
 	/**
 	 * Whether the node can't be saved without a name: a new one, or one that had a name. Nodes
 	 * mapped without one, such as most route tops, still save as they are.
@@ -234,6 +248,9 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 		cragMembership.setParentEditor(crag -> openCragEditor(crag));
 		buildUi();
 		updateMapMarker();
+		// Not again when the advanced editor hands the node back: its changes are the user's.
+		JSONObject loaded = currentEdits();
+		loadedEdits = loaded == null ? null : EditSnapshot.of(loaded);
 	}
 
 	private void centerOnNode() {
@@ -274,11 +291,7 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 										editNode.decimalLatitude, editNode.decimalLongitude);
 							}
 
-							intent = new Intent(Intent.ACTION_VIEW,
-									Uri.parse(urlFormat));
-							intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-							EditNodeActivity.this.startActivity(intent);
-							finish();
+							ExternalEditor.open(EditNodeActivity.this, urlFormat, isEdited());
 						} else if (id == R.id.vespucci) {
 							MapBounds bbox = DataManager.computeBoundingBox(new Vector4d(editNode.decimalLatitude, editNode.decimalLongitude, editNode.elevationMeters, 0), 10);
 							urlFormat = String.format(Locale.getDefault(), "josm:/load_and_zoom?left=%f&bottom=%f&right=%f&top=%f",
@@ -288,15 +301,7 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 								urlFormat = urlFormat + "&select=" + editNodeID;
 							}
 
-							try {
-								intent = new Intent(Intent.ACTION_VIEW,
-										Uri.parse(urlFormat));
-								intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-								EditNodeActivity.this.startActivity(intent);
-								finish();
-							} catch (ActivityNotFoundException e) {
-								DialogBuilder.showErrorDialog(EditNodeActivity.this, getResources().getString(R.string.no_josm_app), null);
-							}
+							ExternalEditor.open(EditNodeActivity.this, urlFormat, isEdited());
 						}
 						return true;
 					}
@@ -429,6 +434,9 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 	 * left, to be saved with the route.
 	 */
 	private void openCragEditor(OsmCollectionEntity crag) {
+		if (busy()) {
+			return;
+		}
 		JSONObject edited = resolveEdits();
 		if (edited == null) {
 			return;
@@ -437,7 +445,19 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 		intent.putExtra(EditRelationActivity.EXTRA_RELATION_JSON, crag.jsonNodeInfo.toString());
 		intent.putExtra(EditRelationActivity.EXTRA_MEMBER_JSON, edited.toString());
 		EditRelationActivity.putParents(intent, cragMembership.changedGrandparents());
+		cragEditorOpen = true;
 		startActivityForResult(intent, REQUEST_CRAG_EDITOR);
+	}
+
+	/**
+	 * Whether the form is saving or deleting, or a crag's editor is being opened or is open, so
+	 * that it starts no other write and opens no other crag's editor. Two taps that come together,
+	 * such as Save and a crag, would otherwise close the form under the crag's editor, whose crag
+	 * then comes back to nobody; the second tap is ignored, and the user can tap again.
+	 */
+	private boolean busy() {
+		return writing || cragEditorOpen
+				|| (cragMembership != null && cragMembership.isCreatingParent());
 	}
 
 	@Override
@@ -453,12 +473,45 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 		return FormChanges.resolve(originalJson, untouchedJson, editNode.jsonNodeInfo);
 	}
 
+	/**
+	 * What resolveEdits would give now, read into a copy of the node, so that the node stays as it
+	 * is and a field that can't be read shows nothing: null then.
+	 */
+	private JSONObject currentEdits() {
+		if (!locationTags.canSave()) {
+			return null;
+		}
+		GeoNode current = new GeoNode(OsmElements.copy(editNode.jsonNodeInfo));
+		// The type the form shows, whose sections are written.
+		current.setClimbingType(editNode.getNodeType());
+		if (!writeForm(current)) {
+			return null;
+		}
+		return FormChanges.resolve(originalJson, untouchedJson, current.jsonNodeInfo);
+	}
+
+	/**
+	 * Whether the user changed anything since the node was loaded, so that leaving without saving
+	 * would lose it: in the form, its type, its position on the map or in the A.R., in the advanced
+	 * editor, or its crags. A form that can't be read counts as changed. Shows nothing and leaves
+	 * the node as it is.
+	 */
+	private boolean isEdited() {
+		if (editNode == null) {
+			// Still loading, or loading the next node after a save: nothing to lose.
+			return false;
+		}
+		return EditSnapshot.changed(loadedEdits, currentEdits()) || cragMembership.isEdited();
+	}
+
 	public void onClick(View v) {
 		int id = v.getId();
 		if (id == R.id.ButtonCancel) {
 			finish();
 		} else if (editNode == null) {
 			// Still loading.
+			return;
+		} else if (busy()) {
 			return;
 		} else if (id == R.id.ButtonSave) {
 			save(this::finish);
@@ -477,6 +530,7 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 					.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 
 						public void onClick(DialogInterface dialog, int whichButton) {
+							writing = true;
 							Constants.DB_EXECUTOR
 									.execute(new WriteTask<Boolean>() {
 										@Override
@@ -490,6 +544,7 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 											if (deleted) {
 												finish();
 											} else {
+												writing = false;
 												DialogBuilder.showErrorDialog(EditNodeActivity.this,
 														getString(R.string.node_part_of_way), null);
 											}
@@ -516,6 +571,7 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 		final OsmNode savedNode = new OsmNode(edited);
 		// The crags, then their areas.
 		final List<OsmCollectionEntity> relations = cragMembership.changedParents();
+		writing = true;
 		Constants.DB_EXECUTOR
 				.execute(new WriteTask<Boolean>() {
 					@Override
@@ -561,6 +617,8 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 					@Override
 					protected void thenDoUiRelatedWork(GeoNode node) {
 						startEditing(node, Collections.emptyList());
+						// The save is done, and the form has the next node.
+						writing = false;
 						// Back to the map, to place it.
 						((ScrollView) findViewById(R.id.geoNodeEditView)).smoothScrollTo(0, 0);
 					}
@@ -598,6 +656,13 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 	}
 
 	private boolean synchronizeNode(GeoNode node) {
+		boolean success = writeForm(node);
+		updateMapMarker();
+		return success;
+	}
+
+	/** Writes the sections of the node's type into it, and takes the other sections' tags out. */
+	private boolean writeForm(GeoNode node) {
 		boolean success = true;
 		List<ITags> activeTags = sectionsOf(node);
 		for (ITags tag : allTagsHandlers) {
@@ -609,7 +674,6 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 		for (ITags tags : activeTags) {
 			success &= tags.saveToNode(node);
 		}
-		updateMapMarker();
 		return success;
 	}
 
@@ -678,7 +742,12 @@ public class EditNodeActivity extends MapWidgetActivity implements ITagsEvents {
 	protected void onActivityResult(int requestCode, int resultCode,
 	                                Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		if (requestCode == REQUEST_CRAG_EDITOR && resultCode == RESULT_OK) {
+		if (requestCode == REQUEST_CRAG_EDITOR) {
+			// Back, saved or not.
+			cragEditorOpen = false;
+			if (resultCode != RESULT_OK) {
+				return;
+			}
 			try {
 				cragMembership.parentEdited(new OsmCollectionEntity(new JSONObject(
 								data.getStringExtra(EditRelationActivity.EXTRA_RELATION_JSON))),
