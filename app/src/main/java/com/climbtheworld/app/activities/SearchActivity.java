@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.storage.DataManager;
+import com.climbtheworld.app.utils.ScreenLoads;
 import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.EdgeToEdge;
 import com.climbtheworld.app.utils.views.SearchResultsAdapter;
@@ -34,6 +35,8 @@ public class SearchActivity extends AppCompatActivity {
 	private View noMatch;
 	private final Handler searchHandler = new Handler(Looper.getMainLooper());
 	private Runnable pendingSearch;
+	/** The searches to cancel in onDestroy, see ScreenLoads. */
+	private final ScreenLoads screenLoads = new ScreenLoads();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -84,8 +87,17 @@ public class SearchActivity extends AppCompatActivity {
 			};
 
 			Constants.DB_EXECUTOR
-					.execute(dbExecutor);
+					.execute(screenLoads.add(dbExecutor));
 		}
+	}
+
+	@Override
+	protected void onDestroy() {
+		// The search waiting for the typing to stop would start for a closed screen, and the
+		// one under way would fill its list.
+		searchHandler.removeCallbacks(pendingSearch);
+		screenLoads.cancel();
+		super.onDestroy();
 	}
 
 	private void initResultsList() {

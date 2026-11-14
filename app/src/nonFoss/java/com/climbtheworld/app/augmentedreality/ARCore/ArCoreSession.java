@@ -747,6 +747,33 @@ class ArCoreSession {
 	}
 
 	/**
+	 * Takes the world handed over, if any, now, and keeps it paused until the A.R. shows, rather
+	 * than as it first shows, see openSession: for the activity made again, which hands its world
+	 * over to itself, see setHandsWorldBack, and whose A.R. may stay hidden for long, while a
+	 * world offered only waits a while, see ArWorldHandoff.
+	 */
+	void takeWorldBack() {
+		if (session == null) {
+			takeHandedWorld();
+		}
+	}
+
+	/**
+	 * Takes the world handed over, if any, as the session, unless it does not measure depth
+	 * where that is required.
+	 */
+	private void takeHandedWorld() {
+		ArWorldHandoff.World handed = ArWorldHandoff.take();
+		if (handed != null && !handed.depth() && depthRequired) {
+			ArSessionCloser.close(handed.session());
+			handed = null;
+		}
+		if (handed != null) {
+			adopt(handed);
+		}
+	}
+
+	/**
 	 * Takes a world handed over in place of a new session, see handOver.
 	 */
 	private void adopt(ArWorldHandoff.World world) {
@@ -879,14 +906,7 @@ class ArCoreSession {
 		if (session == null) {
 			// A world handed over, as from the A.R. view, is taken in place of a new one, as
 			// ARCore is installed then.
-			ArWorldHandoff.World handed = ArWorldHandoff.take();
-			if (handed != null && !handed.depth() && depthRequired) {
-				ArSessionCloser.close(handed.session());
-				handed = null;
-			}
-			if (handed != null) {
-				adopt(handed);
-			}
+			takeHandedWorld();
 		}
 		if (session == null) {
 			if (!installRequested && ArCoreInstall.needsInstall(activity)) {

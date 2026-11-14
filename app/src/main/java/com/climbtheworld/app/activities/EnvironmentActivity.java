@@ -43,7 +43,9 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 public class EnvironmentActivity extends MapWidgetActivity implements IEnvironmentListener, IOrientationListener {
 
@@ -76,6 +78,10 @@ public class EnvironmentActivity extends MapWidgetActivity implements IEnvironme
 	private TextView editRelativeHumidity;
 	private TextView editDewPoint;
 	private TextView editAbsoluteHumidity;
+	// The reading each of the sensors' texts shows. The sensors report one at a time, several
+	// times a second, and each report brings all the readings: only the texts whose reading
+	// changed are formatted again.
+	private final Map<TextView, Double> shownReadings = new HashMap<>();
 	private CompassWidget compass;
 	private CompassStatusBadge compassStatusBadge;
 	private final CompassAccuracyArcDrawable compassAccuracyArc = new CompassAccuracyArcDrawable();
@@ -83,6 +89,10 @@ public class EnvironmentActivity extends MapWidgetActivity implements IEnvironme
 	private final String[] orientationLong = new String[2];
 	private View compassBazel;
 	private final View[] compassBazelCardinals = new View[4];
+	// The angle the fingers have turned the bezel to and that is not saved yet, or null. It is
+	// saved once they lift: a move comes with every frame, and each one saved had the settings
+	// written again.
+	private Float unsavedBazelAngle;
 	private DateTimeFormatter dateTimeFormater;
 
 	@Override
@@ -174,6 +184,10 @@ public class EnvironmentActivity extends MapWidgetActivity implements IEnvironme
 			@Override
 			public boolean onTouch(View view, MotionEvent motionEvent) {
 				rotationGestureDetector.onTouch(motionEvent);
+				int action = motionEvent.getActionMasked();
+				if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
+					saveBazelAngle();
+				}
 				return true;
 			}
 		});
@@ -194,9 +208,11 @@ public class EnvironmentActivity extends MapWidgetActivity implements IEnvironme
 	}
 
 	private void rotateBazel(Configs configs, float angle, boolean withAnimation) {
-		configs.setFloat(Configs.ConfigKey.compassBazelAngle, angle);
-
 		if (withAnimation) {
+			// A tap, saved at once: it comes after what a turn under way has left to save.
+			unsavedBazelAngle = null;
+			configs.setFloat(Configs.ConfigKey.compassBazelAngle, angle);
+
 			float a = (float) GeoUtils.diffAngle(angle, compassBazel.getRotation());
 
 			RotateAnimation rotate = new RotateAnimation(0, a, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
@@ -227,7 +243,18 @@ public class EnvironmentActivity extends MapWidgetActivity implements IEnvironme
 			});
 			compassBazel.startAnimation(rotate);
 		} else {
+			// A move of the fingers turning the bezel, saved once they lift.
+			unsavedBazelAngle = angle;
 			rotateBazel(angle);
+		}
+	}
+
+	/** Saves the angle the fingers turned the bezel to, when it is not saved yet. */
+	private void saveBazelAngle() {
+		if (unsavedBazelAngle != null) {
+			Configs.instance(this).setFloat(Configs.ConfigKey.compassBazelAngle,
+					unsavedBazelAngle);
+			unsavedBazelAngle = null;
 		}
 	}
 
@@ -275,6 +302,8 @@ public class EnvironmentActivity extends MapWidgetActivity implements IEnvironme
 
 	@Override
 	protected void onPause() {
+		// The screen may be left with the fingers still on the bezel, and may not come back.
+		saveBazelAngle();
 		deviceLocationManager.stopUpdates();
 		orientationManager.stopUpdates();
 		sensorManager.onPause();
@@ -318,8 +347,17 @@ public class EnvironmentActivity extends MapWidgetActivity implements IEnvironme
 	 * Shows a reading, or that there is none when the device lacks the sensors it comes from.
 	 */
 	private void showReading(TextView view, double value, String format) {
-		view.setText(Double.isNaN(value) ? getString(R.string.n_a)
-				: String.format(Locale.getDefault(), format, value));
+		Double shown = shownReadings.put(view, value);
+		// Compared as Doubles, for which a missing reading, NaN, equals itself.
+		if (shown != null && shown.equals(value)) {
+			return;
+		}
+		String text = Double.isNaN(value) ? getString(R.string.n_a)
+				: String.format(Locale.getDefault(), format, value);
+		// A reading often changes by less than its text shows.
+		if (!text.contentEquals(view.getText())) {
+			view.setText(text);
+		}
 	}
 
 	public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {

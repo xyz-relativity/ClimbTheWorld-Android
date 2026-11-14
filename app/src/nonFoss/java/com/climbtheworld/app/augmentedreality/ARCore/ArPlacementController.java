@@ -217,6 +217,10 @@ public class ArPlacementController implements ArPlacement {
 		startOnResume = savedInstanceState != null && savedInstanceState.getBoolean(STATE_SHOWN);
 		if (savedInstanceState != null && savedInstanceState.getBoolean(STATE_HANDS_WORLD_BACK)) {
 			setHandsWorldBack();
+			// The world the activity handed over as it was destroyed is taken back at once, and
+			// not as the A.R. shows, which may be much later when the map was showing: a world
+			// offered only waits a while, see ArWorldHandoff, and the alignment would go with it.
+			arCore.takeWorldBack();
 		}
 	}
 

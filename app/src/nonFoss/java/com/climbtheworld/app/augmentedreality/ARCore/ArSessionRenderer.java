@@ -410,7 +410,7 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 		}
 
 		Camera camera = frame.getCamera();
-		updateAnchors(current);
+		updateAnchors(current, camera.getTrackingState() == TrackingState.TRACKING);
 		CursorHit hit = null;
 		PinOnScreen pin = null;
 		PinOnScreen cursorPin = null;
@@ -459,8 +459,11 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 
 	/**
 	 * Moves the anchors as the main thread asked, and tells where they are now.
+	 *
+	 * @param tracking whether ARCore tracks the camera on this frame, without which it makes no
+	 *                 anchor
 	 */
-	private void updateAnchors(Session current) {
+	private void updateAnchors(Session current, boolean tracking) {
 		// Mostly none: nothing to list on most frames.
 		for (String key : anchorRequests.isEmpty() ? Collections.<String>emptyList()
 				: new ArrayList<String>(anchorRequests.keySet())) {
@@ -475,11 +478,19 @@ class ArSessionRenderer implements GLSurfaceView.Renderer {
 			if (request == NO_ANCHOR) {
 				continue;
 			}
+			if (!tracking) {
+				// ARCore would refuse it: kept for the first frame it tracks again, unless asked
+				// otherwise, without trying, as tracking can stay lost for long, and each try
+				// would throw.
+				anchorRequests.putIfAbsent(key, request);
+				continue;
+			}
 			try {
 				anchors.put(key, current.createAnchor(Pose.makeTranslation((float) request[0],
 						(float) request[1], (float) request[2])));
 			} catch (IllegalStateException e) {
-				// Not tracking right now: tried again on the next frame, unless asked otherwise.
+				// Tracking lost, or the session paused, since the frame: tried again on the next
+				// one, unless asked otherwise.
 				anchorRequests.putIfAbsent(key, request);
 			}
 		}
