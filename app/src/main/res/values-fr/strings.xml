@@ -451,6 +451,7 @@
     <string name="walkie_talkie_notification">Service de talkie-walkie.</string>
     <string name="walkie_talkie_notification_rational">Permet les communications par talkie-walkie lorsque l’écran de l’appareil est éteint.</string>
     <string name="wifi_aware_not_supported">Wi-Fi Aware n’est pas pris en charge par cet appareil.</string>
+    <string name="wifi_aware_attach_failed">Impossible de se connecter au service Wi-Fi Aware.</string>
     <string name="searching_for_buddies">Recherche de partenaires…</string>
     <string name="check_channel_name">० Vérifiez que tous vos partenaires utilisent le même nom de canal.</string>
     <string name="check_wifi_adapter">० Activez le Wi-Fi : le talkie-walkie se connecte via Wi-Fi Aware.</string>

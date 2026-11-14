@@ -14,6 +14,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -58,6 +59,8 @@ public class WifiAwareTransport implements ITransportLayer {
 	private boolean receiverRegistered;
 	private boolean attachInProgress;
 	private boolean restartScheduled;
+	private long restartDueAtMs;
+	private final AttachBackoff attachBackoff = new AttachBackoff();
 	private boolean destroyed;
 	// Kept for the sessions to come: a recovery starts a new PubSubManager.
 	private boolean distanceShown;
@@ -119,6 +122,7 @@ public class WifiAwareTransport implements ITransportLayer {
 				return;
 			}
 
+			attachBackoff.onAvailable();
 			if (awareSession == null && !attachInProgress && !restartScheduled) {
 				startAwareSession();
 			}
@@ -168,6 +172,7 @@ public class WifiAwareTransport implements ITransportLayer {
 
 		attachInProgress = false;
 		awareSession = session;
+		attachBackoff.onAttached();
 		Log.d(TAG, "Successfully attached to Wi-Fi Aware session.");
 
 		pubSubManager = new PubSubManager(backgroundHandler, context, channel, awareSession,
@@ -195,13 +200,20 @@ public class WifiAwareTransport implements ITransportLayer {
 
 		attachInProgress = false;
 		Log.e(TAG, "Failed to attach to Wi-Fi Aware service; scheduling recovery.");
-		showAttachFailure();
-		scheduleRecoveryOnMain("attach failed");
+		// The status stays red while it fails, but the toast is for the first failure only: the
+		// attach is retried until it works, and a toast each time would pile up.
+		if (attachBackoff.showFailure()) {
+			showAttachFailure();
+		} else {
+			setLayerStatus(LayerStatus.RED);
+		}
+		scheduleRecoveryOnMain("attach failed", attachBackoff.nextDelayMs());
 	}
 
 	private void showAttachFailure() {
 		setLayerStatus(LayerStatus.RED);
-		DialogBuilder.toastOnMainThread(context, "Failed to attach to Wi-Fi Aware service.");
+		DialogBuilder.toastOnMainThread(context,
+				context.getString(R.string.wifi_aware_attach_failed));
 	}
 
 	void requestRecovery(PubSubManager source, String reason) {
@@ -217,17 +229,36 @@ public class WifiAwareTransport implements ITransportLayer {
 	}
 
 	private void scheduleRecoveryOnMain(String reason) {
-		if (destroyed || restartScheduled) {
+		scheduleRecoveryOnMain(reason, RECOVERY_DELAY_MS);
+	}
+
+	private void scheduleRecoveryOnMain(String reason, long delayMs) {
+		if (destroyed) {
 			return;
 		}
 
-		Log.w(TAG, "Restarting Wi-Fi Aware transport after: " + reason);
+		long dueAtMs = SystemClock.uptimeMillis() + delayMs;
+		if (restartScheduled) {
+			// After failed attaches the restart may be up to a minute away; a channel change
+			// still restarts within its usual delay. Nothing is held while a restart waits, so
+			// there is nothing to reset.
+			if (dueAtMs < restartDueAtMs) {
+				Log.w(TAG, "Bringing the Wi-Fi Aware restart forward after: " + reason);
+				lifecycleHandler.removeCallbacks(restartRunnable);
+				restartDueAtMs = dueAtMs;
+				lifecycleHandler.postAtTime(restartRunnable, dueAtMs);
+			}
+			return;
+		}
+
+		Log.w(TAG, "Restarting Wi-Fi Aware transport in " + delayMs + " ms after: " + reason);
 		restartScheduled = true;
 		if (layerStatus != LayerStatus.RED) {
 			setLayerStatus(LayerStatus.YELLOW);
 		}
 		resetAwareResources();
-		lifecycleHandler.postDelayed(restartRunnable, RECOVERY_DELAY_MS);
+		restartDueAtMs = dueAtMs;
+		lifecycleHandler.postAtTime(restartRunnable, dueAtMs);
 	}
 
 	private void resetAwareResources() {
