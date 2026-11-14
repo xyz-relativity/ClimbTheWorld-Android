@@ -7,6 +7,8 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import java.util.Random;
+
 public class CallsignsTest {
 	private static final String FALLBACK = "Guest17";
 
@@ -52,6 +54,32 @@ public class CallsignsTest {
 		String first = Callsigns.orFallback("", FALLBACK);
 		for (int i = 0; i < 5; i++) {
 			assertSame(first, Callsigns.orFallback("", FALLBACK));
+		}
+	}
+
+	@Test
+	public void defaultCallsignAtTheEndsOfTheRandomRange() {
+		assertEquals("Guest1000", Callsigns.defaultCallsign(0.0));
+		assertEquals("Guest9999", Callsigns.defaultCallsign(Math.nextDown(1.0)));
+	}
+
+	@Test
+	public void defaultCallsignInBetween() {
+		assertEquals("Guest5500", Callsigns.defaultCallsign(0.5));
+		Random random = new Random(42);
+		for (int i = 0; i < 1000; i++) {
+			String callsign = Callsigns.defaultCallsign(random.nextDouble());
+			assertTrue(callsign, callsign.matches("Guest[1-9][0-9]{3}"));
+		}
+	}
+
+	@Test
+	public void defaultCallsignFitsTheEditField() {
+		for (double random : new double[]{0.0, 0.5, Math.nextDown(1.0)}) {
+			String callsign = Callsigns.defaultCallsign(random);
+			// The edit field cuts a name at 10 UTF-16 units.
+			assertTrue(callsign, callsign.length() <= 10);
+			assertFalse(Callsigns.isBlank(callsign));
 		}
 	}
 

@@ -27,7 +27,6 @@ import java.util.TreeSet;
  */
 
 public class Configs {
-	private static final int RND_ID = (int) (Math.random() * 50 + 1);
 	private static final Map<String, Object> volatileConfig = new HashMap<>();
 	// support variables
 	private static final String GENERAL_CONFIGS = "generalConfigs";
@@ -136,12 +135,14 @@ public class Configs {
 	}
 
 	/**
-	 * The walkie-talkie's callsign, never blank, see Callsigns. Released versions could store an
-	 * empty one, which made the phone invisible to the others: it is replaced by the default
-	 * callsign, stored so the name stays the same from then on.
+	 * The walkie-talkie's callsign, never blank, see Callsigns. The default callsign is new on each
+	 * start of the app, so it is stored the first time it is used, and the phone keeps that name
+	 * until the user changes it. Released versions could also store an empty one, which made the
+	 * phone invisible to the others: it is replaced by the default callsign the same way.
 	 */
 	public String getCallsign() {
-		String stored = getString(ConfigKey.intercomCallsign);
+		// Read without the default, which a getString would return when nothing is stored.
+		String stored = settings.getString(ConfigKey.intercomCallsign.storeKeyID, null);
 		String callsign = Callsigns.orFallback(stored,
 				(String) ConfigKey.intercomCallsign.defaultVal);
 		if (!callsign.equals(stored)) {
@@ -277,7 +278,7 @@ public class Configs {
 		intercomHandsFreeNoiseFilter(R.string.walkie_talkie_noise_filter, -1,
 				"intercomHandsFreeNoiseFilter", 3, 0, 3),
 		intercomCallsign(R.string.callsign, R.string.callsign_description, "intercomCallsign",
-				"Guest" + RND_ID),
+				Callsigns.defaultCallsign(Math.random())),
 		intercomChannel(R.string.channel, R.string.channel_description, "intercomChannel",
 				"Welcome"),
 
