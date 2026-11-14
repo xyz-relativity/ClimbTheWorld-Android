@@ -46,17 +46,29 @@ public interface EntityCountryDao {
 			+ "ORDER BY countryIso")
 	List<String> findCountries(OsmEntity.EntityOsmType osmType, long osmID);
 
-	/** How many downloaded nodes, ways and relations of the climbing type each country has. */
-	@Query("SELECT countryIso, COUNT(*) AS entityCount FROM ("
-			+ "SELECT EntityCountry.countryIso FROM EntityCountry JOIN OsmNode "
-			+ "ON OsmNode.osmType = EntityCountry.osmType AND OsmNode.osmID = EntityCountry.osmID "
+	/**
+	 * How many downloaded nodes, ways and relations of the climbing type each country has.
+	 * <p>
+	 * The nodes come from the box index alone, which starts with the climbing type and holds the
+	 * ID, and each one's countries from the primary key of EntityCountry, with the type 'node':
+	 * every row of OsmNode is a node, as NODES_BY_ID in OsmNodeDao takes too. Joined on the type
+	 * of the OsmNode row, each node was also read from the table, over half of the time on a few
+	 * countries' worth of routes. The CROSS JOIN keeps the nodes first: without it, SQLite walked
+	 * all the node links and, for each, all the nodes of the type, well over 20 seconds on a few
+	 * countries. The ways and relations are few and keep the plain join.
+	 */
+	String COUNT_PER_COUNTRY = "SELECT countryIso, COUNT(*) AS entityCount FROM ("
+			+ "SELECT EntityCountry.countryIso FROM OsmNode CROSS JOIN EntityCountry "
+			+ "ON EntityCountry.osmType = 'node' AND EntityCountry.osmID = OsmNode.osmID "
 			+ "WHERE OsmNode.entityClimbingType = :climbingType "
 			+ "UNION ALL "
 			+ "SELECT EntityCountry.countryIso FROM EntityCountry JOIN OsmCollectionEntity "
 			+ "ON OsmCollectionEntity.osmType = EntityCountry.osmType "
 			+ "AND OsmCollectionEntity.osmID = EntityCountry.osmID "
 			+ "WHERE OsmCollectionEntity.entityClimbingType = :climbingType"
-			+ ") GROUP BY countryIso")
+			+ ") GROUP BY countryIso";
+
+	@Query(COUNT_PER_COUNTRY)
 	List<CountryEntityCount> countPerCountry(OsmEntity.EntityClimbingType climbingType);
 
 	class CountryEntityCount {

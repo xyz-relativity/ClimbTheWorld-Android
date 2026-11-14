@@ -399,7 +399,7 @@ public class EditRelationActivity extends MapWidgetActivity {
 			refuseTapped();
 			return;
 		}
-		addTapped(EntityOsmType.node, tapped.osmID);
+		addTapped(EntityOsmType.node, tapped.osmID, tapped.getName());
 	}
 
 	private void onCollectionTapped(OsmCollectionEntity collection) {
@@ -412,7 +412,8 @@ public class EditRelationActivity extends MapWidgetActivity {
 			refuseTapped();
 			return;
 		}
-		addTapped(EntityOsmType.relation, collection.osmID);
+		addTapped(EntityOsmType.relation, collection.osmID,
+				collection.getTags().optString(ClimbingTags.KEY_NAME));
 	}
 
 	private void refuseTapped() {
@@ -420,7 +421,17 @@ public class EditRelationActivity extends MapWidgetActivity {
 				Toast.LENGTH_SHORT).show();
 	}
 
-	private void addTapped(EntityOsmType osmType, long osmId) {
+	/**
+	 * Adds the element at the tap, the kind checked from the map, so that a save right after has
+	 * it; the load only fills in its row and its pin, and may be cancelled with the screen.
+	 */
+	private void addTapped(EntityOsmType osmType, long osmId, String name) {
+		if (!memberList.join(osmType, osmId)) {
+			Toast.makeText(this, getString(R.string.member_already_added, name),
+					Toast.LENGTH_SHORT).show();
+			return;
+		}
+		Toast.makeText(this, getString(R.string.member_added, name), Toast.LENGTH_SHORT).show();
 		Constants.DB_EXECUTOR.execute(screenLoads.add(new UiRelatedTask<OsmEntity>() {
 			private ClimbingRouteCounter.RouteSummary routes;
 
@@ -434,18 +445,12 @@ public class EditRelationActivity extends MapWidgetActivity {
 
 			@Override
 			protected void thenDoUiRelatedWork(OsmEntity member) {
+				memberList.loaded(osmType, osmId, member, routes);
 				if (member == null) {
-					return;
+					// Taken out again, after the toast that said it was added.
+					Toast.makeText(EditRelationActivity.this, R.string.node_not_found,
+							Toast.LENGTH_SHORT).show();
 				}
-				String name = member.getTags().optString(ClimbingTags.KEY_NAME);
-				if (memberList.contains(member)) {
-					Toast.makeText(EditRelationActivity.this,
-							getString(R.string.member_already_added, name), Toast.LENGTH_SHORT).show();
-					return;
-				}
-				memberList.add(member, routes);
-				Toast.makeText(EditRelationActivity.this,
-						getString(R.string.member_added, name), Toast.LENGTH_SHORT).show();
 			}
 		}));
 	}
@@ -519,7 +524,10 @@ public class EditRelationActivity extends MapWidgetActivity {
 			finish();
 			return;
 		}
-		OsmCollectionEntity saved = new OsmCollectionEntity(edited);
+		// The members as they are at the press: the list goes on changing them on the UI thread,
+		// as a load still to come in takes out an element that is not stored, while the write
+		// reads them on its own.
+		OsmCollectionEntity saved = new OsmCollectionEntity(OsmElements.copy(edited));
 		List<OsmCollectionEntity> relations = new ArrayList<>();
 		relations.add(saved);
 		if (saved.getMembers().length() > 0 && areaMembership != null) {
