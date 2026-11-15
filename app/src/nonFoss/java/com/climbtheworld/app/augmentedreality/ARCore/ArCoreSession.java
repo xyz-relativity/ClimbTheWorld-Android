@@ -839,7 +839,8 @@ class ArCoreSession {
 		if (!running || camera == null) {
 			return;
 		}
-		registration.addLocation(latitude, longitude, accuracyMeters, camera.x(), camera.z());
+		registration.addLocation(latitude, longitude, accuracyMeters, camera.x(), camera.z(),
+				SystemClock.elapsedRealtimeNanos());
 		updateStatus();
 	}
 

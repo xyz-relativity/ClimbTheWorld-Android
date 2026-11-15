@@ -12,6 +12,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 public class GeoRegistrationTest {
 	private static final double METERS_PER_DEGREE = GeoUtils.EARTH_RADIUS_M * Math.PI / 180;
@@ -53,11 +54,58 @@ public class GeoRegistrationTest {
 		}
 	}
 
+	private static final long SECOND_NANOS = 1_000_000_000L;
+	private static long fixClockNanos;
+
+	/**
+	 * Adds a fix a second after the last one.
+	 */
 	private static void addFix(GeoRegistration registration, double sessionX, double sessionZ,
 	                           double northError, double accuracy) {
+		fixClockNanos += SECOND_NANOS;
+		addFix(registration, sessionX, sessionZ, northError, accuracy, fixClockNanos);
+	}
+
+	private static void addFix(GeoRegistration registration, double sessionX, double sessionZ,
+	                           double northError, double accuracy, long timestampNanos) {
 		double[] fix = truth(sessionX, sessionZ);
 		registration.addLocation(fix[0] + northError / METERS_PER_DEGREE, fix[1], accuracy,
-				sessionX, sessionZ);
+				sessionX, sessionZ, timestampNanos);
+	}
+
+	private static final double WALKING_SPEED = 1.4;
+
+	/**
+	 * Walks along the session's -Z for some time, with a compass off by some angle. A fix comes
+	 * every second, exactly where the phone is, and is told on every report of the providers, as
+	 * FuseLocationProvider does.
+	 *
+	 * @return how far, in meters, the phone is from where it is put at the end
+	 */
+	private static double walk(double compassErrorDegrees, int reportsPerSecond, int seconds) {
+		GeoRegistration registration = new GeoRegistration();
+		int ticksPerSecond = 60;
+		double[] fix = null;
+		for (int tick = 0; tick <= seconds * ticksPerSecond; tick++) {
+			long time = tick * SECOND_NANOS / ticksPerSecond;
+			double sessionZ = -WALKING_SPEED * tick / ticksPerSecond;
+			if (tick % (ticksPerSecond / 5) == 0) {
+				registration.addHeading(OFFSET_DEGREES + compassErrorDegrees, 0, 5, time);
+			}
+			if (tick % ticksPerSecond == 0) {
+				fix = truth(0, sessionZ);
+			}
+			if (tick % (ticksPerSecond / reportsPerSecond) == 0) {
+				registration.addLocation(fix[0], fix[1], 5, 0, sessionZ, time);
+			}
+		}
+		double sessionZ = -WALKING_SPEED * seconds;
+		return meters(registration.toLatLon(0, sessionZ), truth(0, sessionZ));
+	}
+
+	private static double meters(double[] latLon, double[] expected) {
+		return Math.hypot(northMeters(latLon, expected), (latLon[1] - expected[1])
+				* METERS_PER_DEGREE * Math.cos(Math.toRadians(ORIGIN_LATITUDE)));
 	}
 
 	private static void addCompass(GeoRegistration registration, double offsetDegrees,
@@ -142,8 +190,9 @@ public class GeoRegistrationTest {
 	public void averagesTheFixes() {
 		GeoRegistration registration = new GeoRegistration();
 		addHeadings(registration, GeoRegistration.MIN_HEADING_READINGS);
-		addFix(registration, 0, 0, 4, 5);
-		addFix(registration, 10, -2, -4, 5);
+		// Two fixes that came together, so that neither is the older.
+		addFix(registration, 0, 0, 4, 5, fixClockNanos);
+		addFix(registration, 10, -2, -4, 5, fixClockNanos);
 
 		assertAt(truth(5, -10), registration.toLatLon(5, -10));
 	}
@@ -539,5 +588,126 @@ public class GeoRegistrationTest {
 		registration.setLandmarks(Collections.emptyList());
 
 		assertAt(truth(5, -9), registration.toLatLon(5, -9));
+	}
+
+	@Test
+	public void countsAFixToldAgainOnce() {
+		double toldOnce = walk(20, 1, 120);
+		for (int reportsPerSecond = 2; reportsPerSecond <= 4; reportsPerSecond++) {
+			assertEquals(toldOnce, walk(20, reportsPerSecond, 120), CENTIMETER);
+		}
+	}
+
+	@Test
+	public void newerFixesWeighMore() {
+		// A plain average of a minute of fixes puts the phone about 14 m off to the side.
+		assertTrue(walk(20, 1, 120) < 6);
+	}
+
+	@Test
+	public void averagesOutFixesScatteredAroundWhereThePhoneStands() {
+		GeoRegistration registration = new GeoRegistration();
+		addHeadings(registration, GeoRegistration.MIN_HEADING_READINGS);
+		Random random = new Random(1);
+		double scatter = 5;
+		for (int i = 0; i < 120; i++) {
+			addFix(registration, 0, 0, random.nextGaussian() * scatter, scatter);
+		}
+
+		assertEquals(0, northMeters(registration.toLatLon(0, 0), truth(0, 0)), scatter / 3);
+	}
+
+	@Test
+	public void aPauseInTheFixesChangesNothing() {
+		GeoRegistration registration = new GeoRegistration();
+		addHeadings(registration, GeoRegistration.MIN_HEADING_READINGS);
+		addFix(registration, 0, 0, 4, 5);
+		addFix(registration, 10, -2, -4, 5);
+		double[] before = registration.toLatLon(5, -10);
+
+		// An hour of compass readings, without any fix.
+		clockNanos += 3600 * SECOND_NANOS;
+		addHeadings(registration, GeoRegistration.MAX_HEADING_READINGS);
+
+		assertTrue(registration.isReady());
+		assertAt(before, registration.toLatLon(5, -10));
+	}
+
+	@Test
+	public void aFixRepeatedWithTheSameValuesCountsOnce() {
+		GeoRegistration registration = new GeoRegistration();
+		addHeadings(registration, GeoRegistration.MIN_HEADING_READINGS);
+		long start = fixClockNanos;
+		addFix(registration, 0, 0, 2, 5, start);
+		// The phone stands still and the GPS tells the same, a second and a minute on.
+		addFix(registration, 0, 0, 2, 5, start + SECOND_NANOS);
+		addFix(registration, 0, 0, 2, 5, start + 60 * SECOND_NANOS);
+		assertTrue(registration.isReady());
+		assertEquals(2, northMeters(registration.toLatLon(0, 0), truth(0, 0)), CENTIMETER);
+	}
+
+	/**
+	 * Holds a fix where the phone stands for two minutes, told some times a second, then has new
+	 * fixes come a second apart, 6 m north of it.
+	 *
+	 * @return how far north the phone is put, after each of 40 new fixes, from 1 on
+	 */
+	private static double[] heldThenNewFixes(int reportsPerSecond) {
+		GeoRegistration registration = new GeoRegistration();
+		addHeadings(registration, GeoRegistration.MIN_HEADING_READINGS);
+		long time = 0;
+		for (int report = 0; report <= 120 * reportsPerSecond; report++) {
+			time = report * SECOND_NANOS / reportsPerSecond;
+			addFix(registration, 0, 0, 0, 5, time);
+		}
+		double[] north = new double[41];
+		for (int fix = 1; fix <= 40; fix++) {
+			// A tenth of a millimetre apart, so that each is a new fix.
+			addFix(registration, 0, 0, 6 + fix * 1e-4, 5, time + fix * SECOND_NANOS);
+			north[fix] = northMeters(registration.toLatLon(0, 0), truth(0, 0));
+		}
+		return north;
+	}
+
+	@Test
+	public void newFixesEaseInAfterAFixHeldLong() {
+		double[] north = heldThenNewFixes(1);
+
+		assertTrue(north[1] > 0 && north[1] < 1);
+		assertTrue(north[10] > 2 && north[10] < 4);
+		assertEquals(6, north[40], 0.5);
+	}
+
+	@Test
+	public void aHeldFixWeighsTheSameHoweverOftenItIsTold() {
+		double[] once = heldThenNewFixes(1);
+		for (int reportsPerSecond : new int[]{2, 4}) {
+			double[] often = heldThenNewFixes(reportsPerSecond);
+			for (int fix = 1; fix <= 40; fix++) {
+				assertEquals(once[fix], often[fix], CENTIMETER);
+			}
+		}
+	}
+
+	@Test
+	public void aNewFixLeadsAfterAPauseInTheReports() {
+		GeoRegistration registration = new GeoRegistration();
+		addHeadings(registration, GeoRegistration.MIN_HEADING_READINGS);
+		for (int second = 0; second <= 120; second++) {
+			addFix(registration, 0, 0, 0, 5, second * SECOND_NANOS);
+		}
+		addFix(registration, 0, 0, 6, 5, (120 + 600) * SECOND_NANOS);
+
+		assertEquals(6, northMeters(registration.toLatLon(0, 0), truth(0, 0)), 0.03);
+	}
+
+	@Test
+	public void takesTheSameFixAgainAfterReset() {
+		GeoRegistration registration = new GeoRegistration();
+		addFix(registration, 0, 0, 0, 5, fixClockNanos);
+		registration.reset();
+		addFix(registration, 0, 0, 0, 5, fixClockNanos);
+
+		assertTrue(registration.hasLocation());
 	}
 }

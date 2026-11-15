@@ -17,8 +17,8 @@ import java.util.List;
  * north. Each compass reading of the camera's azimuth, against the session's own azimuth of the
  * camera, tells the offset; each GPS fix, with where the session had the phone then, tells where
  * the session's origin is on Earth. As the session barely drifts, both are averaged over the
- * latest readings, weighted by how accurate the device says they are, which makes them steadier
- * than any single reading.
+ * latest readings, weighted by how accurate the device says they are, and the fixes also by how
+ * recent they are, which makes them steadier than any single reading.
  * <p>
  * Landmarks, mapped nodes the user aimed at, take over from GPS: the session's world is moved to
  * put them where the map has them, so that what is placed lands right next to them, whatever GPS
@@ -49,8 +49,27 @@ public class GeoRegistration {
 	// kept, so that the window of readings spans a walk rather than a glance, and the bends of
 	// the field at one spot are averaged against those at others.
 	static final double MIN_HEADING_INTERVAL_SECONDS = 0.2;
-	// About a minute of compass readings, see MIN_HEADING_INTERVAL_SECONDS, and of GPS fixes.
+	// About a minute of compass readings, see MIN_HEADING_INTERVAL_SECONDS.
 	static final int MAX_HEADING_READINGS = 300;
+	// A fix weighs by how long it was the one in use, each second of it weighing half as much
+	// for every this long ago it was. The phone is put at the average of the fixes, moved on by
+	// how far the session went since, turned by the heading, so a heading that is off puts it
+	// off to the side by that angle times how far back the average reaches along the way walked.
+	// A plain average of the last 20 s of fixes has served well: its fixes are on average about
+	// 10 s old, and about 20 of them steady it against GPS noise. At one fix a second, halving
+	// every 7 s gives the same: a mean age of 1 / (2^(1/7) - 1), about 9.6 s, and
+	// (1 + r) / (1 - r) with r = 2^(-1/7), about 20, fixes' worth of steadiness. A fix held for
+	// long weighs at most 7 s / ln 2, about ten of those fixes: a new one after it gets to half
+	// in about ten seconds, as it did in the plain average, rather than at once.
+	static final double LOCATION_HALF_LIFE_SECONDS = 7;
+	// How long a new fix counts as in use to start with: the usual time between fixes, so that
+	// fixes coming at that pace each weigh as one.
+	static final double FIX_INTERVAL_SECONDS = 1;
+	// The providers report at least once a second while the A.R. runs: a longer time between
+	// reports is a pause, of which only this much counts as the fix in use being seen.
+	static final double MAX_REPORT_GAP_SECONDS = 2;
+	// About a minute of fixes at one a second, over eight half-lives, see
+	// LOCATION_HALF_LIFE_SECONDS: those dropped weigh next to nothing.
 	static final int MAX_LOCATION_READINGS = 60;
 	// A couple of seconds of compass readings, before the offset is trusted. With a landmark, one
 	// is enough: the reading is already steadied against the gyroscope, and the landmark holds
@@ -73,9 +92,20 @@ public class GeoRegistration {
 	// averageCompassAccuracyDegrees; NaN without any reading.
 	private double averageCompassOffset = Double.NaN;
 	private double averageCompassAccuracy = Double.NaN;
-	// Per fix: its east and north of the reference, its weight, and the session's x and z of the
-	// phone.
+	// Per fix: its east and north of the reference, its weight, the session's x and z of the
+	// phone when it came, and the weight of its accuracy. Its weight is that of its accuracy
+	// times how long it was in use, in seconds each halved for every LOCATION_HALF_LIFE_SECONDS
+	// since, see addLocation, worked out as the fixes are told rather than for every frame of
+	// the camera.
 	private final ArrayDeque<double[]> locations = new ArrayDeque<>();
+	// The newest fix kept, as it was told, and how long it has been in use, in seconds, as far
+	// as the reports tell, see MAX_REPORT_GAP_SECONDS.
+	private double lastLatitude;
+	private double lastLongitude;
+	private double lastAccuracyMeters;
+	private double newestInUseSeconds;
+	// When the latest fix was told, see addLocation.
+	private long lastReportTimestampNanos;
 	private List<Landmark> landmarks = Collections.emptyList();
 	// What the landmarks tell of the heading, worked out as they are set, likewise: the offset,
 	// in radians, see landmarkHeading, and how far off it may be, in degrees, see
@@ -157,20 +187,72 @@ public class GeoRegistration {
 	}
 
 	/**
+	 * Takes a fix, against where the session has the phone. The fix in use is told on every
+	 * report of the device's location providers, and a GPS may hold the same fix for minutes
+	 * while the phone stands still. One just like the newest kept is that fix still in use: it
+	 * is not kept again, so that it stays paired with where the phone was when it came, but
+	 * the time it was in use adds to its weight, see LOCATION_HALF_LIFE_SECONDS. That time is
+	 * the time between reports, whatever their number, so a fix weighs the same however often
+	 * it is told. Its first FIX_INTERVAL_SECONDS count from the moment it is kept, as for a fix
+	 * that does not stay.
+	 *
 	 * @param accuracyMeters how far off the fix may be
 	 * @param sessionX       where the session had the phone at the time of the fix
 	 * @param sessionZ       where the session had the phone at the time of the fix
+	 * @param timestampNanos when the fix was told, on any steady clock: going back counts as no
+	 *                       time passed
 	 */
 	public void addLocation(double latitude, double longitude, double accuracyMeters,
-	                        double sessionX, double sessionZ) {
+	                        double sessionX, double sessionZ, long timestampNanos) {
 		if (!(accuracyMeters <= MAX_LOCATION_ACCURACY_METERS)) {
 			return;
 		}
+		boolean first = locations.isEmpty();
+		boolean toldAgain = !first && latitude == lastLatitude && longitude == lastLongitude
+				&& accuracyMeters == lastAccuracyMeters;
+		if (!first) {
+			double gapSeconds = Math.max(0, timestampNanos - lastReportTimestampNanos) / 1e9;
+			double decay = Math.pow(0.5, gapSeconds / LOCATION_HALF_LIFE_SECONDS);
+			for (double[] location : locations) {
+				location[2] *= decay;
+			}
+			// The newest was in use until now, also when a new fix takes over from it, but of a
+			// pause only its start counts as seen, and that long ago.
+			double seenSeconds = Math.min(gapSeconds, MAX_REPORT_GAP_SECONDS);
+			double addedSeconds = Math.max(0, newestInUseSeconds + seenSeconds
+					- FIX_INTERVAL_SECONDS) - Math.max(0, newestInUseSeconds - FIX_INTERVAL_SECONDS);
+			newestInUseSeconds += seenSeconds;
+			double[] newest = locations.getLast();
+			if (addedSeconds > 0) {
+				double gain = LOCATION_HALF_LIFE_SECONDS / Math.log(2)
+						* (1 - Math.pow(0.5, addedSeconds / LOCATION_HALF_LIFE_SECONDS));
+				if (gapSeconds > seenSeconds) {
+					gain *= Math.pow(0.5, (gapSeconds - seenSeconds) / LOCATION_HALF_LIFE_SECONDS);
+				}
+				newest[2] += newest[5] * gain;
+			}
+			if (toldAgain && gapSeconds > MAX_REPORT_GAP_SECONDS) {
+				// Seen again after a pause: it leads as a new fix would, over those that faded.
+				newest[2] = Math.max(newest[2], newest[5] * FIX_INTERVAL_SECONDS);
+			}
+		}
+		if (first || timestampNanos > lastReportTimestampNanos) {
+			lastReportTimestampNanos = timestampNanos;
+		}
+		if (toldAgain) {
+			return;
+		}
+		lastLatitude = latitude;
+		lastLongitude = longitude;
+		lastAccuracyMeters = accuracyMeters;
+		newestInUseSeconds = 0;
 		setReference(latitude, longitude);
 		double accuracy = Math.max(accuracyMeters, MIN_LOCATION_ACCURACY_METERS);
+		double accuracyWeight = 1 / (accuracy * accuracy);
 		double[] eastNorth = toReference(latitude, longitude);
-		add(locations, new double[]{eastNorth[0], eastNorth[1], 1 / (accuracy * accuracy),
-				sessionX, sessionZ}, MAX_LOCATION_READINGS);
+		add(locations, new double[]{eastNorth[0], eastNorth[1],
+				accuracyWeight * FIX_INTERVAL_SECONDS, sessionX, sessionZ, accuracyWeight},
+				MAX_LOCATION_READINGS);
 	}
 
 	/**
