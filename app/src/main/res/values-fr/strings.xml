@@ -13,6 +13,7 @@
     <string name="units_converter">Convertisseur d’unités</string>
     <string name="sensors_env">Capteurs environnementaux</string>
     <string name="walkie_talkie">Talkie-walkie</string>
+    <string name="grade_table">Tableau des cotations</string>
     <string name="setup">Assistant de configuration</string>
 
     <!-- Compass and Sensors -->

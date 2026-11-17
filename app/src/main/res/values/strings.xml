@@ -15,6 +15,7 @@
     <string name="units_converter">Unit Converter</string>
     <string name="sensors_env">Environmental Sensors</string>
     <string name="walkie_talkie">Walkie-Talkie</string>
+    <string name="grade_table">Grade Table</string>
     <string name="setup">Setup Wizard</string>
 
     <!-- Compass and Sensors -->
