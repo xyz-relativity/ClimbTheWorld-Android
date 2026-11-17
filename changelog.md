@@ -1,3 +1,27 @@
+=2026.11-4=
+========
+- Ask your walkie-talkie buddies to update too: a change of callsign only reaches the phones on this version.
+- Fix the walkie-talkie cutting the whole app off the internet while a buddy was connected, which stopped the map tiles, downloads and uploads.
+- Smooth the A.R. view: it follows the phone without lagging behind, builds the terrain without holding up the view, and keeps north from the map instead of settling again.
+- Fix tapping the top of a route drawn as a line in the A.R. view, which did not open it.
+- Search names much faster.
+- Open a result of the map's quick search in its info, with the results kept under it, instead of moving the map there. Centring the map on a crag or area fits its outline in view.
+- Show the new climbing data on the map and in the A.R. view as soon as a download finishes.
+- Open the crag and area info faster, and count the routes of the downloaded countries much faster.
+- Keep the list of downloaded countries where it was when it refreshes. The download notification opens the downloads.
+- Hold off editing, uploading and reverting while a download runs, so that a download no longer overwrites a change, and saving an element the download removed no longer crashes.
+- Ask before dropping unsaved changes in the editors, on Cancel, Back, or opening iD or Vespucci, which lost them before. A second quick tap on Save is ignored.
+- Put the name right after the type in the editors, then the position, the type's details and the crags, with the description and website last. The crags and areas of the element show their pin and route count.
+- Keep a crag or area just picked in the editor, and a member just tapped on the map in the relation editor, when saving straight away.
+- Select the element when opening it in Vespucci, and read elevations such as "-28" or "1234;1250" right.
+- Fix numbers with a decimal comma: the unit converter converts them, tapping the azimuth on the Environment screen no longer crashes, and the links to navigate, share, iD and Vespucci get their coordinates right.
+- Fix the walkie-talkie sending each voice several times over with three phones or more on a channel, and phones set to Turkish or Azerbaijani not finding the others.
+- Keep your walkie-talkie callsign from one start to the next, and refuse a blank one, which hid the phone from buddies. A callsign with ":" is kept whole.
+- Show an error rather than crash when the walkie-talkie cannot start on a channel, and tell once, not every few seconds, when Wi-Fi Aware is off. Its notification opens it. It measures the distance to buddies only while its screen shows, to save battery.
+- Mark tomorrow's sunrise and sunset as such on the Environment screen, and no longer take a location over two minutes old for where you are when the app starts.
+- Label the grade table button in the unit converter.
+- In the non-FOSS build, point out the suggested routes out of sight in the align list with a button at each end, name the route to aim at in the align help, and leave the A.R. view without freezing. ARCore measures depth only while the aiming tools show, to save battery.
+
 =2026.11-3=
 ========
 - List the crags of the routes to align on as their area lists them, starting with the area of the closest route, so they come in guidebook order.

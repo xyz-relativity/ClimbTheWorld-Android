@@ -1,1 +1,5 @@
-- Drop the phone state permission, which the app never used.
+- Ask your walkie-talkie buddies to update too: a new callsign only reaches phones on this version.
+- Fix the walkie-talkie cutting the app off the internet while a buddy was connected.
+- Smoother A.R. view, much faster search, and new data shown as soon as a download finishes.
+- Ask before dropping unsaved changes in the editors, and hold off editing while a download runs.
+- Fix numbers with a decimal comma in the unit converter and on the Environment screen.
