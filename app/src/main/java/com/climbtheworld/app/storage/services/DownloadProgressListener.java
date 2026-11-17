@@ -14,4 +14,25 @@ public interface DownloadProgressListener {
 	 * added. Finished downloads are not replayed: the database says which countries are installed.
 	 */
 	void onProgressRestored(String eventOwner, int progressEvent);
+
+	/**
+	 * For a view drawing the stored data, to load it again once a download rewrote it.
+	 *
+	 * @return a listener running the action, on the main thread, each time a download has
+	 * written its country, to be added with DownloadService.addListener
+	 */
+	static DownloadProgressListener onEachDone(Runnable action) {
+		return new DownloadProgressListener() {
+			@Override
+			public void onProgressChanged(String eventOwner, int progressEvent) {
+				if (progressEvent == STATUS_DONE) {
+					action.run();
+				}
+			}
+
+			@Override
+			public void onProgressRestored(String eventOwner, int progressEvent) {
+			}
+		};
+	}
 }

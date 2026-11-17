@@ -68,6 +68,8 @@ import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
+import com.climbtheworld.app.storage.services.DownloadProgressListener;
+import com.climbtheworld.app.storage.services.DownloadService;
 import com.climbtheworld.app.utils.GeoUtils;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.Vector2d;
@@ -313,6 +315,10 @@ public class MapLibreMapWidget {
 	// the map or its style would be set again, where a listener has the map it was added to, and
 	// where a place asked for without a map is kept for the map to open on.
 	private boolean destroyed;
+	// Loads the data for the view again once a download wrote a country, which a move within
+	// the bounds loaded would not, see refreshForView.
+	private final DownloadProgressListener downloads =
+			DownloadProgressListener.onEachDone(this::invalidateData);
 	private MapLibreMap.CancelableCallback buttonAnimation;
 	private RotationMode rotationMode;
 
@@ -346,6 +352,7 @@ public class MapLibreMapWidget {
 		mapView.onCreate(savedInstanceState);
 		configureControls(container);
 		mapView.getMapAsync(this::onMapReady);
+		DownloadService.addListener(downloads);
 	}
 
 	private static synchronized void configureAmbientCache(AppCompatActivity parent) {
@@ -2104,6 +2111,7 @@ public class MapLibreMapWidget {
 	 * to the UI thread, see UiRelatedTask.
 	 */
 	public void onDestroy() {
+		DownloadService.removeListener(downloads);
 		destroyed = true;
 		map = null;
 		styleLoaded = false;

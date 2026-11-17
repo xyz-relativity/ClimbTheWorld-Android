@@ -15,6 +15,7 @@ import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.map.widget.climbing.ClimbingGeometryBuilder;
 import com.climbtheworld.app.map.widget.climbing.RouteNumbers;
 import com.climbtheworld.app.map.widget.climbing.RouteRelation;
+import com.climbtheworld.app.map.widget.climbing.RouteWay;
 import com.climbtheworld.app.sensors.camera.VirtualCamera;
 import com.climbtheworld.app.storage.CachedDataManager;
 import com.climbtheworld.app.storage.DataManager;
@@ -24,6 +25,8 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
+import com.climbtheworld.app.storage.services.DownloadProgressListener;
+import com.climbtheworld.app.storage.services.DownloadService;
 import com.climbtheworld.app.utils.GeoUtils;
 import com.climbtheworld.app.utils.Vector2d;
 import com.climbtheworld.app.utils.Vector4d;
@@ -36,6 +39,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -102,6 +106,12 @@ public class AugmentedRealityScene {
 	private volatile Set<Long> routeRelationEnds = Collections.emptySet();
 	private final ReloadGuard poisLoaded = ReloadGuard.afterMeters(POI_RELOAD_METERS);
 	private final ReloadGuard hullsLoaded = ReloadGuard.afterShare(HULL_RELOAD_SHARE);
+	// Loads everything again once a download wrote a country, see onDownloaded.
+	private final DownloadProgressListener downloads =
+			DownloadProgressListener.onEachDone(this::onDownloaded);
+	// Whether the next POI load reads them all anew, rather than only those not held yet, as a
+	// download may have changed the ones held, see refreshPois.
+	private boolean reloadHeldPois;
 	// Whether the POIs within the view distance are to be picked again, see updateBoundingBox.
 	private final BoundingBoxGuard boundingBoxPicked = new BoundingBoxGuard();
 	// Where refreshAround was last asked to load around, null before the first time.
@@ -153,6 +163,7 @@ public class AugmentedRealityScene {
 		});
 		container.post(arViewManager::postInit);
 		loadSettings();
+		DownloadService.addListener(downloads);
 	}
 
 	private static boolean isInBoundingBox(GeoNode poi, double centerLatitude,
@@ -192,7 +203,7 @@ public class AugmentedRealityScene {
 				pin, latitudes, longitudes, nodeIds);
 	}
 
-	/** @return whether two pins of the same crag or area draw alike */
+	/** @return whether two pins of the same node, crag or area draw alike */
 	private static boolean drawsAlike(GeoNode earlier, GeoNode loaded) {
 		return earlier.routeCountFiltered == loaded.routeCountFiltered
 				&& earlier.toJSONString().equals(loaded.toJSONString());
@@ -221,6 +232,7 @@ public class AugmentedRealityScene {
 		if (!destroyed) {
 			destroyed = true;
 			TerrainElevation.releaseShared();
+			DownloadService.removeListener(downloads);
 		}
 	}
 
@@ -317,6 +329,21 @@ public class AugmentedRealityScene {
 		poisLoaded.dataChanged();
 		hullsLoaded.dataChanged();
 		displayFilterResults.clear();
+	}
+
+	/**
+	 * Loads everything around again, the POIs held included, as a download rewrote the stored
+	 * data. The POIs alone would otherwise come in with the next small move, see
+	 * POI_RELOAD_METERS, and the lines and tops of their routes, their crags and areas only once
+	 * the observer moved much further, see HULL_RELOAD_SHARE.
+	 */
+	private void onDownloaded() {
+		reloadHeldPois = true;
+		dataChanged();
+		// Nothing loaded yet, the first load reads the download anyway.
+		if (requestedCenter != null) {
+			refreshAround(requestedCenter);
+		}
 	}
 
 	/**
@@ -435,11 +462,22 @@ public class AugmentedRealityScene {
 		if (!poisLoaded.request(center.x, center.y, distance)) {
 			return;
 		}
+		final boolean reloadHeld = reloadHeldPois;
+		reloadHeldPois = false;
 
 		Constants.DB_EXECUTOR
 				.execute(new UiRelatedTask<Boolean>() {
+					// With reloadHeld, all the POIs around, read anew to replace those held.
+					private Map<Long, DisplayableGeoNode> reloaded;
+
 					@Override
 					protected Boolean doWork() {
+						if (reloadHeld) {
+							reloaded = new HashMap<>();
+							offlineDataManager.loadAround(activity.getApplicationContext(),
+									center, distance + POI_LOAD_MARGIN_METERS, reloaded);
+							return true;
+						}
 						return offlineDataManager.loadAround(activity.getApplicationContext(),
 								center, distance + POI_LOAD_MARGIN_METERS, arPOIs);
 					}
@@ -447,6 +485,9 @@ public class AugmentedRealityScene {
 					@Override
 					protected void thenDoUiRelatedWork(Boolean result) {
 						boolean again = poisLoaded.loaded(center.x, center.y, distance);
+						if (reloaded != null) {
+							replacePois(reloaded);
+						}
 						if (result) {
 							// More POIs are held, for onLoaded to pick the ones in reach from.
 							boundingBoxPicked.poisChanged();
@@ -457,6 +498,33 @@ public class AugmentedRealityScene {
 						}
 					}
 				});
+	}
+
+	/**
+	 * Takes the POIs read anew in place of those held. A pin keeps its drawing, on view and out
+	 * of it, so those of the POIs gone or changed go, to be drawn again from the new ones.
+	 */
+	private void replacePois(Map<Long, DisplayableGeoNode> reloaded) {
+		for (Iterator<Map.Entry<Long, GeoNode>> entries = boundingBoxPOIs.entrySet().iterator();
+		     entries.hasNext(); ) {
+			Map.Entry<Long, GeoNode> entry = entries.next();
+			DisplayableGeoNode replacement = reloaded.get(entry.getKey());
+			if (replacement == null || !drawsAlike(entry.getValue(), replacement.getGeoNode())) {
+				arViewManager.removePOIFromView(entry.getValue());
+			}
+			// Left in the box rather than emptying it: picking the box again only takes off the
+			// view the pins of the POIs it holds that are now out of it, see updateBoundingBox.
+			if (replacement == null) {
+				entries.remove();
+			} else {
+				entry.setValue(replacement.getGeoNode());
+			}
+		}
+		arPOIs.clear();
+		arPOIs.putAll(reloaded);
+		footElevations.clear();
+		displayFilterResults.clear();
+		boundingBoxPicked.poisChanged();
 	}
 
 	/**
@@ -528,8 +596,23 @@ public class AugmentedRealityScene {
 							}
 						}
 						arViewManager.setRouteNumbers(activity, routeNumbers);
+						// Likewise for the tops of the routes mapped as a way, as one whose grade
+						// a download changed.
+						Map<Long, RouteWay.Top> earlierTops = new HashMap<>();
+						for (RouteLine earlier : routeLines.getRoutes()) {
+							RouteWay.Top top = routeLines.getTop(earlier.top.getID());
+							if (top != null) {
+								earlierTops.put(top.getID(), top);
+							}
+						}
 						for (RouteLine removed : routeLines.setRoutes(routes)) {
 							arViewManager.removePOIFromView(removed.top);
+						}
+						for (RouteWay.Top earlier : earlierTops.values()) {
+							RouteWay.Top loaded = routeLines.getTop(earlier.getID());
+							if (loaded != null && !drawsAlike(earlier, loaded)) {
+								arViewManager.removePOIFromView(earlier);
+							}
 						}
 						setRouteRelations(relations);
 						onLoaded.run();
