@@ -85,10 +85,17 @@
                 android:text="@string/latitude"
                 android:textAllCaps="false" />
 
+            <!-- One line, shrunk on a narrow screen or with a large font, see
+                 GeoUtils.formatCoordinate. -->
             <TextView
                 android:id="@+id/editLatitude"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:autoSizeMaxTextSize="14sp"
+                android:autoSizeMinTextSize="10sp"
+                android:autoSizeStepGranularity="1sp"
+                android:autoSizeTextType="uniform"
+                android:maxLines="1" />
 
         </LinearLayout>
 
@@ -109,10 +116,17 @@
                 android:text="@string/longitude"
                 android:textAllCaps="false" />
 
+            <!-- One line, shrunk on a narrow screen or with a large font, see
+                 GeoUtils.formatCoordinate. -->
             <TextView
                 android:id="@+id/editLongitude"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:autoSizeMaxTextSize="14sp"
+                android:autoSizeMinTextSize="10sp"
+                android:autoSizeStepGranularity="1sp"
+                android:autoSizeTextType="uniform"
+                android:maxLines="1" />
         </LinearLayout>
 
         <include layout="@layout/spacer" />

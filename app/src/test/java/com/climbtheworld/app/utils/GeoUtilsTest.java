@@ -34,6 +34,15 @@ public class GeoUtilsTest {
 				0.01);
 	}
 
+	@Test
+	public void coordinatesToReadHaveSixDecimals() {
+		// The longest a coordinate gets: a sign and 3 digits before the point.
+		assertEquals("-122.123457", GeoUtils.formatCoordinate(-122.1234567));
+		// No floating point tail, and the zeros kept so the columns line up.
+		assertEquals("45.507813", GeoUtils.formatCoordinate(45.507812899999995));
+		assertEquals("46.500000", GeoUtils.formatCoordinate(46.5));
+	}
+
 	private static GeoNode offset(double eastMeters, double northMeters) {
 		Vector2d offset = GeoUtils.latLongOffset(LATITUDE, new Vector2d(eastMeters, northMeters));
 		return new GeoNode(LATITUDE + offset.y, LONGITUDE + offset.x, 0);

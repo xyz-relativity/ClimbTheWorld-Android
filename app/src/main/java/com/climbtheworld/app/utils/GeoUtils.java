@@ -2,12 +2,23 @@ package com.climbtheworld.app.utils;
 
 import com.climbtheworld.app.storage.database.GeoNode;
 
+import java.util.Locale;
+
 public class GeoUtils {
 	public static final double EARTH_RADIUS_M = 6378137;
 	public static final double EARTH_RADIUS_KM = EARTH_RADIUS_M / 1000;
 
 	private GeoUtils() {
 		//hide constructor.
+	}
+
+	/**
+	 * A latitude or a longitude to read, as in the info dialogs: 6 decimals, about 10 cm, short
+	 * enough for one line in their columns. The node editor shows OSM's 7 to edit, see
+	 * LocationTags.updateLocation.
+	 */
+	public static String formatCoordinate(double degrees) {
+		return String.format(Locale.ROOT, "%.6f", degrees);
 	}
 
 	/**

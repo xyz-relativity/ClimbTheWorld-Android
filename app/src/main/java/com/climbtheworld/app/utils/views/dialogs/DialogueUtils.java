@@ -158,8 +158,10 @@ public class DialogueUtils {
 	public static void setLocation(AppCompatActivity parent, View result, GeoNode tmpPoi) {
 		setDistance(parent, result, Globals.virtualCamera, tmpPoi, null);
 
-		((TextView) result.findViewById(R.id.editLatitude)).setText(String.valueOf(tmpPoi.decimalLatitude));
-		((TextView) result.findViewById(R.id.editLongitude)).setText(String.valueOf(tmpPoi.decimalLongitude));
+		((TextView) result.findViewById(R.id.editLatitude)).setText(
+				GeoUtils.formatCoordinate(tmpPoi.decimalLatitude));
+		((TextView) result.findViewById(R.id.editLongitude)).setText(
+				GeoUtils.formatCoordinate(tmpPoi.decimalLongitude));
 	}
 
 	/**
