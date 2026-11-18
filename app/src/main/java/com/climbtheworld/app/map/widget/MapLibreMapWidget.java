@@ -349,6 +349,7 @@ public class MapLibreMapWidget {
 		this.tapLocation = observerLocation;
 
 		configureAmbientCache(parent);
+		MapDataConnection.apply(parent);
 		mapView.onCreate(savedInstanceState);
 		configureControls(container);
 		mapView.getMapAsync(this::onMapReady);
@@ -2087,12 +2088,14 @@ public class MapLibreMapWidget {
 	}
 
 	public void onResume() {
+		MapDataConnection.onResume(parent);
 		mapView.onResume();
 	}
 
 	public void onPause() {
 		saveCamera();
 		mapView.onPause();
+		MapDataConnection.onPause(parent);
 	}
 
 	public void onStop() {
