@@ -111,8 +111,12 @@ public class Globals {
 		return (Configs.instance(parent).getBoolean(Configs.ConfigKey.useMobileDataForRoutes) || !isOnMeteredNetwork(parent));
 	}
 
-	public static boolean allowMapDownload(AppCompatActivity parent) {
-		return (Configs.instance(parent).getBoolean(Configs.ConfigKey.useMobileDataForMap) || !isOnMeteredNetwork(parent));
+	/**
+	 * Whether map tiles may be downloaded now, the terrain's included: not over a metered network
+	 * unless the user allows it. Safe off the main thread.
+	 */
+	public static boolean allowMapDownload(Context context) {
+		return (Configs.instance(context).getBoolean(Configs.ConfigKey.useMobileDataForMap) || !isOnMeteredNetwork(context));
 	}
 
 	public static void onResume(final AppCompatActivity parent) {

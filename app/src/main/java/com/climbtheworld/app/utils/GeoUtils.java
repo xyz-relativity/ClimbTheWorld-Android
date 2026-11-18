@@ -22,6 +22,13 @@ public class GeoUtils {
 	}
 
 	/**
+	 * An elevation to read, as in the info dialogs, in whole meters: "1234 m".
+	 */
+	public static String formatElevation(double meters) {
+		return String.format(Locale.ROOT, "%d m", Math.round(meters));
+	}
+
+	/**
 	 * Computes the azimuth between 2 points: the compass bearing (0 is north, growing clockwise)
 	 * the observer has to face to look at the destination.
 	 *

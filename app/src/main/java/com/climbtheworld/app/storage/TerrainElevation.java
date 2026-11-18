@@ -17,8 +17,10 @@ import com.climbtheworld.app.utils.constants.Constants;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import needle.UiRelatedTask;
@@ -32,8 +34,11 @@ import okhttp3.Response;
  * in the background and cached on disk, so lookups never block; they return NaN until the tile
  * is there.
  * <p>
- * The A.R. screens share one, see {@link #acquireShared}, so that they hold the decoded tiles
- * once, and a screen finds the ones the screen before it loaded.
+ * The A.R. screens and the info dialogs share one, see {@link #acquireShared}, so that they hold
+ * the decoded tiles once, and a screen finds the ones the screen before it loaded.
+ * <p>
+ * Tiles are only downloaded as the map's are: over mobile data only when the user allows it for
+ * the map tiles, see Globals.allowMapDownload. Otherwise only the tiles cached on disk are read.
  * <p>
  * Prototype: not tied into the offline downloads yet. Only to be used from the main thread: a
  * lookup moves the tile it reads among the recently used, and has a tile not held fetched. Off
@@ -73,14 +78,19 @@ public class TerrainElevation {
 	// holds on to nothing of the screens, and to no tiles once they are gone.
 	private static TerrainElevation shared;
 	private static UseCount sharedUse;
+	// The application's, so it holds on to no screen.
+	private final Context context;
 	private final File cacheDirectory;
 	private final OkHttpClient httpClient;
 	private final TerrainTiles tiles =
 			new TerrainTiles(MAX_CACHED_TILES, SystemClock::elapsedRealtime);
 	// Kept, as lookups run by the thousand: made on the spot, each would allocate one.
 	private final TileSource heldTiles = this::getTile;
+	// Told when lookups may return something else, see addListener.
+	private final List<Runnable> listeners = new ArrayList<>();
 
 	private TerrainElevation(Context context) {
+		this.context = context;
 		cacheDirectory = new File(context.getCacheDir(), "terrain");
 		httpClient = new OkHttpClient.Builder()
 				.connectTimeout(TILE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
@@ -333,6 +343,24 @@ public class TerrainElevation {
 		return tiles.getVersion();
 	}
 
+	/**
+	 * Has the listener told, on the main thread, whenever a tile fetched comes in, or turns out
+	 * not to exist at its zoom: lookups may then return something else than before. For what
+	 * looks the elevation up once, rather than on every frame as the A.R. screens do with
+	 * {@link #getVersion}. To be called from the main thread, and the listener removed with
+	 * {@link #removeListener} before the terrain is given back.
+	 */
+	public void addListener(Runnable listener) {
+		listeners.add(listener);
+	}
+
+	/**
+	 * Stops telling the listener, see {@link #addListener}. To be called from the main thread.
+	 */
+	public void removeListener(Runnable listener) {
+		listeners.remove(listener);
+	}
+
 	private static double sample(TileSource source, double latitude, double longitude,
 	                             int zoom) {
 		double[] tileCoordinates = toTileCoordinates(latitude, longitude, zoom);
@@ -366,12 +394,19 @@ public class TerrainElevation {
 
 			@Override
 			protected void thenDoUiRelatedWork(LoadedTile result) {
+				int version = tiles.getVersion();
 				if (result == null) {
 					tiles.failed(key, generation);
 				} else if (result.elevations == null) {
 					tiles.missing(key, generation);
 				} else {
 					tiles.loaded(key, generation, result.elevations);
+				}
+				if (tiles.getVersion() != version) {
+					// A copy: a listener may remove itself, or another one.
+					for (Runnable listener : listeners.toArray(new Runnable[0])) {
+						listener.run();
+					}
 				}
 			}
 		});
@@ -381,7 +416,8 @@ public class TerrainElevation {
 	 * Runs on a background thread.
 	 *
 	 * @return the tile, a tile without elevations when the zoom has no data there, or null when
-	 * it could not be fetched
+	 * it could not be fetched. Also null over mobile data, unless the user allows it for the map
+	 * tiles: that counts as failed, so it is tried again later, maybe over Wi-Fi
 	 */
 	private LoadedTile fetchTile(int zoom, int x, int y) {
 		File file = new File(cacheDirectory, zoom + "/" + x + "/" + y + ".webp");
@@ -389,6 +425,8 @@ public class TerrainElevation {
 			byte[] data;
 			if (file.exists()) {
 				data = Files.readAllBytes(file.toPath());
+			} else if (!Globals.allowMapDownload(context)) {
+				return null;
 			} else {
 				Request request = new Request.Builder()
 						.url(TILE_URL.replace("{z}", String.valueOf(zoom))

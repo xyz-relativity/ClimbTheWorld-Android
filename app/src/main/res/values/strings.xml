@@ -193,6 +193,10 @@
     <string name="center_map_on_point">Center Map on Point</string>
     <string name="distance_from_user">Straight line distance from you</string>
     <string name="direction_from_user">Direction from you</string>
+    <!-- The elevation in the info dialogs of a POI mapped without one, from the terrain model:
+         "≈ 1234 m", with the hint on a long press. -->
+    <string name="elevation_from_terrain" translatable="false">≈ %1$s</string>
+    <string name="elevation_from_terrain_hint">Estimated from the terrain model, as no elevation is mapped</string>
     <!-- What a climbing POI is part of, in the lists of climbing POIs: "Crag: Presles". -->
     <string name="climbing_parent_label">%1$s: %2$s</string>
     <string name="country">Country</string>
@@ -301,7 +305,7 @@
     <string name="use_ar_core">Use ARCore</string>
     <string name="use_ar_core_description">In the A.R. view, track the camera with Google Play Services for AR (ARCore), steadier than with the sensors, and align it on the mapped routes when close to them, on the phones it supports.</string>
     <string name="use_mobile_data_for_map">Map tiles download over mobile data</string>
-    <string name="use_mobile_data_for_map_description">Use mobile internet for map tiles download (recommended).</string>
+    <string name="use_mobile_data_for_map_description">Use mobile internet to download map tiles and terrain elevation (recommended).</string>
     <string name="use_mobile_data_for_routes">Nodes data download over mobile data</string>
     <string name="use_mobile_data_for_routes_description">Use mobile internet for node data download (use wifi if possible).</string>
     <string name="visible_route_count_limit">A.R. maximum routes visible</string>

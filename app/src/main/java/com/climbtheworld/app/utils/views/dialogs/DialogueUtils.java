@@ -27,6 +27,8 @@ import com.climbtheworld.app.activities.EditRelationActivity;
 import com.climbtheworld.app.activities.MapActivity;
 import com.climbtheworld.app.augmentedreality.AugmentedRealityUtils;
 import com.climbtheworld.app.map.model.MapCoordinate;
+import com.climbtheworld.app.storage.TerrainElevation;
+import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.utils.GeoUtils;
 import com.climbtheworld.app.utils.Globals;
@@ -162,6 +164,24 @@ public class DialogueUtils {
 				GeoUtils.formatCoordinate(tmpPoi.decimalLatitude));
 		((TextView) result.findViewById(R.id.editLongitude)).setText(
 				GeoUtils.formatCoordinate(tmpPoi.decimalLongitude));
+		setElevation(result.findViewById(R.id.editElevation), tmpPoi);
+	}
+
+	/**
+	 * The elevation the POI is mapped at, or else the terrain model's, marked as an estimate and
+	 * explained on a long press. The terrain is read while the view is shown, as its tiles may
+	 * have to load first: until they do, or when they cannot, it stays empty.
+	 */
+	private static void setElevation(TextView view, GeoNode poi) {
+		if (poi.getTags().has(ClimbingTags.KEY_ELEVATION)) {
+			view.setText(GeoUtils.formatElevation(poi.elevationMeters));
+			return;
+		}
+		TerrainElevationText terrainText = new TerrainElevationText(view, poi);
+		view.addOnAttachStateChangeListener(terrainText);
+		if (view.isAttachedToWindow()) {
+			terrainText.onViewAttachedToWindow(view);
+		}
 	}
 
 	/**
@@ -192,5 +212,64 @@ public class DialogueUtils {
 			DialogBuilder.closeAllDialogs();
 			MapActivity.showOnMap(parent, poi);
 		});
+	}
+
+	/**
+	 * Shows the terrain model's elevation of a POI while the view is shown, see setElevation:
+	 * it holds the terrain the A.R. screens share, so it finds the tiles they loaded, and is told
+	 * when the ones it reads come in.
+	 */
+	private static final class TerrainElevationText
+			implements View.OnAttachStateChangeListener, Runnable {
+		private final TextView view;
+		private final GeoNode poi;
+		// Held while the view is shown.
+		private TerrainElevation terrain;
+
+		TerrainElevationText(TextView view, GeoNode poi) {
+			this.view = view;
+			this.poi = poi;
+		}
+
+		@Override
+		public void onViewAttachedToWindow(View attached) {
+			if (terrain != null) {
+				return;
+			}
+			terrain = TerrainElevation.acquireShared(attached.getContext());
+			terrain.addListener(this);
+			run();
+		}
+
+		@Override
+		public void onViewDetachedFromWindow(View detached) {
+			if (terrain == null) {
+				return;
+			}
+			terrain.removeListener(this);
+			terrain = null;
+			TerrainElevation.releaseShared();
+		}
+
+		/** Reads the elevation again, now that more tiles may have come in. */
+		@Override
+		public void run() {
+			// Where the A.R. view stands the POI from close by, see
+			// AugmentedRealityScene.getModelElevation: a route top on top of its wall, the rest
+			// at the foot of theirs.
+			double meters = poi.isRouteTop()
+					? terrain.getElevation(poi.decimalLatitude, poi.decimalLongitude,
+					TerrainElevation.DETAIL_ZOOM)
+					: terrain.getFootElevation(poi.decimalLatitude, poi.decimalLongitude,
+					TerrainElevation.DETAIL_ZOOM);
+			if (Double.isNaN(meters)) {
+				view.setText("");
+				view.setTooltipText(null);
+				return;
+			}
+			view.setText(view.getContext().getString(R.string.elevation_from_terrain,
+					GeoUtils.formatElevation(meters)));
+			view.setTooltipText(view.getContext().getString(R.string.elevation_from_terrain_hint));
+		}
 	}
 }

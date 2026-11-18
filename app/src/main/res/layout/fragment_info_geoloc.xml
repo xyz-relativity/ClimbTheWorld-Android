@@ -146,10 +146,16 @@
                 android:text="@string/elevation"
                 android:textAllCaps="false" />
 
+            <!-- Mapped, or else estimated from the terrain, see DialogueUtils.setElevation. -->
             <TextView
                 android:id="@+id/editElevation"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:autoSizeMaxTextSize="14sp"
+                android:autoSizeMinTextSize="10sp"
+                android:autoSizeStepGranularity="1sp"
+                android:autoSizeTextType="uniform"
+                android:maxLines="1" />
         </LinearLayout>
 
     </LinearLayout>
