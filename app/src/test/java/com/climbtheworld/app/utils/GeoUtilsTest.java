@@ -43,6 +43,14 @@ public class GeoUtilsTest {
 		assertEquals("46.500000", GeoUtils.formatCoordinate(46.5));
 	}
 
+	@Test
+	public void elevationsToReadAreInWholeMeters() {
+		assertEquals("1235 m", GeoUtils.formatElevation(1234.5));
+		assertEquals("412 m", GeoUtils.formatElevation(412.04));
+		assertEquals("-28 m", GeoUtils.formatElevation(-28));
+		assertEquals("0 m", GeoUtils.formatElevation(0));
+	}
+
 	private static GeoNode offset(double eastMeters, double northMeters) {
 		Vector2d offset = GeoUtils.latLongOffset(LATITUDE, new Vector2d(eastMeters, northMeters));
 		return new GeoNode(LATITUDE + offset.y, LONGITUDE + offset.x, 0);
