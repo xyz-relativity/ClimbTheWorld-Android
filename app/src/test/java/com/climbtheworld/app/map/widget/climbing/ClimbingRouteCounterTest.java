@@ -92,7 +92,8 @@ public class ClimbingRouteCounterTest {
 		addNode(10, route("climbing:sport", "yes", "climbing:trad", "yes"));
 		addNode(11, route("climbing:sport", "yes", "climbing:ice", "no"));
 		addNode(30, new JSONObject());
-		addCollection(20, "way", route("climbing:boulder", "yes"), new JSONArray());
+		addCollection(20, "way", route("climbing:boulder", "yes").put("climbing", "route"),
+				new JSONArray());
 		addCollection(20, "relation", site("crag"), new JSONArray());
 		OsmCollectionEntity crag = addCollection(2, "relation", site("crag"),
 				members("node", 11, "way", 20, "relation", 1));
@@ -157,6 +158,35 @@ public class ClimbingRouteCounterTest {
 	}
 
 	@Test
+	public void countsRoutesWithNoStyleApartWithTheirGrades() throws JSONException {
+		String grade = GradeSystem.uiaa.getGrade(15);
+		int gradeIndex = GradeSystem.uiaa.indexOf(grade);
+		// As at Geyikbayırı's Anatolia: a name and a grade, but no climbing:<style> tag.
+		addNode(10, route("climbing:grade:uiaa", grade));
+		addNode(11, route("climbing:grade:uiaa", grade));
+		addNode(12, route());
+		// A style tagged "no" is no style either.
+		addNode(13, route("climbing:sport", "no"));
+		addNode(14, route("climbing:sport", "yes", "climbing:grade:uiaa", grade));
+		OsmCollectionEntity crag = addCollection(2, "relation", site("crag"), new JSONArray());
+		crag.osmNodes = Arrays.asList(10L, 11L, 12L, 13L, 14L);
+
+		ClimbingRouteCounter.RouteSummary summary = counter.summarize(crag);
+		assertEquals(5, summary.getRouteCount());
+		assertEquals(4, summary.getUnstyledRouteCount());
+		assertEquals(Arrays.asList(gradeIndex, ClimbingRouteCounter.UNKNOWN_GRADE),
+				new ArrayList<>(summary.getUnstyledGradeCounts().keySet()));
+		assertEquals(Integer.valueOf(2), summary.getUnstyledGradeCounts().get(gradeIndex));
+		assertEquals(Integer.valueOf(2),
+				summary.getUnstyledGradeCounts().get(ClimbingRouteCounter.UNKNOWN_GRADE));
+		assertEquals(Collections.singletonMap(GeoNode.ClimbingStyle.sport, 1),
+				summary.getStyleCounts());
+
+		assertEquals(0, counter.summarize(nodes.get(14L)).getUnstyledRouteCount());
+		assertEquals(1, counter.summarize(nodes.get(12L)).getUnstyledRouteCount());
+	}
+
+	@Test
 	public void tracksShortestAndLongestRouteLength() throws JSONException {
 		addNode(10, route("climbing:sport", "yes", "climbing:length", "25"));
 		addNode(11, route("climbing:sport", "yes", "climbing:length", "12.5 m"));
@@ -182,7 +212,8 @@ public class ClimbingRouteCounterTest {
 		addNode(10, route("climbing:sport", "yes", "name", "Été indien"));
 		addNode(11, route("climbing:sport", "yes"));
 		addNode(12, group("crag").put("name", "Not a route"));
-		addCollection(20, "way", route("climbing:trad", "yes", "name", " Fissure "),
+		addCollection(20, "way",
+				route("climbing:trad", "yes", "name", " Fissure ").put("climbing", "route"),
 				new JSONArray());
 		OsmCollectionEntity crag = addCollection(2, "relation", site("crag"),
 				members("node", 10, "node", 11, "node", 12, "way", 20));

@@ -221,10 +221,11 @@ public class NodeDialogBuilder {
 	}
 
 	/**
-	 * One row per climbing style with its route count, each followed by its grade rows.
+	 * One row per climbing style with its route count, each followed by its grade rows, then
+	 * one for the routes tagged with no style, so that their grades show too.
 	 *
 	 * @param gradeScale route count of a full length grade bar
-	 * @return false when there are no counted styles and nothing was added.
+	 * @return false when there are no counted routes and nothing was added.
 	 */
 	private static boolean addStyleRows(AppCompatActivity activity, LinearLayout container,
 	                                    GradeSystem gradeSystem,
@@ -233,20 +234,37 @@ public class NodeDialogBuilder {
 	                                    int gradeScale) {
 		for (GeoNode.ClimbingStyle style : Sorters.sortStyles(activity,
 				new ArrayList<>(styleCounts.keySet()))) {
-			View row = activity.getLayoutInflater()
-					.inflate(R.layout.list_item_climbing_member_style, container, false);
-			((ImageView) row.findViewById(R.id.memberStyleIcon)).setImageDrawable(
-					MarkerUtils.getStyleIcon(activity, Collections.singletonList(style),
-							MEMBER_CARD_STYLE_ICON_SIZE));
-			((TextView) row.findViewById(R.id.memberStyleName)).setText(style.getNameId());
-			((TextView) row.findViewById(R.id.memberStyleCount)).setText(
-					String.valueOf(styleCounts.get(style)));
-			container.addView(row);
-			for (GradeRow gradeRow : getGradeRows(gradeSystem, routes.getGradeCounts(style))) {
-				container.addView(buildGradeRow(activity, container, gradeRow, gradeScale));
-			}
+			addStyleRow(activity, container, gradeSystem, Collections.singletonList(style),
+					style.getNameId(), styleCounts.get(style), routes.getGradeCounts(style),
+					gradeScale);
 		}
-		return !styleCounts.isEmpty();
+		int unstyledCount = routes.getUnstyledRouteCount();
+		if (unstyledCount > 0) {
+			// No style, no cells: the empty icon keeps the name in line with the others.
+			addStyleRow(activity, container, gradeSystem, Collections.emptyList(),
+					R.string.unknown_style, unstyledCount, routes.getUnstyledGradeCounts(),
+					gradeScale);
+		}
+		return !styleCounts.isEmpty() || unstyledCount > 0;
+	}
+
+	/**
+	 * @param styles the styles drawn on the row's icon
+	 */
+	private static void addStyleRow(AppCompatActivity activity, LinearLayout container,
+	                                GradeSystem gradeSystem, List<GeoNode.ClimbingStyle> styles,
+	                                int nameId, int count, SortedMap<Integer, Integer> gradeCounts,
+	                                int gradeScale) {
+		View row = activity.getLayoutInflater()
+				.inflate(R.layout.list_item_climbing_member_style, container, false);
+		((ImageView) row.findViewById(R.id.memberStyleIcon)).setImageDrawable(
+				MarkerUtils.getStyleIcon(activity, styles, MEMBER_CARD_STYLE_ICON_SIZE));
+		((TextView) row.findViewById(R.id.memberStyleName)).setText(nameId);
+		((TextView) row.findViewById(R.id.memberStyleCount)).setText(String.valueOf(count));
+		container.addView(row);
+		for (GradeRow gradeRow : getGradeRows(gradeSystem, gradeCounts)) {
+			container.addView(buildGradeRow(activity, container, gradeRow, gradeScale));
+		}
 	}
 
 	/**
@@ -311,15 +329,20 @@ public class NodeDialogBuilder {
 	}
 
 	/**
-	 * @return the largest route count among the grade rows of the styles, for the bars compared
-	 * with each other to share one scale
+	 * @return the largest route count among the grade rows of the styles and of the routes with
+	 * no style, for the bars compared with each other to share one scale
 	 */
 	private static int largestGradeRowCount(GradeSystem gradeSystem,
 	                                        Collection<GeoNode.ClimbingStyle> styles,
 	                                        ClimbingRouteCounter.RouteSummary routes) {
-		int result = 0;
+		List<SortedMap<Integer, Integer>> gradeCounts = new ArrayList<>();
 		for (GeoNode.ClimbingStyle style : styles) {
-			for (GradeRow gradeRow : getGradeRows(gradeSystem, routes.getGradeCounts(style))) {
+			gradeCounts.add(routes.getGradeCounts(style));
+		}
+		gradeCounts.add(routes.getUnstyledGradeCounts());
+		int result = 0;
+		for (SortedMap<Integer, Integer> counts : gradeCounts) {
+			for (GradeRow gradeRow : getGradeRows(gradeSystem, counts)) {
 				result = Math.max(result, gradeRow.count());
 			}
 		}

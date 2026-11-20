@@ -149,6 +149,8 @@
     <string name="deepwater">Psicobloc (Deep Water Solo)</string>
     <string name="deepwater_short">psicobloc</string>
     <string name="deepwater_description">L’escalade libre au-dessus d’une étendue d’eau assez profonde pour permettre une chute sans danger.</string>
+    <!-- Routes tagged with no climbing style, counted apart in the crag and area summaries. -->
+    <string name="unknown_style">Style inconnu</string>
 
     <!-- Climbing walls -->
     <string name="route">Voie</string>

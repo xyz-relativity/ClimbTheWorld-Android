@@ -153,6 +153,8 @@
     <string name="deepwater">Deep Water Soloing</string>
     <string name="deepwater_short">deepwater</string>
     <string name="deepwater_description">Free climbing an area that overhangs a deep enough body of water to allow for a safe fall.</string>
+    <!-- Routes tagged with no climbing style, counted apart in the crag and area summaries. -->
+    <string name="unknown_style">Unknown Style</string>
 
     <!-- Climbing walls -->
     <string name="route">Route</string>

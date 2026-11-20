@@ -33,9 +33,9 @@ import java.util.function.Predicate;
 /**
  * Counts the unique climbing routes contained in an OSM entity, recursively through nested
  * relations, and groups them by climbing style. A route tagged with several styles counts
- * towards each of them. A route mapped with several elements (a route way and its bottom and
- * top nodes, or a bottom and a top node with the same name) counts once. Must run off the UI
- * thread when backed by the database.
+ * towards each of them, and one tagged with none is counted apart. A route mapped with several
+ * elements (a route way and its bottom and top nodes, or a bottom and a top node with the same
+ * name) counts once. Must run off the UI thread when backed by the database.
  * <p>
  * With a route filter, such as the display filters, it also counts the routes that match it,
  * which a crag's or area's pin shows instead of all of them, see {@link #pin}.
@@ -54,6 +54,7 @@ public final class ClimbingRouteCounter {
 		private final boolean filtered;
 		private final Map<GeoNode.ClimbingStyle, Integer> styleCounts;
 		private final Map<GeoNode.ClimbingStyle, SortedMap<Integer, Integer>> styleGradeCounts;
+		private final SortedMap<Integer, Integer> unstyledGradeCounts;
 		private final double minLength;
 		private final double maxLength;
 		private final int minGrade;
@@ -63,6 +64,7 @@ public final class ClimbingRouteCounter {
 		private RouteSummary(int routeCount, int matchingRouteCount, boolean filtered,
 		                     Map<GeoNode.ClimbingStyle, Integer> styleCounts,
 		                     Map<GeoNode.ClimbingStyle, SortedMap<Integer, Integer>> styleGradeCounts,
+		                     SortedMap<Integer, Integer> unstyledGradeCounts,
 		                     double minLength, double maxLength, int minGrade, int maxGrade,
 		                     List<String> routeNames) {
 			this.routeCount = routeCount;
@@ -70,6 +72,7 @@ public final class ClimbingRouteCounter {
 			this.filtered = filtered;
 			this.styleCounts = Collections.unmodifiableMap(styleCounts);
 			this.styleGradeCounts = Collections.unmodifiableMap(styleGradeCounts);
+			this.unstyledGradeCounts = Collections.unmodifiableSortedMap(unstyledGradeCounts);
 			this.minLength = minLength;
 			this.maxLength = maxLength;
 			this.minGrade = minGrade;
@@ -127,7 +130,8 @@ public final class ClimbingRouteCounter {
 		}
 
 		/**
-		 * Route count per climbing style; styles without routes are absent.
+		 * Route count per climbing style; styles without routes are absent. Routes without a
+		 * style tag are counted apart, see getUnstyledRouteCount.
 		 */
 		public Map<GeoNode.ClimbingStyle, Integer> getStyleCounts() {
 			return styleCounts;
@@ -142,6 +146,26 @@ public final class ClimbingRouteCounter {
 			SortedMap<Integer, Integer> result = styleGradeCounts.get(style);
 			return result != null ? Collections.unmodifiableSortedMap(result)
 					: Collections.unmodifiableSortedMap(new TreeMap<>());
+		}
+
+		/**
+		 * The count of the routes tagged with no climbing style, which getStyleCounts leaves
+		 * out.
+		 */
+		public int getUnstyledRouteCount() {
+			int result = 0;
+			for (int count : unstyledGradeCounts.values()) {
+				result += count;
+			}
+			return result;
+		}
+
+		/**
+		 * Route count per grade index of the routes tagged with no climbing style, ordered as
+		 * getGradeCounts.
+		 */
+		public SortedMap<Integer, Integer> getUnstyledGradeCounts() {
+			return unstyledGradeCounts;
 		}
 
 		/**
@@ -163,6 +187,7 @@ public final class ClimbingRouteCounter {
 				new EnumMap<>(GeoNode.ClimbingStyle.class);
 		private final Map<GeoNode.ClimbingStyle, SortedMap<Integer, Integer>> styleGradeCounts =
 				new EnumMap<>(GeoNode.ClimbingStyle.class);
+		private final SortedMap<Integer, Integer> unstyledGradeCounts = new TreeMap<>(GRADE_ORDER);
 		private double minLength = Double.NaN;
 		private double maxLength = Double.NaN;
 		private int minGrade = UNKNOWN_GRADE;
@@ -193,7 +218,11 @@ public final class ClimbingRouteCounter {
 				minGrade = minGrade == UNKNOWN_GRADE ? grade : Math.min(minGrade, grade);
 				maxGrade = Math.max(maxGrade, grade);
 			}
-			for (GeoNode.ClimbingStyle style : GeoNode.getClimbingStyles(tags)) {
+			List<GeoNode.ClimbingStyle> styles = GeoNode.getClimbingStyles(tags);
+			if (styles.isEmpty()) {
+				increment(unstyledGradeCounts, grade);
+			}
+			for (GeoNode.ClimbingStyle style : styles) {
 				increment(styleCounts, style);
 				SortedMap<Integer, Integer> grades = styleGradeCounts.get(style);
 				if (grades == null) {
@@ -212,7 +241,7 @@ public final class ClimbingRouteCounter {
 		private RouteSummary build() {
 			return new RouteSummary(routeCount, matchingRouteCount,
 					routeFilter != null && routeCount > 0, styleCounts, styleGradeCounts,
-					minLength, maxLength, minGrade, maxGrade, routeNames);
+					unstyledGradeCounts, minLength, maxLength, minGrade, maxGrade, routeNames);
 		}
 	}
 
