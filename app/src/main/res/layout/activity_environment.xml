@@ -55,10 +55,17 @@
                             android:textAllCaps="false" />
                     </LinearLayout>
 
+                    <!-- One line, shrunk on a narrow screen or with a large font, see
+                         EnvironmentActivity.sunTimeText. -->
                     <TextView
                         android:id="@+id/editSunrise"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:autoSizeMaxTextSize="14sp"
+                        android:autoSizeMinTextSize="10sp"
+                        android:autoSizeStepGranularity="1sp"
+                        android:autoSizeTextType="uniform"
+                        android:maxLines="1"
                         android:textAlignment="center" />
 
                 </LinearLayout>
@@ -120,10 +127,17 @@
                     </LinearLayout>
 
 
+                    <!-- One line, shrunk on a narrow screen or with a large font, see
+                         EnvironmentActivity.sunTimeText. -->
                     <TextView
                         android:id="@+id/editSunset"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:autoSizeMaxTextSize="14sp"
+                        android:autoSizeMinTextSize="10sp"
+                        android:autoSizeStepGranularity="1sp"
+                        android:autoSizeTextType="uniform"
+                        android:maxLines="1"
                         android:textAlignment="center" />
                 </LinearLayout>
 

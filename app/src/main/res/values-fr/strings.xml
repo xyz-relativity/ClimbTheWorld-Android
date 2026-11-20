@@ -57,8 +57,7 @@
     <string name="azimuth">Azimut</string>
     <string name="sunrise">Lever du soleil</string>
     <string name="sunset">Coucher du soleil</string>
-    <string name="sun_time_tomorrow">%1$s (demain)</string>
-    <string name="sun_time_on_date">%1$s (%2$s)</string>
+    <string name="sun_time_days_away">+%1$d j</string>
     <string name="name">Nom</string>
     <string name="name_required">Saisissez un nom.</string>
     <string name="type">Type</string>

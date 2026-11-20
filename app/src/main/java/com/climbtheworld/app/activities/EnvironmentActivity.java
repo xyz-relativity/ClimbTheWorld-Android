@@ -3,6 +3,10 @@ package com.climbtheworld.app.activities;
 import android.Manifest;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.style.RelativeSizeSpan;
+import android.text.style.SuperscriptSpan;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -44,22 +48,28 @@ import java.text.SimpleDateFormat;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-public class EnvironmentActivity extends MapWidgetActivity implements IEnvironmentListener, IOrientationListener {
-
-	private DeviceLocationManager deviceLocationManager;
-	private OrientationManager orientationManager;
+public class EnvironmentActivity extends MapWidgetActivity
+		implements IEnvironmentListener, IOrientationListener {
 
 	private static final int LOCATION_UPDATE_DELAY_MS = 500;
 	private static final String COORD_VALUE = "%.6f°";
+	// The reading each of the sensors' texts shows. The sensors report one at a time, several
+	// times a second, and each report brings all the readings: only the texts whose reading
+	// changed are formatted again.
+	private final Map<TextView, Double> shownReadings = new HashMap<>();
+	private final CompassAccuracyArcDrawable compassAccuracyArc = new CompassAccuracyArcDrawable();
+	private final String[] orientationLat = new String[2];
+	private final String[] orientationLong = new String[2];
+	private final View[] compassBazelCardinals = new View[4];
 	DecimalFormat decimalFormat = new DecimalFormat("000.00°");
-
+	private DeviceLocationManager deviceLocationManager;
+	private OrientationManager orientationManager;
 	private TextView editLatitude;
 	private TextView editLatitudeDMS;
 	private TextView editLongitude;
@@ -82,24 +92,14 @@ public class EnvironmentActivity extends MapWidgetActivity implements IEnvironme
 	private TextView editRelativeHumidity;
 	private TextView editDewPoint;
 	private TextView editAbsoluteHumidity;
-	// The reading each of the sensors' texts shows. The sensors report one at a time, several
-	// times a second, and each report brings all the readings: only the texts whose reading
-	// changed are formatted again.
-	private final Map<TextView, Double> shownReadings = new HashMap<>();
 	private CompassWidget compass;
 	private CompassStatusBadge compassStatusBadge;
-	private final CompassAccuracyArcDrawable compassAccuracyArc = new CompassAccuracyArcDrawable();
-	private final String[] orientationLat = new String[2];
-	private final String[] orientationLong = new String[2];
 	private View compassBazel;
-	private final View[] compassBazelCardinals = new View[4];
 	// The angle the fingers have turned the bezel to and that is not saved yet, or null. It is
 	// saved once they lift: a move comes with every frame, and each one saved had the settings
 	// written again.
 	private Float unsavedBazelAngle;
 	private DateTimeFormatter dateTimeFormater;
-	// The date of a sunrise or sunset that is after tomorrow.
-	private DateTimeFormatter dateFormatter;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -110,8 +110,10 @@ public class EnvironmentActivity extends MapWidgetActivity implements IEnvironme
 		EdgeToEdge.padForSystemBars(findViewById(R.id.main));
 
 		Ask.on(this)
-				.id(502) // in case you are invoking multiple time Ask from same activity or fragment
-				.addPermission(Manifest.permission.ACCESS_FINE_LOCATION, R.string.map_location_rational)
+				.id(502) // in case you are invoking multiple time Ask from same activity or
+				// fragment
+				.addPermission(Manifest.permission.ACCESS_FINE_LOCATION,
+						R.string.map_location_rational)
 				.go();
 
 		orientationLat[0] = getResources().getStringArray(R.array.cardinal_names)[0];
@@ -149,9 +151,9 @@ public class EnvironmentActivity extends MapWidgetActivity implements IEnvironme
 		editAbsoluteHumidity = findViewById(R.id.editAbsoluteHunidity);
 
 		DateFormat format = android.text.format.DateFormat.getTimeFormat(this);
-		dateTimeFormater = DateTimeFormatter.ofPattern(((SimpleDateFormat) format).toLocalizedPattern(), Locale.getDefault());
-		dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
-				.withLocale(Locale.getDefault());
+		dateTimeFormater =
+				DateTimeFormatter.ofPattern(((SimpleDateFormat) format).toLocalizedPattern(),
+						Locale.getDefault());
 
 		navigation = findViewById(R.id.buttonsNavigationBar);
 		navigation.setItemIconTintList(null);
@@ -180,12 +182,14 @@ public class EnvironmentActivity extends MapWidgetActivity implements IEnvironme
 	private void setupBazel() {
 		Configs configs = Configs.instance(this);
 
-		RotationGestureDetector rotationGestureDetector = new RotationGestureDetector(new RotationGestureDetector.RotationListener() {
-			@Override
-			public void onRotate(float deltaAngle) {
-				rotateBazel(configs, (360 + (compassBazel.getRotation() + deltaAngle)) % 360, false);
-			}
-		});
+		RotationGestureDetector rotationGestureDetector =
+				new RotationGestureDetector(new RotationGestureDetector.RotationListener() {
+					@Override
+					public void onRotate(float deltaAngle) {
+						rotateBazel(configs,
+								(360 + (compassBazel.getRotation() + deltaAngle)) % 360, false);
+					}
+				});
 
 		rotateBazel(configs.getFloat(Configs.ConfigKey.compassBazelAngle));
 		findViewById(R.id.compassBazelContainer).setOnTouchListener(new View.OnTouchListener() {
@@ -229,8 +233,9 @@ public class EnvironmentActivity extends MapWidgetActivity implements IEnvironme
 
 			float a = (float) GeoUtils.diffAngle(angle, compassBazel.getRotation());
 
-			RotateAnimation rotate = new RotateAnimation(0, a, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-			rotate.setDuration((long)Math.abs(a));
+			RotateAnimation rotate = new RotateAnimation(0, a, Animation.RELATIVE_TO_SELF, 0.5f,
+					Animation.RELATIVE_TO_SELF, 0.5f);
+			rotate.setDuration((long) Math.abs(a));
 			rotate.setFillEnabled(true);
 			rotate.setInterpolator(new LinearInterpolator());
 			rotate.setAnimationListener(new Animation.AnimationListener() {
@@ -263,7 +268,9 @@ public class EnvironmentActivity extends MapWidgetActivity implements IEnvironme
 		}
 	}
 
-	/** Saves the angle the fingers turned the bezel to, when it is not saved yet. */
+	/**
+	 * Saves the angle the fingers turned the bezel to, when it is not saved yet.
+	 */
 	private void saveBazelAngle() {
 		if (unsavedBazelAngle != null) {
 			Configs.instance(this).setFloat(Configs.ConfigKey.compassBazelAngle,
@@ -279,16 +286,22 @@ public class EnvironmentActivity extends MapWidgetActivity implements IEnvironme
 		}
 	}
 
-	public void updatePosition(double pDecLatitude, double pDecLongitude, double pMetersAltitude, double accuracy) {
+	public void updatePosition(double pDecLatitude, double pDecLongitude, double pMetersAltitude,
+	                           double accuracy) {
 		Globals.virtualCamera.updatePOILocation(pDecLatitude, pDecLongitude, pMetersAltitude);
 
 		editLatitude.setText(String.format(Locale.getDefault(), COORD_VALUE,
 				Globals.virtualCamera.decimalLatitude));
-		editLatitudeDMS.setText(CoordinatesConverter.processCoordinates(Globals.virtualCamera.decimalLatitude, orientationLat));
+		editLatitudeDMS.setText(
+				CoordinatesConverter.processCoordinates(Globals.virtualCamera.decimalLatitude,
+						orientationLat));
 		editLongitude.setText(String.format(Locale.getDefault(), COORD_VALUE,
 				Globals.virtualCamera.decimalLongitude));
-		editLongitudeDMS.setText(CoordinatesConverter.processCoordinates(Globals.virtualCamera.decimalLongitude, orientationLong));
-		editElevation.setText(String.format(Locale.getDefault(), "%.2f (m)", Globals.virtualCamera.elevationMeters));
+		editLongitudeDMS.setText(
+				CoordinatesConverter.processCoordinates(Globals.virtualCamera.decimalLongitude,
+						orientationLong));
+		editElevation.setText(String.format(Locale.getDefault(), "%.2f (m)",
+				Globals.virtualCamera.elevationMeters));
 
 		Date now = new Date();
 		SunTimes times = SunTimes.compute()
@@ -305,35 +318,30 @@ public class EnvironmentActivity extends MapWidgetActivity implements IEnvironme
 			editSunset.setText(sunTimeText(times.getSet(), deviceNow));
 		}
 
-		mapWidget.onLocationChange(new MapCoordinate(pDecLatitude, pDecLongitude, pMetersAltitude));
+		mapWidget.onLocationChange(new MapCoordinate(pDecLatitude, pDecLongitude,
+				pMetersAltitude));
 	}
 
 	/**
 	 * The text of a sunrise or sunset time. The times are the next rise and the next set, so
-	 * after today's they are tomorrow's, or weeks away near the poles: a time that is not today
-	 * says which day it is, or the evening's fields read as if the sun rose after it set.
+	 * they are today's or tomorrow's, which goes without saying, or weeks away near the poles:
+	 * a time after tomorrow is followed by how many days away it is, raised and small as in
+	 * timetables, "11:50⁺²⁴ᵈ".
 	 */
-	private String sunTimeText(ZonedDateTime time, ZonedDateTime now) {
-		// Shown and compared in the device's zone, whatever zone the time comes in.
+	private CharSequence sunTimeText(ZonedDateTime time, ZonedDateTime now) {
+		// Shown and counted in the device's zone, whatever zone the time comes in.
 		ZonedDateTime local = time.withZoneSameInstant(now.getZone());
-		String shown = local.format(dateTimeFormater);
-		long days = calendarDaysAfter(now, local);
-		if (days <= 0) {
-			return shown;
+		SpannableStringBuilder text = new SpannableStringBuilder(local.format(dateTimeFormater));
+		long days = ChronoUnit.DAYS.between(now.toLocalDate(), local.toLocalDate());
+		if (days > 1) {
+			int start = text.length();
+			text.append(getString(R.string.sun_time_days_away, days));
+			text.setSpan(new SuperscriptSpan(), start, text.length(),
+					Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+			text.setSpan(new RelativeSizeSpan(0.7f), start, text.length(),
+					Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 		}
-		if (days == 1) {
-			return getString(R.string.sun_time_tomorrow, shown);
-		}
-		return getString(R.string.sun_time_on_date, shown, local.format(dateFormatter));
-	}
-
-	/**
-	 * How many calendar days {@code time} is after the day of {@code now}, in the zone of
-	 * {@code now}: 0 today, 1 tomorrow, whatever the hours between them.
-	 */
-	private static long calendarDaysAfter(ZonedDateTime now, ZonedDateTime time) {
-		return ChronoUnit.DAYS.between(now.toLocalDate(),
-				time.withZoneSameInstant(now.getZone()).toLocalDate());
+		return text;
 	}
 
 	@Override

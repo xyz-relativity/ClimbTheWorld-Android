@@ -59,10 +59,9 @@
     <string name="azimuth">Azimuth</string>
     <string name="sunrise">Sunrise</string>
     <string name="sunset">Sunset</string>
-    <!-- A sunrise or sunset time (%1$s) that is tomorrow's. -->
-    <string name="sun_time_tomorrow">%1$s (tomorrow)</string>
-    <!-- A sunrise or sunset time (%1$s) that is after tomorrow, on the date %2$s. -->
-    <string name="sun_time_on_date">%1$s (%2$s)</string>
+    <!-- How many days away (%1$d, 2 or more) a sunrise or sunset is, raised and small after
+         its time: keep it short, with the short unit. -->
+    <string name="sun_time_days_away">+%1$dd</string>
     <string name="name">Name</string>
     <string name="name_required">Enter a name.</string>
     <string name="type">Type</string>
