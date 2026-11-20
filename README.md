@@ -62,6 +62,11 @@ on the phone, and allow the browser or file manager to install apps when Android
 
 New versions then have to be downloaded and installed the same way.
 
+## Videos
+
+* [The area and crag views](https://www.youtube.com/watch?v=W6oIBC1cdrQ)
+* [The A.R. topo view](https://www.youtube.com/shorts/Dsw125FAci8)
+
 ## Screenshots
 
 ### Augmented reality
