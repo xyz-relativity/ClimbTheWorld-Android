@@ -273,9 +273,9 @@ public class NodeDialogBuilder {
 
 	/**
 	 * One slot per climbing style, all of them and in the order of the style rows, so that they
-	 * line up from card to card, then one for the routes tagged with no style, left empty but in
-	 * its place on a card with none. A slot is the style's icon under the histogram of its routes'
-	 * grades. The icon of a style with no route, or none matching the display filters, fades out.
+	 * line up from card to card, then the unknown style's, for the routes tagged with no style. A
+	 * slot is the style's block under the histogram of its routes' grades. The block of a style
+	 * with no route, or none matching the display filters, fades out, the unknown style's too.
 	 *
 	 * @param histogramScale route count of a full height histogram bar
 	 * @return what the strip says, for the card's description: each style with routes and their
@@ -290,43 +290,42 @@ public class NodeDialogBuilder {
 				GeoNode.ClimbingStyle.values())) {
 			Integer styleCount = styleCounts.get(style);
 			int count = styleCount != null ? styleCount : 0;
-			View slot = addStyleSlot(activity, strip, routes.getGradeCounts(style),
-					routes.getMatchingGradeCounts(style), histogramScale);
-			ImageView iconView = slot.findViewById(R.id.memberSlotIcon);
-			iconView.setImageDrawable(MarkerUtils.getStyleIcon(activity,
-					Collections.singletonList(style), STYLE_STRIP_ICON_SIZE));
 			// Counted from the member's own tags when it has no mapped route: none to filter.
-			if ((routes.isFiltered() ? routes.getMatchingStyleCount(style) : count) == 0) {
-				fadeOut(iconView);
-			}
+			addStyleSlot(activity, strip, Collections.singletonList(style),
+					routes.getGradeCounts(style), routes.getMatchingGradeCounts(style),
+					histogramScale,
+					(routes.isFiltered() ? routes.getMatchingStyleCount(style) : count) == 0);
 			appendCount(activity, description, style.getNameId(), count);
 		}
-
-		int unstyledCount = routes.getUnstyledRouteCount();
-		View slot = addStyleSlot(activity, strip, routes.getUnstyledGradeCounts(),
-				routes.getMatchingUnstyledGradeCounts(), histogramScale);
-		slot.findViewById(R.id.memberSlotIcon).setVisibility(View.GONE);
-		View unknownView = slot.findViewById(R.id.memberSlotUnknown);
-		unknownView.setVisibility(View.VISIBLE);
-		if (unstyledCount == 0) {
-			slot.setVisibility(View.INVISIBLE);
-		} else if (routes.getMatchingUnstyledRouteCount() == 0) {
-			fadeOut(unknownView);
-		}
-		appendCount(activity, description, R.string.unknown_style, unstyledCount);
+		// All the routes while no filter is on, so none when there are none.
+		addStyleSlot(activity, strip, Collections.emptyList(), routes.getUnstyledGradeCounts(),
+				routes.getMatchingUnstyledGradeCounts(), histogramScale,
+				routes.getMatchingUnstyledRouteCount() == 0);
+		appendCount(activity, description, R.string.unknown_style,
+				routes.getUnstyledRouteCount());
 		return description.toString();
 	}
 
-	private static View addStyleSlot(AppCompatActivity activity, LinearLayout strip,
+	/**
+	 * @param styles  the styles drawn on the slot's block, none for the unknown style
+	 * @param fadeOut whether the block fades out, as the pins the display filters leave out
+	 */
+	private static void addStyleSlot(AppCompatActivity activity, LinearLayout strip,
+	                                 List<GeoNode.ClimbingStyle> styles,
 	                                 Map<Integer, Integer> gradeCounts,
 	                                 Map<Integer, Integer> matchingGradeCounts,
-	                                 int histogramScale) {
+	                                 int histogramScale, boolean fadeOut) {
 		View slot = activity.getLayoutInflater()
 				.inflate(R.layout.list_item_climbing_member_style_slot, strip, false);
 		((GradeHistogramView) slot.findViewById(R.id.memberSlotHistogram))
 				.setGrades(gradeCounts, matchingGradeCounts, histogramScale);
+		ImageView iconView = slot.findViewById(R.id.memberSlotIcon);
+		iconView.setImageDrawable(
+				MarkerUtils.getStyleIcon(activity, styles, STYLE_STRIP_ICON_SIZE));
+		if (fadeOut) {
+			fadeOut(iconView);
+		}
 		strip.addView(slot);
-		return slot;
 	}
 
 	/** Adds the name and its count to the description, unless the count is 0. */
@@ -363,7 +362,7 @@ public class NodeDialogBuilder {
 		}
 		int unstyledCount = routes.getUnstyledRouteCount();
 		if (unstyledCount > 0) {
-			// No style, no cells: the empty icon keeps the name in line with the others.
+			// No style: the unknown style's block.
 			addStyleRow(activity, container, gradeSystem, Collections.emptyList(),
 					R.string.unknown_style, unstyledCount, routes.getMatchingUnstyledRouteCount(),
 					routes.getUnstyledGradeCounts(), routes.getMatchingUnstyledGradeCounts(),
@@ -373,7 +372,7 @@ public class NodeDialogBuilder {
 	}
 
 	/**
-	 * @param styles              the styles drawn on the row's icon
+	 * @param styles              the styles drawn on the row's icon, none for the unknown style
 	 * @param matchingCount       how many of the counted routes match the display filters, all
 	 *                            of them while none is on; with none, the row fades out
 	 * @param matchingGradeCounts the same per grade, see getGradeRows

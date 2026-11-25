@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A climbing style of a crag card's strip: the histogram of its routes' grades on its icon,
-     see NodeDialogBuilder.addStyleStrip. The slots share the strip's width. -->
+<!-- A climbing style of a crag card's strip, or the unknown style: the histogram of its routes'
+     grades on its block, see NodeDialogBuilder.addStyleStrip. The slots share the strip's
+     width. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="0dp"
     android:layout_height="wrap_content"
@@ -20,18 +21,4 @@
         android:layout_width="20dp"
         android:layout_height="20dp"
         android:scaleType="fitCenter" />
-
-    <!-- In place of the icon for the routes with no style: on white, as the style icons. -->
-    <TextView
-        android:id="@+id/memberSlotUnknown"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:background="@android:color/white"
-        android:gravity="center"
-        android:includeFontPadding="false"
-        android:text="\?"
-        android:textColor="@android:color/black"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:visibility="gone" />
 </LinearLayout>

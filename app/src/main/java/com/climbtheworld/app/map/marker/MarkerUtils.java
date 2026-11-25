@@ -7,6 +7,8 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PaintFlagsDrawFilter;
 import android.graphics.PorterDuff;
+import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.DisplayMetrics;
@@ -30,6 +32,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class MarkerUtils {
 	public static final String UNKNOWN_TYPE = "-?-";
 	public final static int DEFAULT_STYLE_ICON_SIZE = Globals.convertDpToPixel(20).intValue();
+	// The unknown style's mark, see drawUnknownStyle, and its height as a share of the block's.
+	private static final String UNKNOWN_STYLE = "?";
+	private static final float UNKNOWN_STYLE_HEIGHT = 0.8f;
 
 	// Read from the UI thread and the map's executor, which draws the map pins, at once.
 	private static final Map<String, Drawable> iconCache = new ConcurrentHashMap<>();
@@ -115,6 +120,9 @@ public class MarkerUtils {
 	}
 
 	/**
+	 * The block of the climbing styles: their cells on the style grid, or, with no style, the
+	 * unknown style's "?", wherever a style block is drawn (pins, dialogs and lists).
+	 *
 	 * @param scale how many times bigger than iconSIze to draw it, the cells keeping their place
 	 *              on the grid of iconSIze, so that it is that one drawn bigger, and as sharp
 	 */
@@ -128,20 +136,22 @@ public class MarkerUtils {
 				if (!iconCache.containsKey(cacheKey)) {
 					Bitmap bitmap = Bitmap.createBitmap(IconScale.px(iconSIze, scale),
 							IconScale.px(iconSIze, scale), Bitmap.Config.ARGB_8888);
-					if (!styles.isEmpty()) {
-						Canvas canvas = new Canvas(bitmap);
-						canvas.setDrawFilter(new PaintFlagsDrawFilter(0,
-								Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG));
-						if (scale != 1) {
-							canvas.scale(scale, scale);
-						}
+					Canvas canvas = new Canvas(bitmap);
+					canvas.setDrawFilter(new PaintFlagsDrawFilter(0,
+							Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG));
+					if (scale != 1) {
+						canvas.scale(scale, scale);
+					}
 
-						// White background square behind the style cells
-						Paint fillPaint = new Paint();
-						fillPaint.setStyle(Paint.Style.FILL);
-						fillPaint.setColor(Color.WHITE);
-						canvas.drawRect(0, 0, iconSIze, iconSIze, fillPaint);
+					// White background square behind the style cells
+					Paint fillPaint = new Paint();
+					fillPaint.setStyle(Paint.Style.FILL);
+					fillPaint.setColor(Color.WHITE);
+					canvas.drawRect(0, 0, iconSIze, iconSIze, fillPaint);
 
+					if (styles.isEmpty()) {
+						drawUnknownStyle(canvas, iconSIze);
+					} else {
 						drawStyleGrid(canvas, styles, iconSIze);
 					}
 					iconCache.put(cacheKey, new BitmapDrawable(parent.getResources(), bitmap));
@@ -219,6 +229,27 @@ public class MarkerUtils {
 			float center = origin + 1.5f * pitch + 0.5f;
 			canvas.drawCircle(center, center, (pitch - 1) / 2f, fillPaint);
 		}
+	}
+
+	/**
+	 * The unknown style's block, for what is tagged with no climbing style: a bold black "?" in
+	 * the middle of the white square.
+	 */
+	private static void drawUnknownStyle(Canvas canvas, int iconSize) {
+		Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+		textPaint.setColor(Color.BLACK);
+		textPaint.setTypeface(Typeface.DEFAULT_BOLD);
+		textPaint.setTextSize(iconSize);
+		Rect bounds = new Rect();
+		textPaint.getTextBounds(UNKNOWN_STYLE, 0, UNKNOWN_STYLE.length(), bounds);
+		if (bounds.height() <= 0) {
+			return;
+		}
+		// The glyph itself fills the share, not the font's line.
+		textPaint.setTextSize(iconSize * UNKNOWN_STYLE_HEIGHT * iconSize / bounds.height());
+		textPaint.getTextBounds(UNKNOWN_STYLE, 0, UNKNOWN_STYLE.length(), bounds);
+		canvas.drawText(UNKNOWN_STYLE, iconSize / 2f - bounds.exactCenterX(),
+				iconSize / 2f - bounds.exactCenterY(), textPaint);
 	}
 
 	public static Drawable getPoiIcon(AppCompatActivity parent, GeoNode poi,
