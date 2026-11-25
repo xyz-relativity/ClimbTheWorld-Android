@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- A crag of an area's dialog: its pin, then its name over the strip of the climbing styles,
+     see NodeDialogBuilder.addStyleStrip; wide enough for the strip's nine slots. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="200dp"
+    android:layout_width="264dp"
     android:layout_height="wrap_content"
     android:layout_margin="4dp"
     android:background="@drawable/bg_climbing_member_card"
@@ -24,31 +26,54 @@
             android:importantForAccessibility="no"
             android:scaleType="fitCenter" />
 
-        <TextView
-            android:id="@+id/memberCardName"
-            style="@style/SectionItemLabel"
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="6dp"
             android:layout_weight="1"
-            android:ellipsize="end"
-            android:maxLines="3"
-            android:textSize="16sp" />
+            android:orientation="vertical">
 
-        <!-- Shows or hides the details, see CollapsibleCards; its own tap target, as a tap on
-             the rest of the card opens the member. -->
-        <ImageView
-            android:id="@+id/memberCardChevron"
-            style="?android:imageButtonStyle"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginStart="2dp"
-            android:background="?android:selectableItemBackgroundBorderless"
-            android:clickable="true"
-            android:focusable="true"
-            android:padding="4dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_chevron_down" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/memberCardName"
+                    style="@style/SectionItemLabel"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textSize="16sp" />
+
+                <!-- Shows or hides the details, see CollapsibleCards; its own tap target, as a
+                     tap on the rest of the card opens the member. -->
+                <ImageView
+                    android:id="@+id/memberCardChevron"
+                    style="?android:imageButtonStyle"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_marginStart="2dp"
+                    android:background="?android:selectableItemBackgroundBorderless"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:padding="4dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_chevron_down" />
+            </LinearLayout>
+
+            <!-- One list_item_climbing_member_style_slot per climbing style, then one for the
+                 routes with no style. -->
+            <LinearLayout
+                android:id="@+id/memberCardStrip"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:orientation="horizontal" />
+        </LinearLayout>
     </LinearLayout>
 
     <!-- Hidden while the card is collapsed. -->

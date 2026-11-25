@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A climbing style of a crag card's strip: the histogram of its routes' grades on its icon,
+     see NodeDialogBuilder.addStyleStrip. The slots share the strip's width. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_weight="1"
+    android:gravity="center_horizontal"
+    android:importantForAccessibility="noHideDescendants"
+    android:orientation="vertical">
+
+    <com.climbtheworld.app.utils.views.GradeHistogramView
+        android:id="@+id/memberSlotHistogram"
+        android:layout_width="match_parent"
+        android:layout_height="18dp"
+        android:layout_marginHorizontal="1dp" />
+
+    <ImageView
+        android:id="@+id/memberSlotIcon"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:scaleType="fitCenter" />
+
+    <!-- In place of the icon for the routes with no style: on white, as the style icons. -->
+    <TextView
+        android:id="@+id/memberSlotUnknown"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:background="@android:color/white"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:text="\?"
+        android:textColor="@android:color/black"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+</LinearLayout>

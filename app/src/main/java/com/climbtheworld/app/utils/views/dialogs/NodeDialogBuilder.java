@@ -44,6 +44,8 @@ import com.climbtheworld.app.storage.logbook.LogBookFilter;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.constants.Constants;
 import com.climbtheworld.app.utils.views.CollapsibleCards;
+import com.climbtheworld.app.utils.views.GradeHistogram;
+import com.climbtheworld.app.utils.views.GradeHistogramView;
 import com.climbtheworld.app.utils.views.GradeViewUtils;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 import com.climbtheworld.app.utils.views.MemberIconCard;
@@ -69,6 +71,8 @@ import needle.UiRelatedTask;
 public class NodeDialogBuilder {
 	private static final int INFO_DIALOG_STYLE_ICON_SIZE = Globals.convertDpToPixel(10).intValue();
 	private static final int MEMBER_CARD_STYLE_ICON_SIZE = Globals.convertDpToPixel(16).intValue();
+	/** The icons of a crag card's style strip, as big as list_item_climbing_member_style_slot's. */
+	private static final int STYLE_STRIP_ICON_SIZE = Globals.convertDpToPixel(20).intValue();
 
 	private NodeDialogBuilder() {
 		//hide constructor
@@ -91,18 +95,27 @@ public class NodeDialogBuilder {
 			int padding = Globals.convertDpToPixel(4).intValue();
 			elements.setGravity(Gravity.TOP);
 			elements.setPadding(padding, padding, padding, padding);
-			// The cards share one scale, so their grade bars compare the members.
+			// The cards share one scale, so their grade bars compare the members, and so do their
+			// histograms.
 			int cardGradeScale = 0;
+			List<Map<Integer, Integer>> histogramGradeCounts = new ArrayList<>();
 			for (CollectionMember member : members) {
 				cardGradeScale = Math.max(cardGradeScale, largestGradeRowCount(gradeSystem,
 						member.getStyleCounts().keySet(), member.routes));
+				for (GeoNode.ClimbingStyle style : GeoNode.ClimbingStyle.values()) {
+					histogramGradeCounts.add(member.routes.getGradeCounts(style));
+				}
+				histogramGradeCounts.add(member.routes.getUnstyledGradeCounts());
 			}
-			// Names only at first, so that many crags fit and the area's own details stay near.
+			int histogramScale =
+					GradeHistogram.largestCount(histogramGradeCounts, GradeSystem.maxGrades);
+			// Collapsed to their name and style strip at first, so that many crags fit and the
+			// area's own details stay near.
 			CollapsibleCards cards = new CollapsibleCards(activity,
 					result.findViewById(R.id.buttonToggleElements));
 			for (CollectionMember member : members) {
 				memberViews.add(buildMemberCard(activity, elements, member, gradeSystem,
-						cardGradeScale, cards));
+						cardGradeScale, histogramScale, cards));
 			}
 			afterFilter = cards::update;
 		} else {
@@ -219,12 +232,15 @@ public class NodeDialogBuilder {
 	}
 
 	/**
-	 * @param gradeScale route count of a full length grade bar
-	 * @param cards      collapses the card to its pin and name, unless it has nothing more
+	 * @param gradeScale     route count of a full length grade bar
+	 * @param histogramScale route count of a full height bar of the style strip's histograms
+	 * @param cards          collapses the card to its pin, name and style strip, unless it has
+	 *                       nothing more
 	 */
 	private static View buildMemberCard(AppCompatActivity activity, ViewGroup container,
 	                                    CollectionMember member, GradeSystem gradeSystem,
-	                                    int gradeScale, CollapsibleCards cards) {
+	                                    int gradeScale, int histogramScale,
+	                                    CollapsibleCards cards) {
 		View card = activity.getLayoutInflater()
 				.inflate(R.layout.list_item_climbing_member_card, container, false);
 		String name = member.getName();
@@ -237,6 +253,8 @@ public class NodeDialogBuilder {
 			// Its rows fade out by themselves, as none of their routes matches.
 			nameView.setAlpha(DisplayableGeoNode.GHOST_VIEW_ALPHA);
 		}
+		String strip = addStyleStrip(activity, card.findViewById(R.id.memberCardStrip), member,
+				histogramScale);
 
 		View details = card.findViewById(R.id.memberCardDetails);
 		ImageView chevron = card.findViewById(R.id.memberCardChevron);
@@ -249,8 +267,74 @@ public class NodeDialogBuilder {
 			chevron.setVisibility(View.GONE);
 		}
 
-		card.setContentDescription(name);
+		card.setContentDescription(name + strip);
 		return card;
+	}
+
+	/**
+	 * One slot per climbing style, all of them and in the order of the style rows, so that they
+	 * line up from card to card, then one for the routes tagged with no style, left empty but in
+	 * its place on a card with none. A slot is the style's icon under the histogram of its routes'
+	 * grades. The icon of a style with no route, or none matching the display filters, fades out.
+	 *
+	 * @param histogramScale route count of a full height histogram bar
+	 * @return what the strip says, for the card's description: each style with routes and their
+	 * count
+	 */
+	private static String addStyleStrip(AppCompatActivity activity, LinearLayout strip,
+	                                    CollectionMember member, int histogramScale) {
+		ClimbingRouteCounter.RouteSummary routes = member.routes;
+		Map<GeoNode.ClimbingStyle, Integer> styleCounts = member.getStyleCounts();
+		StringBuilder description = new StringBuilder();
+		for (GeoNode.ClimbingStyle style : Sorters.sortStyles(activity,
+				GeoNode.ClimbingStyle.values())) {
+			Integer styleCount = styleCounts.get(style);
+			int count = styleCount != null ? styleCount : 0;
+			View slot = addStyleSlot(activity, strip, routes.getGradeCounts(style),
+					routes.getMatchingGradeCounts(style), histogramScale);
+			ImageView iconView = slot.findViewById(R.id.memberSlotIcon);
+			iconView.setImageDrawable(MarkerUtils.getStyleIcon(activity,
+					Collections.singletonList(style), STYLE_STRIP_ICON_SIZE));
+			// Counted from the member's own tags when it has no mapped route: none to filter.
+			if ((routes.isFiltered() ? routes.getMatchingStyleCount(style) : count) == 0) {
+				fadeOut(iconView);
+			}
+			appendCount(activity, description, style.getNameId(), count);
+		}
+
+		int unstyledCount = routes.getUnstyledRouteCount();
+		View slot = addStyleSlot(activity, strip, routes.getUnstyledGradeCounts(),
+				routes.getMatchingUnstyledGradeCounts(), histogramScale);
+		slot.findViewById(R.id.memberSlotIcon).setVisibility(View.GONE);
+		View unknownView = slot.findViewById(R.id.memberSlotUnknown);
+		unknownView.setVisibility(View.VISIBLE);
+		if (unstyledCount == 0) {
+			slot.setVisibility(View.INVISIBLE);
+		} else if (routes.getMatchingUnstyledRouteCount() == 0) {
+			fadeOut(unknownView);
+		}
+		appendCount(activity, description, R.string.unknown_style, unstyledCount);
+		return description.toString();
+	}
+
+	private static View addStyleSlot(AppCompatActivity activity, LinearLayout strip,
+	                                 Map<Integer, Integer> gradeCounts,
+	                                 Map<Integer, Integer> matchingGradeCounts,
+	                                 int histogramScale) {
+		View slot = activity.getLayoutInflater()
+				.inflate(R.layout.list_item_climbing_member_style_slot, strip, false);
+		((GradeHistogramView) slot.findViewById(R.id.memberSlotHistogram))
+				.setGrades(gradeCounts, matchingGradeCounts, histogramScale);
+		strip.addView(slot);
+		return slot;
+	}
+
+	/** Adds the name and its count to the description, unless the count is 0. */
+	private static void appendCount(AppCompatActivity activity, StringBuilder description,
+	                                int nameId, int count) {
+		if (count > 0) {
+			description.append(", ").append(activity.getString(nameId)).append(' ').append(count);
+		}
 	}
 
 	/**
