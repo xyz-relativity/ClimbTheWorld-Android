@@ -2,6 +2,11 @@ package com.climbtheworld.app.map.widget;
 
 import static org.maplibre.android.style.layers.PropertyFactory.fillColor;
 import static org.maplibre.android.style.layers.PropertyFactory.fillOpacity;
+import static org.maplibre.android.style.layers.PropertyFactory.hillshadeAccentColor;
+import static org.maplibre.android.style.layers.PropertyFactory.hillshadeExaggeration;
+import static org.maplibre.android.style.layers.PropertyFactory.hillshadeHighlightColor;
+import static org.maplibre.android.style.layers.PropertyFactory.hillshadeMethod;
+import static org.maplibre.android.style.layers.PropertyFactory.hillshadeShadowColor;
 import static org.maplibre.android.style.layers.PropertyFactory.iconAllowOverlap;
 import static org.maplibre.android.style.layers.PropertyFactory.iconAnchor;
 import static org.maplibre.android.style.layers.PropertyFactory.iconIgnorePlacement;
@@ -53,6 +58,7 @@ import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.map.model.MapZoomLevels;
 import com.climbtheworld.app.map.style.MapStyleDefinition;
 import com.climbtheworld.app.map.style.MapStyleRegistry;
+import com.climbtheworld.app.map.style.TerrainShading;
 import com.climbtheworld.app.map.widget.climbing.ClimbingGeometryBuilder;
 import com.climbtheworld.app.map.widget.climbing.RouteNumbers;
 import com.climbtheworld.app.map.widget.climbing.RouteRelation;
@@ -81,6 +87,7 @@ import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
 import org.maplibre.android.camera.CameraPosition;
 import org.maplibre.android.camera.CameraUpdate;
 import org.maplibre.android.camera.CameraUpdateFactory;
+import org.maplibre.android.constants.MapLibreConstants;
 import org.maplibre.android.geometry.LatLng;
 import org.maplibre.android.geometry.LatLngBounds;
 import org.maplibre.android.gestures.MoveGestureDetector;
@@ -91,6 +98,7 @@ import org.maplibre.android.maps.Style;
 import org.maplibre.android.offline.OfflineManager;
 import org.maplibre.android.style.expressions.Expression;
 import org.maplibre.android.style.layers.FillLayer;
+import org.maplibre.android.style.layers.HillshadeLayer;
 import org.maplibre.android.style.layers.Layer;
 import org.maplibre.android.style.layers.LineLayer;
 import org.maplibre.android.style.layers.Property;
@@ -190,6 +198,7 @@ public class MapLibreMapWidget {
 	// With the filter badge, while the clusters count only the POIs matching the display filters.
 	private static final String CLUSTER_FILTERED_IMAGE_ID = "ctw-cluster-filtered-image";
 	private static final String TERRAIN_SOURCE_ID = "ctw-terrain-source";
+	private static final String SHADING_LAYER_ID = "ctw-shading-layer";
 	private static final String CLUSTER_COUNT_PROPERTY = "point_count";
 	private static final String CLUSTER_COUNT_LABEL_PROPERTY = "point_count_abbreviated";
 	private static final float CLUSTER_TEXT_SIZE_SP = 14f;
@@ -558,6 +567,8 @@ public class MapLibreMapWidget {
 		MapStyleDefinition style =
 				MapStyleRegistry.getStyle(configs.getString(Configs.ConfigKey.mapStyleId));
 		loadedStyleId = style.getId();
+		map.setMinZoomPreference(style.hasTerrainShading() ? TerrainShading.MAP_MIN_ZOOM
+				: MapLibreConstants.MINIMUM_ZOOM);
 		map.setStyle(style.getStyleUrl(), loadedStyle -> {
 			if (destroyed) {
 				return;
@@ -575,6 +586,9 @@ public class MapLibreMapWidget {
 			renderedObserverLocation = null;
 			renderedObserverHeadingDegrees = Double.NaN;
 			renderedObserverAccuracyImage = null;
+			if (style.hasTerrainShading()) {
+				addTerrainShading(loadedStyle, style.getShadingBelowLayerId());
+			}
 			initializeOverlayLayers(loadedStyle);
 			applyCamera(session.camera != null ? session.camera
 					: new MapCameraState(observerLocation, DEFAULT_ZOOM_LEVEL), false);
@@ -584,6 +598,61 @@ public class MapLibreMapWidget {
 			renderMarkers();
 			invalidateData();
 		});
+	}
+
+	/**
+	 * Shades the relief into the base map, see {@link TerrainShading}: under the given layer of
+	 * the base map, so that what is drawn from it on stays clear. Should the base map no longer
+	 * have that layer, under its first labels.
+	 */
+	private static void addTerrainShading(Style style, String belowLayerId) {
+		addTerrainSource(style);
+		HillshadeLayer shading = new HillshadeLayer(SHADING_LAYER_ID, TERRAIN_SOURCE_ID)
+				.withProperties(
+						// As Mapterhorn advises for its tiles, the finest of which are very
+						// detailed.
+						hillshadeMethod(Property.HILLSHADE_METHOD_IGOR),
+						hillshadeExaggeration(Expression.interpolate(Expression.linear(),
+								Expression.zoom(),
+								Expression.stop(TerrainShading.WORLD_ZOOM,
+										TerrainShading.WORLD_EXAGGERATION),
+								Expression.stop(TerrainShading.REGION_ZOOM,
+										TerrainShading.EXAGGERATION))),
+						hillshadeShadowColor(new String[]{TerrainShading.SHADOW_COLOR}),
+						hillshadeHighlightColor(new String[]{TerrainShading.HIGHLIGHT_COLOR}),
+						hillshadeAccentColor(TerrainShading.ACCENT_COLOR));
+
+		String below = style.getLayer(belowLayerId) != null ? belowLayerId : null;
+		if (below == null) {
+			for (Layer layer : style.getLayers()) {
+				if (layer instanceof SymbolLayer) {
+					below = layer.getId();
+					break;
+				}
+			}
+		}
+		if (below != null) {
+			style.addLayerBelow(shading, below);
+		} else {
+			style.addLayer(shading);
+		}
+	}
+
+	/**
+	 * Adds the terrain tiles as a source, once: the relief shading and the attribution of the
+	 * terrain the A.R. view places POIs on share it.
+	 */
+	private static void addTerrainSource(Style style) {
+		if (style.getSource(TERRAIN_SOURCE_ID) != null) {
+			return;
+		}
+		TileSet terrainTiles = new TileSet("3.0.0", TerrainElevation.TILE_URL);
+		terrainTiles.setAttribution(TerrainElevation.ATTRIBUTION);
+		terrainTiles.setEncoding(TerrainElevation.ENCODING);
+		terrainTiles.setMinZoom(TerrainShading.SOURCE_MIN_ZOOM);
+		terrainTiles.setMaxZoom(TerrainElevation.MAX_ZOOM);
+		style.addSource(new RasterDemSource(TERRAIN_SOURCE_ID, terrainTiles,
+				TerrainElevation.TILE_SIZE));
 	}
 
 	private void initializeOverlayLayers(Style style) {
@@ -612,13 +681,10 @@ public class MapLibreMapWidget {
 						.withClusterMaxZoom((int) Math.ceil(MapZoomLevels.AREA_MIN) - 1)
 						.withClusterRadius(DisplayableGeoNode.CLUSTER_ICON_DP_SIZE)));
 		if (creditTerrain) {
-			// No layer draws it, so no tile is fetched: the source is only there for the
-			// attribution dialog, which lists the attributions of the style sources.
-			TileSet terrainTiles = new TileSet("3.0.0", TerrainElevation.TILE_URL);
-			terrainTiles.setAttribution(TerrainElevation.ATTRIBUTION);
-			terrainTiles.setEncoding(TerrainElevation.ENCODING);
-			style.addSource(new RasterDemSource(TERRAIN_SOURCE_ID, terrainTiles,
-					TerrainElevation.TILE_SIZE));
+			// Unless the relief is shaded, no layer draws it, so no tile is fetched: the source
+			// is only there for the attribution dialog, which lists the attributions of the
+			// style sources.
+			addTerrainSource(style);
 		}
 
 		style.addLayer(new FillLayer(HULL_FILL_LAYER_ID, HULL_SOURCE_ID)

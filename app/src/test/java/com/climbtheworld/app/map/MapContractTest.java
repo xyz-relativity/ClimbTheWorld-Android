@@ -2,12 +2,15 @@ package com.climbtheworld.app.map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import com.climbtheworld.app.map.model.MapBounds;
 import com.climbtheworld.app.map.model.MapCameraState;
 import com.climbtheworld.app.map.model.MapCoordinate;
+import com.climbtheworld.app.map.style.MapStyleDefinition;
 import com.climbtheworld.app.map.style.MapStyleRegistry;
+import com.climbtheworld.app.map.style.TerrainShading;
 
 import org.junit.Test;
 
@@ -213,6 +216,45 @@ public class MapContractTest {
 				MapStyleRegistry.OPEN_TOPO_MAP.getStyleUrl());
 		assertEquals(Arrays.asList(MapStyleRegistry.OPEN_FREE_MAP_LIBERTY,
 				MapStyleRegistry.OPEN_TOPO_MAP), MapStyleRegistry.getAvailableStyles());
+	}
+
+	@Test
+	public void styleRegistryShadesTheReliefOnlyOverLiberty() {
+		MapStyleDefinition liberty = MapStyleRegistry.OPEN_FREE_MAP_LIBERTY;
+		assertTrue(liberty.hasTerrainShading());
+		assertEquals("waterway_tunnel", liberty.getShadingBelowLayerId());
+		assertFalse(MapStyleRegistry.OPEN_TOPO_MAP.hasTerrainShading());
+		assertNull(MapStyleRegistry.OPEN_TOPO_MAP.getShadingBelowLayerId());
+	}
+
+	@Test
+	public void shadedMapsNeverWantTheZoomZeroTerrainTile() {
+		// MapLibre picks the terrain tiles at the rounded zoom: zoomed out as far as allowed,
+		// it still wants tiles the source has.
+		assertTrue(Math.round(TerrainShading.MAP_MIN_ZOOM) >= TerrainShading.SOURCE_MIN_ZOOM);
+		assertTrue(TerrainShading.SOURCE_MIN_ZOOM >= 1);
+	}
+
+	@Test
+	public void terrainShadingEasesDownFromWorldToRegionZoom() {
+		assertTrue(TerrainShading.WORLD_ZOOM < TerrainShading.REGION_ZOOM);
+		assertTrue(TerrainShading.WORLD_EXAGGERATION >= TerrainShading.EXAGGERATION);
+		// The style spec caps hillshade-exaggeration at 1.
+		assertTrue(TerrainShading.WORLD_EXAGGERATION <= 1);
+	}
+
+	@Test
+	public void styleDefinitionsDifferByTheirShading() {
+		MapStyleDefinition plain = new MapStyleDefinition("id", "Name", "https://example.org");
+		MapStyleDefinition shaded =
+				new MapStyleDefinition("id", "Name", "https://example.org", "water");
+		assertFalse(plain.equals(shaded));
+		assertEquals(plain, new MapStyleDefinition("id", "Name", "https://example.org", null));
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void styleDefinitionRejectsAnEmptyShadingLayer() {
+		new MapStyleDefinition("id", "Name", "https://example.org", " ");
 	}
 
 	@Test

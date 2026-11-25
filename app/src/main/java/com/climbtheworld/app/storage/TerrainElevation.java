@@ -49,6 +49,9 @@ public class TerrainElevation {
 	public static final int BASE_ZOOM = 12;
 	// Only where detailed data exists; elsewhere lookups fall back to the base zoom.
 	public static final int DETAIL_ZOOM = 14;
+	// The most detailed tiles, again only where the data is that fine. Where a tile is missing,
+	// the maps draw its parent, scaled up, as they do past this zoom.
+	public static final int MAX_ZOOM = 17;
 	// As the Mapterhorn TileJSON gives it, to be shown wherever the terrain is used.
 	public static final String ATTRIBUTION =
 			"<a href='https://mapterhorn.com/attribution'>© Mapterhorn</a>";

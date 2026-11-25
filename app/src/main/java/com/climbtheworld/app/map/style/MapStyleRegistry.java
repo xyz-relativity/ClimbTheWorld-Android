@@ -8,10 +8,13 @@ import java.util.List;
  * The application's supported basemap styles.
  */
 public final class MapStyleRegistry {
+	// With the relief shaded in, see TerrainShading: under its rivers, lakes, roads and labels,
+	// over its land cover.
 	public static final MapStyleDefinition OPEN_FREE_MAP_LIBERTY = new MapStyleDefinition(
 			"openfreemap-liberty",
 			"OpenFreeMap Liberty",
-			"https://tiles.openfreemap.org/styles/liberty");
+			"https://tiles.openfreemap.org/styles/liberty",
+			"waterway_tunnel");
 	// Raster tiles wrapped in a bundled style, which also points at OpenFreeMap's glyphs for the
 	// cluster labels.
 	public static final MapStyleDefinition OPEN_TOPO_MAP = new MapStyleDefinition(
