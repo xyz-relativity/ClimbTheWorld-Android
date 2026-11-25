@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.function.Predicate;
 
 @RunWith(RobolectricTestRunner.class)
 public class ClimbingRouteCounterTest {
@@ -399,6 +400,96 @@ public class ClimbingRouteCounterTest {
 	}
 
 	@Test
+	public void matchingCountsPerStyleAndGradeCoverOnlyTheMatchingRoutes() throws JSONException {
+		String hard = GradeSystem.uiaa.getGrade(20);
+		String easy = GradeSystem.uiaa.getGrade(10);
+		int hardIndex = GradeSystem.uiaa.indexOf(hard);
+		int easyIndex = GradeSystem.uiaa.indexOf(easy);
+		addNode(10, route("climbing:sport", "yes", "climbing:grade:uiaa", hard, "name", "Alpha"));
+		addNode(11, route("climbing:sport", "yes", "climbing:grade:uiaa", hard, "name", "Beta"));
+		addNode(12, route("climbing:trad", "yes", "climbing:grade:uiaa", easy, "name", "Gamma"));
+		addNode(13, route("climbing:grade:uiaa", easy, "name", "Ant"));
+		addNode(14, route("climbing:grade:uiaa", hard, "name", "Delta"));
+		OsmCollectionEntity crag = addCollection(2, "relation", site("crag"), new JSONArray());
+		crag.osmNodes = Arrays.asList(10L, 11L, 12L, 13L, 14L);
+
+		ClimbingRouteCounter.RouteSummary summary =
+				filteredBy(route -> route.getName().startsWith("A")).summarize(crag);
+
+		assertTrue(summary.isFiltered());
+		assertEquals(2, summary.getMatchingRouteCount());
+		// The counts still cover all the routes.
+		assertEquals(Integer.valueOf(2), summary.getStyleCounts().get(GeoNode.ClimbingStyle.sport));
+		assertEquals(Integer.valueOf(2),
+				summary.getGradeCounts(GeoNode.ClimbingStyle.sport).get(hardIndex));
+		assertEquals(2, summary.getUnstyledRouteCount());
+		// The matching ones apart.
+		assertEquals(1, summary.getMatchingStyleCount(GeoNode.ClimbingStyle.sport));
+		assertEquals(0, summary.getMatchingStyleCount(GeoNode.ClimbingStyle.trad));
+		assertEquals(0, summary.getMatchingStyleCount(GeoNode.ClimbingStyle.boulder));
+		assertEquals(Collections.singletonMap(hardIndex, 1),
+				new HashMap<>(summary.getMatchingGradeCounts(GeoNode.ClimbingStyle.sport)));
+		assertTrue(summary.getMatchingGradeCounts(GeoNode.ClimbingStyle.trad).isEmpty());
+		assertEquals(Collections.singletonMap(easyIndex, 1),
+				new HashMap<>(summary.getMatchingUnstyledGradeCounts()));
+		assertEquals(1, summary.getMatchingUnstyledRouteCount());
+	}
+
+	@Test
+	public void unfilteredMatchingCountsAreTheCounts() throws JSONException {
+		String grade = GradeSystem.uiaa.getGrade(20);
+		addNode(10, route("climbing:sport", "yes", "climbing:grade:uiaa", grade));
+		addNode(11, route("climbing:grade:uiaa", grade));
+		OsmCollectionEntity crag = addCollection(2, "relation", site("crag"), new JSONArray());
+		crag.osmNodes = Arrays.asList(10L, 11L);
+
+		ClimbingRouteCounter.RouteSummary summary = counter.summarize(crag);
+
+		assertFalse(summary.isFiltered());
+		assertEquals(1, summary.getMatchingStyleCount(GeoNode.ClimbingStyle.sport));
+		assertEquals(summary.getGradeCounts(GeoNode.ClimbingStyle.sport),
+				summary.getMatchingGradeCounts(GeoNode.ClimbingStyle.sport));
+		assertEquals(summary.getUnstyledGradeCounts(), summary.getMatchingUnstyledGradeCounts());
+		assertEquals(1, summary.getMatchingUnstyledRouteCount());
+	}
+
+	@Test
+	public void filteredOutPinsAreThoseOfNoMatchingRouteOrNotMatchingThemselves()
+			throws JSONException {
+		OsmNode sport = addNode(10, route("climbing:sport", "yes"));
+		OsmNode trad = addNode(11, route("climbing:trad", "yes"));
+		OsmNode sportCragNode = addNode(12, group("crag").put("climbing:sport", "yes"));
+		OsmNode cragNode = addNode(13, group("crag"));
+		OsmCollectionEntity tradCrag = addCollection(2, "relation", site("crag"),
+				members("node", 11));
+		tradCrag.osmNodes = Collections.singletonList(11L);
+		OsmCollectionEntity mixedCrag = addCollection(3, "relation", site("crag"),
+				members("node", 10, "node", 11));
+		mixedCrag.osmNodes = Arrays.asList(10L, 11L);
+		ClimbingRouteCounter sportOnly = sportOnly();
+		MapCoordinate location = new MapCoordinate(45, 24);
+
+		// A crag of no matching route, by the count on its pin, as the map's
+		// GeometrySpec.isFilteredOut.
+		assertTrue(sportOnly.isFilteredOut(sportOnly.pin(tradCrag, location)));
+		assertFalse(sportOnly.isFilteredOut(sportOnly.pin(mixedCrag, location)));
+		// A route by its own tags, as the map's pins.
+		assertTrue(sportOnly.isFilteredOut(new GeoNode(trad.jsonNodeInfo)));
+		assertFalse(sportOnly.isFilteredOut(new GeoNode(sport.jsonNodeInfo)));
+		// The top of a route mapped as a way, by the route.
+		RouteWay.Top top = new RouteWay.Top(new JSONObject(sport.jsonNodeInfo.toString()),
+				new GeoNode(trad.jsonNodeInfo));
+		assertTrue(sportOnly.isFilteredOut(top));
+		// Anything else holding no route, as the map's pins.
+		assertFalse(sportOnly.isFilteredOut(new GeoNode(sportCragNode.jsonNodeInfo)));
+		assertTrue(sportOnly.isFilteredOut(new GeoNode(cragNode.jsonNodeInfo)));
+		// Nothing while no filter is on.
+		assertFalse(counter.isFilteredOut(counter.pin(tradCrag, location)));
+		assertFalse(counter.isFilteredOut(new GeoNode(cragNode.jsonNodeInfo)));
+		assertFalse(ClimbingRouteCounter.isFilteredOut(sportOnly.pin(tradCrag, location), null));
+	}
+
+	@Test
 	public void unfilteredCountCountsAllRoutesUnmarked() throws JSONException {
 		addNode(10, route());
 		OsmCollectionEntity crag = addCollection(2, "relation", site("crag"),
@@ -447,6 +538,11 @@ public class ClimbingRouteCounterTest {
 
 	/** A counter of the same data that counts apart the sport routes, as a style filter would. */
 	private ClimbingRouteCounter sportOnly() {
+		return filteredBy(route -> route.getClimbingStyles().contains(GeoNode.ClimbingStyle.sport));
+	}
+
+	/** A counter of the same data that counts apart the routes matching the filter. */
+	private ClimbingRouteCounter filteredBy(Predicate<GeoNode> routeFilter) {
 		return new ClimbingRouteCounter(new ClimbingRouteCounter.EntitySource() {
 			@Override
 			public Map<Long, OsmNode> loadNodes(List<Long> ids) {
@@ -457,7 +553,7 @@ public class ClimbingRouteCounterTest {
 			public Map<String, OsmCollectionEntity> loadCollections(List<Long> ids) {
 				return selectCollections(ids);
 			}
-		}, route -> route.getClimbingStyles().contains(GeoNode.ClimbingStyle.sport));
+		}, routeFilter);
 	}
 
 	private Map<String, OsmCollectionEntity> selectCollections(List<Long> ids) {

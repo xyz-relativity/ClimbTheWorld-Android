@@ -12,7 +12,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.map.DisplayableGeoNode;
+import com.climbtheworld.app.map.marker.NodeDisplayFilters;
 import com.climbtheworld.app.map.widget.climbing.ClimbingRouteCounter;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.GeoNode;
@@ -26,6 +28,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.Map;
+import java.util.function.Predicate;
 
 /**
  * The members of a relation being edited, as a strip in their order, left to right as along the
@@ -45,6 +48,9 @@ public class RelationMemberList {
 	private final Map<String, ClimbingRouteCounter.RouteSummary> routes;
 	private final String highlightedKey;
 	private final OnMembersChangedListener listener;
+	// The routes the display filters show, null while none is on: the cards of the members they
+	// leave out fade out, see bind.
+	private final Predicate<GeoNode> displayFilter;
 	private final RecyclerView list;
 	private final MemberAdapter adapter = new MemberAdapter();
 
@@ -69,6 +75,7 @@ public class RelationMemberList {
 		this.routes = routes;
 		this.highlightedKey = highlightedKey;
 		this.listener = listener;
+		displayFilter = NodeDisplayFilters.routeFilter(Configs.instance(parent));
 
 		View section = parent.getLayoutInflater().inflate(R.layout.fragment_edit_members, container, false);
 		container.addView(section);
@@ -233,6 +240,9 @@ public class RelationMemberList {
 		}
 		String name = downloaded ? pin.getGeoNode().getName()
 				: parent.getString(R.string.member_not_downloaded);
+		// Faded out as on the map when the display filters leave it out, still edited on a tap.
+		pin.setGhost(downloaded
+				&& ClimbingRouteCounter.isFilteredOut(pin.getGeoNode(), displayFilter));
 		MemberIconCard.show(parent, card, pin, name, routeNumbers()[index]);
 		card.setBackgroundResource(keyAt(index).equals(highlightedKey)
 				? R.drawable.bg_route_member_icon_selected : R.drawable.bg_route_member_icon);

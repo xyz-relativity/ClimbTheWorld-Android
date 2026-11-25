@@ -22,7 +22,9 @@ import com.climbtheworld.app.augmentedreality.placement.AlignmentChoices;
 import com.climbtheworld.app.augmentedreality.placement.AlignmentOrder;
 import com.climbtheworld.app.augmentedreality.placement.AlignmentSuggestions;
 import com.climbtheworld.app.augmentedreality.placement.SuggestionsOutOfSight;
+import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.map.DisplayableGeoNode;
+import com.climbtheworld.app.map.marker.NodeDisplayFilters;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.map.widget.climbing.ClimbingParent;
 import com.climbtheworld.app.map.widget.climbing.ClimbingRouteCounter;
@@ -48,6 +50,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import needle.UiRelatedTask;
 
@@ -96,6 +99,12 @@ class AlignmentPicker {
 		final List<String> cragNames = new ArrayList<>();
 		// The crags' pins, as the info dialogs show them by their names, by their index.
 		final List<Drawable> cragIcons = new ArrayList<>();
+		// Whether the display filters leave each crag out, by its index: its pin and name fade
+		// out, see ClimbingRouteCounter.isFilteredOut.
+		final List<Boolean> cragsFilteredOut = new ArrayList<>();
+		// The routes the display filters show, null while none is on: the cards of the others
+		// fade out, still aligned on with a tap.
+		Predicate<GeoNode> displayFilter;
 		// Each route's number in its crag, by OSM ID.
 		final Map<Long, Integer> routeNumbers = new HashMap<>();
 	}
@@ -145,6 +154,7 @@ class AlignmentPicker {
 		}
 		routes.sort(Comparator.comparingDouble(node -> distanceMeters(node, latitude, longitude)));
 		Around around = new Around();
+		around.displayFilter = NodeDisplayFilters.routeFilter(Configs.instance(activity));
 		List<AlignmentOrder.Site> crags = new ArrayList<>();
 		List<AlignmentOrder.Site> areas = new ArrayList<>();
 		loadSites(dataManager, latitude, longitude, crags, areas, around);
@@ -181,9 +191,13 @@ class AlignmentPicker {
 				crags.add(new AlignmentOrder.Site(relation.osmID,
 						RelationMembers.nodeRefs(members)));
 				around.cragNames.add(ClimbingParent.nameOf(activity, relation));
-				// With the route count, as the map shows it.
-				around.cragIcons.add(new PoiMarkerDrawable(activity,
-						DataManager.toDisplayableNode(relation, routeCounter)).getDrawable());
+				// With the route count, as the map shows it, faded out as there when the display
+				// filters leave none of its routes.
+				DisplayableGeoNode pin = DataManager.toDisplayableNode(relation, routeCounter);
+				boolean filteredOut = routeCounter.isFilteredOut(pin.getGeoNode());
+				pin.setGhost(filteredOut);
+				around.cragIcons.add(new PoiMarkerDrawable(activity, pin).getDrawable());
+				around.cragsFilteredOut.add(filteredOut);
 				routeCounter.numberRoutes(relation).forEach(around.routeNumbers::putIfAbsent);
 			} else if (relation.entityClimbingType == OsmEntity.EntityClimbingType.area) {
 				areas.add(new AlignmentOrder.Site(relation.osmID,
@@ -591,6 +605,9 @@ class AlignmentPicker {
 				title.setText(R.string.ar_placement_align_no_crag);
 			} else {
 				title.setText(around.cragNames.get(crag));
+				if (around.cragsFilteredOut.get(crag)) {
+					title.setAlpha(DisplayableGeoNode.GHOST_VIEW_ALPHA);
+				}
 				ImageView icon = group.findViewById(R.id.alignGroupIcon);
 				icon.setImageDrawable(around.cragIcons.get(crag));
 				icon.setVisibility(View.VISIBLE);
@@ -618,8 +635,11 @@ class AlignmentPicker {
 				View card = view.findViewById(R.id.alignRouteCard);
 				// The number by the name rather than on the pin, as the relation editor's
 				// members show it.
-				MemberIconCard.show(activity, card, new DisplayableGeoNode(route),
-						route.getName(), around.routeNumbers.getOrDefault(route.osmID, 0));
+				// Faded out as on the map when the display filters leave it out.
+				DisplayableGeoNode pin = new DisplayableGeoNode(route);
+				pin.setGhost(ClimbingRouteCounter.isFilteredOut(route, around.displayFilter));
+				MemberIconCard.show(activity, card, pin, route.getName(),
+						around.routeNumbers.getOrDefault(route.osmID, 0));
 				// As the lists of climbing POIs show it, see DialogueUtils.setDistance.
 				((TextView) view.findViewById(R.id.alignRouteDistance)).setText(
 						Globals.getDistanceString(GeoUtils.calculateDistance(user, route)));

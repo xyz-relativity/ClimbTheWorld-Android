@@ -28,7 +28,9 @@ public final class MemberIconCard {
 	}
 
 	/**
-	 * Shows the member on the card, which may have shown another.
+	 * Shows the member on the card, which may have shown another. A pin faded out, as one the
+	 * display filters leave out (see DisplayableGeoNode#setGhost), fades its number and name
+	 * with it.
 	 *
 	 * @param routeNumber the route's number in its crag, 0 for a member without one
 	 * @return what the card says, its number and name
@@ -48,6 +50,8 @@ public final class MemberIconCard {
 		card.findViewById(R.id.memberIconLabel).getLayoutParams().width =
 				Math.max(iconWidth, NAME_MIN_WIDTH);
 
+		card.findViewById(R.id.memberIconLabel).setAlpha(
+				pin.isVisible() ? 1 : DisplayableGeoNode.GHOST_VIEW_ALPHA);
 		TextView nameView = card.findViewById(R.id.memberIconName);
 		nameView.setText(name);
 		TextView numberView = card.findViewById(R.id.memberIconNumber);

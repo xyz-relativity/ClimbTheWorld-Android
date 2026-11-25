@@ -13,7 +13,8 @@
         style="@style/GradeLabel" />
 
     <!-- The bar grows from the grade towards the count, over the share of the track set by its
-         weight, see NodeDialogBuilder.buildGradeRow. -->
+         weight, see NodeDialogBuilder.buildGradeRow: the routes matching the display filters,
+         then the rest faded out. -->
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -30,6 +31,15 @@
             android:layout_weight="0"
             android:background="@drawable/bg_grade_bar"
             android:importantForAccessibility="no" />
+
+        <View
+            android:id="@+id/memberGradeBarFilteredOut"
+            android:layout_width="0dp"
+            android:layout_height="10dp"
+            android:layout_weight="0"
+            android:background="@drawable/bg_grade_bar"
+            android:importantForAccessibility="no"
+            android:visibility="gone" />
     </LinearLayout>
 
     <!-- At least two digits wide, so every row's track ends at the same place. -->

@@ -60,6 +60,9 @@ public final class ClimbingPoiRow {
 	/**
 	 * @param recycled    the list's row to reuse, or a new one of a layout including
 	 *                    list_item_climbing_poi_content, null for a plain new one
+	 * @param pin         faded out, as one the display filters leave out (see
+	 *                    DisplayableGeoNode#setGhost), it fades the name and what the POI is part
+	 *                    of with it
 	 * @param parentLabel what the POI is part of, see ClimbingParent#getLabel, empty for nothing
 	 */
 	public View build(View recycled, DisplayableGeoNode pin, String name, String parentLabel) {
@@ -76,7 +79,10 @@ public final class ClimbingPoiRow {
 		iconView.getLayoutParams().width = (int) (icon.getIntrinsicWidth() * PIN_SCALE);
 		iconView.getLayoutParams().height = (int) (icon.getIntrinsicHeight() * PIN_SCALE);
 
-		((TextView) row.findViewById(R.id.climbingPoiName)).setText(name);
+		TextView nameView = row.findViewById(R.id.climbingPoiName);
+		nameView.setText(name);
+		float textAlpha = pin.isVisible() ? 1 : DisplayableGeoNode.GHOST_VIEW_ALPHA;
+		nameView.setAlpha(textAlpha);
 		DialogueUtils.setDistance(activity, row, user != null ? user : Globals.virtualCamera,
 				pin.getGeoNode(), closeList);
 		// Their tooltips take the touches on them, so a tap on them is the row's, as on the rest.
@@ -85,6 +91,7 @@ public final class ClimbingPoiRow {
 		row.findViewById(R.id.editBearings).setOnClickListener(rowTap);
 		TextView parentView = row.findViewById(R.id.climbingPoiParent);
 		parentView.setText(parentLabel);
+		parentView.setAlpha(textAlpha);
 		parentView.setVisibility(parentLabel.isEmpty() ? View.GONE : View.VISIBLE);
 		return row;
 	}

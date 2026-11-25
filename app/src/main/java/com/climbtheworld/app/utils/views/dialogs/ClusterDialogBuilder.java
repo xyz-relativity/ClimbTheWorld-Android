@@ -38,7 +38,8 @@ import needle.UiRelatedTask;
 
 /**
  * Lists what a map cluster holds, see ClimbingPoiRow: the outermost relations its POIs belong to,
- * followed by the POIs that are in no relation. Each entry opens its own info dialog.
+ * followed by the POIs that are in no relation. Each entry opens its own info dialog, but those
+ * the display filters leave out, which fade out and open nothing, as on the map.
  */
 public class ClusterDialogBuilder {
 	// Larger than any relation rank, so single POIs sort after every relation.
@@ -116,9 +117,15 @@ public class ClusterDialogBuilder {
 			@Override
 			public View getView(int i, View view, ViewGroup viewGroup) {
 				ClusterEntry entry = visibleList.get(i);
-				view = rows.build(view, new DisplayableGeoNode(entry.poi), entry.getName(),
-						entry.parentLabel);
-				view.setOnClickListener(clicked -> entry.showInfo(parent));
+				DisplayableGeoNode pin = new DisplayableGeoNode(entry.poi);
+				pin.setGhost(entry.filteredOut);
+				view = rows.build(view, pin, entry.getName(), entry.parentLabel);
+				if (entry.filteredOut) {
+					view.setOnClickListener(null);
+					view.setClickable(false);
+				} else {
+					view.setOnClickListener(clicked -> entry.showInfo(parent));
+				}
 				return view;
 			}
 		};
@@ -140,11 +147,12 @@ public class ClusterDialogBuilder {
 			MapCoordinate center = DataManager.collectionCenter(relation);
 			GeoNode poi = routeCounter.pin(relation, center);
 			result.add(new ClusterEntry(poi, relation, center,
-					ClimbingParent.labelOf(parent, poi)));
+					ClimbingParent.labelOf(parent, poi), routeCounter.isFilteredOut(poi)));
 		}
 		for (DisplayableGeoNode poi : content.pois) {
 			result.add(new ClusterEntry(poi.geoNode, null, null,
-					ClimbingParent.labelOf(parent, poi.geoNode)));
+					ClimbingParent.labelOf(parent, poi.geoNode),
+					routeCounter.isFilteredOut(poi.geoNode)));
 		}
 		// From the outermost relations down to the single POIs.
 		Collections.sort(result, Comparator.comparingInt(ClusterEntry::getRank)
@@ -154,9 +162,13 @@ public class ClusterDialogBuilder {
 
 	/**
 	 * A relation (with its center) or a single POI (without), with what it is part of.
+	 *
+	 * @param filteredOut whether the display filters leave it out, see
+	 *                    ClimbingRouteCounter.isFilteredOut
 	 */
 	private record ClusterEntry(GeoNode poi, OsmCollectionEntity relation,
-	                            MapCoordinate coordinate, String parentLabel) {
+	                            MapCoordinate coordinate, String parentLabel,
+	                            boolean filteredOut) {
 
 		private String getName() {
 			return !poi.getName().isEmpty() ? poi.getName() : Long.toString(poi.osmID);

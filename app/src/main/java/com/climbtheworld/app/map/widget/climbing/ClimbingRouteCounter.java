@@ -55,6 +55,11 @@ public final class ClimbingRouteCounter {
 		private final Map<GeoNode.ClimbingStyle, Integer> styleCounts;
 		private final Map<GeoNode.ClimbingStyle, SortedMap<Integer, Integer>> styleGradeCounts;
 		private final SortedMap<Integer, Integer> unstyledGradeCounts;
+		// The same of the routes matching the route filter, while filtered.
+		private final Map<GeoNode.ClimbingStyle, Integer> matchingStyleCounts;
+		private final Map<GeoNode.ClimbingStyle, SortedMap<Integer, Integer>>
+				matchingStyleGradeCounts;
+		private final SortedMap<Integer, Integer> matchingUnstyledGradeCounts;
 		private final double minLength;
 		private final double maxLength;
 		private final int minGrade;
@@ -65,6 +70,10 @@ public final class ClimbingRouteCounter {
 		                     Map<GeoNode.ClimbingStyle, Integer> styleCounts,
 		                     Map<GeoNode.ClimbingStyle, SortedMap<Integer, Integer>> styleGradeCounts,
 		                     SortedMap<Integer, Integer> unstyledGradeCounts,
+		                     Map<GeoNode.ClimbingStyle, Integer> matchingStyleCounts,
+		                     Map<GeoNode.ClimbingStyle, SortedMap<Integer, Integer>>
+				                     matchingStyleGradeCounts,
+		                     SortedMap<Integer, Integer> matchingUnstyledGradeCounts,
 		                     double minLength, double maxLength, int minGrade, int maxGrade,
 		                     List<String> routeNames) {
 			this.routeCount = routeCount;
@@ -73,6 +82,10 @@ public final class ClimbingRouteCounter {
 			this.styleCounts = Collections.unmodifiableMap(styleCounts);
 			this.styleGradeCounts = Collections.unmodifiableMap(styleGradeCounts);
 			this.unstyledGradeCounts = Collections.unmodifiableSortedMap(unstyledGradeCounts);
+			this.matchingStyleCounts = Collections.unmodifiableMap(matchingStyleCounts);
+			this.matchingStyleGradeCounts = Collections.unmodifiableMap(matchingStyleGradeCounts);
+			this.matchingUnstyledGradeCounts =
+					Collections.unmodifiableSortedMap(matchingUnstyledGradeCounts);
 			this.minLength = minLength;
 			this.maxLength = maxLength;
 			this.minGrade = minGrade;
@@ -169,6 +182,48 @@ public final class ClimbingRouteCounter {
 		}
 
 		/**
+		 * The count of the routes of the style that match the route filter, or of all of them
+		 * when it is not filtered; see getStyleCounts. The details dialog fades the rest out.
+		 */
+		public int getMatchingStyleCount(GeoNode.ClimbingStyle style) {
+			Integer result = (filtered ? matchingStyleCounts : styleCounts).get(style);
+			return result != null ? result : 0;
+		}
+
+		/**
+		 * Route count per grade index of the routes of the style that match the route filter,
+		 * or of all of them when it is not filtered, ordered as getGradeCounts.
+		 */
+		public SortedMap<Integer, Integer> getMatchingGradeCounts(GeoNode.ClimbingStyle style) {
+			if (!filtered) {
+				return getGradeCounts(style);
+			}
+			SortedMap<Integer, Integer> result = matchingStyleGradeCounts.get(style);
+			return result != null ? Collections.unmodifiableSortedMap(result)
+					: Collections.unmodifiableSortedMap(new TreeMap<>(GRADE_ORDER));
+		}
+
+		/**
+		 * Route count per grade index of the routes tagged with no climbing style that match the
+		 * route filter, or of all of them when it is not filtered, ordered as getGradeCounts.
+		 */
+		public SortedMap<Integer, Integer> getMatchingUnstyledGradeCounts() {
+			return filtered ? matchingUnstyledGradeCounts : unstyledGradeCounts;
+		}
+
+		/**
+		 * The count of the routes tagged with no climbing style that match the route filter, or
+		 * of all of them when it is not filtered.
+		 */
+		public int getMatchingUnstyledRouteCount() {
+			int result = 0;
+			for (int count : getMatchingUnstyledGradeCounts().values()) {
+				result += count;
+			}
+			return result;
+		}
+
+		/**
 		 * Names of the counted routes; unnamed routes are absent.
 		 */
 		public List<String> getRouteNames() {
@@ -188,6 +243,12 @@ public final class ClimbingRouteCounter {
 		private final Map<GeoNode.ClimbingStyle, SortedMap<Integer, Integer>> styleGradeCounts =
 				new EnumMap<>(GeoNode.ClimbingStyle.class);
 		private final SortedMap<Integer, Integer> unstyledGradeCounts = new TreeMap<>(GRADE_ORDER);
+		private final Map<GeoNode.ClimbingStyle, Integer> matchingStyleCounts =
+				new EnumMap<>(GeoNode.ClimbingStyle.class);
+		private final Map<GeoNode.ClimbingStyle, SortedMap<Integer, Integer>>
+				matchingStyleGradeCounts = new EnumMap<>(GeoNode.ClimbingStyle.class);
+		private final SortedMap<Integer, Integer> matchingUnstyledGradeCounts =
+				new TreeMap<>(GRADE_ORDER);
 		private double minLength = Double.NaN;
 		private double maxLength = Double.NaN;
 		private int minGrade = UNKNOWN_GRADE;
@@ -201,7 +262,9 @@ public final class ClimbingRouteCounter {
 		private void addRoute(OsmEntity route) {
 			JSONObject tags = route.getTags();
 			routeCount++;
-			if (routeFilter != null && routeFilter.test(new GeoNode(route.jsonNodeInfo))) {
+			boolean matches =
+					routeFilter != null && routeFilter.test(new GeoNode(route.jsonNodeInfo));
+			if (matches) {
 				matchingRouteCount++;
 			}
 			String name = tags.optString(ClimbingTags.KEY_NAME).trim();
@@ -221,16 +284,29 @@ public final class ClimbingRouteCounter {
 			List<GeoNode.ClimbingStyle> styles = GeoNode.getClimbingStyles(tags);
 			if (styles.isEmpty()) {
 				increment(unstyledGradeCounts, grade);
+				if (matches) {
+					increment(matchingUnstyledGradeCounts, grade);
+				}
 			}
 			for (GeoNode.ClimbingStyle style : styles) {
 				increment(styleCounts, style);
-				SortedMap<Integer, Integer> grades = styleGradeCounts.get(style);
-				if (grades == null) {
-					grades = new TreeMap<>(GRADE_ORDER);
-					styleGradeCounts.put(style, grades);
+				increment(gradeCounts(styleGradeCounts, style), grade);
+				if (matches) {
+					increment(matchingStyleCounts, style);
+					increment(gradeCounts(matchingStyleGradeCounts, style), grade);
 				}
-				increment(grades, grade);
 			}
+		}
+
+		private static SortedMap<Integer, Integer> gradeCounts(
+				Map<GeoNode.ClimbingStyle, SortedMap<Integer, Integer>> styleGradeCounts,
+				GeoNode.ClimbingStyle style) {
+			SortedMap<Integer, Integer> grades = styleGradeCounts.get(style);
+			if (grades == null) {
+				grades = new TreeMap<>(GRADE_ORDER);
+				styleGradeCounts.put(style, grades);
+			}
+			return grades;
 		}
 
 		private static <K> void increment(Map<K, Integer> counts, K key) {
@@ -241,7 +317,9 @@ public final class ClimbingRouteCounter {
 		private RouteSummary build() {
 			return new RouteSummary(routeCount, matchingRouteCount,
 					routeFilter != null && routeCount > 0, styleCounts, styleGradeCounts,
-					unstyledGradeCounts, minLength, maxLength, minGrade, maxGrade, routeNames);
+					unstyledGradeCounts, matchingStyleCounts, matchingStyleGradeCounts,
+					matchingUnstyledGradeCounts, minLength, maxLength, minGrade, maxGrade,
+					routeNames);
 		}
 	}
 
@@ -348,6 +426,35 @@ public final class ClimbingRouteCounter {
 	/** The collection's pin at the location, with its routes counted; see the static pin. */
 	public GeoNode pin(OsmCollectionEntity collection, MapCoordinate location) {
 		return pin(collection, location, summarize(collection));
+	}
+
+	/**
+	 * Whether the display filters this counter counts by leave the pin out; see the static
+	 * isFilteredOut.
+	 */
+	public boolean isFilteredOut(GeoNode pin) {
+		return isFilteredOut(pin, routeFilter);
+	}
+
+	/**
+	 * Whether the display filters leave the pin out, so the lists and dialogs fade it out as
+	 * the map does the pins they leave out: a crag's or area's pin counting only the matching
+	 * routes (see pin) when none matches, as ClimbingGeometryBuilder.GeometrySpec.isFilteredOut;
+	 * any other, a route's included, when it does not match itself, as the map's pins. Never
+	 * while no filter is on.
+	 *
+	 * @param routeFilter the routes the display filters show, see
+	 *                    NodeDisplayFilters.routeFilter; null while none is on
+	 */
+	public static boolean isFilteredOut(GeoNode pin, Predicate<GeoNode> routeFilter) {
+		if (routeFilter == null) {
+			return false;
+		}
+		if (pin.routeCountFiltered) {
+			// The pin shows the count of the matching routes, see pin.
+			return "0".equals(pin.getKey(ClimbingTags.KEY_ROUTES));
+		}
+		return !routeFilter.test(RouteStandIn.routeOf(pin));
 	}
 
 	public RouteSummary summarize(OsmNode node) {

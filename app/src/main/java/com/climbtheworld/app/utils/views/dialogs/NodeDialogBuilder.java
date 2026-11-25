@@ -120,8 +120,14 @@ public class NodeDialogBuilder {
 		for (int index = 0; index < members.size(); index++) {
 			CollectionMember member = members.get(index);
 			View memberView = memberViews.get(index);
-			memberView.setOnClickListener(
-					view -> member.showInfo(activity, quickFilter.getText().toString()));
+			if (member.filteredOut()) {
+				// Faded out, it opens nothing, as a pin the display filters leave out on the map.
+				memberView.setClickable(false);
+				memberView.setFocusable(false);
+			} else {
+				memberView.setOnClickListener(
+						view -> member.showInfo(activity, quickFilter.getText().toString()));
+			}
 			elements.addView(memberView);
 		}
 		setMemberFilter(result, members, memberViews, afterFilter);
@@ -194,15 +200,22 @@ public class NodeDialogBuilder {
 	}
 
 	/**
-	 * Member icon with its name underneath, routes prefixed by their order number.
+	 * Member icon with its name underneath, routes prefixed by their order number. One the
+	 * display filters leave out fades out, name included, see CollectionMember.filteredOut.
 	 */
 	private static View buildMemberIcon(AppCompatActivity activity, ViewGroup container,
 	                                    CollectionMember member, int routeNumber) {
 		View card = activity.getLayoutInflater()
 				.inflate(R.layout.list_item_climbing_member_icon, container, false);
-		MemberIconCard.show(activity, card, new DisplayableGeoNode(member.poi), member.getName(),
-				routeNumber);
+		MemberIconCard.show(activity, card, toPin(member), member.getName(), routeNumber);
 		return card;
+	}
+
+	/** The member's pin, faded out as on the map when the display filters leave it out. */
+	private static DisplayableGeoNode toPin(CollectionMember member) {
+		DisplayableGeoNode result = new DisplayableGeoNode(member.poi);
+		result.setGhost(member.filteredOut());
+		return result;
 	}
 
 	/**
@@ -217,8 +230,13 @@ public class NodeDialogBuilder {
 		String name = member.getName();
 
 		((ImageView) card.findViewById(R.id.memberCardIcon)).setImageDrawable(
-				new PoiMarkerDrawable(activity, new DisplayableGeoNode(member.poi)).getDrawable());
-		((TextView) card.findViewById(R.id.memberCardName)).setText(name);
+				new PoiMarkerDrawable(activity, toPin(member)).getDrawable());
+		TextView nameView = card.findViewById(R.id.memberCardName);
+		nameView.setText(name);
+		if (member.filteredOut()) {
+			// Its rows fade out by themselves, as none of their routes matches.
+			nameView.setAlpha(DisplayableGeoNode.GHOST_VIEW_ALPHA);
+		}
 
 		View details = card.findViewById(R.id.memberCardDetails);
 		ImageView chevron = card.findViewById(R.id.memberCardChevron);
@@ -237,7 +255,9 @@ public class NodeDialogBuilder {
 
 	/**
 	 * One row per climbing style with its route count, each followed by its grade rows, then
-	 * one for the routes tagged with no style, so that their grades show too.
+	 * one for the routes tagged with no style, so that their grades show too. While a display
+	 * filter is on, the counts still cover all the routes, but what holds none matching it fades
+	 * out, and the grade bars fade out their share of the routes it leaves out.
 	 *
 	 * @param gradeScale route count of a full length grade bar
 	 * @return false when there are no counted routes and nothing was added.
@@ -249,74 +269,110 @@ public class NodeDialogBuilder {
 	                                    int gradeScale) {
 		for (GeoNode.ClimbingStyle style : Sorters.sortStyles(activity,
 				new ArrayList<>(styleCounts.keySet()))) {
+			int count = styleCounts.get(style);
+			// Counted from the member's own tags when it has no mapped route: none to filter.
 			addStyleRow(activity, container, gradeSystem, Collections.singletonList(style),
-					style.getNameId(), styleCounts.get(style), routes.getGradeCounts(style),
+					style.getNameId(), count,
+					routes.isFiltered() ? routes.getMatchingStyleCount(style) : count,
+					routes.getGradeCounts(style), routes.getMatchingGradeCounts(style),
 					gradeScale);
 		}
 		int unstyledCount = routes.getUnstyledRouteCount();
 		if (unstyledCount > 0) {
 			// No style, no cells: the empty icon keeps the name in line with the others.
 			addStyleRow(activity, container, gradeSystem, Collections.emptyList(),
-					R.string.unknown_style, unstyledCount, routes.getUnstyledGradeCounts(),
+					R.string.unknown_style, unstyledCount, routes.getMatchingUnstyledRouteCount(),
+					routes.getUnstyledGradeCounts(), routes.getMatchingUnstyledGradeCounts(),
 					gradeScale);
 		}
 		return !styleCounts.isEmpty() || unstyledCount > 0;
 	}
 
 	/**
-	 * @param styles the styles drawn on the row's icon
+	 * @param styles              the styles drawn on the row's icon
+	 * @param matchingCount       how many of the counted routes match the display filters, all
+	 *                            of them while none is on; with none, the row fades out
+	 * @param matchingGradeCounts the same per grade, see getGradeRows
 	 */
 	private static void addStyleRow(AppCompatActivity activity, LinearLayout container,
 	                                GradeSystem gradeSystem, List<GeoNode.ClimbingStyle> styles,
-	                                int nameId, int count, SortedMap<Integer, Integer> gradeCounts,
+	                                int nameId, int count, int matchingCount,
+	                                SortedMap<Integer, Integer> gradeCounts,
+	                                SortedMap<Integer, Integer> matchingGradeCounts,
 	                                int gradeScale) {
 		View row = activity.getLayoutInflater()
 				.inflate(R.layout.list_item_climbing_member_style, container, false);
-		((ImageView) row.findViewById(R.id.memberStyleIcon)).setImageDrawable(
+		ImageView iconView = row.findViewById(R.id.memberStyleIcon);
+		iconView.setImageDrawable(
 				MarkerUtils.getStyleIcon(activity, styles, MEMBER_CARD_STYLE_ICON_SIZE));
-		((TextView) row.findViewById(R.id.memberStyleName)).setText(nameId);
-		((TextView) row.findViewById(R.id.memberStyleCount)).setText(String.valueOf(count));
+		TextView nameView = row.findViewById(R.id.memberStyleName);
+		nameView.setText(nameId);
+		TextView countView = row.findViewById(R.id.memberStyleCount);
+		countView.setText(String.valueOf(count));
+		if (matchingCount == 0) {
+			fadeOut(iconView, nameView, countView);
+		}
 		container.addView(row);
-		for (GradeRow gradeRow : getGradeRows(gradeSystem, gradeCounts)) {
+		for (GradeRow gradeRow : getGradeRows(gradeSystem, gradeCounts, matchingGradeCounts)) {
 			container.addView(buildGradeRow(activity, container, gradeRow, gradeScale));
+		}
+	}
+
+	/** Fades the views out, as the pins the display filters leave out. */
+	private static void fadeOut(View... views) {
+		for (View view : views) {
+			view.setAlpha(DisplayableGeoNode.GHOST_VIEW_ALPHA);
 		}
 	}
 
 	/**
 	 * One row per grade, easiest first. Adjacent grade indexes that show the same text in the
 	 * grade system are merged into one row.
+	 *
+	 * @param matchingGradeCounts how many routes of each grade match the display filters, at most
+	 *                            gradeCounts'; the same map while no filter is on
 	 */
 	private static List<GradeRow> getGradeRows(GradeSystem gradeSystem,
-	                                           SortedMap<Integer, Integer> gradeCounts) {
+	                                           SortedMap<Integer, Integer> gradeCounts,
+	                                           SortedMap<Integer, Integer> matchingGradeCounts) {
 		List<GradeRow> result = new ArrayList<>();
 		String groupName = null;
 		int groupGrade = ClimbingRouteCounter.UNKNOWN_GRADE;
 		int groupMaxGrade = ClimbingRouteCounter.UNKNOWN_GRADE;
 		int groupCount = 0;
+		int groupMatchingCount = 0;
 		for (Map.Entry<Integer, Integer> entry : gradeCounts.entrySet()) {
 			String name = gradeSystem.getGrade(entry.getKey());
+			Integer matching = matchingGradeCounts.get(entry.getKey());
+			int matchingCount = matching != null ? matching : 0;
 			if (name.equals(groupName)) {
 				groupMaxGrade = entry.getKey();
 				groupCount += entry.getValue();
+				groupMatchingCount += matchingCount;
 				continue;
 			}
 			if (groupName != null) {
-				result.add(new GradeRow(groupName, groupGrade, groupMaxGrade, groupCount));
+				result.add(new GradeRow(groupName, groupGrade, groupMaxGrade, groupCount,
+						groupMatchingCount));
 			}
 			groupName = name;
 			groupGrade = entry.getKey();
 			groupMaxGrade = entry.getKey();
 			groupCount = entry.getValue();
+			groupMatchingCount = matchingCount;
 		}
 		if (groupName != null) {
-			result.add(new GradeRow(groupName, groupGrade, groupMaxGrade, groupCount));
+			result.add(new GradeRow(groupName, groupGrade, groupMaxGrade, groupCount,
+					groupMatchingCount));
 		}
 		return result;
 	}
 
 	/**
 	 * Colour-coded grade with its route count, and a bar in the grade colour as long as the
-	 * count is against the scale, growing from the grade towards the count.
+	 * count is against the scale, growing from the grade towards the count: first the share of
+	 * the routes matching the display filters, then that of the rest, faded out. A row with none
+	 * matching fades out whole.
 	 *
 	 * @param scale route count of a full length bar, at least the row's
 	 */
@@ -332,14 +388,26 @@ public class NodeDialogBuilder {
 		GradeViewUtils.styleGradeLabel(gradeView, color);
 		GradeConversionDialogBuilder.makeClickable(activity, gradeView, gradeRow.grade(),
 				gradeRow.maxGrade());
-		((TextView) row.findViewById(R.id.memberGradeCount)).setText(
-				String.valueOf(gradeRow.count()));
+		TextView countView = row.findViewById(R.id.memberGradeCount);
+		countView.setText(String.valueOf(gradeRow.count()));
+		if (gradeRow.matchingCount() == 0) {
+			fadeOut(gradeView, countView);
+		}
 
-		// The bar's weight is its share of the track.
+		// Each bar's weight is its share of the track.
 		View bar = row.findViewById(R.id.memberGradeBar);
 		((LinearLayout.LayoutParams) bar.getLayoutParams()).weight =
-				(float) gradeRow.count() / scale;
+				(float) gradeRow.matchingCount() / scale;
 		bar.setBackgroundTintList(ColorStateList.valueOf(color));
+		int filteredOutCount = gradeRow.count() - gradeRow.matchingCount();
+		if (filteredOutCount > 0) {
+			View filteredOutBar = row.findViewById(R.id.memberGradeBarFilteredOut);
+			((LinearLayout.LayoutParams) filteredOutBar.getLayoutParams()).weight =
+					(float) filteredOutCount / scale;
+			filteredOutBar.setBackgroundTintList(ColorStateList.valueOf(color));
+			filteredOutBar.setAlpha(DisplayableGeoNode.GHOST_VIEW_ALPHA);
+			filteredOutBar.setVisibility(View.VISIBLE);
+		}
 		return row;
 	}
 
@@ -357,7 +425,7 @@ public class NodeDialogBuilder {
 		gradeCounts.add(routes.getUnstyledGradeCounts());
 		int result = 0;
 		for (SortedMap<Integer, Integer> counts : gradeCounts) {
-			for (GradeRow gradeRow : getGradeRows(gradeSystem, counts)) {
+			for (GradeRow gradeRow : getGradeRows(gradeSystem, counts, counts)) {
 				result = Math.max(result, gradeRow.count());
 			}
 		}
@@ -392,10 +460,11 @@ public class NodeDialogBuilder {
 				OsmNode node = nodes.get(id);
 				if (node != null) {
 					GeoNode poi = toGeoNode(node);
+					ClimbingRouteCounter.RouteSummary routes = routeCounter.summarize(node);
 					result.add(new CollectionMember(poi, null,
 							new MapCoordinate(node.decimalLatitude, node.decimalLongitude,
 									node.elevationMeters),
-							routeCounter.summarize(node)));
+							routes, routeCounter.isFilteredOut(poi)));
 				}
 			} else if (memberType != null) {
 				OsmCollectionEntity child = collections.get(
@@ -404,7 +473,8 @@ public class NodeDialogBuilder {
 					MapCoordinate coordinate = DataManager.collectionCenter(child);
 					ClimbingRouteCounter.RouteSummary routes = routeCounter.summarize(child);
 					GeoNode poi = ClimbingRouteCounter.pin(child, coordinate, routes);
-					result.add(new CollectionMember(poi, child, coordinate, routes));
+					result.add(new CollectionMember(poi, child, coordinate, routes,
+							routeCounter.isFilteredOut(poi)));
 				}
 			}
 		}
@@ -685,7 +755,8 @@ public class NodeDialogBuilder {
 					List<CollectionMember> members = loadCollectionMembers(parent, collection,
 							dataManager, routeCounter);
 					dialogueView = buildCollectionDialog(parent, alertDialog.getListView(),
-							new CollectionMember(relation, collection, labelCoordinate, routes),
+							new CollectionMember(relation, collection, labelCoordinate, routes,
+									false),
 							members);
 					setClimbingParent(parent, dialogueView, collection.osmType,
 							collection.osmID, relation, routeCounter);
@@ -851,15 +922,23 @@ public class NodeDialogBuilder {
 	}
 
 	/**
-	 * @param grade    easiest grade index of the row, or the unknown grade
-	 * @param maxGrade hardest grade index of the row
+	 * @param grade         easiest grade index of the row, or the unknown grade
+	 * @param maxGrade      hardest grade index of the row
+	 * @param matchingCount how many of the row's routes match the display filters, all of them
+	 *                      while none is on
 	 */
-	private record GradeRow(String name, int grade, int maxGrade, int count) {
+	private record GradeRow(String name, int grade, int maxGrade, int count, int matchingCount) {
 	}
 
+	/**
+	 * @param filteredOut whether the display filters leave the member out, so it fades out and
+	 *                    opens nothing, see ClimbingRouteCounter.isFilteredOut; never for the
+	 *                    dialog's own relation
+	 */
 	private record CollectionMember(GeoNode poi, OsmCollectionEntity collection,
 	                                MapCoordinate coordinate,
-	                                ClimbingRouteCounter.RouteSummary routes) {
+	                                ClimbingRouteCounter.RouteSummary routes,
+	                                boolean filteredOut) {
 
 		/**
 		 * The name shown for the member, its OSM id when it has none.

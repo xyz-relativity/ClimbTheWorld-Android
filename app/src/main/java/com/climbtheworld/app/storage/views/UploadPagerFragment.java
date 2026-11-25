@@ -134,6 +134,9 @@ public class UploadPagerFragment extends DataFragment
 									? DataManager.toDisplayableNode((OsmNode) entity)
 									: DataManager.toDisplayableNode((OsmCollectionEntity) entity,
 									routeCounter);
+							// Faded out with its name as on the map when the display filters
+							// leave it out; still opened and uploaded as any other.
+							node.setGhost(routeCounter.isFilteredOut(node.getGeoNode()));
 							final String description = describe(entity);
 							Needle.onMainThread().execute(new Runnable() {
 								@Override
@@ -150,6 +153,10 @@ public class UploadPagerFragment extends DataFragment
 
 									((TextView) newViewElement.findViewById(R.id.itemID)).setText(
 											entity.osmType.name() + KEY_SEPARATOR + entity.osmID);
+									if (!node.isVisible()) {
+										newViewElement.findViewById(R.id.textTypeName)
+												.setAlpha(DisplayableGeoNode.GHOST_VIEW_ALPHA);
+									}
 									newViewElement.setOnClickListener(new View.OnClickListener() {
 										@Override
 										public void onClick(View view) {

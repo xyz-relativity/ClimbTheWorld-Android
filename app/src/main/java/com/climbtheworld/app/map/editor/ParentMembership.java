@@ -405,7 +405,13 @@ public class ParentMembership {
 			sizeAsTypeIcon(icon);
 			icon.setVisibility(View.VISIBLE);
 		}
-		((TextView) row.findViewById(R.id.textParentName)).setText(nameOf(membership.relation));
+		TextView nameView = row.findViewById(R.id.textParentName);
+		nameView.setText(nameOf(membership.relation));
+		// Faded out with its pin when the display filters leave none of its routes, see pinOf;
+		// it is still edited on a tap.
+		if (membership.pin != null && !membership.pin.isVisible()) {
+			nameView.setAlpha(DisplayableGeoNode.GHOST_VIEW_ALPHA);
+		}
 		((TextView) row.findViewById(R.id.textParentElements)).setText(elementsText(membership));
 		View removeButton = row.findViewById(R.id.buttonRemoveFromParent);
 		sizeAsTypeIcon(removeButton);
@@ -579,8 +585,7 @@ public class ParentMembership {
 						// A crag doesn't go into itself.
 						if (!listed.contains(relation.osmID) && !(relation.osmID == memberId
 								&& kind.memberType == EntityOsmType.relation)) {
-							DisplayableGeoNode pin =
-									DataManager.toDisplayableNode(relation, routeCounter);
+							DisplayableGeoNode pin = pinOf(relation, routeCounter);
 							result.add(new ListedParent(relation, pin,
 									ClimbingParent.labelOf(parent, pin.getGeoNode())));
 						}
@@ -633,12 +638,15 @@ public class ParentMembership {
 
 	/**
 	 * The relation as its pin draws it, as the picker lists it and the map shows it: the count on
-	 * it is of its routes as they are stored, so without what the edit changes until it is saved.
-	 * Runs off the UI thread.
+	 * it is of its routes as they are stored, so without what the edit changes until it is saved,
+	 * and faded out when the display filters leave none of them, see
+	 * ClimbingRouteCounter.isFilteredOut. Runs off the UI thread.
 	 */
 	private static DisplayableGeoNode pinOf(OsmCollectionEntity relation,
 	                                        ClimbingRouteCounter routeCounter) {
-		return DataManager.toDisplayableNode(relation, routeCounter);
+		DisplayableGeoNode result = DataManager.toDisplayableNode(relation, routeCounter);
+		result.setGhost(routeCounter.isFilteredOut(result.getGeoNode()));
+		return result;
 	}
 
 	/**

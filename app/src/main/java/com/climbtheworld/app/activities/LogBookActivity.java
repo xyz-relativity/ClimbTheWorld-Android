@@ -217,10 +217,12 @@ public class LogBookActivity extends AppCompatActivity {
 			GeoNode element = loadStoredElement(osmData, routeCounter, entry);
 			if (element != null) {
 				LogBook.refreshSnapshot(logBook, entry, element);
-				result.add(new LogBookItem(entry, element, true, places.of(entry, element)));
+				result.add(new LogBookItem(entry, element, true, places.of(entry, element),
+						routeCounter.isFilteredOut(element)));
 			} else {
-				result.add(new LogBookItem(entry, entry.toGeoNode(), false,
-						places.notDownloaded()));
+				GeoNode snapshot = entry.toGeoNode();
+				result.add(new LogBookItem(entry, snapshot, false, places.notDownloaded(),
+						routeCounter.isFilteredOut(snapshot)));
 			}
 		}
 		return result;
@@ -449,8 +451,15 @@ public class LogBookActivity extends AppCompatActivity {
 	}
 
 	private void bindItem(View view, LogBookItem item) {
-		((ImageView) view.findViewById(R.id.logEntryIcon)).setImageDrawable(item.getIcon(this));
-		((TextView) view.findViewById(R.id.logEntryName)).setText(item.getName());
+		ImageView iconView = view.findViewById(R.id.logEntryIcon);
+		iconView.setImageDrawable(item.getIcon(this));
+		TextView nameView = view.findViewById(R.id.logEntryName);
+		nameView.setText(item.getName());
+		// Faded out as on the map when the display filters leave the element out; still edited
+		// on a tap. The entry editor shows its pin as usual.
+		float alpha = item.filteredOut ? DisplayableGeoNode.GHOST_VIEW_ALPHA : 1;
+		iconView.setAlpha(alpha);
+		nameView.setAlpha(alpha);
 
 		String status = getString(item.element.getNodeType().getNameId());
 		if (item.entry.attempt != LogBookEntry.Attempt.none) {
@@ -651,14 +660,18 @@ public class LogBookActivity extends AppCompatActivity {
 		private final boolean storedLocally;
 		// Country, area and crag, as far as they are known.
 		private final List<LogBookGroup> groups;
+		// Whether the display filters leave the element out, see
+		// ClimbingRouteCounter.isFilteredOut.
+		private final boolean filteredOut;
 		private Drawable icon;
 
 		private LogBookItem(LogBookEntry entry, GeoNode element, boolean storedLocally,
-		                    List<LogBookGroup> groups) {
+		                    List<LogBookGroup> groups, boolean filteredOut) {
 			this.entry = entry;
 			this.element = element;
 			this.storedLocally = storedLocally;
 			this.groups = groups;
+			this.filteredOut = filteredOut;
 		}
 
 		private String getName() {

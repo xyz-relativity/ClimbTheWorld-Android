@@ -35,6 +35,9 @@ public class DisplayableGeoNode {
 	public static final float LINE_CASING_WIDTH_DP = 5;
 	public static final int POI_ICON_ALPHA_VISIBLE = 255;
 	public static final int POI_ICON_ALPHA_HIDDEN = 30;
+	// The same, for a view faded out with a pin the display filters leave out, as the names, rows
+	// and bar shares of the routes they leave out in the details dialog.
+	public static final float GHOST_VIEW_ALPHA = POI_ICON_ALPHA_HIDDEN / 255f;
 	// A pin drawn see-through: in the A.R., the route being aligned on, where the A.R. has it
 	// until
 	// it is dropped, see AugmentedRealityScene.showOnly.
