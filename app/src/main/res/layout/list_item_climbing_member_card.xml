@@ -34,19 +34,41 @@
             android:ellipsize="end"
             android:maxLines="3"
             android:textSize="16sp" />
+
+        <!-- Shows or hides the details, see CollapsibleCards; its own tap target, as a tap on
+             the rest of the card opens the member. -->
+        <ImageView
+            android:id="@+id/memberCardChevron"
+            style="?android:imageButtonStyle"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginStart="2dp"
+            android:background="?android:selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="4dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_chevron_down" />
     </LinearLayout>
 
-    <View
-        android:id="@+id/memberCardDivider"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginTop="4dp"
-        android:layout_marginBottom="4dp"
-        android:background="@android:color/darker_gray" />
-
+    <!-- Hidden while the card is collapsed. -->
     <LinearLayout
-        android:id="@+id/memberCardStyles"
+        android:id="@+id/memberCardDetails"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical" />
+        android:orientation="vertical">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:background="@android:color/darker_gray" />
+
+        <LinearLayout
+            android:id="@+id/memberCardStyles"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+    </LinearLayout>
 </LinearLayout>

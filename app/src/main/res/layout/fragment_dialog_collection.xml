@@ -26,13 +26,39 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/textElementsTitle"
-                    style="@style/ItemSectionTitles"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingTop="10dp"
-                    android:text="@string/elements" />
+                    android:gravity="bottom"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/textElementsTitle"
+                        style="@style/ItemSectionTitles"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:paddingTop="10dp"
+                        android:text="@string/elements" />
+
+                    <!-- Expands or collapses every crag card of an area, see CollapsibleCards;
+                         padded to the size of the cards' chevrons. -->
+                    <ImageView
+                        android:id="@+id/buttonToggleElements"
+                        style="?android:imageButtonStyle"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_marginEnd="5dp"
+                        android:background="?android:selectableItemBackground"
+                        android:clickable="true"
+                        android:contentDescription="@string/expand_all"
+                        android:focusable="true"
+                        android:padding="4dp"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/ic_chevrons_down"
+                        android:tooltipText="@string/expand_all"
+                        android:visibility="gone" />
+                </LinearLayout>
 
                 <View
                     android:layout_width="match_parent"

@@ -595,8 +595,10 @@
     <string name="log_book_group_not_downloaded">Not downloaded</string>
     <string name="log_book_group_collapsed">Collapsed</string>
     <string name="log_book_group_expanded">Expanded</string>
-    <string name="log_book_expand_all">Expand all</string>
-    <string name="log_book_collapse_all">Collapse all</string>
+    <string name="expand_all">Expand all</string>
+    <string name="collapse_all">Collapse all</string>
+    <string name="expand">Expand</string>
+    <string name="collapse">Collapse</string>
     <string name="log_book_entry_options">Entry options</string>
     <string name="log_book_show_info">Show Info</string>
     <string name="log_book_delete">Delete Entry</string>

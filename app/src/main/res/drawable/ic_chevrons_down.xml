@@ -1,5 +1,5 @@
-<!-- The Collapse all button of the log book list, two of its groups' chevrons; turned as theirs,
-     to point at the text, for Expand all. -->
+<!-- The Collapse all button of the log book list and of an area's crag cards, two of their
+     chevrons; turned as theirs for Expand all, see Chevrons. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"

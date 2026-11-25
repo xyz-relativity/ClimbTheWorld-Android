@@ -48,6 +48,7 @@ import com.climbtheworld.app.storage.logbook.LogBookPlaces;
 import com.climbtheworld.app.storage.views.CountryViewState;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.constants.Constants;
+import com.climbtheworld.app.utils.views.Chevrons;
 import com.climbtheworld.app.utils.views.EdgeToEdge;
 import com.climbtheworld.app.utils.views.SpinnerUtils;
 import com.climbtheworld.app.utils.views.TextWatchers;
@@ -337,9 +338,8 @@ public class LogBookActivity extends AppCompatActivity {
 	private void updateExpandAll() {
 		boolean expand = anyShownGroupCollapsed();
 		// Turned as a heading's chevron: at the names while a group is collapsed, down otherwise.
-		expandAllView.setRotation(chevronRotation(expand));
-		String label = getString(expand
-				? R.string.log_book_expand_all : R.string.log_book_collapse_all);
+		expandAllView.setRotation(Chevrons.rotation(this, expand));
+		String label = getString(expand ? R.string.expand_all : R.string.collapse_all);
 		expandAllView.setContentDescription(label);
 		expandAllView.setTooltipText(label);
 		expandAllView.setVisibility(shownRows.isEmpty() ? View.INVISIBLE : View.VISIBLE);
@@ -441,21 +441,11 @@ public class LogBookActivity extends AppCompatActivity {
 
 		((TextView) view.findViewById(R.id.logGroupCount))
 				.setText(String.valueOf(row.entryCount()));
-		view.findViewById(R.id.logGroupChevron).setRotation(chevronRotation(row.collapsed()));
+		view.findViewById(R.id.logGroupChevron)
+				.setRotation(Chevrons.rotation(this, row.collapsed()));
 		ViewCompat.setStateDescription(view, getString(row.collapsed()
 				? R.string.log_book_group_collapsed : R.string.log_book_group_expanded));
 		view.setOnClickListener(v -> toggleGroup(row.groupId()));
-	}
-
-	/**
-	 * @return how far to turn the chevron, which points down while expanded and at the name
-	 * while collapsed
-	 */
-	private float chevronRotation(boolean collapsed) {
-		// From the configuration, as a newly inflated row has no direction until it is attached.
-		boolean rightToLeft = getResources().getConfiguration().getLayoutDirection()
-				== View.LAYOUT_DIRECTION_RTL;
-		return !collapsed ? 0 : rightToLeft ? 90 : -90;
 	}
 
 	private void bindItem(View view, LogBookItem item) {

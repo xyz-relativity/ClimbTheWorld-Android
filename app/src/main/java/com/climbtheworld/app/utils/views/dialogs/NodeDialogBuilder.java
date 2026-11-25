@@ -43,6 +43,7 @@ import com.climbtheworld.app.storage.edit.RelationMembers;
 import com.climbtheworld.app.storage.logbook.LogBookFilter;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.constants.Constants;
+import com.climbtheworld.app.utils.views.CollapsibleCards;
 import com.climbtheworld.app.utils.views.GradeViewUtils;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 import com.climbtheworld.app.utils.views.MemberIconCard;
@@ -83,6 +84,9 @@ public class NodeDialogBuilder {
 		GradeSystem gradeSystem = GradeSystem.fromString(
 				Configs.instance(activity).getString(Configs.ConfigKey.usedGradeSystem));
 		List<View> memberViews = new ArrayList<>();
+		// Runs once the quick filter has shown or hidden members.
+		Runnable afterFilter = () -> {
+		};
 		if (relation.getNodeType() == OsmEntity.EntityClimbingType.area) {
 			int padding = Globals.convertDpToPixel(4).intValue();
 			elements.setGravity(Gravity.TOP);
@@ -93,10 +97,14 @@ public class NodeDialogBuilder {
 				cardGradeScale = Math.max(cardGradeScale, largestGradeRowCount(gradeSystem,
 						member.getStyleCounts().keySet(), member.routes));
 			}
+			// Names only at first, so that many crags fit and the area's own details stay near.
+			CollapsibleCards cards = new CollapsibleCards(activity,
+					result.findViewById(R.id.buttonToggleElements));
 			for (CollectionMember member : members) {
 				memberViews.add(buildMemberCard(activity, elements, member, gradeSystem,
-						cardGradeScale));
+						cardGradeScale, cards));
 			}
+			afterFilter = cards::update;
 		} else {
 			// Routes are numbered by their order among the relation's route members, the way the
 			// map numbers them: a route top goes with its route's bottom.
@@ -116,7 +124,7 @@ public class NodeDialogBuilder {
 					view -> member.showInfo(activity, quickFilter.getText().toString()));
 			elements.addView(memberView);
 		}
-		setMemberFilter(result, members, memberViews);
+		setMemberFilter(result, members, memberViews, afterFilter);
 		OsmEntity.EntityClimbingType nodeType = relation.getNodeType();
 		if (nodeType == OsmEntity.EntityClimbingType.area) {
 			((TextView) result.findViewById(R.id.textElementsTitle)).setText(R.string.crags);
@@ -143,9 +151,10 @@ public class NodeDialogBuilder {
 	 * the routes of a crag. Routes keep their order number while filtered.
 	 *
 	 * @param memberViews the view of each member, in the same order
+	 * @param afterFilter runs once the members are shown or hidden
 	 */
 	private static void setMemberFilter(View result, List<CollectionMember> members,
-	                                    List<View> memberViews) {
+	                                    List<View> memberViews, Runnable afterFilter) {
 		// Nothing to narrow down to.
 		if (members.size() < 2) {
 			result.findViewById(R.id.filterContainer).setVisibility(View.GONE);
@@ -178,6 +187,7 @@ public class NodeDialogBuilder {
 				anyVisible |= visible;
 			}
 			noMatch.setVisibility(anyVisible ? View.GONE : View.VISIBLE);
+			afterFilter.run();
 			// The first match, rather than wherever the full list was scrolled to.
 			scroll.scrollTo(0, 0);
 		}));
@@ -197,10 +207,11 @@ public class NodeDialogBuilder {
 
 	/**
 	 * @param gradeScale route count of a full length grade bar
+	 * @param cards      collapses the card to its pin and name, unless it has nothing more
 	 */
 	private static View buildMemberCard(AppCompatActivity activity, ViewGroup container,
 	                                    CollectionMember member, GradeSystem gradeSystem,
-	                                    int gradeScale) {
+	                                    int gradeScale, CollapsibleCards cards) {
 		View card = activity.getLayoutInflater()
 				.inflate(R.layout.list_item_climbing_member_card, container, false);
 		String name = member.getName();
@@ -209,11 +220,15 @@ public class NodeDialogBuilder {
 				new PoiMarkerDrawable(activity, new DisplayableGeoNode(member.poi)).getDrawable());
 		((TextView) card.findViewById(R.id.memberCardName)).setText(name);
 
-		LinearLayout styles = card.findViewById(R.id.memberCardStyles);
-		if (!addStyleRows(activity, styles, gradeSystem, member.getStyleCounts(), member.routes,
-				gradeScale)) {
-			card.findViewById(R.id.memberCardDivider).setVisibility(View.GONE);
-			styles.setVisibility(View.GONE);
+		View details = card.findViewById(R.id.memberCardDetails);
+		ImageView chevron = card.findViewById(R.id.memberCardChevron);
+		if (addStyleRows(activity, card.findViewById(R.id.memberCardStyles), gradeSystem,
+				member.getStyleCounts(), member.routes, gradeScale)) {
+			cards.add(card, chevron, details);
+		} else {
+			// Nothing to show under the name.
+			details.setVisibility(View.GONE);
+			chevron.setVisibility(View.GONE);
 		}
 
 		card.setContentDescription(name);
