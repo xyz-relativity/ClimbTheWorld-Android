@@ -8,6 +8,7 @@ import androidx.appcompat.widget.SwitchCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.marker.MarkerUtils;
+import com.climbtheworld.app.map.marker.StyleGrid;
 import com.climbtheworld.app.storage.database.GeoNode;
 
 import java.util.ArrayList;
@@ -15,7 +16,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-/** A switch per climbing style, each with its icon, in the order the styles are listed in. */
+/**
+ * A switch per climbing style, each with its icon, in the order the styles are listed in, see
+ * StyleGrid.ORDER.
+ */
 public final class StyleSwitches {
 	private StyleSwitches() {
 	}
@@ -28,7 +32,7 @@ public final class StyleSwitches {
 	public static void add(AppCompatActivity parent, ViewGroup container,
 	                       Collection<GeoNode.ClimbingStyle> checked,
 	                       CompoundButton.OnCheckedChangeListener onChange) {
-		for (GeoNode.ClimbingStyle style : Sorters.sortStyles(parent, GeoNode.ClimbingStyle.values())) {
+		for (GeoNode.ClimbingStyle style : StyleGrid.all()) {
 			container.addView(ListViewItemBuilder.getPaddedBuilder(parent)
 					.setTitle(parent.getString(style.getNameId()))
 					.setDescription(parent.getString(style.getDescriptionId()))

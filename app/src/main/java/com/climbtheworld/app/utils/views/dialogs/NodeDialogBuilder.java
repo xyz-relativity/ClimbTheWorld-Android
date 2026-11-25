@@ -28,6 +28,7 @@ import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
+import com.climbtheworld.app.map.marker.StyleGrid;
 import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.map.widget.climbing.ClimbingParent;
 import com.climbtheworld.app.map.widget.climbing.ClimbingRouteCounter;
@@ -49,7 +50,6 @@ import com.climbtheworld.app.utils.views.GradeHistogramView;
 import com.climbtheworld.app.utils.views.GradeViewUtils;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 import com.climbtheworld.app.utils.views.MemberIconCard;
-import com.climbtheworld.app.utils.views.Sorters;
 import com.climbtheworld.app.utils.views.TextWatchers;
 
 import org.json.JSONException;
@@ -286,8 +286,7 @@ public class NodeDialogBuilder {
 		ClimbingRouteCounter.RouteSummary routes = member.routes;
 		Map<GeoNode.ClimbingStyle, Integer> styleCounts = member.getStyleCounts();
 		StringBuilder description = new StringBuilder();
-		for (GeoNode.ClimbingStyle style : Sorters.sortStyles(activity,
-				GeoNode.ClimbingStyle.values())) {
+		for (GeoNode.ClimbingStyle style : StyleGrid.all()) {
 			Integer styleCount = styleCounts.get(style);
 			int count = styleCount != null ? styleCount : 0;
 			// Counted from the member's own tags when it has no mapped route: none to filter.
@@ -350,8 +349,7 @@ public class NodeDialogBuilder {
 	                                    Map<GeoNode.ClimbingStyle, Integer> styleCounts,
 	                                    ClimbingRouteCounter.RouteSummary routes,
 	                                    int gradeScale) {
-		for (GeoNode.ClimbingStyle style : Sorters.sortStyles(activity,
-				new ArrayList<>(styleCounts.keySet()))) {
+		for (GeoNode.ClimbingStyle style : StyleGrid.sorted(styleCounts.keySet())) {
 			int count = styleCounts.get(style);
 			// Counted from the member's own tags when it has no mapped route: none to filter.
 			addStyleRow(activity, container, gradeSystem, Collections.singletonList(style),
@@ -603,8 +601,7 @@ public class NodeDialogBuilder {
 	private static void setClimbingStyle(AppCompatActivity parent, View result, GeoNode poi) {
 		ViewGroup styles = result.findViewById(R.id.containerClimbingStylesView);
 
-		for (GeoNode.ClimbingStyle styleName : Sorters.sortStyles(parent,
-				poi.getClimbingStyles())) {
+		for (GeoNode.ClimbingStyle styleName : StyleGrid.sorted(poi.getClimbingStyles())) {
 			View customView = ListViewItemBuilder.getNonPaddedBuilder(parent)
 					.setDescription(parent.getResources().getString(styleName.getNameId()))
 					.setIcon(MarkerUtils.getStyleIcon(parent, Collections.singletonList(styleName),

@@ -24,7 +24,6 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.utils.Globals;
 
-import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -163,45 +162,9 @@ public class MarkerUtils {
 	}
 
 	/**
-	 * Position of a climbing style in the 3x3 style grid, and whether the style is roped.
-	 * Rows group the styles by meaning:
-	 * <pre>
-	 * sport   | toprope    | trad       &lt;- protection
-	 * boulder | rope dot   | deepwater  &lt;- unroped
-	 * ice     | multipitch | mixed      &lt;- terrain and length
-	 * </pre>
-	 * The centre cell holds a dot drawn when at least one roped style is present.
-	 */
-	private static final class StyleCell {
-		final int column;
-		final int row;
-		final boolean roped;
-
-		StyleCell(int column, int row, boolean roped) {
-			this.column = column;
-			this.row = row;
-			this.roped = roped;
-		}
-	}
-
-	private static final EnumMap<GeoNode.ClimbingStyle, StyleCell> STYLE_CELLS =
-			new EnumMap<>(GeoNode.ClimbingStyle.class);
-
-	static {
-		STYLE_CELLS.put(GeoNode.ClimbingStyle.sport, new StyleCell(0, 0, true));
-		STYLE_CELLS.put(GeoNode.ClimbingStyle.toprope, new StyleCell(1, 0, true));
-		STYLE_CELLS.put(GeoNode.ClimbingStyle.trad, new StyleCell(2, 0, true));
-		STYLE_CELLS.put(GeoNode.ClimbingStyle.boulder, new StyleCell(0, 1, false));
-		STYLE_CELLS.put(GeoNode.ClimbingStyle.deepwater, new StyleCell(2, 1, false));
-		STYLE_CELLS.put(GeoNode.ClimbingStyle.ice, new StyleCell(0, 2, true));
-		STYLE_CELLS.put(GeoNode.ClimbingStyle.multipitch, new StyleCell(1, 2, true));
-		STYLE_CELLS.put(GeoNode.ClimbingStyle.mixed, new StyleCell(2, 2, true));
-	}
-
-	/**
-	 * Draws the style cells on whole-pixel boundaries so they stay sharp at small sizes.
-	 * Each cell is a black square with a 1px white gap on every side, so neighbouring
-	 * filled cells remain distinguishable.
+	 * Draws the style cells, at their place on the {@link StyleGrid}, on whole-pixel boundaries
+	 * so they stay sharp at small sizes. Each cell is a black square with a 1px white gap on
+	 * every side, so neighbouring filled cells remain distinguishable.
 	 */
 	private static void drawStyleGrid(Canvas canvas, List<GeoNode.ClimbingStyle> styles,
 	                                  int iconSize) {
@@ -215,14 +178,14 @@ public class MarkerUtils {
 
 		boolean roped = false;
 		for (GeoNode.ClimbingStyle style : styles) {
-			StyleCell cell = STYLE_CELLS.get(style);
+			StyleGrid.Cell cell = StyleGrid.cell(style);
 			if (cell == null) {
 				continue;
 			}
-			float left = origin + cell.column * pitch + 1;
-			float top = origin + cell.row * pitch + 1;
+			float left = origin + cell.column() * pitch + 1;
+			float top = origin + cell.row() * pitch + 1;
 			canvas.drawRect(left, top, left + pitch - 1, top + pitch - 1, fillPaint);
-			roped |= cell.roped;
+			roped |= cell.roped();
 		}
 
 		if (roped) {

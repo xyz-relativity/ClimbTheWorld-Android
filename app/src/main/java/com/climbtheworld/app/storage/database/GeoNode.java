@@ -661,16 +661,20 @@ public class GeoNode implements Comparable {
 		}
 	}
 
-	/** A way of climbing a route, tagged climbing:&lt;style&gt;=yes on it. */
+	/**
+	 * A way of climbing a route, tagged climbing:&lt;style&gt;=yes on it. Declared in the order
+	 * the styles are listed in, StyleGrid.ORDER, so that what goes through them without sorting
+	 * lists them the same. Stored by name, never by position.
+	 */
 	public enum ClimbingStyle {
-		ice(R.string.ice, R.string.ice_short, R.string.ice_description),
-		mixed(R.string.mixed, R.string.mixed_short, R.string.mixed_description),
-		toprope(R.string.toprope, R.string.toprope_short, R.string.toprope_description),
-		boulder(R.string.boulder, R.string.boulder_short, R.string.boulder_description),
 		sport(R.string.sport, R.string.sport_short, R.string.sport_description),
+		toprope(R.string.toprope, R.string.toprope_short, R.string.toprope_description),
 		trad(R.string.trad, R.string.trad_short, R.string.trad_description),
+		ice(R.string.ice, R.string.ice_short, R.string.ice_description),
 		multipitch(R.string.multipitch, R.string.multipitch_short,
 				R.string.multipitch_description),
+		mixed(R.string.mixed, R.string.mixed_short, R.string.mixed_description),
+		boulder(R.string.boulder, R.string.boulder_short, R.string.boulder_description),
 		deepwater(R.string.deepwater, R.string.deepwater_short, R.string.deepwater_description);
 
 		private final int stringTypeNameId;
