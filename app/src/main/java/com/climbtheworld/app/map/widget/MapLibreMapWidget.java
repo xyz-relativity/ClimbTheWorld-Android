@@ -200,7 +200,6 @@ public class MapLibreMapWidget {
 	private static final String TERRAIN_SOURCE_ID = "ctw-terrain-source";
 	private static final String SHADING_LAYER_ID = "ctw-shading-layer";
 	private static final String CLUSTER_COUNT_PROPERTY = "point_count";
-	private static final String CLUSTER_COUNT_LABEL_PROPERTY = "point_count_abbreviated";
 	private static final float CLUSTER_TEXT_SIZE_SP = 14f;
 	private static final String ICON_PROPERTY = "icon";
 	private static final String POI_ID_PROPERTY = "poiId";
@@ -783,7 +782,7 @@ public class MapLibreMapWidget {
 						iconIgnorePlacement(true),
 						textField(Expression.switchCase(
 								Expression.has(CLUSTER_COUNT_PROPERTY),
-								Expression.toString(Expression.get(CLUSTER_COUNT_LABEL_PROPERTY)),
+								clusterCountLabel(),
 								Expression.literal("1"))),
 						textFont(new String[]{"Noto Sans Bold"}),
 						textSize(CLUSTER_TEXT_SIZE_SP),
@@ -805,6 +804,30 @@ public class MapLibreMapWidget {
 		editMarkerImageCount = 0;
 		renderEditMarkers();
 		updateViewCone();
+	}
+
+	/**
+	 * A cluster's count, short enough for its bubble: as it is below a thousand, then in thousands,
+	 * with one decimal below ten thousand ("1.5k") and none from there ("17k").
+	 * <p>
+	 * MapLibre's own "point_count_abbreviated" is not used, as it writes the counts from ten
+	 * thousand with six decimals ("16.579000k").
+	 */
+	private static Expression clusterCountLabel() {
+		Expression count = Expression.get(CLUSTER_COUNT_PROPERTY);
+		Expression thousandsSuffix = Expression.literal("k");
+		return Expression.step(count,
+				Expression.toString(count),
+				Expression.stop(1000, Expression.concat(
+						Expression.toString(Expression.division(
+								Expression.round(Expression.division(count,
+										Expression.literal(100))),
+								Expression.literal(10))),
+						thousandsSuffix)),
+				Expression.stop(10000, Expression.concat(
+						Expression.toString(Expression.round(Expression.division(count,
+								Expression.literal(1000)))),
+						thousandsSuffix)));
 	}
 
 	/**
