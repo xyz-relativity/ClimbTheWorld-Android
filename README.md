@@ -1,5 +1,7 @@
 # ClimbTheWorld-Android
 
+[![Latest release](https://img.shields.io/github/v/release/xyz-relativity/ClimbTheWorld-Android)](https://github.com/xyz-relativity/ClimbTheWorld-Android/releases/latest)
+
 Rock climbing frontend for OpenStreetMap.
 
 * Install it with [Obtainium or ObtainX](#with-obtainium-or-obtainx) to get updates automatically,
