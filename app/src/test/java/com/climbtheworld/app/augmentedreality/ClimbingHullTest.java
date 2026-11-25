@@ -309,6 +309,44 @@ public class ClimbingHullTest {
 	}
 
 	@Test
+	public void filteredOutHullHasNoOutlineButStandsInForItsRoutes() {
+		ClimbingHull far = rectangle(-10, 2000, 10, 2010);
+		ClimbingHull filteredOut = new ClimbingHull(far.key + "-filtered", far.type, null,
+				new double[]{LATITUDE + 2000 / ClimbingHull.METERS_PER_DEGREE,
+						LATITUDE + 2010 / ClimbingHull.METERS_PER_DEGREE,
+						LATITUDE + 2010 / ClimbingHull.METERS_PER_DEGREE,
+						LATITUDE + 2000 / ClimbingHull.METERS_PER_DEGREE,
+						LATITUDE + 2000 / ClimbingHull.METERS_PER_DEGREE},
+				new double[]{LONGITUDE - 10 / METERS_PER_DEGREE_LONGITUDE,
+						LONGITUDE - 10 / METERS_PER_DEGREE_LONGITUDE,
+						LONGITUDE + 10 / METERS_PER_DEGREE_LONGITUDE,
+						LONGITUDE + 10 / METERS_PER_DEGREE_LONGITUDE,
+						LONGITUDE - 10 / METERS_PER_DEGREE_LONGITUDE},
+				new long[]{31, 32}, true);
+		TerrainWireframe.ElevationSource elevations = (latitude, longitude, distance) -> 100;
+		ClimbingHulls hulls = new ClimbingHulls();
+		hulls.setHulls(Arrays.asList(far, filteredOut));
+		hulls.update(LATITUDE, LONGITUDE, 2500, true, elevations, 0, 0);
+
+		assertTrue(filteredOut.filteredOut);
+		assertFalse(far.filteredOut);
+		assertNotNull(far.getFill());
+		assertFalse(far.getOutline().isEmpty());
+		assertNull(filteredOut.getFill());
+		assertTrue(filteredOut.getOutline().isEmpty());
+		// Far, its routes are left to its pin as before, which the filters hide along with them.
+		assertFalse(filteredOut.isShowingRoutes());
+		assertTrue(hulls.isHidden(31));
+		assertTrue(hulls.isHidden(32));
+
+		// Nor once the terrain loads more.
+		hulls.update(LATITUDE, LONGITUDE, 2500, true, elevations, 1,
+				ClimbingHulls.TERRAIN_REBUILD_DELAY_MS);
+		assertNull(filteredOut.getFill());
+		assertTrue(filteredOut.getOutline().isEmpty());
+	}
+
+	@Test
 	public void hiddenOutlinesAreNotLaidOut() {
 		int[] lookups = {0};
 		TerrainWireframe.ElevationSource elevations = (latitude, longitude, distance) -> {

@@ -104,7 +104,10 @@ public class ClimbingHulls {
 		hiddenNodes.clear();
 		for (ClimbingHull hull : hulls.values()) {
 			// The range shape has its corners on the circle of the range, so reaches no farther.
-			hull.build(latitude, longitude, rangeShape, range, elevations);
+			// A hull the display filters leave no route of has no outline to draw, but still
+			// chooses between its routes and its pin, as before the filters.
+			hull.build(latitude, longitude, hull.filteredOut ? null : rangeShape, range,
+					elevations);
 			drawn.add(hull);
 			if (!hull.isShowingRoutes()) {
 				for (long nodeId : hull.getNodeIds()) {

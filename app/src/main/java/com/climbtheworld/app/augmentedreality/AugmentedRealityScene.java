@@ -177,7 +177,8 @@ public class AugmentedRealityScene {
 
 	/**
 	 * The hull of a crag or area, with the relation as a POI in its middle, labelled with its
-	 * route count like on the map.
+	 * route count like on the map. One the display filters leave no route of hides, pin and
+	 * outline, as the pins they leave out, where the map fades it out.
 	 */
 	private static ClimbingHull toClimbingHull(ClimbingGeometryBuilder.GeometrySpec geometry) {
 		OsmCollectionEntity collection = geometry.collection;
@@ -200,7 +201,7 @@ public class AugmentedRealityScene {
 		return new ClimbingHull(geometry.key,
 				collection.entityClimbingType == OsmEntity.EntityClimbingType.crag
 						? OsmEntity.EntityClimbingType.crag : OsmEntity.EntityClimbingType.area,
-				pin, latitudes, longitudes, nodeIds);
+				pin, latitudes, longitudes, nodeIds, geometry.isFilteredOut());
 	}
 
 	/** @return whether two pins of the same node, crag or area draw alike */
@@ -809,10 +810,11 @@ public class AugmentedRealityScene {
 					}
 				}
 
-				// Up close, the routes show in the crag and area hulls instead of their pin. As
-				// on the map, the pins are not filtered.
+				// Up close, the routes show in the crag and area hulls instead of their pin. The
+				// pin of one the display filters leave no route of hides, as the pins they leave
+				// out; the map fades it out.
 				for (ClimbingHull hull : climbingHulls.getHulls()) {
-					if (only == null && !hull.isShowingRoutes()
+					if (only == null && !hull.isShowingRoutes() && !hull.filteredOut
 							&& placeInView(hull.pin, false, useTerrain, observerElevation,
 							maxViewAngle)) {
 						visible.add(hull.pin);

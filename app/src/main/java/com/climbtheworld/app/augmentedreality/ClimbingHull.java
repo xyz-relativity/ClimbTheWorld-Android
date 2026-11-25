@@ -51,6 +51,9 @@ public class ClimbingHull {
 	private final double[] longitudes;
 	// The nodes of the relation and of the relations in it, such as the routes.
 	private final long[] nodeIds;
+	// Whether the display filters leave none of its routes: its pin and its outline hide, see
+	// ClimbingGeometryBuilder.GeometrySpec.isFilteredOut.
+	public final boolean filteredOut;
 	private boolean showingRoutes;
 	// As of the last build, around its origin, which is kept to look the elevations up again
 	// where they were.
@@ -66,12 +69,23 @@ public class ClimbingHull {
 	 */
 	public ClimbingHull(String key, OsmEntity.EntityClimbingType type, GeoNode pin, double[] latitudes,
 	                    double[] longitudes, long[] nodeIds) {
+		this(key, type, pin, latitudes, longitudes, nodeIds, false);
+	}
+
+	/**
+	 * @param filteredOut whether the display filters leave none of its routes, so its pin and
+	 *                    its outline hide; it still stands in for its routes from afar, which
+	 *                    the filters hide all the same
+	 */
+	public ClimbingHull(String key, OsmEntity.EntityClimbingType type, GeoNode pin, double[] latitudes,
+	                    double[] longitudes, long[] nodeIds, boolean filteredOut) {
 		this.key = key;
 		this.type = type;
 		this.pin = pin;
 		this.latitudes = latitudes;
 		this.longitudes = longitudes;
 		this.nodeIds = nodeIds;
+		this.filteredOut = filteredOut;
 	}
 
 	/**

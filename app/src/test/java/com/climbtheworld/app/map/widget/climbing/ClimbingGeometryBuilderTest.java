@@ -325,6 +325,58 @@ public class ClimbingGeometryBuilderTest {
 	}
 
 	@Test
+	public void onlyAFilteredCountOfNoRouteIsFilteredOut() throws Exception {
+		List<MapCoordinate> triangle = Arrays.asList(
+				new MapCoordinate(45, 24),
+				new MapCoordinate(46, 24),
+				new MapCoordinate(45, 25));
+		List<ClimbingGeometryBuilder.GeometrySpec> geometries = new ArrayList<>();
+		builder.addGeometry(geometries, relation(1L, "crag"), triangle, 0, true, null);
+		builder.addGeometry(geometries, relation(2L, "area"), triangle, 0, true, null);
+		builder.addGeometry(geometries, relation(3L, "crag"), triangle, 2, true, null);
+		builder.addGeometry(geometries, relation(4L, "crag"), triangle, 0, false, null);
+
+		assertTrue(geometries.get(0).isFilteredOut());
+		assertTrue(geometries.get(1).isFilteredOut());
+		assertFalse(geometries.get(2).isFilteredOut());
+		assertFalse(geometries.get(3).isFilteredOut());
+	}
+
+	@Test
+	public void hullsOfNoMatchingRouteFadeOutAsGhostPins() throws Exception {
+		List<MapCoordinate> triangle = Arrays.asList(
+				new MapCoordinate(45, 24),
+				new MapCoordinate(46, 24),
+				new MapCoordinate(45, 25));
+		List<ClimbingGeometryBuilder.GeometrySpec> matching = new ArrayList<>();
+		builder.addGeometry(matching, relation(1L, "area"), triangle, 3, true, null);
+		List<ClimbingGeometryBuilder.GeometrySpec> filteredOut = new ArrayList<>();
+		builder.addGeometry(filteredOut, relation(1L, "area"), triangle, 0, true, null);
+
+		String shown = builder.buildHullGeoJson(matching, MapZoomLevels.AREA_MIN);
+		String faded = builder.buildHullGeoJson(filteredOut, MapZoomLevels.AREA_MIN);
+
+		int outline = 0xff000000;
+		assertTrue(shown.contains(property(ClimbingGeometryBuilder.HULL_FILL_COLOR_PROPERTY,
+				DisplayableGeoNode.AREA_HULL_COLOR)));
+		assertTrue(shown.contains(property(ClimbingGeometryBuilder.HULL_OUTLINE_COLOR_PROPERTY,
+				outline)));
+		assertTrue(faded.contains(property(ClimbingGeometryBuilder.HULL_FILL_COLOR_PROPERTY,
+				ghost(DisplayableGeoNode.AREA_HULL_COLOR))));
+		assertTrue(faded.contains(property(ClimbingGeometryBuilder.HULL_OUTLINE_COLOR_PROPERTY,
+				ghost(outline))));
+	}
+
+	private String property(String name, int color) {
+		return "\"" + name + "\":\"" + rgba(color) + "\"";
+	}
+
+	private static int ghost(int color) {
+		return ColorUtils.setAlphaComponent(color,
+				Color.alpha(color) * DisplayableGeoNode.POI_ICON_ALPHA_HIDDEN / 255);
+	}
+
+	@Test
 	public void hullsAreEmittedAreaThenCrag() throws Exception {
 		List<ClimbingGeometryBuilder.GeometrySpec> geometries = new ArrayList<>();
 		List<MapCoordinate> triangle = Arrays.asList(

@@ -147,7 +147,6 @@ public class MapLibreMapWidget {
 	private static final String HULL_SOURCE_ID = "ctw-hull-source";
 	private static final String HULL_FILL_LAYER_ID = "ctw-hull-fill-layer";
 	private static final String HULL_OUTLINE_LAYER_ID = "ctw-hull-outline-layer";
-	private static final String HULL_FILL_COLOR_PROPERTY = "fillColor";
 	private static final String WAY_SOURCE_ID = "ctw-way-source";
 	private static final String WAY_CASING_LAYER_ID = "ctw-way-casing-layer";
 	private static final String WAY_LAYER_ID = "ctw-way-layer";
@@ -451,8 +450,10 @@ public class MapLibreMapWidget {
 					onCollectionClickListener.onCollectionClick(geometry.collection);
 					return true;
 				}
+				// A crag or area the display filters leave no route of opens nothing, as a pin
+				// they leave out.
 				if (geometry != null && geometry.collection != null
-						&& geometry.labelCoordinate != null) {
+						&& geometry.labelCoordinate != null && !geometry.isFilteredOut()) {
 					NodeDialogBuilder.showCollectionInfoDialog(parent, geometry.collection,
 							geometry.labelCoordinate);
 					return true;
@@ -688,10 +689,12 @@ public class MapLibreMapWidget {
 
 		style.addLayer(new FillLayer(HULL_FILL_LAYER_ID, HULL_SOURCE_ID)
 				.withProperties(
-						fillColor(Expression.toColor(Expression.get(HULL_FILL_COLOR_PROPERTY)))));
+						fillColor(Expression.toColor(Expression.get(
+								ClimbingGeometryBuilder.HULL_FILL_COLOR_PROPERTY)))));
 		style.addLayer(new LineLayer(HULL_OUTLINE_LAYER_ID, HULL_SOURCE_ID)
 				.withProperties(
-						lineColor(0xff000000),
+						lineColor(Expression.toColor(Expression.get(
+								ClimbingGeometryBuilder.HULL_OUTLINE_COLOR_PROPERTY))),
 						lineWidth(HULL_OUTLINE_WIDTH_DP),
 						lineJoin(Property.LINE_JOIN_ROUND),
 						lineCap(Property.LINE_CAP_ROUND)));
@@ -1517,9 +1520,11 @@ public class MapLibreMapWidget {
 
 	private Bitmap createRelationLabelBitmap(
 			ClimbingGeometryBuilder.GeometrySpec geometry) {
-		GeoNode relation = geometry.pin(geometry.labelCoordinate);
-		return bitmapFromDrawable(new PoiMarkerDrawable(
-				parent, new DisplayableGeoNode(relation)).getDrawable());
+		DisplayableGeoNode relation =
+				new DisplayableGeoNode(geometry.pin(geometry.labelCoordinate));
+		// Faded out, as the pins the display filters leave out, see isGhost.
+		relation.setGhost(geometry.isFilteredOut());
+		return bitmapFromDrawable(new PoiMarkerDrawable(parent, relation).getDrawable());
 	}
 
 	/**

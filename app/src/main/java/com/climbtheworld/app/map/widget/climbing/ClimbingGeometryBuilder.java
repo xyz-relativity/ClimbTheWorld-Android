@@ -40,6 +40,10 @@ public final class ClimbingGeometryBuilder {
 	public static final String WAY_COLOR_PROPERTY = "color";
 	// Only the routes mapped as a way have the dark edge, as in the AR view.
 	public static final String WAY_CASING_COLOR_PROPERTY = "casingColor";
+	// The colours of a hull's fill and outline, faded with its pin while the display filters
+	// leave none of its routes, see GeometrySpec.isFilteredOut.
+	public static final String HULL_FILL_COLOR_PROPERTY = "fillColor";
+	public static final String HULL_OUTLINE_COLOR_PROPERTY = "outlineColor";
 
 	public static final class GeometrySpec {
 		private static final String LABEL_IMAGE_PREFIX = "ctw-hull-label-";
@@ -94,6 +98,15 @@ public final class ClimbingGeometryBuilder {
 		public GeoNode pin(MapCoordinate location) {
 			return ClimbingRouteCounter.pin(collection, location, relationElementCount,
 					routeCountFiltered);
+		}
+
+		/**
+		 * @return whether the display filters leave none of the routes of the crag or area: the
+		 * map fades its pin and its hull out, and a tap on the pin does nothing, as it does with
+		 * any pin the filters leave out, while the A.R. view hides them, as it hides those pins
+		 */
+		public boolean isFilteredOut() {
+			return routeCountFiltered && relationElementCount == 0;
 		}
 
 		public boolean isLabelVisibleAt(double zoom) {
@@ -221,8 +234,10 @@ public final class ClimbingGeometryBuilder {
 	}
 
 	/**
-	 * The hulls in view at the zoom, as polygons in their fill colour: one source for the fill
-	 * and the outline, which a line layer draws along the polygons' rings.
+	 * The hulls in view at the zoom, as polygons in their fill and outline colours: one source
+	 * for the fill and the outline, which a line layer draws along the polygons' rings. Those of
+	 * the crags and areas the display filters leave no route of fade out, as their pins do, see
+	 * GeometrySpec.isFilteredOut.
 	 */
 	public String buildHullGeoJson(List<GeometrySpec> geometries, double zoom) {
 		StringBuilder result = new StringBuilder("{\"type\":\"FeatureCollection\",\"features\":[");
@@ -236,8 +251,12 @@ public final class ClimbingGeometryBuilder {
 				result.append(',');
 			}
 			firstFeature = false;
-			result.append("{\"type\":\"Feature\",\"properties\":{\"fillColor\":\"")
-					.append(toRgba(geometry.fillColor))
+			boolean ghost = geometry.isFilteredOut();
+			result.append("{\"type\":\"Feature\",\"properties\":{\"")
+					.append(HULL_FILL_COLOR_PROPERTY).append("\":\"")
+					.append(toRgba(ghost ? toGhost(geometry.fillColor) : geometry.fillColor))
+					.append("\",\"").append(HULL_OUTLINE_COLOR_PROPERTY).append("\":\"")
+					.append(toRgba(ghost ? toGhost(geometry.strokeColor) : geometry.strokeColor))
 					.append("\"},\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[");
 			appendClosedCoordinates(result, geometry.coordinates);
 			result.append("]}}");
@@ -420,6 +439,10 @@ public final class ClimbingGeometryBuilder {
 				wayMinZoom(collection), 0, null, null, 0, false, 0, collection, route);
 	}
 
+	/**
+	 * The colour faded out as a pin the display filters leave out, see
+	 * DisplayableGeoNode#setGhost.
+	 */
 	private static int toGhost(int color) {
 		return ColorUtils.setAlphaComponent(color,
 				Color.alpha(color) * DisplayableGeoNode.POI_ICON_ALPHA_HIDDEN / 255);
