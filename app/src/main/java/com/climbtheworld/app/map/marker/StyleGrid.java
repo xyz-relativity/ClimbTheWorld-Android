@@ -12,11 +12,11 @@ import java.util.Map;
 /**
  * Where each climbing style sits on the 3x3 grid of the style block, see
  * {@link MarkerUtils#getStyleIcon}, and the order the styles are listed in everywhere, read off
- * that grid. Rows group the styles by meaning:
+ * that grid. The middle row holds the unroped styles:
  * <pre>
- * sport   | toprope    | trad       &lt;- protection
+ * sport   | multipitch | trad
  * boulder | rope dot   | deepwater  &lt;- unroped
- * ice     | multipitch | mixed      &lt;- terrain and length
+ * ice     | toprope    | mixed
  * </pre>
  * The centre cell holds a dot drawn when at least one roped style is present.
  */
@@ -30,12 +30,12 @@ public final class StyleGrid {
 
 	static {
 		CELLS.put(GeoNode.ClimbingStyle.sport, new Cell(0, 0, true));
-		CELLS.put(GeoNode.ClimbingStyle.toprope, new Cell(1, 0, true));
+		CELLS.put(GeoNode.ClimbingStyle.multipitch, new Cell(1, 0, true));
 		CELLS.put(GeoNode.ClimbingStyle.trad, new Cell(2, 0, true));
 		CELLS.put(GeoNode.ClimbingStyle.boulder, new Cell(0, 1, false));
 		CELLS.put(GeoNode.ClimbingStyle.deepwater, new Cell(2, 1, false));
 		CELLS.put(GeoNode.ClimbingStyle.ice, new Cell(0, 2, true));
-		CELLS.put(GeoNode.ClimbingStyle.multipitch, new Cell(1, 2, true));
+		CELLS.put(GeoNode.ClimbingStyle.toprope, new Cell(1, 2, true));
 		CELLS.put(GeoNode.ClimbingStyle.mixed, new Cell(2, 2, true));
 	}
 

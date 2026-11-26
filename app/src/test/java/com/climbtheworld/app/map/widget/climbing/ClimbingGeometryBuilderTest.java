@@ -325,6 +325,29 @@ public class ClimbingGeometryBuilderTest {
 	}
 
 	@Test
+	public void cragLabelShowsTheStylesWorkedOutWithItsRoutes() throws Exception {
+		List<MapCoordinate> triangle = Arrays.asList(
+				new MapCoordinate(45, 24),
+				new MapCoordinate(46, 24),
+				new MapCoordinate(45, 25));
+		List<ClimbingGeometryBuilder.GeometrySpec> styled = new ArrayList<>();
+		List<ClimbingGeometryBuilder.GeometrySpec> unstyled = new ArrayList<>();
+		builder.addGeometry(styled, namedCrag(), triangle, 2, false,
+				new HashSet<>(Arrays.asList(GeoNode.ClimbingStyle.trad,
+						GeoNode.ClimbingStyle.sport)), null);
+		// Without them, its own.
+		builder.addGeometry(unstyled, namedCrag(), triangle, 2, false, null);
+
+		ClimbingGeometryBuilder.GeometrySpec geometry = styled.get(0);
+		// Drawn again once they change, as a filter or a newly mapped route can do.
+		assertNotEquals(unstyled.get(0).getLabelImageId(), geometry.getLabelImageId());
+		assertEquals(Arrays.asList(GeoNode.ClimbingStyle.sport, GeoNode.ClimbingStyle.trad),
+				geometry.pin(geometry.labelCoordinate).getPinStyles());
+		assertTrue(unstyled.get(0).pin(unstyled.get(0).labelCoordinate).getPinStyles()
+				.isEmpty());
+	}
+
+	@Test
 	public void onlyAFilteredCountOfNoRouteIsFilteredOut() throws Exception {
 		List<MapCoordinate> triangle = Arrays.asList(
 				new MapCoordinate(45, 24),
@@ -592,7 +615,7 @@ public class ClimbingGeometryBuilderTest {
 	public void zoomLevelsAreWhereTheGeometriesAndTheirLabelsComeAndGo() {
 		ClimbingGeometryBuilder.GeometrySpec capped = new ClimbingGeometryBuilder.GeometrySpec(
 				"capped", Arrays.asList(new MapCoordinate(45, 24), new MapCoordinate(46, 24)),
-				false, 0, 0, 12, 16, null, null, 0, false, 0, null, null);
+				false, 0, 0, 12, 16, null, null, 0, false, Collections.emptyList(), 0, null, null);
 		Set<Float> levels = ClimbingGeometryBuilder.zoomLevels(Arrays.asList(
 				geometry(MapZoomLevels.AREA_MIN, MapZoomLevels.CRAG_MIN, "Area", 3),
 				geometry(MapZoomLevels.CRAG_MIN, 0, "Crag", 2),
@@ -612,6 +635,7 @@ public class ClimbingGeometryBuilderTest {
 				new MapCoordinate(45, 24),
 				new MapCoordinate(46, 24),
 				new MapCoordinate(45, 25)), true, 0, 0, minZoom, 0,
-				new MapCoordinate(45.5, 24.5), name, elementCount, false, labelMaxZoom, null, null);
+				new MapCoordinate(45.5, 24.5), name, elementCount, false, Collections.emptyList(),
+				labelMaxZoom, null, null);
 	}
 }

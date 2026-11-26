@@ -1702,7 +1702,7 @@ public class MapLibreMapWidget {
 	 */
 	static String poiIconKey(DisplayableGeoNode poi) {
 		StringBuilder styles = new StringBuilder();
-		for (GeoNode.ClimbingStyle style : poi.geoNode.getClimbingStyles()) {
+		for (GeoNode.ClimbingStyle style : poi.geoNode.getPinStyles()) {
 			styles.append(style.name()).append(',');
 		}
 		return poi.geoNode.osmID + "|" + poi.getAlpha() + "|" + poi.getRouteNumber()

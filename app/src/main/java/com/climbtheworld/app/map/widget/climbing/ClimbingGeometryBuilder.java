@@ -6,6 +6,7 @@ import android.graphics.Color;
 import androidx.core.graphics.ColorUtils;
 
 import com.climbtheworld.app.map.DisplayableGeoNode;
+import com.climbtheworld.app.map.marker.StyleGrid;
 import com.climbtheworld.app.map.model.MapBounds;
 import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.map.model.MapZoomLevels;
@@ -23,6 +24,7 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -61,6 +63,8 @@ public final class ClimbingGeometryBuilder {
 		// Whether relationElementCount counts only the routes matching the display filters, see
 		// ClimbingRouteCounter.RouteSummary.isFiltered.
 		public final boolean routeCountFiltered;
+		// The climbing styles the pin of the crag shows, see ClimbingRouteCounter.pinStyles.
+		public final List<GeoNode.ClimbingStyle> pinStyles;
 		public final float labelMaxZoom;
 		public final OsmCollectionEntity collection;
 		// The route a climbing=route way is drawn as, null for anything else.
@@ -69,7 +73,8 @@ public final class ClimbingGeometryBuilder {
 		GeometrySpec(String key, List<MapCoordinate> coordinates, boolean polygon, int fillColor,
 		             int strokeColor, float minZoom, float maxZoom, MapCoordinate labelCoordinate,
 		             String labelName, int relationElementCount, boolean routeCountFiltered,
-		             float labelMaxZoom, OsmCollectionEntity collection, RouteWay route) {
+		             List<GeoNode.ClimbingStyle> pinStyles, float labelMaxZoom,
+		             OsmCollectionEntity collection, RouteWay route) {
 			this.key = key;
 			this.coordinates = coordinates;
 			this.polygon = polygon;
@@ -81,23 +86,29 @@ public final class ClimbingGeometryBuilder {
 			this.labelName = labelName;
 			this.relationElementCount = relationElementCount;
 			this.routeCountFiltered = routeCountFiltered;
+			this.pinStyles = pinStyles;
 			this.labelMaxZoom = labelMaxZoom;
 			this.collection = collection;
 			this.route = route;
 		}
 
 		public String getLabelImageId() {
-			return LABEL_IMAGE_PREFIX + key.replace('|', '-') + "-" + relationElementCount
-					+ (routeCountFiltered ? "-filtered" : "");
+			StringBuilder styles = new StringBuilder();
+			for (GeoNode.ClimbingStyle style : pinStyles) {
+				styles.append('-').append(style.name());
+			}
+			return LABEL_IMAGE_PREFIX + key.replace('|', '-') + styles + "-"
+					+ relationElementCount + (routeCountFiltered ? "-filtered" : "");
 		}
 
 		/**
-		 * The pin of the crag or area relation at the location, with its route count, as the map
-		 * labels the hull and the A.R. view pins it; see ClimbingRouteCounter.pin.
+		 * The pin of the crag or area relation at the location, with its route count and its
+		 * styles, as the map labels the hull and the A.R. view pins it; see
+		 * ClimbingRouteCounter.pin.
 		 */
 		public GeoNode pin(MapCoordinate location) {
 			return ClimbingRouteCounter.pin(collection, location, relationElementCount,
-					routeCountFiltered);
+					routeCountFiltered, pinStyles);
 		}
 
 		/**
@@ -185,15 +196,18 @@ public final class ClimbingGeometryBuilder {
 			}
 			int routeCount = -1;
 			boolean routeCountFiltered = false;
+			List<GeoNode.ClimbingStyle> pinStyles =
+					GeoNode.getClimbingStyles(collection.getTags());
 			if (collection.entityClimbingType == OsmEntity.EntityClimbingType.area
 					|| collection.entityClimbingType == OsmEntity.EntityClimbingType.crag) {
 				ClimbingRouteCounter.RouteSummary routes =
 						routeCounter.summarize(collection, nodes);
 				routeCount = routes.getMatchingRouteCount();
 				routeCountFiltered = routes.isFiltered();
+				pinStyles = ClimbingRouteCounter.pinStyles(collection, routes);
 			}
 			addGeometry(result, collection, coordinates, routeCount, routeCountFiltered,
-					toRouteWay(collection, nodes));
+					pinStyles, toRouteWay(collection, nodes));
 		}
 		return result;
 	}
@@ -436,7 +450,8 @@ public final class ClimbingGeometryBuilder {
 	private GeometrySpec wayLine(OsmCollectionEntity collection, List<MapCoordinate> coordinates,
 	                             int color, RouteWay route) {
 		return new GeometrySpec(geometryKey(collection), coordinates, false, 0, color,
-				wayMinZoom(collection), 0, null, null, 0, false, 0, collection, route);
+				wayMinZoom(collection), 0, null, null, 0, false, Collections.emptyList(), 0,
+				collection, route);
 	}
 
 	/**
@@ -476,6 +491,18 @@ public final class ClimbingGeometryBuilder {
 	void addGeometry(List<GeometrySpec> result, OsmCollectionEntity collection,
 	                 List<MapCoordinate> coordinates, int relationElementCountOverride,
 	                 boolean routeCountFiltered, RouteWay route) {
+		addGeometry(result, collection, coordinates, relationElementCountOverride,
+				routeCountFiltered, GeoNode.getClimbingStyles(collection.getTags()), route);
+	}
+
+	/**
+	 * @param pinStyles the climbing styles the pin of a crag shows, see
+	 *                  ClimbingRouteCounter.pinStyles
+	 */
+	void addGeometry(List<GeometrySpec> result, OsmCollectionEntity collection,
+	                 List<MapCoordinate> coordinates, int relationElementCountOverride,
+	                 boolean routeCountFiltered, Collection<GeoNode.ClimbingStyle> pinStyles,
+	                 RouteWay route) {
 		// Route relations, such as the pitches of a multi-pitch route, get no hull, as in the AR
 		// view.
 		if (isRouteRelation(collection)) {
@@ -485,7 +512,7 @@ public final class ClimbingGeometryBuilder {
 			case area:
 				addHullPolygon(result, collection, coordinates, AREA_FILL_COLOR, HULL_OUTLINE_COLOR,
 						AREA_PADDING_DEGREES, MapZoomLevels.AREA_MIN, 0, MapZoomLevels.CRAG_MIN,
-						relationElementCountOverride, routeCountFiltered);
+						relationElementCountOverride, routeCountFiltered, pinStyles);
 				break;
 			case route:
 				if (collection.osmType == OsmEntity.EntityOsmType.way) {
@@ -502,7 +529,7 @@ public final class ClimbingGeometryBuilder {
 					addHullPolygon(result, collection, coordinates, CRAG_FILL_COLOR,
 							HULL_OUTLINE_COLOR, CRAG_PADDING_DEGREES, MapZoomLevels.CRAG_MIN, 0,
 							MapZoomLevels.POI_AND_ROUTE_MIN, relationElementCountOverride,
-							routeCountFiltered);
+							routeCountFiltered, pinStyles);
 				}
 				break;
 			case artificial:
@@ -511,7 +538,7 @@ public final class ClimbingGeometryBuilder {
 				} else {
 					addHullPolygon(result, collection, coordinates, YELLOW_FILL_COLOR,
 							HULL_OUTLINE_COLOR, OTHER_PADDING_DEGREES, MapZoomLevels.AREA_MIN, 0, 0, -1,
-							false);
+							false, pinStyles);
 				}
 				break;
 			default:
@@ -532,7 +559,8 @@ public final class ClimbingGeometryBuilder {
 	                            List<MapCoordinate> coordinates, int fillColor, int strokeColor,
 	                            double paddingDegrees, float minZoom, float maxZoom,
 	                            float labelMaxZoom, int relationElementCountOverride,
-	                            boolean routeCountFiltered) {
+	                            boolean routeCountFiltered,
+	                            Collection<GeoNode.ClimbingStyle> pinStyles) {
 		// One or two points are enough: their hull is a point or a line, which the padding buffers
 		// into a polygon.
 		if (coordinates.isEmpty()) {
@@ -568,7 +596,7 @@ public final class ClimbingGeometryBuilder {
 			result.add(new GeometrySpec(geometryKey(collection), hullCoordinates, true, fillColor,
 					strokeColor, minZoom, maxZoom, labelCoordinate, labelName,
 					relationElementCount, routeCountFiltered && relationElementCountOverride >= 0,
-					labelMaxZoom, collection, null));
+					StyleGrid.sorted(pinStyles), labelMaxZoom, collection, null));
 		}
 	}
 

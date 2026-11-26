@@ -220,7 +220,8 @@ public class DataManager {
 
 	/** The collection's pin without a route count of its own; see ClimbingRouteCounter.pin. */
 	public static DisplayableGeoNode toDisplayableNode(OsmCollectionEntity collection) {
-		return toDisplayableNode(collection, 0, false);
+		return toDisplayableNode(collection, 0, false,
+				GeoNode.getClimbingStyles(collection.getTags()));
 	}
 
 	/** The collection's pin, with its routes counted; see ClimbingRouteCounter.pin. */
@@ -229,24 +230,30 @@ public class DataManager {
 		return toDisplayableNode(collection, routeCounter.summarize(collection));
 	}
 
-	/** The collection's pin showing the count of its routes; see ClimbingRouteCounter.pin. */
+	/**
+	 * The collection's pin showing the count and the styles of its routes; see
+	 * ClimbingRouteCounter.pin.
+	 */
 	public static DisplayableGeoNode toDisplayableNode(OsmCollectionEntity collection,
 	                                                   ClimbingRouteCounter.RouteSummary routes) {
-		return toDisplayableNode(collection, routes.getMatchingRouteCount(), routes.isFiltered());
+		return toDisplayableNode(collection, routes.getMatchingRouteCount(), routes.isFiltered(),
+				ClimbingRouteCounter.pinStyles(collection, routes));
 	}
 
 	/**
-	 * The collection's pin showing the route count, see ClimbingRouteCounter.pin, placed at the
-	 * center Overpass gave it, or else in the middle of its bounding box.
+	 * The collection's pin showing the route count and the styles, see
+	 * ClimbingRouteCounter.pin, placed at the center Overpass gave it, or else in the middle of
+	 * its bounding box.
 	 */
 	private static DisplayableGeoNode toDisplayableNode(OsmCollectionEntity collection,
-	                                                    int routeCount, boolean filtered) {
+	                                                    int routeCount, boolean filtered,
+	                                                    Collection<GeoNode.ClimbingStyle> pinStyles) {
 		JSONObject center = collection.jsonNodeInfo.optJSONObject("center");
 		MapCoordinate location = center != null
 				? new MapCoordinate(center.optDouble("lat"), center.optDouble("lon"))
 				: collectionCenter(collection);
 		return new DisplayableGeoNode(ClimbingRouteCounter.pin(collection, location, routeCount,
-				filtered));
+				filtered, pinStyles));
 	}
 
 	public static MapCoordinate collectionCenter(OsmCollectionEntity collection) {

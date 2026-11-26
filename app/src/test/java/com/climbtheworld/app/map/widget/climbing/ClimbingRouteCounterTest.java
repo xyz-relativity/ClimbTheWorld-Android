@@ -380,6 +380,94 @@ public class ClimbingRouteCounterTest {
 	}
 
 	@Test
+	public void cragPinShowsItsOwnStylesMergedWithThoseOfAllItsRoutes() throws JSONException {
+		addNode(10, route("climbing:toprope", "yes"));
+		addNode(11, route("climbing:trad", "yes", "climbing:sport", "no"));
+		addNode(12, route());
+		OsmCollectionEntity crag = addCollection(2, "relation",
+				site("crag").put("climbing:boulder", "yes"),
+				members("node", 10, "node", 11, "node", 12));
+		crag.osmNodes = Arrays.asList(10L, 11L, 12L);
+
+		GeoNode pin = counter.pin(crag, new MapCoordinate(45, 24));
+
+		List<GeoNode.ClimbingStyle> merged = Arrays.asList(GeoNode.ClimbingStyle.trad,
+				GeoNode.ClimbingStyle.toprope, GeoNode.ClimbingStyle.boulder);
+		assertEquals(merged, pin.getPinStyles());
+		assertEquals(merged, DataManager.toDisplayableNode(crag, counter).getGeoNode()
+				.getPinStyles());
+		// Its own tags stay as they are, for its details and the display filters.
+		assertEquals(Collections.singletonList(GeoNode.ClimbingStyle.boulder),
+				pin.getClimbingStyles());
+	}
+
+	@Test
+	public void filteredCragPinShowsOnlyTheStylesOfTheMatchingRoutes() throws JSONException {
+		addNode(10, route("climbing:sport", "yes"));
+		addNode(11, route("climbing:trad", "yes"));
+		addNode(12, route("climbing:sport", "yes", "climbing:toprope", "yes"));
+		OsmCollectionEntity crag = addCollection(2, "relation",
+				site("crag").put("climbing:boulder", "yes"),
+				members("node", 10, "node", 11, "node", 12));
+		crag.osmNodes = Arrays.asList(10L, 11L, 12L);
+
+		GeoNode pin = sportOnly().pin(crag, new MapCoordinate(45, 24));
+
+		// Neither the trad route nor the crag's own boulder tag: the pin counts only the others.
+		List<GeoNode.ClimbingStyle> matching = Arrays.asList(GeoNode.ClimbingStyle.sport,
+				GeoNode.ClimbingStyle.toprope);
+		assertEquals(matching, pin.getPinStyles());
+		assertEquals(matching, DataManager.toDisplayableNode(crag, sportOnly()).getGeoNode()
+				.getPinStyles());
+	}
+
+	@Test
+	public void filteredCragPinOfNoMatchingRouteKeepsAllItsStyles() throws JSONException {
+		addNode(10, route("climbing:toprope", "yes"));
+		addNode(11, route("climbing:trad", "yes"));
+		OsmCollectionEntity crag = addCollection(2, "relation",
+				site("crag").put("climbing:boulder", "yes"), members("node", 10, "node", 11));
+		crag.osmNodes = Arrays.asList(10L, 11L);
+
+		// Left out by the filter, as a route pin it leaves out, which keeps its own block.
+		GeoNode pin = sportOnly().pin(crag, new MapCoordinate(45, 24));
+
+		assertEquals("0", pin.getKey(ClimbingTags.KEY_ROUTES));
+		assertEquals(Arrays.asList(GeoNode.ClimbingStyle.trad, GeoNode.ClimbingStyle.toprope,
+				GeoNode.ClimbingStyle.boulder), pin.getPinStyles());
+	}
+
+	@Test
+	public void filteredCragPinOfMatchingUnstyledRoutesShowsTheUnknownStyle()
+			throws JSONException {
+		addNode(10, route());
+		addNode(11, route("climbing:trad", "yes"));
+		OsmCollectionEntity crag = addCollection(2, "relation",
+				site("crag").put("climbing:boulder", "yes"), members("node", 10, "node", 11));
+		crag.osmNodes = Arrays.asList(10L, 11L);
+
+		GeoNode pin = filteredBy(route -> route.getClimbingStyles().isEmpty())
+				.pin(crag, new MapCoordinate(45, 24));
+
+		assertEquals("1", pin.getKey(ClimbingTags.KEY_ROUTES));
+		assertTrue(pin.getPinStyles().isEmpty());
+	}
+
+	@Test
+	public void cragPinOfNoStyledRouteShowsItsOwnStylesOnly() throws JSONException {
+		addNode(12, route());
+		OsmCollectionEntity unstyled = addCollection(2, "relation", site("crag"),
+				members("node", 12));
+		unstyled.osmNodes = Collections.singletonList(12L);
+		OsmCollectionEntity tagged = addCollection(3, "relation",
+				site("crag").put("climbing:sport", "12"), new JSONArray());
+
+		assertTrue(counter.pin(unstyled, new MapCoordinate(45, 24)).getPinStyles().isEmpty());
+		assertEquals(Collections.singletonList(GeoNode.ClimbingStyle.sport),
+				counter.pin(tagged, new MapCoordinate(45, 24)).getPinStyles());
+	}
+
+	@Test
 	public void filteredCountTakesARouteRelationAndARouteWayWithItsEndsOnce()
 			throws JSONException {
 		OsmCollectionEntity crag = cragWithAMultiPitch();

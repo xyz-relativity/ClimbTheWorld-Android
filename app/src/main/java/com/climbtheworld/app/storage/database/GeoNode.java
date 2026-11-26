@@ -31,6 +31,10 @@ public class GeoNode implements Comparable {
 	// Whether a crag's or area's pin counts only the routes matching the display filters, see
 	// ClimbingRouteCounter.pin; the pin then wears the filter badge, see MarkerUtils.
 	public boolean routeCountFiltered;
+	// The climbing styles a crag's or area's pin shows, worked out with its routes, see
+	// ClimbingRouteCounter.pinStyles; null for any other pin, which shows its own, see
+	// getPinStyles.
+	public List<ClimbingStyle> pinStyles;
 	public JSONObject jsonNodeInfo;
 	//This are kept as variables since they are accessed often during AR rendering.
 	public double decimalLatitude = 0;
@@ -212,6 +216,14 @@ public class GeoNode implements Comparable {
 
 	public List<ClimbingStyle> getClimbingStyles() {
 		return getClimbingStyles(getTags());
+	}
+
+	/**
+	 * The climbing styles the pin's style block shows: a crag's are worked out with its routes,
+	 * see pinStyles; any other pin shows its own.
+	 */
+	public List<ClimbingStyle> getPinStyles() {
+		return pinStyles != null ? pinStyles : getClimbingStyles();
 	}
 
 	/**
@@ -668,11 +680,11 @@ public class GeoNode implements Comparable {
 	 */
 	public enum ClimbingStyle {
 		sport(R.string.sport, R.string.sport_short, R.string.sport_description),
-		toprope(R.string.toprope, R.string.toprope_short, R.string.toprope_description),
-		trad(R.string.trad, R.string.trad_short, R.string.trad_description),
-		ice(R.string.ice, R.string.ice_short, R.string.ice_description),
 		multipitch(R.string.multipitch, R.string.multipitch_short,
 				R.string.multipitch_description),
+		trad(R.string.trad, R.string.trad_short, R.string.trad_description),
+		ice(R.string.ice, R.string.ice_short, R.string.ice_description),
+		toprope(R.string.toprope, R.string.toprope_short, R.string.toprope_description),
 		mixed(R.string.mixed, R.string.mixed_short, R.string.mixed_description),
 		boulder(R.string.boulder, R.string.boulder_short, R.string.boulder_description),
 		deepwater(R.string.deepwater, R.string.deepwater_short, R.string.deepwater_description);

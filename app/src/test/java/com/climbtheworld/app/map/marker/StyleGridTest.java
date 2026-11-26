@@ -18,9 +18,9 @@ public class StyleGridTest {
 	@Test
 	public void theStylesAreListedOffThePictogramRopedRowsFirst() {
 		// The top row, then the bottom one, then the middle one, each left to right.
-		assertEquals(Arrays.asList(GeoNode.ClimbingStyle.sport, GeoNode.ClimbingStyle.toprope,
+		assertEquals(Arrays.asList(GeoNode.ClimbingStyle.sport, GeoNode.ClimbingStyle.multipitch,
 						GeoNode.ClimbingStyle.trad, GeoNode.ClimbingStyle.ice,
-						GeoNode.ClimbingStyle.multipitch, GeoNode.ClimbingStyle.mixed,
+						GeoNode.ClimbingStyle.toprope, GeoNode.ClimbingStyle.mixed,
 						GeoNode.ClimbingStyle.boulder, GeoNode.ClimbingStyle.deepwater),
 				StyleGrid.all());
 	}

@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.climbtheworld.app.configs.Configs;
 import com.climbtheworld.app.map.marker.NodeDisplayFilters;
+import com.climbtheworld.app.map.marker.StyleGrid;
 import com.climbtheworld.app.map.model.MapCoordinate;
 import com.climbtheworld.app.storage.DataManager;
 import com.climbtheworld.app.storage.database.ClimbingTags;
@@ -18,6 +19,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
@@ -28,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.function.Predicate;
 
 /**
@@ -386,8 +389,9 @@ public final class ClimbingRouteCounter {
 	/**
 	 * A copy of the collection as its pin draws it, placed at the location. A crag's or area's
 	 * pin shows the count of its mapped routes, or without any its own climbing:routes tag; the
-	 * copy keeps the count out of the collection's tags. The map, the A.R. view, the dialogs and
-	 * the lists all draw collections through it.
+	 * copy keeps the count out of the collection's tags. A crag's style block shows the styles
+	 * worked out with its routes, see pinStyles. The map, the A.R. view, the dialogs and the
+	 * lists all draw collections through it.
 	 */
 	public static GeoNode pin(OsmCollectionEntity collection, MapCoordinate location,
 	                          int routeCount) {
@@ -402,6 +406,16 @@ public final class ClimbingRouteCounter {
 	 */
 	public static GeoNode pin(OsmCollectionEntity collection, MapCoordinate location,
 	                          int routeCount, boolean filtered) {
+		return pin(collection, location, routeCount, filtered,
+				GeoNode.getClimbingStyles(collection.getTags()));
+	}
+
+	/**
+	 * @param pinStyles the climbing styles its style block shows, see pinStyles
+	 */
+	public static GeoNode pin(OsmCollectionEntity collection, MapCoordinate location,
+	                          int routeCount, boolean filtered,
+	                          Collection<GeoNode.ClimbingStyle> pinStyles) {
 		GeoNode result;
 		try {
 			result = new GeoNode(new JSONObject(collection.jsonNodeInfo.toString()));
@@ -414,13 +428,33 @@ public final class ClimbingRouteCounter {
 			result.setKey(ClimbingTags.KEY_ROUTES, Integer.toString(routeCount));
 		}
 		result.routeCountFiltered = filtered;
+		result.pinStyles = StyleGrid.sorted(pinStyles);
 		return result;
 	}
 
-	/** The collection's pin with the count it shows, see the static pin. */
+	/** The collection's pin with the count and the styles it shows, see the static pin. */
 	public static GeoNode pin(OsmCollectionEntity collection, MapCoordinate location,
 	                          RouteSummary routes) {
-		return pin(collection, location, routes.getMatchingRouteCount(), routes.isFiltered());
+		return pin(collection, location, routes.getMatchingRouteCount(), routes.isFiltered(),
+				pinStyles(collection, routes));
+	}
+
+	/**
+	 * The climbing styles the style block of the collection's pin shows, in StyleGrid.ORDER:
+	 * while a display filter is on, those of its routes that match it, as the pin counts only
+	 * them, rather than its own climbing:&lt;style&gt; tags; else its own merged with those of
+	 * all its routes. One the filter leaves no route of keeps them all, as any pin the filters
+	 * leave out keeps its look, faded out or hidden, see isFilteredOut.
+	 */
+	public static List<GeoNode.ClimbingStyle> pinStyles(OsmCollectionEntity collection,
+	                                                    RouteSummary routes) {
+		if (routes.isFiltered() && routes.getMatchingRouteCount() > 0) {
+			return StyleGrid.sorted(routes.matchingStyleCounts.keySet());
+		}
+		Set<GeoNode.ClimbingStyle> result =
+				new TreeSet<>(GeoNode.getClimbingStyles(collection.getTags()));
+		result.addAll(routes.getStyleCounts().keySet());
+		return StyleGrid.sorted(result);
 	}
 
 	/** The collection's pin at the location, with its routes counted; see the static pin. */

@@ -207,6 +207,7 @@ public class AugmentedRealityScene {
 	/** @return whether two pins of the same node, crag or area draw alike */
 	private static boolean drawsAlike(GeoNode earlier, GeoNode loaded) {
 		return earlier.routeCountFiltered == loaded.routeCountFiltered
+				&& earlier.getPinStyles().equals(loaded.getPinStyles())
 				&& earlier.toJSONString().equals(loaded.toJSONString());
 	}
 

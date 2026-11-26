@@ -508,7 +508,7 @@ public class PoiMarkerDrawable extends Drawable {
 		this.styleIconPaint.setAlpha(alpha);
 		this.styleIconPaint.setTextAlign(Paint.Align.CENTER);
 
-		styleIcon = ((BitmapDrawable) MarkerUtils.getStyleIcon(parentRef.get(), poi.geoNode.getClimbingStyles(), (int) STYLE_ICON_SIZE)).getBitmap();
+		styleIcon = ((BitmapDrawable) MarkerUtils.getStyleIcon(parentRef.get(), poi.geoNode.getPinStyles(), (int) STYLE_ICON_SIZE)).getBitmap();
 	}
 
 	private void prepareBackground(AppCompatActivity parent, DisplayableGeoNode poi) {
@@ -699,7 +699,7 @@ public class PoiMarkerDrawable extends Drawable {
 		AppCompatActivity parent = parentRef.get();
 		Bitmap background = ((BitmapDrawable) getBackgroundIcon(parent, poi, scale)).getBitmap();
 		Bitmap styleBitmap = styleIcon == null ? null : ((BitmapDrawable) MarkerUtils.getStyleIcon(
-				parent, poi.geoNode.getClimbingStyles(), (int) STYLE_ICON_SIZE, scale)).getBitmap();
+				parent, poi.geoNode.getPinStyles(), (int) STYLE_ICON_SIZE, scale)).getBitmap();
 
 		Bitmap newBitmap = Bitmap.createBitmap(IconScale.px(getIntrinsicWidth(), scale),
 				IconScale.px(getIntrinsicHeight(), scale), Bitmap.Config.ARGB_8888);

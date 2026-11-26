@@ -105,6 +105,18 @@ public class MapLibreMapWidgetTest {
 	}
 
 	@Test
+	public void newRouteStylesGetANewPin() throws Exception {
+		// The same crag once a route of another style was mapped in it, or a filter left only
+		// routes of other styles, which its pin shows.
+		JSONObject crag = new JSONObject().put("sport", "climbing").put("climbing", "crag");
+		GeoNode styled = nodeWithTags(crag);
+		styled.pinStyles = Collections.singletonList(GeoNode.ClimbingStyle.trad);
+
+		assertNotEquals(poiIconKey(crag),
+				MapLibreMapWidget.poiIconKey(new DisplayableGeoNode(styled)));
+	}
+
+	@Test
 	public void routeTopIsPinnedWhereverItsBottomIs() throws Exception {
 		Map<Long, OsmNode> nodes = new HashMap<>();
 		OsmNode bottom = node(nodes, 11L, new JSONObject()
