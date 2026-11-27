@@ -22,12 +22,24 @@
                 style="@style/ItemSectionTitles"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/ar_settings" />
+                android:text="@string/ar_display_settings" />
 
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="@android:color/darker_gray" />
+        </LinearLayout>
+
+        <!-- The ARCore switch, shown by the settings screen only, and only in the non-FOSS
+             build: the A.R. view's settings dialog leaves it out. -->
+        <LinearLayout
+            android:id="@+id/linerLayoutArCoreSettings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/ItemSubSectionContainer"
+            android:orientation="vertical"
+            android:visibility="gone">
+
         </LinearLayout>
 
         <LinearLayout

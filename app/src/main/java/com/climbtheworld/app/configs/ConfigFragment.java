@@ -44,6 +44,9 @@ public abstract class ConfigFragment {
 	}
 
 	/**
+	 * The switch row of a setting, its name and description in line with the other entries of
+	 * its section, as the grading system or the seek bars, its switch on their end edge.
+	 *
 	 * @param checked the state of a setting that is not read with Configs.getBoolean alone
 	 */
 	public static void addSwitch(ViewGroup viewContainer, CompoundButton.OnCheckedChangeListener listener, Configs.ConfigKey config, boolean checked) {
@@ -54,6 +57,7 @@ public abstract class ConfigFragment {
 				.setSwitchChecked(checked)
 				.setSwitchEvent(listener)
 				.changeElementId(R.id.switchTypeEnabled, config.stringId)
+				.withoutSidePadding()
 				.build();
 		viewContainer.addView(newView);
 	}

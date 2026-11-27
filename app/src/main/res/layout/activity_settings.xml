@@ -8,15 +8,30 @@
     tools:context=".activities.SettingsActivity">
 
     <ScrollView
+        android:id="@+id/settingsScroll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
+        <!-- The settings grouped by the part of the app they control, each group under a header
+             with that part's icon. -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             style="@style/TextContainer"
             android:orientation="vertical">
+
+            <!-- General: the whole app. -->
+            <LinearLayout style="@style/SettingsGroupHeader">
+
+                <ImageView
+                    style="@style/SettingsGroupIcon"
+                    android:src="@drawable/ic_settings" />
+
+                <TextView
+                    style="@style/SettingsGroupTitle"
+                    android:text="@string/settings_group_general" />
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -53,10 +68,6 @@
                 </LinearLayout>
 
             </LinearLayout>
-            
-            <include layout="@layout/fragment_settings_walkie_talkie" />
-
-            <include layout="@layout/fragment_settings_ar_filter" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -124,9 +135,117 @@
 
             </LinearLayout>
 
+            <!-- Downloads: the map tiles and the climbing data. -->
+            <LinearLayout style="@style/SettingsGroupHeader">
+
+                <ImageView
+                    style="@style/SettingsGroupIcon"
+                    android:src="@drawable/ic_download" />
+
+                <TextView
+                    style="@style/SettingsGroupTitle"
+                    android:text="@string/settings_group_downloads" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/ItemSectionContainer"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="10dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/ItemSectionTitles"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/mobile_data_settings" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@android:color/darker_gray" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/linerLayoutMobileDataSettings"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/ItemSubSectionContainer"
+                    android:orientation="vertical">
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Display filters: what the map, the A.R. view and the lists show. The same sections
+                 as the filter dialog of the map and the A.R. view. -->
+            <LinearLayout style="@style/SettingsGroupHeader">
+
+                <ImageView
+                    style="@style/SettingsGroupIcon"
+                    android:src="@drawable/ic_filter" />
+
+                <TextView
+                    style="@style/SettingsGroupTitle"
+                    android:text="@string/settings_group_display_filters" />
+            </LinearLayout>
+
             <include layout="@layout/fragment_settings_node_filter" />
+
+            <!-- Augmented reality: the same section as the settings dialog of the A.R. view, with
+                 the ARCore switch on top. -->
+            <LinearLayout style="@style/SettingsGroupHeader">
+
+                <ImageView
+                    style="@style/SettingsGroupIcon"
+                    android:src="@drawable/ic_view_topo_ar" />
+
+                <TextView
+                    style="@style/SettingsGroupTitle"
+                    android:text="@string/settings_group_augmented_reality" />
+            </LinearLayout>
+
+            <include layout="@layout/fragment_settings_ar_filter" />
+
+            <!-- Walkie-talkie: the same sections as its settings dialog. -->
+            <LinearLayout style="@style/SettingsGroupHeader">
+
+                <ImageView
+                    style="@style/SettingsGroupIcon"
+                    android:src="@drawable/ic_walkietalkie" />
+
+                <TextView
+                    style="@style/SettingsGroupTitle"
+                    android:text="@string/walkie_talkie" />
+            </LinearLayout>
+
+            <include layout="@layout/fragment_settings_walkie_talkie" />
 
         </LinearLayout>
     </ScrollView>
+
+    <!-- The header of the group scrolled into, pinned over the top of the list until the next
+         group's header pushes it out and takes its place (StickyHeaders). A copy for the eye
+         only, as far in as the list's content (TextContainer): TalkBack reads the headers in the
+         list, and touches go through to it, as nothing in it is clickable. -->
+    <LinearLayout
+        android:id="@+id/stickyGroupHeader"
+        style="@style/SettingsGroupHeader"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="2dp"
+        android:layout_marginEnd="2dp"
+        android:background="@color/itemContainerBackground"
+        android:importantForAccessibility="noHideDescendants"
+        android:visibility="invisible">
+
+        <ImageView style="@style/SettingsGroupIcon" />
+
+        <TextView style="@style/SettingsGroupTitle" />
+    </LinearLayout>
 
 </RelativeLayout>

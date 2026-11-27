@@ -28,10 +28,11 @@ public final class StyleSwitches {
 	/**
 	 * Adds the switches to the container, the checked styles on.
 	 *
-	 * @param filterRows whether they are rows of the display filters, laid out as their other
-	 *                   rows: the name only, and the style block in the same icon column as the
-	 *                   pins of the type rows, UIConstants.POI_TYPE_LIST_ICON_SIZE. Otherwise,
-	 *                   as in the editor, each style's description shows under its name.
+	 * @param filterRows whether they are rows of the display filters, laid out as their type
+	 *                   rows: the style block as wide as the type pins, in the same icon column,
+	 *                   flush with the grade labels, so the names and descriptions start where
+	 *                   the types' do (ListViewItemBuilder.setFilterRowIcon). Otherwise, as in
+	 *                   the editor, the block at its usual size right before the name.
 	 * @param onChange   told of every switch flipped
 	 */
 	public static void add(AppCompatActivity parent, ViewGroup container,
@@ -41,17 +42,15 @@ public final class StyleSwitches {
 			List<GeoNode.ClimbingStyle> styles = Collections.singletonList(style);
 			ListViewItemBuilder row = ListViewItemBuilder.getPaddedBuilder(parent)
 					.setTitle(parent.getString(style.getNameId()))
+					.setDescription(parent.getString(style.getDescriptionId()))
 					.setSwitchChecked(checked.contains(style))
 					.changeElementId(R.id.switchTypeEnabled, style.getNameId())
 					.setSwitchEvent(onChange);
 			if (filterRows) {
-				row.setIcon(MarkerUtils.getStyleIcon(parent, styles,
-								UIConstants.FILTER_STYLE_ICON_SIZE))
-						.setIconSize(UIConstants.POI_TYPE_LIST_ICON_SIZE,
-								UIConstants.POI_TYPE_LIST_ICON_SIZE);
+				row.setFilterRowIcon(MarkerUtils.getStyleIcon(parent, styles,
+						UIConstants.FILTER_STYLE_ICON_SIZE));
 			} else {
-				row.setIcon(MarkerUtils.getStyleIcon(parent, styles))
-						.setDescription(parent.getString(style.getDescriptionId()));
+				row.setIcon(MarkerUtils.getStyleIcon(parent, styles));
 			}
 			container.addView(row.build());
 		}

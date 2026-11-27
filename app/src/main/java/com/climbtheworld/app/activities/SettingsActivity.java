@@ -1,6 +1,8 @@
 package com.climbtheworld.app.activities;
 
 import android.os.Bundle;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.Spinner;
 
@@ -16,6 +18,7 @@ import com.climbtheworld.app.configs.IntercomFragment;
 import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.utils.Globals;
 import com.climbtheworld.app.utils.views.EdgeToEdge;
+import com.climbtheworld.app.utils.views.StickyHeaders;
 
 public class SettingsActivity extends AppCompatActivity
 		implements CompoundButton.OnCheckedChangeListener {
@@ -31,21 +34,30 @@ public class SettingsActivity extends AppCompatActivity
 
 		configs = Configs.instance(this);
 		uiSetup();
+
+		// The header of the group scrolled into stays at the top.
+		StickyHeaders.attach(findViewById(R.id.settingsScroll), findViewById(R.id.stickyGroupHeader));
 	}
 
 	private void uiSetup() {
-		//Device settings
+		// General
 		ConfigFragment.addSwitch(findViewById(R.id.linerLayoutDeviceSettings), this, Configs.ConfigKey.keepScreenOn);
-		// Only the non-FOSS build has ARCore.
-		if (ArCoreFeatures.AVAILABLE) {
-			ConfigFragment.addSwitch(findViewById(R.id.linerLayoutDeviceSettings), this, Configs.ConfigKey.useArCore);
-		}
-		ConfigFragment.addSwitch(findViewById(R.id.linerLayoutDeviceSettings), this, Configs.ConfigKey.useMobileDataForMap);
-		ConfigFragment.addSwitch(findViewById(R.id.linerLayoutDeviceSettings), this, Configs.ConfigKey.useMobileDataForRoutes);
+
+		// Downloads
+		ConfigFragment.addSwitch(findViewById(R.id.linerLayoutMobileDataSettings), this, Configs.ConfigKey.useMobileDataForMap);
+		ConfigFragment.addSwitch(findViewById(R.id.linerLayoutMobileDataSettings), this, Configs.ConfigKey.useMobileDataForRoutes);
 
 		DisplayFilterFragment filter = new DisplayFilterFragment(this, findViewById(R.id.routesFiltersContainer));
 		AugmentedRealityFragment filterAr = new AugmentedRealityFragment(this, findViewById(R.id.augmentedRealitySettingsContainer));
 		IntercomFragment intercom = new IntercomFragment(this, findViewById(R.id.intercomSettingsContainer));
+
+		// Only the non-FOSS build has ARCore. Its switch heads the A.R. section, which the A.R.
+		// view's settings dialog shows without it.
+		if (ArCoreFeatures.AVAILABLE) {
+			ViewGroup arCoreSettings = findViewById(R.id.linerLayoutArCoreSettings);
+			ConfigFragment.addSwitch(arCoreSettings, this, Configs.ConfigKey.useArCore);
+			arCoreSettings.setVisibility(View.VISIBLE);
+		}
 
 		//route settings
 		Spinner dropdown = findViewById(R.id.gradeSelectSpinner);

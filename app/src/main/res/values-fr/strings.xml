@@ -281,47 +281,55 @@
     <string name="ui_grade_system">Système de cotation</string>
     <!-- Settings -->
     <string name="ui_grade_system_description">Système de cotation utilisé pour afficher les cotations d’escalade.</string>
-    <string name="device_settings">Paramètres de l’appareil</string>
+    <string name="device_settings">Appareil</string>
     <string name="keep_screen_on">Garder l’écran allumé</string>
     <string name="keep_screen_on_description">Empêche l’écran de s’éteindre.</string>
-    <string name="ar_horizon">Style d’horizon R.A.</string>
-    <string name="ar_horizon_description">Dans la vue en réalité augmentée, dessiner un horizon virtuel ou le terrain environnant.</string>
+    <string name="ar_horizon">Style d’horizon</string>
+    <string name="ar_horizon_description">Dessiner un horizon virtuel ou le terrain environnant.</string>
     <string name="ar_horizon_off">Pas d’horizon</string>
     <string name="ar_horizon_horizon">Horizon</string>
     <string name="ar_horizon_terrain">Terrain virtuel</string>
     <string name="ar_horizon_mode_toast">%1$s, %2$s</string>
-    <string name="ar_elevation">R.A. : suivre l’altitude</string>
-    <string name="ar_elevation_description">Dans la vue en réalité augmentée, placer les voies à leur altitude. Sans altitude, les voies sont placées comme sur un terrain plat et, sauf si le terrain est dessiné, aucune donnée d’altitude n’est téléchargée. Le bouton d’horizon de la vue R.A. modifie aussi ce réglage.</string>
+    <string name="ar_elevation">Suivre l’altitude</string>
+    <string name="ar_elevation_description">Placer les voies à leur altitude. Sans altitude, les voies sont placées comme sur un terrain plat et, sauf si le terrain est dessiné, aucune donnée d’altitude n’est téléchargée. Le bouton d’horizon de la vue R.A. modifie aussi ce réglage.</string>
     <string name="ar_elevation_on">voies à leur altitude</string>
     <string name="ar_elevation_off">voies comme sur un terrain plat</string>
-    <string name="ar_climbing_hulls">R.A. : contours des secteurs et des sites</string>
-    <string name="ar_climbing_hulls_description">Dans la vue en réalité augmentée, dessiner au sol le contour des secteurs et des sites, comme sur la carte. Dans tous les cas, les secteurs éloignés affichent leur repère au lieu de leurs voies.</string>
+    <string name="ar_climbing_hulls">Contours des secteurs et des sites</string>
+    <string name="ar_climbing_hulls_description">Dessiner au sol le contour des secteurs et des sites, comme sur la carte. Dans tous les cas, les secteurs éloignés affichent leur repère au lieu de leurs voies.</string>
     <string name="use_ar_core">Utiliser ARCore</string>
     <string name="use_ar_core_description">Dans la vue en réalité augmentée, suivre la caméra avec les Services Google Play pour la RA (ARCore), plus stables que les capteurs, et l’aligner sur les voies cartographiées une fois près d’elles, sur les téléphones compatibles.</string>
     <string name="use_mobile_data_for_map">Télécharger les fonds de carte via les données mobiles</string>
     <string name="use_mobile_data_for_map_description">Utiliser l’internet mobile pour télécharger les tuiles de carte et l’altitude du terrain (recommandé).</string>
     <string name="use_mobile_data_for_routes">Télécharger les données d’escalade via les données mobiles</string>
     <string name="use_mobile_data_for_routes_description">Utiliser l’internet mobile pour télécharger les données d’escalade (préférez le Wi-Fi si possible).</string>
-    <string name="visible_route_count_limit">R.A. : nombre maximal de voies visibles</string>
-    <string name="visible_route_count_limit_description">Le nombre maximal de voies affichées dans la vue en réalité augmentée.</string>
-    <string name="visible_route_dist_limit">R.A. : distance de visibilité maximale (m)</string>
-    <string name="visible_route_dist_limit_description">La distance maximale à laquelle les voies sont visibles dans la vue en réalité augmentée.</string>
+    <string name="visible_route_count_limit">Nombre maximal de voies visibles</string>
+    <string name="visible_route_count_limit_description">Le nombre maximal de voies affichées.</string>
+    <string name="visible_route_dist_limit">Distance de visibilité maximale (m)</string>
+    <string name="visible_route_dist_limit_description">La distance maximale à laquelle les voies sont visibles.</string>
     <string name="visible_climb_style">Styles d’escalade visibles</string>
     <string name="visible_node_types">Types d’éléments visibles</string>
-    <string name="grading_settings">Paramètres de cotation</string>
+    <string name="grading_settings">Cotation</string>
     <string name="ar_settings">Paramètres de réalité augmentée</string>
+    <!-- The A.R. section, under the "Augmented Reality" group or the dialog titled ar_settings. -->
+    <string name="ar_display_settings">Affichage</string>
+    <string name="mobile_data_settings">Données mobiles</string>
+    <!-- Groups of the settings screen, by the part of the app they control. -->
+    <string name="settings_group_general">Paramètres généraux</string>
+    <string name="settings_group_downloads">Téléchargements</string>
+    <string name="settings_group_display_filters">Filtres d’affichage</string>
+    <string name="settings_group_augmented_reality">Réalité augmentée</string>
     <string name="exception_message">Erreur interne : %s</string>
 
     <string name="oauth_failed">Échec de l’authentification.</string>
 
     <!-- Filters -->
-    <string name="filter_by_name">Filtrer par nom</string>
+    <string name="filter_by_name">Nom</string>
     <string name="quick_filter">Filtre rapide</string>
     <string name="clear_filter">Effacer</string>
-    <string name="filter_by_grade">Filtrer par cotation</string>
-    <string name="filter_by_style">Filtrer par style</string>
-    <string name="filter_by_type">Filtrer par type</string>
-    <string name="filter_by_bookmarks">Filtrer par favoris</string>
+    <string name="filter_by_grade">Cotation</string>
+    <string name="filter_by_style">Style</string>
+    <string name="filter_by_type">Type</string>
+    <string name="filter_by_bookmarks">Favoris</string>
     <string name="filter_bookmarked">Favoris seulement</string>
     <string name="reset_filters">Réinitialiser tous les filtres</string>
 
@@ -447,8 +455,9 @@
     <string name="dont_show_again">Ne plus afficher</string>
 
     <!-- Walkie-Talkie -->
-    <string name="walkie_talkie_persona">Identité du talkie-walkie</string>
+    <string name="walkie_talkie_persona">Identité</string>
     <string name="walkie_talkie_audio_settings">Paramètres audio du talkie-walkie</string>
+    <string name="walkie_talkie_audio">Audio</string>
     <string name="hands_free_switch">Mains libres</string>
     <string name="hands_free_switch_description">Le talkie-walkie détecte la voix pour déclencher automatiquement la transmission.</string>
     <string name="walkie_talkie_noise_filter">Filtre de bruit mains libres</string>

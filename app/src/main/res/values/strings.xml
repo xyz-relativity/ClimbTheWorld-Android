@@ -288,47 +288,55 @@
     <string name="ui_grade_system">Grading system</string>
     <!-- Settings -->
     <string name="ui_grade_system_description">Grading system to use when displaying climbing grade.</string>
-    <string name="device_settings">Device Settings</string>
+    <string name="device_settings">Device</string>
     <string name="keep_screen_on">Keep screen always on</string>
     <string name="keep_screen_on_description">Prevent screen from turning off.</string>
-    <string name="ar_horizon">A.R. horizon style</string>
-    <string name="ar_horizon_description">In augmented reality view, draw a virtual horizon or the surrounding terrain.</string>
+    <string name="ar_horizon">Horizon style</string>
+    <string name="ar_horizon_description">Draw a virtual horizon or the surrounding terrain.</string>
     <string name="ar_horizon_off">No horizon</string>
     <string name="ar_horizon_horizon">Horizon</string>
     <string name="ar_horizon_terrain">Virtual terrain</string>
     <string name="ar_horizon_mode_toast">%1$s, %2$s</string>
-    <string name="ar_elevation">A.R. follow elevation</string>
-    <string name="ar_elevation_description">In augmented reality view, place routes at their elevation. Without elevation, routes are placed as if on flat ground, and unless the terrain is drawn, no elevation data is downloaded. The horizon button of the A.R. view also changes this.</string>
+    <string name="ar_elevation">Follow elevation</string>
+    <string name="ar_elevation_description">Place routes at their elevation. Without elevation, routes are placed as if on flat ground, and unless the terrain is drawn, no elevation data is downloaded. The horizon button of the A.R. view also changes this.</string>
     <string name="ar_elevation_on">routes at their elevation</string>
     <string name="ar_elevation_off">routes as if on flat ground</string>
-    <string name="ar_climbing_hulls">A.R. crag and area outlines</string>
-    <string name="ar_climbing_hulls_description">In augmented reality view, outline crags and areas on the ground, as on the map. Far crags show their pin instead of their routes either way.</string>
+    <string name="ar_climbing_hulls">Crag and area outlines</string>
+    <string name="ar_climbing_hulls_description">Outline crags and areas on the ground, as on the map. Far crags show their pin instead of their routes either way.</string>
     <string name="use_ar_core">Use ARCore</string>
     <string name="use_ar_core_description">In the A.R. view, track the camera with Google Play Services for AR (ARCore), steadier than with the sensors, and align it on the mapped routes when close to them, on the phones it supports.</string>
     <string name="use_mobile_data_for_map">Map tiles download over mobile data</string>
     <string name="use_mobile_data_for_map_description">Use mobile internet to download map tiles and terrain elevation (recommended).</string>
     <string name="use_mobile_data_for_routes">Nodes data download over mobile data</string>
     <string name="use_mobile_data_for_routes_description">Use mobile internet for node data download (use wifi if possible).</string>
-    <string name="visible_route_count_limit">A.R. maximum routes visible</string>
-    <string name="visible_route_count_limit_description">The maximum number of routes shown in augmenter reality view.</string>
-    <string name="visible_route_dist_limit">A.R. maximum visibility distance (m)</string>
-    <string name="visible_route_dist_limit_description">Maximum distance to view routes in the augmented reality view.</string>
+    <string name="visible_route_count_limit">Maximum routes visible</string>
+    <string name="visible_route_count_limit_description">The maximum number of routes shown.</string>
+    <string name="visible_route_dist_limit">Maximum visibility distance (m)</string>
+    <string name="visible_route_dist_limit_description">The maximum distance at which routes are shown.</string>
     <string name="visible_climb_style">Visible Climbing Styles</string>
     <string name="visible_node_types">Visible Node Types</string>
-    <string name="grading_settings">Grading Settings</string>
+    <string name="grading_settings">Grading</string>
     <string name="ar_settings">Augmented Reality Settings</string>
+    <!-- The A.R. section, under the "Augmented Reality" group or the dialog titled ar_settings. -->
+    <string name="ar_display_settings">Display</string>
+    <string name="mobile_data_settings">Mobile Data</string>
+    <!-- Groups of the settings screen, by the part of the app they control. -->
+    <string name="settings_group_general">General Settings</string>
+    <string name="settings_group_downloads">Downloads</string>
+    <string name="settings_group_display_filters">Display Filters</string>
+    <string name="settings_group_augmented_reality">Augmented Reality</string>
     <string name="exception_message">Internal error: %s</string>
 
     <string name="oauth_failed">Failed to authenticate.</string>
 
     <!-- Filters -->
-    <string name="filter_by_name">Filter by Name</string>
+    <string name="filter_by_name">Name</string>
     <string name="quick_filter">Quick Filter</string>
     <string name="clear_filter">Clear</string>
-    <string name="filter_by_grade">Filter by Grade</string>
-    <string name="filter_by_style">Filter by Style</string>
-    <string name="filter_by_type">Filter by Type</string>
-    <string name="filter_by_bookmarks">Filter by Bookmarks</string>
+    <string name="filter_by_grade">Grade</string>
+    <string name="filter_by_style">Style</string>
+    <string name="filter_by_type">Type</string>
+    <string name="filter_by_bookmarks">Bookmarks</string>
     <string name="filter_bookmarked">Bookmarked only</string>
     <string name="reset_filters">Reset All Filters</string>
 
@@ -453,8 +461,9 @@
     <string name="dont_show_again">Don\'t show again</string>
 
     <!-- Walkie-Talkie -->
-    <string name="walkie_talkie_persona">Walkie-Talkie Persona</string>
+    <string name="walkie_talkie_persona">Persona</string>
     <string name="walkie_talkie_audio_settings">Walkie-Talkie Audio Settings</string>
+    <string name="walkie_talkie_audio">Audio</string>
     <string name="hands_free_switch">Hands-Free</string>
     <string name="hands_free_switch_description">Walkie-Talkie will listen for speech to automatically trigger transmission.</string>
     <string name="walkie_talkie_noise_filter">Hands free noise filter</string>

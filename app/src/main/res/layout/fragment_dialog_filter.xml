@@ -36,12 +36,16 @@
                     android:background="@android:color/darker_gray" />
             </LinearLayout>
 
-            <!-- Set in as far as the content of the other sections, ItemSubSectionContainer. -->
+            <!-- Set in as far as the content of the other sections, ItemSubSectionContainer, its
+                 funnel flush with their entries, the grade labels: on the start side, the funnel's
+                 own 5dp margin makes up the rest. -->
             <include
                 layout="@layout/layout_filter"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="10dp" />
+                android:layout_marginStart="5dp"
+                android:layout_marginEnd="10dp"
+                android:layout_marginVertical="10dp" />
 
         </LinearLayout>
 

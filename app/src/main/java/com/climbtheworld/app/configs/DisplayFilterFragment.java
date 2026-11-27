@@ -22,7 +22,6 @@ import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.logbook.Bookmarks;
-import com.climbtheworld.app.utils.constants.UIConstants;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 import com.climbtheworld.app.utils.views.SpinnerUtils;
 import com.climbtheworld.app.utils.views.StyleSwitches;
@@ -107,9 +106,7 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 		container.addView(ListViewItemBuilder.getPaddedBuilder(parent)
 				.setTitle(parent.getString(R.string.filter_bookmarked))
 				.setSwitchChecked(configs.getBoolean(Configs.ConfigKey.filterBookmarked))
-				.setIcon(star)
-				.setIconSize(UIConstants.POI_TYPE_LIST_ICON_SIZE,
-						UIConstants.POI_TYPE_LIST_ICON_SIZE)
+				.setFilterRowIcon(star)
 				// Its own ID, so a restored view state is not that of another switch.
 				.changeElementId(R.id.switchTypeEnabled, View.generateViewId())
 				.setSwitchEvent((buttonView, isChecked) -> {
@@ -124,7 +121,7 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 
 	private void loadStyles() {
 		StyleSwitches.add(parent, findViewById(R.id.containerClimbingStyles),
-				configs.getClimbingStyles(), false, (buttonView, isChecked) -> saveStyles());
+				configs.getClimbingStyles(), true, (buttonView, isChecked) -> saveStyles());
 	}
 
 	private void saveStyles() {
@@ -143,9 +140,9 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 
 			View customSwitch = ListViewItemBuilder.getPaddedBuilder(parent)
 					.setTitle(parent.getString(typeName.getNameId()))
+					.setDescription(parent.getString(typeName.getDescriptionId()))
 					.setSwitchChecked(checked.contains(typeName))
-					.setIcon(new PoiMarkerDrawable(parent, new DisplayableGeoNode(poi)))
-					.setIconSize(UIConstants.POI_TYPE_LIST_ICON_SIZE, UIConstants.POI_TYPE_LIST_ICON_SIZE)
+					.setFilterRowIcon(new PoiMarkerDrawable(parent, new DisplayableGeoNode(poi)))
 					.changeElementId(R.id.switchTypeEnabled, typeName.getNameId())
 					.setSwitchEvent(new CompoundButton.OnCheckedChangeListener() {
 						@Override

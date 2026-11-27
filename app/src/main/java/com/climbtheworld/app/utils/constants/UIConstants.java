@@ -14,7 +14,8 @@ public interface UIConstants {
 
 	//Lists
 	double POI_TYPE_LIST_ICON_SIZE = Globals.convertDpToPixel(42);
-	// The style block of a display filter row, in its POI_TYPE_LIST_ICON_SIZE column.
+	// The style block of a display filter row, in its POI_TYPE_LIST_ICON_SIZE column: as wide as
+	// the type rows' pins there (2 wide for 3 high, as tall as the column).
 	int FILTER_STYLE_ICON_SIZE = Globals.convertDpToPixel(28).intValue();
 
 	//UX CONFIGS

@@ -105,6 +105,38 @@
         <item name="android:background">@color/itemContainerBackground</item>
     </style>
 
+    <!-- Header of a group of the settings screen: the icon of the part of the app it controls,
+         as on the tools screen, and its name, above the group's sections. The tag marks it for
+         StickyHeaders, which pins it at the top while its group is scrolled through. -->
+    <style name="SettingsGroupHeader">
+        <item name="android:tag">stickyHeader</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:paddingStart">8dp</item>
+        <item name="android:paddingEnd">8dp</item>
+        <item name="android:paddingTop">16dp</item>
+        <item name="android:paddingBottom">6dp</item>
+    </style>
+
+    <style name="SettingsGroupIcon">
+        <item name="android:layout_width">36dp</item>
+        <item name="android:layout_height">36dp</item>
+        <item name="android:layout_marginEnd">12dp</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="android:importantForAccessibility">no</item>
+    </style>
+
+    <style name="SettingsGroupTitle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">?android:textColorPrimary</item>
+        <item name="android:accessibilityHeading">true</item>
+    </style>
+
     <!-- ItemContainer of the screens editing OpenStreetMap data. -->
     <style name="EditItemContainer">
         <item name="android:background">@drawable/bg_edit_mode</item>
