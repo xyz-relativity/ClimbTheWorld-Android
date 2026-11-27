@@ -191,6 +191,20 @@ public class MapContractTest {
 		assertEquals(30, camera.getBearing(), 0);
 	}
 
+	@Test
+	public void cameraStateKeepsItsTilt() {
+		MapCameraState camera = new MapCameraState(new MapCoordinate(45, 24), 16, 30, 45);
+
+		assertEquals(30, camera.getBearing(), 0);
+		assertEquals(45, camera.getTilt(), 0);
+	}
+
+	@Test
+	public void cameraStateIsFlatUnlessTilted() {
+		assertEquals(0, new MapCameraState(new MapCoordinate(45, 24), 16).getTilt(), 0);
+		assertEquals(0, new MapCameraState(new MapCoordinate(45, 24), 16, 30).getTilt(), 0);
+	}
+
 	@Test(expected = IllegalArgumentException.class)
 	public void cameraStateRejectsAZoomThatIsNotANumber() {
 		new MapCameraState(new MapCoordinate(45, 24), Double.NaN);

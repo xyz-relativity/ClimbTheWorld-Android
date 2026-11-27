@@ -243,6 +243,7 @@ public class MapLibreMapWidget {
 	private final boolean forceGhostPois;
 	private final boolean showTapMarker;
 	private final boolean creditTerrain;
+	private final boolean keepTilt;
 	private List<ClimbingGeometryBuilder.GeometrySpec> pendingClimbingGeometry =
 			Collections.emptyList();
 	private String pendingHullGeoJson = EMPTY_FEATURE_COLLECTION;
@@ -353,6 +354,7 @@ public class MapLibreMapWidget {
 		this.forceGhostPois = forceGhostPois;
 		this.showTapMarker = showTapMarker;
 		this.creditTerrain = profile.creditTerrain;
+		this.keepTilt = profile.keepTilt;
 		this.mapView = container.findViewById(R.id.openMapView);
 		this.loadingIndicator = container.findViewById(R.id.mapLoadingIndicator);
 		this.observerLocation = new MapCoordinate(Globals.virtualCamera.decimalLatitude,
@@ -1022,7 +1024,8 @@ public class MapLibreMapWidget {
 		tapLocation = location;
 		setFollowObserver(false);
 		if (map == null) {
-			session.camera = new MapCameraState(location, zoom);
+			session.camera = new MapCameraState(location, zoom, 0,
+					session.camera != null ? session.camera.getTilt() : 0);
 			return;
 		}
 		moveCamera(location, zoom, currentBearing(), animate);
@@ -1112,7 +1115,8 @@ public class MapLibreMapWidget {
 			// The camera the style applies once loaded.
 			MapCameraState camera = session.camera;
 			session.camera = camera != null
-					? new MapCameraState(camera.getCenter(), zoom, camera.getBearing())
+					? new MapCameraState(camera.getCenter(), zoom, camera.getBearing(),
+					camera.getTilt())
 					: new MapCameraState(observerLocation, zoom);
 			return;
 		}
@@ -2098,7 +2102,7 @@ public class MapLibreMapWidget {
 			// Without a camera yet, the default one already starts on the observer.
 			if (session.camera != null) {
 				session.camera = new MapCameraState(observerLocation, session.camera.getZoom(),
-						session.camera.getBearing());
+						session.camera.getBearing(), session.camera.getTilt());
 			}
 			return;
 		}
@@ -2139,24 +2143,36 @@ public class MapLibreMapWidget {
 	}
 
 	private void moveCamera(MapCoordinate target, double zoom, double bearing, boolean animate) {
+		moveCamera(target, zoom, bearing, Double.NaN, animate);
+	}
+
+	/**
+	 * @param tilt the tilt to give the map, NaN to keep its own
+	 */
+	private void moveCamera(MapCoordinate target, double zoom, double bearing, double tilt,
+	                        boolean animate) {
 		if (map == null) {
 			return;
 		}
 
-		CameraPosition camera = new CameraPosition.Builder()
+		CameraPosition.Builder camera = new CameraPosition.Builder()
 				.target(toLatLng(target))
 				.zoom(zoom)
-				.bearing(bearing)
-				.build();
+				.bearing(bearing);
+		if (!Double.isNaN(tilt)) {
+			camera.tilt(tilt);
+		}
+		CameraUpdate update = CameraUpdateFactory.newCameraPosition(camera.build());
 		if (animate) {
-			map.animateCamera(CameraUpdateFactory.newCameraPosition(camera));
+			map.animateCamera(update);
 		} else {
-			map.moveCamera(CameraUpdateFactory.newCameraPosition(camera));
+			map.moveCamera(update);
 		}
 	}
 
 	private void applyCamera(MapCameraState camera, boolean animate) {
-		moveCamera(camera.getCenter(), camera.getZoom(), camera.getBearing(), animate);
+		moveCamera(camera.getCenter(), camera.getZoom(), camera.getBearing(),
+				keepTilt ? camera.getTilt() : Double.NaN, animate);
 	}
 
 	private void saveCamera() {
@@ -2164,7 +2180,8 @@ public class MapLibreMapWidget {
 			return;
 		}
 		CameraPosition camera = map.getCameraPosition();
-		session.camera = new MapCameraState(fromLatLng(camera.target), camera.zoom, camera.bearing);
+		session.camera = new MapCameraState(fromLatLng(camera.target), camera.zoom, camera.bearing,
+				camera.tilt);
 	}
 
 	private void updateLocationButton() {
@@ -2256,27 +2273,32 @@ public class MapLibreMapWidget {
 
 	/**
 	 * Which map a widget is. Each profile remembers its camera, GPS following and rotation for the
-	 * running session, starting from its own defaults when the app starts.
+	 * running session, starting from its own defaults when the app starts. The camera's tilt only
+	 * where the profile keeps it.
 	 */
 	public enum Profile {
 		/**
-		 * The AR minimap: fits the AR range, follows the GPS, turns with the compass and credits
-		 * the terrain the AR view places POIs on.
+		 * The AR minimap: fits the AR range, follows the GPS, turns with the compass, credits
+		 * the terrain the AR view places POIs on and opens tilted as it was left.
 		 */
-		AR_MINIMAP(true, RotationMode.AUTO, true),
+		AR_MINIMAP(true, RotationMode.AUTO, true, true),
 		/** The node editor: stays on the node being edited instead of following the GPS. */
-		NODE_EDITOR(false, RotationMode.STATIC, false),
+		NODE_EDITOR(false, RotationMode.STATIC, false, false),
 		/** Every other map. */
-		DEFAULT(true, RotationMode.STATIC, false);
+		DEFAULT(true, RotationMode.STATIC, false, false);
 
 		private final boolean followObserver;
 		private final RotationMode rotationMode;
 		private final boolean creditTerrain;
+		// Whether the map opens at the tilt it was left at, rather than flat.
+		private final boolean keepTilt;
 
-		Profile(boolean followObserver, RotationMode rotationMode, boolean creditTerrain) {
+		Profile(boolean followObserver, RotationMode rotationMode, boolean creditTerrain,
+		        boolean keepTilt) {
 			this.followObserver = followObserver;
 			this.rotationMode = rotationMode;
 			this.creditTerrain = creditTerrain;
+			this.keepTilt = keepTilt;
 		}
 	}
 
