@@ -45,6 +45,18 @@
     </LinearLayout>
 
     <ImageView
+        android:id="@+id/logEntryBookmark"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginEnd="5dp"
+        android:contentDescription="@string/log_book_bookmarked"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_bookmark"
+        android:tint="@color/bookmarked"
+        android:tintMode="multiply"
+        android:visibility="gone" />
+
+    <ImageView
         android:id="@+id/logEntryMenu"
         style="?android:imageButtonStyle"
         android:layout_width="32dp"

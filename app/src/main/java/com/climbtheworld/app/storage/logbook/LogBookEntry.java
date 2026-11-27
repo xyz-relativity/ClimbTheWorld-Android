@@ -1,11 +1,15 @@
 package com.climbtheworld.app.storage.logbook;
 
 import androidx.annotation.NonNull;
+import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 
 import com.climbtheworld.app.R;
+import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmEntity;
+
+import org.json.JSONException;
 
 /**
  * The user's personal log of one OSM element (area, crag, route, gym...).
@@ -26,6 +30,10 @@ public class LogBookEntry {
 	public Attempt attempt = Attempt.none;
 	public long createdAt;
 	public long updatedAt;
+	// Marked by the user to find again, as a route to climb or a crag to visit; see Bookmarks.
+	// Added in version 2 of the database, so it needs the default for the migrated rows.
+	@ColumnInfo(defaultValue = "0")
+	public boolean bookmarked;
 
 	// Snapshot of the element. The type is kept as text so that changes to
 	// OsmEntity.EntityClimbingType can never make a stored entry unreadable.
@@ -39,8 +47,18 @@ public class LogBookEntry {
 		this.osmID = osmID;
 	}
 
+	/**
+	 * @return whether the entry holds nothing worth keeping: no log and no bookmark.
+	 */
 	public boolean isEmpty() {
-		return note.trim().isEmpty() && attempt == Attempt.none;
+		return !hasLog() && !bookmarked;
+	}
+
+	/**
+	 * @return whether the user logged anything about the element: a note or an attempt.
+	 */
+	public boolean hasLog() {
+		return !note.trim().isEmpty() || attempt != Attempt.none;
 	}
 
 	/**
@@ -65,6 +83,12 @@ public class LogBookEntry {
 	public GeoNode toGeoNode() {
 		GeoNode result = new GeoNode(decimalLatitude, decimalLongitude, 0);
 		result.osmID = osmID;
+		try {
+			// Tells it apart from the elements of other types with the same ID, as Bookmarks.
+			result.jsonNodeInfo.put(ClimbingTags.KEY_TYPE, osmType.name());
+		} catch (JSONException e) {
+			throw new IllegalStateException(e);
+		}
 		result.setName(name);
 		result.setClimbingType(getElementType());
 		return result;

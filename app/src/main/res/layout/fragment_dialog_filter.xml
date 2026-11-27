@@ -36,7 +36,12 @@
                     android:background="@android:color/darker_gray" />
             </LinearLayout>
 
-            <include layout="@layout/layout_filter"/>
+            <!-- Set in as far as the content of the other sections, ItemSubSectionContainer. -->
+            <include
+                layout="@layout/layout_filter"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp" />
 
         </LinearLayout>
 

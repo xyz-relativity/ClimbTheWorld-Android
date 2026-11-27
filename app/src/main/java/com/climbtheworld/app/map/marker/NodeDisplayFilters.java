@@ -1,5 +1,6 @@
 package com.climbtheworld.app.map.marker;
 
+import android.content.Context;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -10,6 +11,8 @@ import com.climbtheworld.app.converter.tools.GradeSystem;
 import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmEntity;
+import com.climbtheworld.app.storage.logbook.BookmarkIndex;
+import com.climbtheworld.app.storage.logbook.Bookmarks;
 import com.climbtheworld.app.utils.Globals;
 
 import java.util.Collections;
@@ -40,22 +43,25 @@ public class NodeDisplayFilters {
 	 * @param styles      the climbing styles to show, all of them for any
 	 * @param types       the kinds of climbing feature to show
 	 * @param text        what a name has to hold, empty or null for any
+	 * @param bookmarks   while only the bookmarked show, the bookmarks; null for any
 	 */
 	public record Settings(GradeSystem gradeSystem, int minGrade, int maxGrade,
 	                       Set<GeoNode.ClimbingStyle> styles,
-	                       Set<OsmEntity.EntityClimbingType> types, String text) {
+	                       Set<OsmEntity.EntityClimbingType> types, String text,
+	                       BookmarkIndex bookmarks) {
 
 		/** @return whether the POI passes the filters, so shows as any other */
 		public boolean matches(GeoNode poi) {
 			return matchesGrade(poi) && matchesStyle(poi) && matchesText(poi)
-					&& types.contains(poi.getNodeType());
+					&& types.contains(poi.getNodeType()) && matchesBookmarks(poi);
 		}
 
 		/** @return whether any filter is on, so some POIs may not pass */
 		public boolean hasFilters() {
 			return !Globals.isEmptyOrWhitespace(text) || minGrade != -1 || maxGrade != -1
 					|| styles.size() != styleCount
-					|| types.size() != OsmEntity.EntityClimbingType.features().length;
+					|| types.size() != OsmEntity.EntityClimbingType.features().length
+					|| bookmarks != null;
 		}
 
 		private boolean matchesGrade(GeoNode poi) {
@@ -87,6 +93,24 @@ public class NodeDisplayFilters {
 			}
 			return poi.getName().toLowerCase().contains(text);
 		}
+
+		/**
+		 * A bookmarked element passes, and what it is made of, so all the routes of a bookmarked
+		 * crag or area, see BookmarkIndex. A crag or area holding a bookmarked route shows by its
+		 * count of the matching routes, as for the other filters.
+		 */
+		private boolean matchesBookmarks(GeoNode poi) {
+			return bookmarks == null || bookmarks.shows(keyOf(poi));
+		}
+	}
+
+	/**
+	 * @return the element's key in the bookmarks, see BookmarkIndex.key; an element read without
+	 * its type is a node, as NodeDialogBuilder opens it
+	 */
+	static String keyOf(GeoNode poi) {
+		return BookmarkIndex.key(poi.jsonNodeInfo.optString(ClimbingTags.KEY_TYPE,
+				OsmEntity.EntityOsmType.node.name()), poi.osmID);
 	}
 
 	/** Reads the display filters as they are set now. */
@@ -96,7 +120,20 @@ public class NodeDisplayFilters {
 				configs.getInt(Configs.ConfigKey.filterMinGrade),
 				configs.getInt(Configs.ConfigKey.filterMaxGrade),
 				configs.getClimbingStyles(), configs.getNodeTypes(),
-				configs.getString(Configs.ConfigKey.filterString));
+				configs.getString(Configs.ConfigKey.filterString),
+				configs.getBoolean(Configs.ConfigKey.filterBookmarked)
+						? Bookmarks.current() : null);
+	}
+
+	/**
+	 * Loads what the filters test from the database, the bookmarks while only they show, so
+	 * that the filters read from now on hold. Off the main thread it is done on return; on it,
+	 * in the background, see Bookmarks.current.
+	 */
+	public static void prepare(Context context) {
+		if (Configs.instance(context).getBoolean(Configs.ConfigKey.filterBookmarked)) {
+			Bookmarks.ensureLoaded(context);
+		}
 	}
 
 	/**

@@ -2,6 +2,7 @@ package com.climbtheworld.app.utils.views.dialogs;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.res.ColorStateList;
 import android.database.SQLException;
 import android.graphics.drawable.Drawable;
 import android.text.InputFilter;
@@ -19,11 +20,13 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.activities.LogBookActivity;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmEntity;
+import com.climbtheworld.app.storage.logbook.Bookmarks;
 import com.climbtheworld.app.storage.logbook.LogBook;
 import com.climbtheworld.app.storage.logbook.LogBookDatabase;
 import com.climbtheworld.app.storage.logbook.LogBookEntry;
@@ -38,8 +41,9 @@ public class LogBookDialogBuilder {
 	}
 
 	/**
-	 * Fills the log book section of an element's info dialog. Reads the database, so like the
-	 * rest of the info dialog it has to be built off the main thread.
+	 * Fills the log book section of an element's info dialog, and shows the bookmark star in its
+	 * title, both on the same entry. Reads the database, so like the rest of the info dialog it
+	 * has to be built off the main thread.
 	 *
 	 * @param icon the element's icon from the info dialog title, reused by the editor's title.
 	 */
@@ -70,6 +74,39 @@ public class LogBookDialogBuilder {
 				() -> showEntry(section, entry));
 		section.findViewById(R.id.logBookEditButton).setOnClickListener(edit);
 		section.findViewById(R.id.logBookContent).setOnClickListener(edit);
+
+		ImageView star = dialogView.findViewById(R.id.bookmarkButton);
+		if (star != null) {
+			showBookmark(star, entry);
+			star.setVisibility(View.VISIBLE);
+			star.setOnClickListener(view -> toggleBookmark(activity, entry, element, star));
+		}
+	}
+
+	/**
+	 * Sets or clears the bookmark at once, keeping the rest of the entry.
+	 */
+	private static void toggleBookmark(AppCompatActivity activity, LogBookEntry entry,
+	                                   GeoNode element, ImageView star) {
+		entry.bookmarked = !entry.bookmarked;
+		entry.updateSnapshot(element);
+		showBookmark(star, entry);
+		save(activity, entry, null, () -> {
+			// Not stored, so shown as it is.
+			entry.bookmarked = !entry.bookmarked;
+			showBookmark(star, entry);
+		});
+	}
+
+	/**
+	 * Fills the star with the bookmarked colour, or leaves it white; its tint mode, multiply,
+	 * keeps the outline black.
+	 */
+	private static void showBookmark(ImageView star, LogBookEntry entry) {
+		star.setImageTintList(entry.bookmarked ? ColorStateList.valueOf(
+				ContextCompat.getColor(star.getContext(), R.color.bookmarked)) : null);
+		star.setContentDescription(star.getContext().getString(
+				entry.bookmarked ? R.string.bookmark_remove : R.string.bookmark_add));
 	}
 
 	private static void showEntry(View section, LogBookEntry entry) {
@@ -85,7 +122,8 @@ public class LogBookDialogBuilder {
 		note.setVisibility(View.VISIBLE);
 		if (!entry.note.isEmpty()) {
 			note.setText(entry.note);
-		} else if (entry.isEmpty()) {
+		} else if (!entry.hasLog()) {
+			// A bookmark alone shows in the title.
 			note.setText(R.string.log_book_empty);
 		} else {
 			note.setVisibility(View.GONE);
@@ -159,7 +197,7 @@ public class LogBookDialogBuilder {
 					entry.note = note.getText().toString().trim();
 					entry.attempt = getSelectedAttempt(climbed, attemptGroup);
 					entry.updateSnapshot(element);
-					save(activity, entry, onSaved);
+					save(activity, entry, onSaved, null);
 				});
 		dialog.setButton(DialogInterface.BUTTON_NEGATIVE, activity.getString(R.string.cancel),
 				(dialogInterface, which) -> dialogInterface.dismiss());
@@ -204,22 +242,31 @@ public class LogBookDialogBuilder {
 		return label;
 	}
 
+	/**
+	 * @param onSaved  run on the main thread once the entry is saved
+	 * @param onFailed run on the main thread when it could not be
+	 */
 	private static void save(AppCompatActivity activity, LogBookEntry entry,
-	                         @Nullable Runnable onSaved) {
+	                         @Nullable Runnable onSaved, @Nullable Runnable onFailed) {
 		Constants.DB_EXECUTOR.execute(new UiRelatedTask<String>() {
 			@Override
 			protected String doWork() {
 				try {
 					LogBook.save(LogBookDatabase.getInstance(activity), entry);
-					return null;
 				} catch (SQLException exception) {
 					return exception.getMessage();
 				}
+				// Shows the change where only the bookmarked show, see Bookmarks.addListener.
+				Bookmarks.changed(activity);
+				return null;
 			}
 
 			@Override
 			protected void thenDoUiRelatedWork(String errorMessage) {
 				if (errorMessage != null) {
+					if (onFailed != null) {
+						onFailed.run();
+					}
 					DialogBuilder.showErrorDialog(activity,
 							activity.getString(R.string.log_book_save_failed, errorMessage), null);
 					return;

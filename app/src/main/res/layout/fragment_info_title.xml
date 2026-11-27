@@ -26,6 +26,24 @@
         android:text="fsdhgjhsdg fjskh fkjsdh "
         android:textAlignment="gravity" />
 
+    <!-- Shown by the dialogs of the elements that can be bookmarked, see LogBookDialogBuilder. -->
+    <ImageView
+        android:id="@+id/bookmarkButton"
+        style="?android:imageButtonStyle"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_gravity="center"
+        android:layout_marginEnd="5dp"
+        android:background="?android:selectableItemBackground"
+        android:clickable="true"
+        android:contentDescription="@string/bookmark_add"
+        android:focusable="true"
+        android:padding="2dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_bookmark"
+        android:tintMode="multiply"
+        android:visibility="gone" />
+
     <RelativeLayout
         android:id="@+id/menu"
         style="?android:imageButtonStyle"

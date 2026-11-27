@@ -1,7 +1,9 @@
 package com.climbtheworld.app.storage.logbook;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import androidx.room.Room;
@@ -163,6 +165,32 @@ public class LogBookBackupTest {
 		} catch (Exception exception) {
 			throw new AssertionError(exception);
 		}
+	}
+
+	@Test
+	public void bookmarksAreSavedAndRestored() throws Exception {
+		LogBookEntry crag = entry(OsmEntity.EntityOsmType.relation, 7L, "", 100L);
+		crag.bookmarked = true;
+		source.logBookDao().upsert(crag);
+
+		LogBookBackup.RestoreResult result = restore(target, save(source));
+
+		assertEquals(1, result.added);
+		assertTrue(target.logBookDao().find(OsmEntity.EntityOsmType.relation, 7L).bookmarked);
+	}
+
+	@Test
+	public void aFileFromBeforeBookmarksRestoresWithoutThem() throws Exception {
+		String file = "{\"format\":\"climbtheworld.logbook\",\"version\":1,"
+				+ "\"exportedAt\":1,\"entries\":[{\"osmType\":\"node\",\"osmID\":42,"
+				+ "\"note\":\"Old note\",\"attempt\":\"sent\",\"createdAt\":1,"
+				+ "\"updatedAt\":2,\"name\":null,\"nodeType\":null}]}";
+
+		restore(target, file.getBytes(StandardCharsets.UTF_8));
+
+		LogBookEntry restored = target.logBookDao().find(OsmEntity.EntityOsmType.node, 42L);
+		assertEquals("Old note", restored.note);
+		assertFalse(restored.bookmarked);
 	}
 
 	private static LogBookDatabase newDatabase() {

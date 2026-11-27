@@ -17,6 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * A route mapped as a way from its bottom to its top (climbing=route), which the map and the AR
@@ -124,6 +125,25 @@ public final class RouteWay {
 	public static int gradeColor(JSONObject gradeTags) {
 		return Globals.gradeToColorState(GeoNode.getLevelId(gradeTags,
 				ClimbingTags.KEY_GRADE_TAG)).getDefaultColor();
+	}
+
+	/**
+	 * The node a route way starts at, as fromWay picks it: the first, unless it is a route_top
+	 * and the last is not.
+	 *
+	 * @param nodes finds a node of the way by ID, null for one not stored
+	 * @return null for a way of fewer than two nodes
+	 */
+	public static Long bottomNodeId(List<Long> nodeIds, Function<Long, OsmNode> nodes) {
+		if (nodeIds.size() < 2) {
+			return null;
+		}
+		Long first = nodeIds.get(0);
+		Long last = nodeIds.get(nodeIds.size() - 1);
+		OsmNode firstNode = nodes.apply(first);
+		OsmNode lastNode = nodes.apply(last);
+		return firstNode != null && isRouteTop(firstNode)
+				&& (lastNode == null || !isRouteTop(lastNode)) ? last : first;
 	}
 
 	static boolean isRouteTop(OsmNode node) {

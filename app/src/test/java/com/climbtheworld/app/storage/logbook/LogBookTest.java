@@ -71,6 +71,38 @@ public class LogBookTest {
 	}
 
 	@Test
+	public void aBookmarkAloneKeepsTheEntryUntilItIsCleared() {
+		LogBookEntry entry = new LogBookEntry(OsmEntity.EntityOsmType.relation, 7L);
+		entry.bookmarked = true;
+
+		LogBook.save(database, entry);
+
+		assertTrue(database.logBookDao().find(OsmEntity.EntityOsmType.relation, 7L).bookmarked);
+		assertEquals(1, database.logBookDao().loadBookmarked().size());
+		assertFalse(entry.hasLog());
+
+		entry.bookmarked = false;
+		LogBook.save(database, entry);
+
+		assertNull(database.logBookDao().find(OsmEntity.EntityOsmType.relation, 7L));
+		assertTrue(database.logBookDao().loadBookmarked().isEmpty());
+	}
+
+	@Test
+	public void onlyTheBookmarkedEntriesAreLoadedAsBookmarks() {
+		LogBookEntry logged = new LogBookEntry(OsmEntity.EntityOsmType.node, 1L);
+		logged.note = "Polished";
+		LogBook.save(database, logged);
+		LogBookEntry bookmarked = new LogBookEntry(OsmEntity.EntityOsmType.node, 2L);
+		bookmarked.note = "Next time";
+		bookmarked.bookmarked = true;
+		LogBook.save(database, bookmarked);
+
+		assertEquals(2L, database.logBookDao().loadBookmarked().get(0).osmID);
+		assertEquals(1, database.logBookDao().loadBookmarked().size());
+	}
+
+	@Test
 	public void savingAnEntryWithNoNoteAndNoAttemptDeletesIt() {
 		LogBookEntry entry = new LogBookEntry(OsmEntity.EntityOsmType.node, 7L);
 		entry.attempt = LogBookEntry.Attempt.sent;

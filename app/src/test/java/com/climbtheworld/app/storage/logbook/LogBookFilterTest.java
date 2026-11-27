@@ -71,6 +71,23 @@ public class LogBookFilterTest {
 	}
 
 	@Test
+	public void bookmarkFilterAcceptsOnlyTheBookmarked() {
+		LogBookEntry bookmarked = entry("A", "", OsmEntity.EntityClimbingType.crag,
+				LogBookEntry.Attempt.none);
+		bookmarked.bookmarked = true;
+		LogBookEntry logged = entry("B", "note", OsmEntity.EntityClimbingType.route,
+				LogBookEntry.Attempt.sent);
+		LogBookFilter filter = new LogBookFilter();
+
+		filter.setBookmarkedOnly(true);
+		assertTrue(filter.matches(bookmarked));
+		assertFalse(filter.matches(logged));
+
+		filter.setBookmarkedOnly(false);
+		assertTrue(filter.matches(logged));
+	}
+
+	@Test
 	public void typeFilterUsesTheSnapshotTypeAndTreatsUnknownTypesAsUnknown() {
 		LogBookEntry crag = entry("Crag", "", OsmEntity.EntityClimbingType.crag, LogBookEntry.Attempt.none);
 		LogBookEntry renamedType = entry("Old", "", OsmEntity.EntityClimbingType.crag,

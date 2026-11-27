@@ -74,6 +74,7 @@ import com.climbtheworld.app.storage.database.ClimbingTags;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
+import com.climbtheworld.app.storage.logbook.Bookmarks;
 import com.climbtheworld.app.storage.services.DownloadProgressListener;
 import com.climbtheworld.app.storage.services.DownloadService;
 import com.climbtheworld.app.utils.GeoUtils;
@@ -325,7 +326,9 @@ public class MapLibreMapWidget {
 	// Loads the data for the view again once a download wrote a country, which a move within
 	// the bounds loaded would not, see refreshForView.
 	private final DownloadProgressListener downloads =
-			DownloadProgressListener.onEachDone(this::invalidateData);
+			DownloadProgressListener.onEachDone(this::onDownloaded);
+	// Draws the bookmarks anew once they changed, see onBookmarksChanged.
+	private final Runnable bookmarksChanged = this::onBookmarksChanged;
 	private MapLibreMap.CancelableCallback buttonAnimation;
 	private RotationMode rotationMode;
 
@@ -361,6 +364,23 @@ public class MapLibreMapWidget {
 		configureControls(container);
 		mapView.getMapAsync(this::onMapReady);
 		DownloadService.addListener(downloads);
+		Bookmarks.addListener(parent, bookmarksChanged);
+	}
+
+	private void onDownloaded() {
+		invalidateData();
+		// The download may have changed what a bookmarked crag holds.
+		Bookmarks.changed(parent);
+	}
+
+	/**
+	 * While only the bookmarked show, draws them anew after a bookmark was set or cleared, or
+	 * they were first loaded.
+	 */
+	private void onBookmarksChanged() {
+		if (configs.getBoolean(Configs.ConfigKey.filterBookmarked)) {
+			invalidateData();
+		}
 	}
 
 	private static synchronized void configureAmbientCache(AppCompatActivity parent) {
@@ -2209,6 +2229,7 @@ public class MapLibreMapWidget {
 	 */
 	public void onDestroy() {
 		DownloadService.removeListener(downloads);
+		Bookmarks.removeListener(bookmarksChanged);
 		destroyed = true;
 		map = null;
 		styleLoaded = false;

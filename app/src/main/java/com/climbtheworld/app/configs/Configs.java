@@ -318,6 +318,8 @@ public class Configs {
 		filterStyles(R.string.climb_style, -1, "filterStyles", GeoNode.ClimbingStyle.values()),
 		filterNodeTypes(R.string.node_type, -1, "filterNodeTypes",
 				OsmEntity.EntityClimbingType.features()),
+		// Whether only the bookmarked elements show, see NodeDisplayFilters.Settings.bookmarks.
+		filterBookmarked(R.string.filter_bookmarked, -1, "filterBookmarked", false),
 
 		// A new key, so the old modes keep telling the elevation they had, see isArElevation.
 		arHorizonMode(R.string.ar_horizon, R.string.ar_horizon_description, "arHorizonView",

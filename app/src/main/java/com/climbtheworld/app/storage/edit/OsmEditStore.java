@@ -16,6 +16,7 @@ import com.climbtheworld.app.storage.database.OsmEntity.EntityClimbingType;
 import com.climbtheworld.app.storage.database.OsmEntity.EntityOsmType;
 import com.climbtheworld.app.storage.database.OsmEntity.EntityState;
 import com.climbtheworld.app.storage.database.OsmNode;
+import com.climbtheworld.app.storage.logbook.Bookmarks;
 import com.climbtheworld.app.storage.offline.CountryBoxes;
 import com.climbtheworld.app.storage.upload.DiffResult;
 import com.climbtheworld.app.storage.upload.OsmElements;
@@ -152,6 +153,17 @@ public class OsmEditStore {
 		if (missing != null) {
 			throw new ElementNotStoredException(missing.osmType, missing.osmID);
 		}
+		bookmarksMayHaveChanged();
+	}
+
+	/**
+	 * An edit, an upload or a dropped change may change what a bookmarked crag holds, and so
+	 * what the "bookmarked only" filter shows, see Bookmarks.
+	 */
+	private void bookmarksMayHaveChanged() {
+		if (context != null) {
+			Bookmarks.changed(context);
+		}
 	}
 
 	/**
@@ -183,7 +195,7 @@ public class OsmEditStore {
 	 */
 	public boolean deleteNode(long osmId) {
 		long now = System.currentTimeMillis();
-		return database.runInTransaction(() -> {
+		boolean deleted = database.runInTransaction(() -> {
 			OsmNode stored = database.osmNodeDao().find(EntityOsmType.node, osmId);
 			if (stored == null) {
 				return true;
@@ -200,6 +212,8 @@ public class OsmEditStore {
 			}
 			return true;
 		});
+		bookmarksMayHaveChanged();
+		return deleted;
 	}
 
 	/** Deletes the relation, keeping its members, and takes it out of its parent relations. */
@@ -211,6 +225,7 @@ public class OsmEditStore {
 				deleteRelation(stored, now);
 			}
 		});
+		bookmarksMayHaveChanged();
 	}
 
 	/** @return whether a way lists the node, which then can't be deleted in the app. */
@@ -247,6 +262,7 @@ public class OsmEditStore {
 			}
 			replaceWith(stored, stored.baseJson);
 		});
+		bookmarksMayHaveChanged();
 	}
 
 	/**
@@ -320,6 +336,7 @@ public class OsmEditStore {
 				replaceWith(stored, sent);
 			}
 		});
+		bookmarksMayHaveChanged();
 	}
 
 	/**
@@ -338,6 +355,7 @@ public class OsmEditStore {
 			}
 			replaceWith(stored, OsmElements.storable(server));
 		});
+		bookmarksMayHaveChanged();
 	}
 
 	/** The stored entity, or null. */

@@ -328,6 +328,8 @@
     <string name="filter_by_grade">Filter by Grade</string>
     <string name="filter_by_style">Filter by Style</string>
     <string name="filter_by_type">Filter by Type</string>
+    <string name="filter_by_bookmarks">Filter by Bookmarks</string>
+    <string name="filter_bookmarked">Bookmarked only</string>
     <string name="reset_filters">Reset All Filters</string>
 
     <!-- Search -->
@@ -602,7 +604,10 @@
     <string name="log_book_entry_options">Entry options</string>
     <string name="log_book_show_info">Show Info</string>
     <string name="log_book_delete">Delete Entry</string>
-    <string name="log_book_delete_message">Your notes and climbed status for this element will be removed.</string>
+    <string name="log_book_delete_message">Your notes, climbed status and bookmark for this element will be removed.</string>
+    <string name="log_book_bookmarked">Bookmarked</string>
+    <string name="bookmark_add">Bookmark</string>
+    <string name="bookmark_remove">Remove Bookmark</string>
     <string name="log_book_delete_failed">Could not delete the log book entry: %1$s</string>
     <string name="log_book_options">Log book options</string>
     <string name="log_book_backup_save">Save to File</string>

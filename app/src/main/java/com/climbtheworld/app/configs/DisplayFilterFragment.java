@@ -1,5 +1,7 @@
 package com.climbtheworld.app.configs;
 
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -9,7 +11,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.content.ContextCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.converter.tools.GradeSystem;
@@ -17,6 +21,7 @@ import com.climbtheworld.app.map.DisplayableGeoNode;
 import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmEntity;
+import com.climbtheworld.app.storage.logbook.Bookmarks;
 import com.climbtheworld.app.utils.constants.UIConstants;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 import com.climbtheworld.app.utils.views.SpinnerUtils;
@@ -88,13 +93,38 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 			}
 		});
 
+		loadBookmarkFilter();
 		loadStyles();
 		loadNodeTypes();
 	}
 
+	private void loadBookmarkFilter() {
+		// The star of what is bookmarked, see the title of the details dialogs.
+		Drawable star = AppCompatResources.getDrawable(parent, R.drawable.ic_bookmark).mutate();
+		star.setTint(ContextCompat.getColor(parent, R.color.bookmarked));
+		star.setTintMode(PorterDuff.Mode.MULTIPLY);
+		ViewGroup container = findViewById(R.id.containerBookmarkFilter);
+		container.addView(ListViewItemBuilder.getPaddedBuilder(parent)
+				.setTitle(parent.getString(R.string.filter_bookmarked))
+				.setSwitchChecked(configs.getBoolean(Configs.ConfigKey.filterBookmarked))
+				.setIcon(star)
+				.setIconSize(UIConstants.POI_TYPE_LIST_ICON_SIZE,
+						UIConstants.POI_TYPE_LIST_ICON_SIZE)
+				// Its own ID, so a restored view state is not that of another switch.
+				.changeElementId(R.id.switchTypeEnabled, View.generateViewId())
+				.setSwitchEvent((buttonView, isChecked) -> {
+					configs.setBoolean(Configs.ConfigKey.filterBookmarked, isChecked);
+					if (isChecked) {
+						// A crag may have changed since they were loaded, see Bookmarks.
+						Bookmarks.refresh(parent);
+					}
+				})
+				.build());
+	}
+
 	private void loadStyles() {
 		StyleSwitches.add(parent, findViewById(R.id.containerClimbingStyles),
-				configs.getClimbingStyles(), (buttonView, isChecked) -> saveStyles());
+				configs.getClimbingStyles(), false, (buttonView, isChecked) -> saveStyles());
 	}
 
 	private void saveStyles() {
@@ -113,7 +143,6 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 
 			View customSwitch = ListViewItemBuilder.getPaddedBuilder(parent)
 					.setTitle(parent.getString(typeName.getNameId()))
-					.setDescription(parent.getString(typeName.getDescriptionId()))
 					.setSwitchChecked(checked.contains(typeName))
 					.setIcon(new PoiMarkerDrawable(parent, new DisplayableGeoNode(poi)))
 					.setIconSize(UIConstants.POI_TYPE_LIST_ICON_SIZE, UIConstants.POI_TYPE_LIST_ICON_SIZE)
@@ -172,6 +201,8 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 		configs.setInt(Configs.ConfigKey.filterMinGrade, (int) Configs.ConfigKey.filterMinGrade.defaultVal);
 		configs.setInt(Configs.ConfigKey.filterMaxGrade, (int) Configs.ConfigKey.filterMaxGrade.defaultVal);
 		configs.setString(Configs.ConfigKey.filterString, (String) Configs.ConfigKey.filterString.defaultVal);
+		configs.setBoolean(Configs.ConfigKey.filterBookmarked,
+				(boolean) Configs.ConfigKey.filterBookmarked.defaultVal);
 
 		notifyListeners();
 	}

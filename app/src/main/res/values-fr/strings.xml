@@ -321,6 +321,8 @@
     <string name="filter_by_grade">Filtrer par cotation</string>
     <string name="filter_by_style">Filtrer par style</string>
     <string name="filter_by_type">Filtrer par type</string>
+    <string name="filter_by_bookmarks">Filtrer par favoris</string>
+    <string name="filter_bookmarked">Favoris seulement</string>
     <string name="reset_filters">Réinitialiser tous les filtres</string>
 
     <!-- Search -->
@@ -597,7 +599,10 @@
     <string name="log_book_entry_options">Options de l’entrée</string>
     <string name="log_book_show_info">Afficher les infos</string>
     <string name="log_book_delete">Supprimer l’entrée</string>
-    <string name="log_book_delete_message">Vos notes et votre statut pour cet élément seront supprimés.</string>
+    <string name="log_book_delete_message">Vos notes, votre statut et votre favori pour cet élément seront supprimés.</string>
+    <string name="log_book_bookmarked">Favori</string>
+    <string name="bookmark_add">Ajouter aux favoris</string>
+    <string name="bookmark_remove">Retirer des favoris</string>
     <string name="log_book_delete_failed">Impossible de supprimer l’entrée du carnet : %1$s</string>
     <string name="log_book_options">Options du carnet</string>
     <string name="log_book_backup_save">Enregistrer dans un fichier</string>

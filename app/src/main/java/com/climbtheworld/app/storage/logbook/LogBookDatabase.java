@@ -5,6 +5,8 @@ import android.content.Context;
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
+import androidx.room.migration.Migration;
+import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import com.climbtheworld.app.storage.database.AppDatabase;
 
@@ -19,10 +21,18 @@ import com.climbtheworld.app.storage.database.AppDatabase;
  * res/xml/data_extraction_rules.xml), so it does not use write-ahead logging: that would keep
  * recent changes in a separate -wal file, missing from a backup of the database file.</p>
  */
-@Database(entities = {LogBookEntry.class}, version = 1, exportSchema = true)
+@Database(entities = {LogBookEntry.class}, version = 2, exportSchema = true)
 public abstract class LogBookDatabase extends RoomDatabase {
 	// Also named in the backup rules; renaming it drops the log book from Android's backup.
 	private static final String LOG_BOOK_DB = "personalLogBook.db";
+	// Adds the bookmarks, see LogBookEntry.bookmarked.
+	static final Migration MIGRATION_1_2 = new Migration(1, 2) {
+		@Override
+		public void migrate(SupportSQLiteDatabase database) {
+			database.execSQL("ALTER TABLE `LogBookEntry` ADD COLUMN `bookmarked` INTEGER NOT NULL"
+					+ " DEFAULT 0");
+		}
+	};
 	private static LogBookDatabase instance;
 
 	public static synchronized LogBookDatabase getInstance(Context context) {
@@ -30,6 +40,7 @@ public abstract class LogBookDatabase extends RoomDatabase {
 			instance = Room.databaseBuilder(context.getApplicationContext(),
 					LogBookDatabase.class, LOG_BOOK_DB)
 					.setJournalMode(JournalMode.TRUNCATE)
+					.addMigrations(MIGRATION_1_2)
 					.build();
 		}
 

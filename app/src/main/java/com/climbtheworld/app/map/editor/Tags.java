@@ -26,7 +26,7 @@ public abstract class Tags {
 
 	void loadStyles(GeoNode poi) {
 		StyleSwitches.add(parent, tagsView.findViewById(R.id.containerClimbingStyles),
-				poi.getClimbingStyles(), (compoundButton, b) -> {
+				poi.getClimbingStyles(), true, (compoundButton, b) -> {
 					saveStyles(poi);
 					refreshEditor();
 				});

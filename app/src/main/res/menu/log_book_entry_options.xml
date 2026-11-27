@@ -3,6 +3,10 @@
     <item
         android:id="@+id/logBookEdit"
         android:title="@string/edit" />
+    <!-- Titled Bookmark or Remove Bookmark, as the entry is, see LogBookActivity. -->
+    <item
+        android:id="@+id/logBookBookmark"
+        android:title="@string/bookmark_add" />
     <item
         android:id="@+id/logBookShowInfo"
         android:title="@string/log_book_show_info" />

@@ -45,7 +45,8 @@ public final class LogBook {
 	}
 
 	/**
-	 * Stores the entry, or deletes it when it holds neither a note nor an attempt.
+	 * Stores the entry, or deletes it when it holds neither a note, an attempt nor a bookmark.
+	 * A change of bookmark is for Bookmarks.changed to take in.
 	 */
 	public static void save(LogBookDatabase database, LogBookEntry entry) {
 		if (entry.isEmpty()) {

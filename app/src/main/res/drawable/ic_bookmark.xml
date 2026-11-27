@@ -1,0 +1,15 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+    <!-- A five-pointed star, in the black outline and light fill of the other icons. Bookmarked,
+         its fill is tinted with @color/bookmarked in multiply mode, which leaves the black. -->
+    <path
+        android:pathData="M50,9L61.17,37.63L91.85,39.4L68.07,58.87L75.86,88.6L50,72L24.14,88.6L31.93,58.87L8.15,39.4L38.83,37.63Z"
+        android:fillAlpha=".9"
+        android:fillColor="#ffffff"
+        android:strokeWidth="5"
+        android:strokeColor="#000000"
+        android:strokeLineJoin="round" />
+</vector>

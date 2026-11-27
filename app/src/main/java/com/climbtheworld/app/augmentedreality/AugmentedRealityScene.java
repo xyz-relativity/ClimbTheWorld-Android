@@ -25,6 +25,7 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
+import com.climbtheworld.app.storage.logbook.Bookmarks;
 import com.climbtheworld.app.storage.services.DownloadProgressListener;
 import com.climbtheworld.app.storage.services.DownloadService;
 import com.climbtheworld.app.utils.GeoUtils;
@@ -109,6 +110,8 @@ public class AugmentedRealityScene {
 	// Loads everything again once a download wrote a country, see onDownloaded.
 	private final DownloadProgressListener downloads =
 			DownloadProgressListener.onEachDone(this::onDownloaded);
+	// Shows the bookmarks anew once they changed, while only they show, see onBookmarksChanged.
+	private final Runnable bookmarksChanged = this::onBookmarksChanged;
 	// Whether the next POI load reads them all anew, rather than only those not held yet, as a
 	// download may have changed the ones held, see refreshPois.
 	private boolean reloadHeldPois;
@@ -164,6 +167,7 @@ public class AugmentedRealityScene {
 		container.post(arViewManager::postInit);
 		loadSettings();
 		DownloadService.addListener(downloads);
+		Bookmarks.addListener(activity, bookmarksChanged);
 	}
 
 	private static boolean isInBoundingBox(GeoNode poi, double centerLatitude,
@@ -235,6 +239,7 @@ public class AugmentedRealityScene {
 			destroyed = true;
 			TerrainElevation.releaseShared();
 			DownloadService.removeListener(downloads);
+			Bookmarks.removeListener(bookmarksChanged);
 		}
 	}
 
@@ -343,6 +348,24 @@ public class AugmentedRealityScene {
 		reloadHeldPois = true;
 		dataChanged();
 		// Nothing loaded yet, the first load reads the download anyway.
+		if (requestedCenter != null) {
+			refreshAround(requestedCenter);
+		}
+		// The download may have changed what a bookmarked crag holds.
+		Bookmarks.changed(activity);
+	}
+
+	/**
+	 * While only the bookmarked show, draws them anew after a bookmark was set or cleared, or
+	 * they were first loaded, with the crag and area pins counting them again.
+	 */
+	private void onBookmarksChanged() {
+		if (destroyed || !configs.getBoolean(Configs.ConfigKey.filterBookmarked)) {
+			return;
+		}
+		clearPins();
+		readDisplayFilters();
+		dataChanged();
 		if (requestedCenter != null) {
 			refreshAround(requestedCenter);
 		}

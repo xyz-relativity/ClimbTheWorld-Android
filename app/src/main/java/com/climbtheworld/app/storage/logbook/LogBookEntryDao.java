@@ -16,6 +16,9 @@ public interface LogBookEntryDao {
 	@Query("SELECT * FROM LogBookEntry ORDER BY updatedAt DESC")
 	List<LogBookEntry> loadAll();
 
+	@Query("SELECT * FROM LogBookEntry WHERE bookmarked = 1")
+	List<LogBookEntry> loadBookmarked();
+
 	@Upsert
 	void upsert(LogBookEntry entry);
 

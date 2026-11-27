@@ -10,6 +10,7 @@ import com.climbtheworld.app.R;
 import com.climbtheworld.app.map.marker.MarkerUtils;
 import com.climbtheworld.app.map.marker.StyleGrid;
 import com.climbtheworld.app.storage.database.GeoNode;
+import com.climbtheworld.app.utils.constants.UIConstants;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,20 +28,32 @@ public final class StyleSwitches {
 	/**
 	 * Adds the switches to the container, the checked styles on.
 	 *
-	 * @param onChange told of every switch flipped
+	 * @param filterRows whether they are rows of the display filters, laid out as their other
+	 *                   rows: the name only, and the style block in the same icon column as the
+	 *                   pins of the type rows, UIConstants.POI_TYPE_LIST_ICON_SIZE. Otherwise,
+	 *                   as in the editor, each style's description shows under its name.
+	 * @param onChange   told of every switch flipped
 	 */
 	public static void add(AppCompatActivity parent, ViewGroup container,
-	                       Collection<GeoNode.ClimbingStyle> checked,
+	                       Collection<GeoNode.ClimbingStyle> checked, boolean filterRows,
 	                       CompoundButton.OnCheckedChangeListener onChange) {
 		for (GeoNode.ClimbingStyle style : StyleGrid.all()) {
-			container.addView(ListViewItemBuilder.getPaddedBuilder(parent)
+			List<GeoNode.ClimbingStyle> styles = Collections.singletonList(style);
+			ListViewItemBuilder row = ListViewItemBuilder.getPaddedBuilder(parent)
 					.setTitle(parent.getString(style.getNameId()))
-					.setDescription(parent.getString(style.getDescriptionId()))
-					.setIcon(MarkerUtils.getStyleIcon(parent, Collections.singletonList(style)))
 					.setSwitchChecked(checked.contains(style))
 					.changeElementId(R.id.switchTypeEnabled, style.getNameId())
-					.setSwitchEvent(onChange)
-					.build());
+					.setSwitchEvent(onChange);
+			if (filterRows) {
+				row.setIcon(MarkerUtils.getStyleIcon(parent, styles,
+								UIConstants.FILTER_STYLE_ICON_SIZE))
+						.setIconSize(UIConstants.POI_TYPE_LIST_ICON_SIZE,
+								UIConstants.POI_TYPE_LIST_ICON_SIZE);
+			} else {
+				row.setIcon(MarkerUtils.getStyleIcon(parent, styles))
+						.setDescription(parent.getString(style.getDescriptionId()));
+			}
+			container.addView(row.build());
 		}
 	}
 

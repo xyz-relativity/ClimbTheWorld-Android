@@ -370,6 +370,7 @@ public final class ClimbingRouteCounter {
 	 *                    other loaders of a view
 	 */
 	public static ClimbingRouteCounter forDatabase(Context context, DataManager dataManager) {
+		NodeDisplayFilters.prepare(context);
 		Predicate<GeoNode> routeFilter = NodeDisplayFilters.routeFilter(Configs.instance(context));
 		return new ClimbingRouteCounter(new EntitySource() {
 			@Override

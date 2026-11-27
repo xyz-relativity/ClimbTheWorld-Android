@@ -37,6 +37,7 @@ import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmCollectionEntity;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.database.OsmNode;
+import com.climbtheworld.app.storage.logbook.Bookmarks;
 import com.climbtheworld.app.storage.logbook.LogBook;
 import com.climbtheworld.app.storage.logbook.LogBookBackup;
 import com.climbtheworld.app.storage.logbook.LogBookDatabase;
@@ -72,8 +73,9 @@ import needle.UiRelatedTask;
 
 /**
  * Lists the user's log book, grouped by country, area and crag, each group collapsible and all
- * collapsed at first, and filtered by text, climbed status and element type, and lets the user
- * edit, locate or delete its entries, or save the log book to a file and restore it.
+ * collapsed at first, and filtered by text, climbed status or bookmark, and element type, and
+ * lets the user edit, bookmark, locate or delete its entries, or save the log book to a file and
+ * restore it.
  */
 public class LogBookActivity extends AppCompatActivity {
 	// Some file providers do not report .json files as JSON.
@@ -238,22 +240,28 @@ public class LogBookActivity extends AppCompatActivity {
 	}
 
 	private void initStatusFilter() {
-		List<FilterChoice<Set<LogBookEntry.Attempt>>> choices = new ArrayList<>();
+		List<FilterChoice<StatusChoice>> choices = new ArrayList<>();
 		choices.add(new FilterChoice<>(getString(R.string.log_book_filter_any_status),
-				EnumSet.noneOf(LogBookEntry.Attempt.class)));
+				new StatusChoice(EnumSet.noneOf(LogBookEntry.Attempt.class), false)));
+		// The way to the bookmarks, so first after any.
+		choices.add(new FilterChoice<>(getString(R.string.log_book_bookmarked),
+				new StatusChoice(EnumSet.noneOf(LogBookEntry.Attempt.class), true)));
 		choices.add(new FilterChoice<>(getString(R.string.log_book_climbed),
-				EnumSet.complementOf(EnumSet.of(LogBookEntry.Attempt.none))));
+				new StatusChoice(EnumSet.complementOf(EnumSet.of(LogBookEntry.Attempt.none)),
+						false)));
 		for (LogBookEntry.Attempt attempt : LogBookEntry.Attempt.values()) {
 			if (attempt != LogBookEntry.Attempt.none) {
 				choices.add(new FilterChoice<>(getString(attempt.getNameId()),
-						EnumSet.of(attempt)));
+						new StatusChoice(EnumSet.of(attempt), false)));
 			}
 		}
 		choices.add(new FilterChoice<>(getString(R.string.log_book_not_climbed),
-				EnumSet.of(LogBookEntry.Attempt.none)));
+				new StatusChoice(EnumSet.of(LogBookEntry.Attempt.none), false)));
 
-		initSpinner(findViewById(R.id.logBookFilterStatus), choices,
-				choice -> filter.setAttempts(choice.value));
+		initSpinner(findViewById(R.id.logBookFilterStatus), choices, choice -> {
+			filter.setAttempts(choice.value.attempts());
+			filter.setBookmarkedOnly(choice.value.bookmarkedOnly());
+		});
 	}
 
 	private void initTypeFilter() {
@@ -471,6 +479,9 @@ public class LogBookActivity extends AppCompatActivity {
 		note.setText(item.entry.note);
 		note.setVisibility(item.entry.note.isEmpty() ? View.GONE : View.VISIBLE);
 
+		view.findViewById(R.id.logEntryBookmark)
+				.setVisibility(item.entry.bookmarked ? View.VISIBLE : View.GONE);
+
 		view.setOnClickListener(v -> editEntry(item));
 		view.setOnLongClickListener(v -> {
 			showEntryMenu(v, item);
@@ -490,10 +501,14 @@ public class LogBookActivity extends AppCompatActivity {
 		popup.getMenuInflater().inflate(R.menu.log_book_entry_options, popup.getMenu());
 		// The info dialog needs the element's OSM data.
 		popup.getMenu().findItem(R.id.logBookShowInfo).setEnabled(item.storedLocally);
+		popup.getMenu().findItem(R.id.logBookBookmark).setTitle(
+				item.entry.bookmarked ? R.string.bookmark_remove : R.string.bookmark_add);
 		popup.setOnMenuItemClickListener(menuItem -> {
 			int id = menuItem.getItemId();
 			if (id == R.id.logBookEdit) {
 				editEntry(item);
+			} else if (id == R.id.logBookBookmark) {
+				toggleBookmark(item);
 			} else if (id == R.id.logBookShowInfo) {
 				NodeDialogBuilder.showNodeInfoDialog(this, item.element);
 			} else if (id == R.id.logBookCenterMap) {
@@ -507,6 +522,38 @@ public class LogBookActivity extends AppCompatActivity {
 			return true;
 		});
 		popup.show();
+	}
+
+	/**
+	 * Sets or clears the entry's bookmark. An entry holding only the bookmark goes with it.
+	 */
+	private void toggleBookmark(LogBookItem item) {
+		LogBookEntry entry = item.entry;
+		entry.bookmarked = !entry.bookmarked;
+		Constants.DB_EXECUTOR.execute(new UiRelatedTask<String>() {
+			@Override
+			protected String doWork() {
+				try {
+					LogBook.save(LogBookDatabase.getInstance(LogBookActivity.this), entry);
+				} catch (SQLException exception) {
+					return exception.getMessage();
+				}
+				Bookmarks.changed(LogBookActivity.this);
+				return null;
+			}
+
+			@Override
+			protected void thenDoUiRelatedWork(String errorMessage) {
+				if (errorMessage != null) {
+					// Not stored, so listed as it is.
+					entry.bookmarked = !entry.bookmarked;
+					DialogBuilder.showErrorDialog(LogBookActivity.this,
+							getString(R.string.log_book_save_failed, errorMessage), null);
+					return;
+				}
+				reload();
+			}
+		});
 	}
 
 	private void confirmDelete(LogBookItem item) {
@@ -526,10 +573,11 @@ public class LogBookActivity extends AppCompatActivity {
 				try {
 					LogBookDatabase.getInstance(LogBookActivity.this).logBookDao()
 							.delete(item.entry.osmType, item.entry.osmID);
-					return null;
 				} catch (SQLException exception) {
 					return exception.getMessage();
 				}
+				Bookmarks.changed(LogBookActivity.this);
+				return null;
 			}
 
 			@Override
@@ -612,6 +660,7 @@ public class LogBookActivity extends AppCompatActivity {
 					}
 					result = LogBookBackup.restore(
 							LogBookDatabase.getInstance(LogBookActivity.this), input);
+					Bookmarks.changed(LogBookActivity.this);
 					return null;
 				} catch (LogBookBackup.InvalidBackupException exception) {
 					return getString(exception.getMessageId());
@@ -639,6 +688,12 @@ public class LogBookActivity extends AppCompatActivity {
 
 	private interface ChoiceListener<T> {
 		void onChoice(FilterChoice<T> choice);
+	}
+
+	/**
+	 * What the status spinner filters by: climbed statuses, empty for any, or bookmarks.
+	 */
+	private record StatusChoice(Set<LogBookEntry.Attempt> attempts, boolean bookmarkedOnly) {
 	}
 
 	/**

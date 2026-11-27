@@ -24,6 +24,9 @@ import java.util.Locale;
  *
  * <p>Restoring never deletes: an entry from the file is added when the log book does not have
  * it, and replaces the stored one only when it was edited more recently.</p>
+ *
+ * <p>The bookmarks came in a file of the same version: the versions before them skip the field,
+ * and an entry holding only a bookmark, as an empty one.</p>
  */
 public final class LogBookBackup {
 	public static final String MIME_TYPE = "application/json";
@@ -69,6 +72,7 @@ public final class LogBookBackup {
 					.put("osmID", entry.osmID)
 					.put("note", entry.note)
 					.put("attempt", entry.attempt.name())
+					.put("bookmarked", entry.bookmarked)
 					.put("createdAt", entry.createdAt)
 					.put("updatedAt", entry.updatedAt)
 					.put("name", entry.name)
@@ -110,6 +114,8 @@ public final class LogBookBackup {
 				item.getLong("osmID"));
 		entry.note = item.optString("note");
 		entry.attempt = parseAttempt(item.optString("attempt"));
+		// Missing from the files of the versions before bookmarks.
+		entry.bookmarked = item.optBoolean("bookmarked", false);
 		entry.createdAt = item.optLong("createdAt");
 		entry.updatedAt = item.optLong("updatedAt");
 		entry.name = item.isNull("name") ? null : item.getString("name");

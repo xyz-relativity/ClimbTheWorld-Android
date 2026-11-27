@@ -10,4 +10,8 @@
     <!-- Pill behind the map search field; must contrast with the theme's text colour. -->
     <color name="searchBarBackground">#f2f2f2</color>
 
+    <!-- The fill of the bookmark star of what is bookmarked, tinting the white of ic_bookmark
+         with multiply, as the grade colours tint the pins, so its outline stays black. -->
+    <color name="bookmarked">#ffc107</color>
+
 </resources>
