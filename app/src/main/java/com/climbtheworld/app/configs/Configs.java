@@ -342,6 +342,8 @@ public class Configs {
 		virtualCameraDegLat(-1, -1, "virtualCameraDegLat", 45.35384f),
 		virtualCameraDegLon(-1, -1, "virtualCameraDegLon", 24.63507f),
 		mapStyleId(-1, -1, "mapStyleId", "openfreemap-liberty"),
+		// The tilt the A.R. minimap opens at, in degrees, see MapLibreMapWidget.Profile.
+		arMinimapTilt(-1, -1, "arMinimapTilt", 0f),
 
 		// OpenStreetMap's OAuth 2 access token, and the PKCE secrets of a login under way.
 		oauth2Token(-1, -1, "oauth2Token", null),

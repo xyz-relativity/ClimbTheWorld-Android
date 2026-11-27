@@ -211,6 +211,8 @@ public class MapLibreMapWidget {
 	private static final String EMPTY_FEATURE_COLLECTION =
 			"{\"type\":\"FeatureCollection\",\"features\":[]}";
 	private static final float MANUAL_ROTATION_DEADBAND_DEGREES = 12f;
+	// How far a rotate button turns the map.
+	private static final double BUTTON_ROTATION_DEGREES = 15;
 	// The zoom levels at which more is loaded for the view: the routes are numbered from CRAG_MIN,
 	// see invalidateData. Crossing one needs the database again, see refreshForView.
 	private static final List<Float> RELOAD_ZOOM_LEVELS =
@@ -243,7 +245,8 @@ public class MapLibreMapWidget {
 	private final boolean forceGhostPois;
 	private final boolean showTapMarker;
 	private final boolean creditTerrain;
-	private final boolean keepTilt;
+	// See Profile.tiltKey.
+	private final Configs.ConfigKey tiltKey;
 	private List<ClimbingGeometryBuilder.GeometrySpec> pendingClimbingGeometry =
 			Collections.emptyList();
 	private String pendingHullGeoJson = EMPTY_FEATURE_COLLECTION;
@@ -354,7 +357,7 @@ public class MapLibreMapWidget {
 		this.forceGhostPois = forceGhostPois;
 		this.showTapMarker = showTapMarker;
 		this.creditTerrain = profile.creditTerrain;
-		this.keepTilt = profile.keepTilt;
+		this.tiltKey = profile.tiltKey;
 		this.mapView = container.findViewById(R.id.openMapView);
 		this.loadingIndicator = container.findViewById(R.id.mapLoadingIndicator);
 		this.observerLocation = new MapCoordinate(Globals.virtualCamera.decimalLatitude,
@@ -527,6 +530,17 @@ public class MapLibreMapWidget {
 				updateCompassButton();
 			}
 		});
+		// While the user turns the map, the compass button turns with it, as the rotate buttons
+		// turn it too.
+		map.addOnCameraMoveListener(() -> {
+			if (rotationMode != RotationMode.USER) {
+				return;
+			}
+			ImageView compassButton = container.findViewById(R.id.compassButton);
+			if (compassButton != null) {
+				compassButton.setRotation(-(float) map.getCameraPosition().bearing);
+			}
+		});
 		map.addOnCameraIdleListener(() -> {
 			if (!styleLoaded) {
 				return;
@@ -560,6 +574,30 @@ public class MapLibreMapWidget {
 		if (zoomOutButton != null) {
 			zoomOutButton.setOnClickListener(
 					view -> animateFromButton(CameraUpdateFactory.zoomOut()));
+		}
+
+		// The 3D button between the zoom buttons shows and hides the 3D navigation above them.
+		View navigation3dButton = container.findViewById(R.id.map3dButton);
+		View navigation3d = container.findViewById(R.id.map3dControls);
+		if (navigation3dButton != null && navigation3d != null) {
+			navigation3dButton.setOnClickListener(view -> navigation3d.setVisibility(
+					navigation3d.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE));
+		}
+
+		View tiltButton = container.findViewById(R.id.mapTiltButton);
+		if (tiltButton != null) {
+			tiltButton.setOnClickListener(view -> toggleTiltFromButton());
+		}
+
+		View rotateLeftButton = container.findViewById(R.id.mapRotateLeftButton);
+		if (rotateLeftButton != null) {
+			rotateLeftButton.setOnClickListener(view -> rotateFromButton(BUTTON_ROTATION_DEGREES));
+		}
+
+		View rotateRightButton = container.findViewById(R.id.mapRotateRightButton);
+		if (rotateRightButton != null) {
+			rotateRightButton.setOnClickListener(
+					view -> rotateFromButton(-BUTTON_ROTATION_DEGREES));
 		}
 
 		ImageView compassButton = container.findViewById(R.id.compassButton);
@@ -617,7 +655,8 @@ public class MapLibreMapWidget {
 			}
 			initializeOverlayLayers(loadedStyle);
 			applyCamera(session.camera != null ? session.camera
-					: new MapCameraState(observerLocation, DEFAULT_ZOOM_LEVEL), false);
+					: new MapCameraState(observerLocation, DEFAULT_ZOOM_LEVEL, 0, storedTilt()),
+					false);
 			applyInitialFit();
 			applyPendingFit();
 			applyRotationMode();
@@ -1025,7 +1064,7 @@ public class MapLibreMapWidget {
 		setFollowObserver(false);
 		if (map == null) {
 			session.camera = new MapCameraState(location, zoom, 0,
-					session.camera != null ? session.camera.getTilt() : 0);
+					session.camera != null ? session.camera.getTilt() : storedTilt());
 			return;
 		}
 		moveCamera(location, zoom, currentBearing(), animate);
@@ -1117,7 +1156,7 @@ public class MapLibreMapWidget {
 			session.camera = camera != null
 					? new MapCameraState(camera.getCenter(), zoom, camera.getBearing(),
 					camera.getTilt())
-					: new MapCameraState(observerLocation, zoom);
+					: new MapCameraState(observerLocation, zoom, 0, storedTilt());
 			return;
 		}
 		CameraPosition camera = map.getCameraPosition();
@@ -2097,6 +2136,31 @@ public class MapLibreMapWidget {
 		map.animateCamera(update, buttonAnimation);
 	}
 
+	/**
+	 * Turns the map by the given angle, anticlockwise for a positive one. As a rotate gesture
+	 * does, it takes the rotation over from the compass, or from keeping north up.
+	 */
+	private void rotateFromButton(double degrees) {
+		if (map == null) {
+			return;
+		}
+		if (rotationMode != RotationMode.USER) {
+			setRotationMode(RotationMode.USER);
+		}
+		animateFromButton(CameraUpdateFactory.bearingTo(map.getCameraPosition().bearing + degrees));
+	}
+
+	/**
+	 * Tilts a flat map all the way, and flattens a tilted one.
+	 */
+	private void toggleTiltFromButton() {
+		if (map == null) {
+			return;
+		}
+		double tilt = map.getCameraPosition().tilt > 0 ? 0 : map.getMaxPitch();
+		animateFromButton(CameraUpdateFactory.tiltTo(tilt));
+	}
+
 	private void centerOnObserver() {
 		if (map == null) {
 			// Without a camera yet, the default one already starts on the observer.
@@ -2172,7 +2236,7 @@ public class MapLibreMapWidget {
 
 	private void applyCamera(MapCameraState camera, boolean animate) {
 		moveCamera(camera.getCenter(), camera.getZoom(), camera.getBearing(),
-				keepTilt ? camera.getTilt() : Double.NaN, animate);
+				tiltKey != null ? camera.getTilt() : Double.NaN, animate);
 	}
 
 	private void saveCamera() {
@@ -2182,6 +2246,14 @@ public class MapLibreMapWidget {
 		CameraPosition camera = map.getCameraPosition();
 		session.camera = new MapCameraState(fromLatLng(camera.target), camera.zoom, camera.bearing,
 				camera.tilt);
+	}
+
+	/**
+	 * @return the tilt the profile keeps across app restarts, see {@link Profile#tiltKey}; 0 for a
+	 * map opening flat
+	 */
+	private double storedTilt() {
+		return tiltKey != null ? configs.getFloat(tiltKey) : 0;
 	}
 
 	private void updateLocationButton() {
@@ -2229,6 +2301,9 @@ public class MapLibreMapWidget {
 
 	public void onPause() {
 		saveCamera();
+		if (tiltKey != null && session.camera != null) {
+			configs.setFloat(tiltKey, (float) session.camera.getTilt());
+		}
 		mapView.onPause();
 		MapDataConnection.onPause(parent);
 	}
@@ -2274,31 +2349,31 @@ public class MapLibreMapWidget {
 	/**
 	 * Which map a widget is. Each profile remembers its camera, GPS following and rotation for the
 	 * running session, starting from its own defaults when the app starts. The camera's tilt only
-	 * where the profile keeps it.
+	 * where the profile keeps it, and then across app restarts too.
 	 */
 	public enum Profile {
 		/**
 		 * The AR minimap: fits the AR range, follows the GPS, turns with the compass, credits
 		 * the terrain the AR view places POIs on and opens tilted as it was left.
 		 */
-		AR_MINIMAP(true, RotationMode.AUTO, true, true),
+		AR_MINIMAP(true, RotationMode.AUTO, true, Configs.ConfigKey.arMinimapTilt),
 		/** The node editor: stays on the node being edited instead of following the GPS. */
-		NODE_EDITOR(false, RotationMode.STATIC, false, false),
+		NODE_EDITOR(false, RotationMode.STATIC, false, null),
 		/** Every other map. */
-		DEFAULT(true, RotationMode.STATIC, false, false);
+		DEFAULT(true, RotationMode.STATIC, false, null);
 
 		private final boolean followObserver;
 		private final RotationMode rotationMode;
 		private final boolean creditTerrain;
-		// Whether the map opens at the tilt it was left at, rather than flat.
-		private final boolean keepTilt;
+		// The setting the map keeps its tilt in, which it opens at; null for a map opening flat.
+		private final Configs.ConfigKey tiltKey;
 
 		Profile(boolean followObserver, RotationMode rotationMode, boolean creditTerrain,
-		        boolean keepTilt) {
+		        Configs.ConfigKey tiltKey) {
 			this.followObserver = followObserver;
 			this.rotationMode = rotationMode;
 			this.creditTerrain = creditTerrain;
-			this.keepTilt = keepTilt;
+			this.tiltKey = tiltKey;
 		}
 	}
 

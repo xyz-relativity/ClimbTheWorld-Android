@@ -1,0 +1,18 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- A cube, for the 3D navigation buttons. White halo, so the glyph stays readable over any
+         map or button colour, as the zoom buttons'. -->
+    <path
+        android:pathData="M12,3L20,7.5L20,16.5L12,21L4,16.5L4,7.5ZM4,7.5L12,12L20,7.5M12,12L12,21"
+        android:strokeWidth="4"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M12,3L20,7.5L20,16.5L12,21L4,16.5L4,7.5ZM4,7.5L12,12L20,7.5M12,12L12,21"
+        android:strokeWidth="1.8"
+        android:strokeColor="#FF000000"
+        android:strokeLineJoin="round" />
+</vector>

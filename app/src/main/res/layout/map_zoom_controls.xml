@@ -1,4 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?><!-- Shared by every map container; positioned against a RelativeLayout parent. -->
+<?xml version="1.0" encoding="utf-8"?><!-- Shared by every map container; positioned against a RelativeLayout parent. The zoom
+     buttons with the 3D button between them, which shows and hides the 3D navigation above:
+     rotate left, the tilt toggle and rotate right. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/mapZoomControls"
@@ -7,32 +9,101 @@
     android:layout_alignParentBottom="true"
     android:layout_centerHorizontal="true"
     android:layout_marginBottom="4dp"
-    android:orientation="horizontal">
+    android:gravity="center_horizontal"
+    android:orientation="vertical">
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/mapZoomOutButton"
+    <LinearLayout
+        android:id="@+id/map3dControls"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="5dip"
-        android:background="?android:selectableItemBackground"
-        android:contentDescription="@string/hint_zoom_out"
-        android:cropToPadding="true"
-        android:scaleType="fitXY"
-        app:fabCustomSize="38dp"
-        app:maxImageSize="12dp"
-        app:srcCompat="@drawable/ic_zoom_out" />
+        android:orientation="horizontal"
+        android:visibility="gone">
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/mapZoomInButton"
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/mapRotateLeftButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dip"
+            android:background="?android:selectableItemBackground"
+            android:contentDescription="@string/hint_rotate_left"
+            android:cropToPadding="true"
+            android:scaleType="fitXY"
+            app:fabCustomSize="38dp"
+            app:maxImageSize="16dp"
+            app:srcCompat="@drawable/ic_rotate_left" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/mapTiltButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dip"
+            android:background="?android:selectableItemBackground"
+            android:contentDescription="@string/hint_tilt"
+            android:cropToPadding="true"
+            android:scaleType="fitXY"
+            app:fabCustomSize="38dp"
+            app:maxImageSize="16dp"
+            app:srcCompat="@drawable/ic_tilt" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/mapRotateRightButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dip"
+            android:background="?android:selectableItemBackground"
+            android:contentDescription="@string/hint_rotate_right"
+            android:cropToPadding="true"
+            android:scaleType="fitXY"
+            app:fabCustomSize="38dp"
+            app:maxImageSize="16dp"
+            app:srcCompat="@drawable/ic_rotate_right" />
+
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="5dip"
-        android:background="?android:selectableItemBackground"
-        android:contentDescription="@string/hint_zoom_in"
-        android:cropToPadding="true"
-        android:scaleType="fitXY"
-        app:fabCustomSize="38dp"
-        app:maxImageSize="12dp"
-        app:srcCompat="@drawable/ic_zoom_in" />
+        android:orientation="horizontal">
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/mapZoomOutButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dip"
+            android:background="?android:selectableItemBackground"
+            android:contentDescription="@string/hint_zoom_out"
+            android:cropToPadding="true"
+            android:scaleType="fitXY"
+            app:fabCustomSize="38dp"
+            app:maxImageSize="12dp"
+            app:srcCompat="@drawable/ic_zoom_out" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/map3dButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dip"
+            android:background="?android:selectableItemBackground"
+            android:contentDescription="@string/hint_3d_navigation"
+            android:cropToPadding="true"
+            android:scaleType="fitXY"
+            app:fabCustomSize="38dp"
+            app:maxImageSize="16dp"
+            app:srcCompat="@drawable/ic_3d_navigation" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/mapZoomInButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dip"
+            android:background="?android:selectableItemBackground"
+            android:contentDescription="@string/hint_zoom_in"
+            android:cropToPadding="true"
+            android:scaleType="fitXY"
+            app:fabCustomSize="38dp"
+            app:maxImageSize="12dp"
+            app:srcCompat="@drawable/ic_zoom_in" />
+
+    </LinearLayout>
 
 </LinearLayout>

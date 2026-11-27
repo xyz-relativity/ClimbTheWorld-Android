@@ -1,0 +1,28 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Three quarters of a circle turning anticlockwise, the arrow at the top pointing left.
+         White halo, so the glyph stays readable over any map or button colour, as the zoom
+         buttons'. -->
+    <path
+        android:pathData="M12,6.5A6.5,6.5 0,1 1,5.5 13"
+        android:strokeWidth="4.5"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeLineCap="round" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M7.5,6.5L13,2.5L13,10.5Z"
+        android:strokeWidth="2.5"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M12,6.5A6.5,6.5 0,1 1,5.5 13"
+        android:strokeWidth="2"
+        android:strokeColor="#FF000000"
+        android:strokeLineCap="round" />
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M7.5,6.5L13,2.5L13,10.5Z" />
+</vector>

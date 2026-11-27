@@ -42,6 +42,10 @@
     <string name="hint_layer">Afficher ou masquer les calques de la carte.</string>
     <string name="hint_zoom_in">Zoom avant.</string>
     <string name="hint_zoom_out">Zoom arrière.</string>
+    <string name="hint_3d_navigation">Afficher ou masquer les boutons de navigation 3D.</string>
+    <string name="hint_rotate_left">Tourner la carte vers la gauche.</string>
+    <string name="hint_rotate_right">Tourner la carte vers la droite.</string>
+    <string name="hint_tilt">Incliner la carte au maximum, ou la remettre à plat.</string>
     <string name="zoom_in">Zoom avant</string>
 
     <!-- Edit View -->
