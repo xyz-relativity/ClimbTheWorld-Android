@@ -573,6 +573,10 @@
 
     <!-- Log book -->
     <string name="log_book">Mon carnet d’escalade</string>
+    <string name="log_book_and_bookmarks">Mon carnet d’escalade et mes favoris</string>
+    <string name="log_book_tab">Carnet</string>
+    <string name="bookmarks">Favoris</string>
+    <string name="bookmarks_list_empty">Aucun favori pour l’instant. Ouvrez un site, un secteur ou une voie et touchez l’étoile à côté de son nom pour l’ajouter aux favoris.</string>
     <string name="log_book_climbed">Grimpé</string>
     <string name="log_book_note">Notes personnelles</string>
     <string name="log_book_note_hint">Méthode, conditions, matériel, tout ce qui mérite d’être retenu…</string>

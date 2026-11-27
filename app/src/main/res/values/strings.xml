@@ -578,6 +578,10 @@
 
     <!-- Log book -->
     <string name="log_book">My Log Book</string>
+    <string name="log_book_and_bookmarks">My Log Book &amp; Bookmarks</string>
+    <string name="log_book_tab">Log Book</string>
+    <string name="bookmarks">Bookmarks</string>
+    <string name="bookmarks_list_empty">No bookmarks yet. Open an area, crag or route and tap the star by its name to bookmark it.</string>
     <string name="log_book_climbed">Climbed</string>
     <string name="log_book_note">Personal notes</string>
     <string name="log_book_note_hint">Beta, conditions, gear, anything worth remembering…</string>

@@ -1,7 +1,5 @@
 package com.climbtheworld.app.configs;
 
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -11,9 +9,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.widget.SwitchCompat;
-import androidx.core.content.ContextCompat;
 
 import com.climbtheworld.app.R;
 import com.climbtheworld.app.converter.tools.GradeSystem;
@@ -22,6 +18,7 @@ import com.climbtheworld.app.map.marker.PoiMarkerDrawable;
 import com.climbtheworld.app.storage.database.GeoNode;
 import com.climbtheworld.app.storage.database.OsmEntity;
 import com.climbtheworld.app.storage.logbook.Bookmarks;
+import com.climbtheworld.app.utils.views.BookmarkStar;
 import com.climbtheworld.app.utils.views.ListViewItemBuilder;
 import com.climbtheworld.app.utils.views.SpinnerUtils;
 import com.climbtheworld.app.utils.views.StyleSwitches;
@@ -98,15 +95,11 @@ public class DisplayFilterFragment extends ConfigFragment implements AdapterView
 	}
 
 	private void loadBookmarkFilter() {
-		// The star of what is bookmarked, see the title of the details dialogs.
-		Drawable star = AppCompatResources.getDrawable(parent, R.drawable.ic_bookmark).mutate();
-		star.setTint(ContextCompat.getColor(parent, R.color.bookmarked));
-		star.setTintMode(PorterDuff.Mode.MULTIPLY);
 		ViewGroup container = findViewById(R.id.containerBookmarkFilter);
 		container.addView(ListViewItemBuilder.getPaddedBuilder(parent)
 				.setTitle(parent.getString(R.string.filter_bookmarked))
 				.setSwitchChecked(configs.getBoolean(Configs.ConfigKey.filterBookmarked))
-				.setFilterRowIcon(star)
+				.setFilterRowIcon(BookmarkStar.create(parent))
 				// Its own ID, so a restored view state is not that of another switch.
 				.changeElementId(R.id.switchTypeEnabled, View.generateViewId())
 				.setSwitchEvent((buttonView, isChecked) -> {

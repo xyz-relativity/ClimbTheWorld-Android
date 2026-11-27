@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- The log book and the bookmarks, each on its own page, see fragment_log_book_page. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     style="@style/ItemContainer"
@@ -8,129 +10,18 @@
     android:orientation="vertical"
     tools:context="com.climbtheworld.app.activities.LogBookActivity">
 
-    <!-- The log book options sit with the filter, away from the entries' own menus. -->
-    <LinearLayout
-        style="@style/ItemSectionContainer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
-
-        <include
-            layout="@layout/layout_filter"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_margin="0dp"
-            android:layout_weight="1" />
-
-        <ImageView
-            android:id="@+id/logBookMenu"
-            style="?android:imageButtonStyle"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginHorizontal="5dp"
-            android:background="?android:selectableItemBackground"
-            android:clickable="true"
-            android:contentDescription="@string/log_book_options"
-            android:focusable="true"
-            android:padding="2dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_menu" />
-    </LinearLayout>
-
-    <LinearLayout
-        style="@style/ItemSectionContainer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:baselineAligned="false"
-        android:orientation="horizontal">
-
-        <Spinner
-            android:id="@+id/logBookFilterStatus"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-
-        <Spinner
-            android:id="@+id/logBookFilterType"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-    </LinearLayout>
-
-    <LinearLayout
-        style="@style/ItemSectionContainer"
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/logBookPager"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:orientation="vertical">
+        android:layout_weight="1" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingTop="10dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-
-                <TextView
-                    style="@style/ItemSectionTitles"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/log_book" />
-
-                <TextView
-                    android:id="@+id/logBookCount"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="10dp" />
-
-                <!-- Expands or collapses every group; in line with the entries' menu buttons,
-                     and padded to the size of the groups' chevrons. -->
-                <ImageView
-                    android:id="@+id/logBookExpandAll"
-                    style="?android:imageButtonStyle"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:layout_marginEnd="5dp"
-                    android:background="?android:selectableItemBackground"
-                    android:clickable="true"
-                    android:contentDescription="@string/expand_all"
-                    android:focusable="true"
-                    android:padding="4dp"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/ic_chevrons_down"
-                    android:tooltipText="@string/expand_all" />
-            </LinearLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@android:color/darker_gray" />
-        </LinearLayout>
-
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <ListView
-                android:id="@+id/listLogBook"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-
-            <TextView
-                android:id="@+id/logBookListEmpty"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:padding="20dp"
-                android:textAlignment="center"
-                android:visibility="gone" />
-        </FrameLayout>
-    </LinearLayout>
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/logBookNavigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?android:attr/windowBackground"
+        app:itemIconTint="@color/button_tab_text_selector"
+        app:itemTextColor="@color/button_tab_text_selector"
+        app:menu="@menu/log_book_navigation" />
 </LinearLayout>

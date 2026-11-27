@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The tabs of the log book screen, in the order of its pages, see LogBookActivity. -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/logBookNavigationLog"
+        android:icon="@drawable/ic_logbook"
+        android:title="@string/log_book_tab" />
+
+    <!-- Its icon is tinted in the bookmark colour by LogBookActivity. -->
+    <item
+        android:id="@+id/logBookNavigationBookmarks"
+        android:icon="@drawable/ic_bookmark"
+        android:title="@string/bookmarks" />
+
+</menu>

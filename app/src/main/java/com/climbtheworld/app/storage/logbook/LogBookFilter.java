@@ -21,7 +21,6 @@ public class LogBookFilter {
 
 	private String text = "";
 	private Set<LogBookEntry.Attempt> attempts = EnumSet.noneOf(LogBookEntry.Attempt.class);
-	private boolean bookmarkedOnly = false;
 	private OsmEntity.EntityClimbingType nodeType = null;
 
 	public void setText(String text) {
@@ -34,13 +33,6 @@ public class LogBookFilter {
 	public void setAttempts(Set<LogBookEntry.Attempt> attempts) {
 		this.attempts = EnumSet.noneOf(LogBookEntry.Attempt.class);
 		this.attempts.addAll(attempts);
-	}
-
-	/**
-	 * @param bookmarkedOnly whether only the bookmarked entries are accepted
-	 */
-	public void setBookmarkedOnly(boolean bookmarkedOnly) {
-		this.bookmarkedOnly = bookmarkedOnly;
 	}
 
 	/**
@@ -59,9 +51,6 @@ public class LogBookFilter {
 	 */
 	public boolean matches(LogBookEntry entry, List<LogBookGroup> groups) {
 		if (!attempts.isEmpty() && !attempts.contains(entry.attempt)) {
-			return false;
-		}
-		if (bookmarkedOnly && !entry.bookmarked) {
 			return false;
 		}
 		if (nodeType != null && entry.getElementType() != nodeType) {
