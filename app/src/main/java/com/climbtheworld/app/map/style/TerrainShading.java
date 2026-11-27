@@ -2,11 +2,14 @@ package com.climbtheworld.app.map.style;
 
 /**
  * The relief shaded over a base map, for the styles that ask for it, see
- * {@link MapStyleDefinition#getShadingBelowLayerId}. It is drawn from the Mapterhorn terrain
- * tiles, the ones the A.R. view places the routes on, see TerrainElevation: free to use, with
- * the attribution of their data sources.
+ * {@link MapStyleDefinition#getShadingBelowLayerId}, and the 3D terrain the map is draped over
+ * on those styles, which shows once the map is tilted. Both are drawn from the Mapterhorn
+ * terrain tiles, the ones the A.R. view places the routes on, see TerrainElevation: free to use,
+ * with the attribution of their data sources.
  */
 public final class TerrainShading {
+	// The heights of the 3D terrain: true scale.
+	public static final float TERRAIN_3D_EXAGGERATION = 1f;
 	// The coarsest terrain tiles the relief is shaded from. MapLibre Native (13.7.1,
 	// maplibre-native#4886) shades the one zoom 0 tile as if all of it lay at 85° of latitude,
 	// about 12 times too steep, and would draw it below zoom 0.5 and in place of tiles still

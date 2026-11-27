@@ -108,6 +108,7 @@ import org.maplibre.android.style.sources.GeoJsonOptions;
 import org.maplibre.android.style.sources.GeoJsonSource;
 import org.maplibre.android.style.sources.RasterDemSource;
 import org.maplibre.android.style.sources.TileSet;
+import org.maplibre.android.style.terrain.Terrain;
 import org.maplibre.geojson.Feature;
 import org.maplibre.geojson.Point;
 
@@ -608,6 +609,9 @@ public class MapLibreMapWidget {
 			renderedObserverAccuracyImage = null;
 			if (style.hasTerrainShading()) {
 				addTerrainShading(loadedStyle, style.getShadingBelowLayerId());
+				// The map drapes over the same terrain tiles in 3D, seen once tilted.
+				loadedStyle.setTerrain(new Terrain(TERRAIN_SOURCE_ID,
+						TerrainShading.TERRAIN_3D_EXAGGERATION));
 			}
 			initializeOverlayLayers(loadedStyle);
 			applyCamera(session.camera != null ? session.camera
@@ -659,8 +663,8 @@ public class MapLibreMapWidget {
 	}
 
 	/**
-	 * Adds the terrain tiles as a source, once: the relief shading and the attribution of the
-	 * terrain the A.R. view places POIs on share it.
+	 * Adds the terrain tiles as a source, once: the relief shading, the 3D terrain and the
+	 * attribution of the terrain the A.R. view places POIs on share it.
 	 */
 	private static void addTerrainSource(Style style) {
 		if (style.getSource(TERRAIN_SOURCE_ID) != null) {

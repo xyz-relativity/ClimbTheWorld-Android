@@ -61,7 +61,22 @@ android {
 
 }
 
+// MapLibre Native built from its 3D terrain pull request by build-maplibre-terrain.sh, see the
+// dependency. Without it, say so rather than that Gradle cannot find the version.
+def maplibreTerrainMaven = file("$rootDir/../maplibre-terrain/maven")
+if (!new File(maplibreTerrainMaven, 'built-from').exists()) {
+    throw new GradleException("MapLibre Native 13.8.0-terrain is not built yet: run"
+            + " ./build-maplibre-terrain.sh once on this machine (it builds MapLibre into"
+            + " $maplibreTerrainMaven, which takes a while), then build the app again.")
+}
+
 repositories {
+    maven {
+        url = uri(maplibreTerrainMaven)
+        content {
+            includeModule 'org.maplibre.gl', 'android-sdk'
+        }
+    }
     google()
     maven { url "https://jitpack.io" }
     mavenCentral()
@@ -93,7 +108,11 @@ dependencies {
     // The OpenStreetMap login page opens in a browser tab.
     implementation 'androidx.browser:browser:1.10.0'
 
-    implementation 'org.maplibre.gl:android-sdk:13.7.1'
+    // MapLibre Native from its 3D terrain pull request (maplibre/maplibre-native#4190), with the
+    // Vulkan renderer, as the released android-sdk. Not published anywhere:
+    // build-maplibre-terrain.sh builds it into ../maplibre-terrain/maven, so nothing else builds
+    // this branch, the GitHub workflow included. Released: 'org.maplibre.gl:android-sdk:13.7.1'.
+    implementation 'org.maplibre.gl:android-sdk:13.8.0-terrain'
 
     //multithreading handler
     implementation 'com.zsoltsafrany:needle:1.0.0'
