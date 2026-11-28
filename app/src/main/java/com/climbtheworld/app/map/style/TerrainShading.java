@@ -2,10 +2,10 @@ package com.climbtheworld.app.map.style;
 
 /**
  * The relief shaded over a base map, for the styles that ask for it, see
- * {@link MapStyleDefinition#getShadingBelowLayerId}, and the 3D terrain the map is draped over
- * on those styles, which shows once the map is tilted. Both are drawn from the Mapterhorn
- * terrain tiles, the ones the A.R. view places the routes on, see TerrainElevation: free to use,
- * with the attribution of their data sources.
+ * {@link MapStyleDefinition#getShadingBelowLayerId}, and the 3D terrain every style is draped
+ * over, which shows once the map is tilted. Both are drawn from the Mapterhorn terrain tiles, the
+ * ones the A.R. view places the routes on, see TerrainElevation: free to use, with the
+ * attribution of their data sources.
  */
 public final class TerrainShading {
 	// The heights of the 3D terrain: true scale.
@@ -15,9 +15,9 @@ public final class TerrainShading {
 	// about 12 times too steep, and would draw it below zoom 0.5 and in place of tiles still
 	// loading.
 	public static final float SOURCE_MIN_ZOOM = 1;
-	// On a shaded style the map zooms out no further: below 0.5, MapLibre would want the zoom 0
+	// The map zooms out no further, whatever its style: below 0.5, MapLibre would want the zoom 0
 	// terrain tile (it rounds the zoom), which SOURCE_MIN_ZOOM leaves out, so nothing would be
-	// shaded. Not 0.5 itself, which may round down.
+	// shaded or stand on the 3D terrain. Not 0.5 itself, which may round down.
 	public static final double MAP_MIN_ZOOM = 0.55;
 	// Zoomed out, the terrain is so coarse that its slopes flatten: shaded stronger there, up to
 	// WORLD_ZOOM, easing down to EXAGGERATION at REGION_ZOOM, to look about as strong throughout.

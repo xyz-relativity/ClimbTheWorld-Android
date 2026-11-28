@@ -88,7 +88,6 @@ import com.climbtheworld.app.utils.views.dialogs.NodeDialogBuilder;
 import org.maplibre.android.camera.CameraPosition;
 import org.maplibre.android.camera.CameraUpdate;
 import org.maplibre.android.camera.CameraUpdateFactory;
-import org.maplibre.android.constants.MapLibreConstants;
 import org.maplibre.android.geometry.LatLng;
 import org.maplibre.android.geometry.LatLngBounds;
 import org.maplibre.android.gestures.MoveGestureDetector;
@@ -244,7 +243,6 @@ public class MapLibreMapWidget {
 	private Set<String> renderedHullLabelImages = Collections.emptySet();
 	private final boolean forceGhostPois;
 	private final boolean showTapMarker;
-	private final boolean creditTerrain;
 	// See Profile.tiltKey.
 	private final Configs.ConfigKey tiltKey;
 	private List<ClimbingGeometryBuilder.GeometrySpec> pendingClimbingGeometry =
@@ -356,7 +354,6 @@ public class MapLibreMapWidget {
 		this.rotationMode = session.rotationMode;
 		this.forceGhostPois = forceGhostPois;
 		this.showTapMarker = showTapMarker;
-		this.creditTerrain = profile.creditTerrain;
 		this.tiltKey = profile.tiltKey;
 		this.mapView = container.findViewById(R.id.openMapView);
 		this.loadingIndicator = container.findViewById(R.id.mapLoadingIndicator);
@@ -628,8 +625,8 @@ public class MapLibreMapWidget {
 		MapStyleDefinition style =
 				MapStyleRegistry.getStyle(configs.getString(Configs.ConfigKey.mapStyleId));
 		loadedStyleId = style.getId();
-		map.setMinZoomPreference(style.hasTerrainShading() ? TerrainShading.MAP_MIN_ZOOM
-				: MapLibreConstants.MINIMUM_ZOOM);
+		// Every style stands on the 3D terrain, whose tiles start at zoom 1.
+		map.setMinZoomPreference(TerrainShading.MAP_MIN_ZOOM);
 		map.setStyle(style.getStyleUrl(), loadedStyle -> {
 			if (destroyed) {
 				return;
@@ -649,10 +646,11 @@ public class MapLibreMapWidget {
 			renderedObserverAccuracyImage = null;
 			if (style.hasTerrainShading()) {
 				addTerrainShading(loadedStyle, style.getShadingBelowLayerId());
-				// The map drapes over the same terrain tiles in 3D, seen once tilted.
-				loadedStyle.setTerrain(new Terrain(TERRAIN_SOURCE_ID,
-						TerrainShading.TERRAIN_3D_EXAGGERATION));
 			}
+			// Whatever the style, the map drapes over the terrain tiles in 3D, seen once tilted.
+			addTerrainSource(loadedStyle);
+			loadedStyle.setTerrain(new Terrain(TERRAIN_SOURCE_ID,
+					TerrainShading.TERRAIN_3D_EXAGGERATION));
 			initializeOverlayLayers(loadedStyle);
 			applyCamera(session.camera != null ? session.camera
 					: new MapCameraState(observerLocation, DEFAULT_ZOOM_LEVEL, 0, storedTilt()),
@@ -745,12 +743,6 @@ public class MapLibreMapWidget {
 						.withCluster(true)
 						.withClusterMaxZoom((int) Math.ceil(MapZoomLevels.AREA_MIN) - 1)
 						.withClusterRadius(DisplayableGeoNode.CLUSTER_ICON_DP_SIZE)));
-		if (creditTerrain) {
-			// Unless the relief is shaded, no layer draws it, so no tile is fetched: the source
-			// is only there for the attribution dialog, which lists the attributions of the
-			// style sources.
-			addTerrainSource(style);
-		}
 
 		style.addLayer(new FillLayer(HULL_FILL_LAYER_ID, HULL_SOURCE_ID)
 				.withProperties(
@@ -2353,26 +2345,24 @@ public class MapLibreMapWidget {
 	 */
 	public enum Profile {
 		/**
-		 * The AR minimap: fits the AR range, follows the GPS, turns with the compass, credits
-		 * the terrain the AR view places POIs on and opens tilted as it was left.
+		 * The AR minimap: fits the AR range, follows the GPS, turns with the compass and opens
+		 * tilted as it was left. As every map stands on the terrain the AR view places POIs on,
+		 * it credits it, see addTerrainSource.
 		 */
-		AR_MINIMAP(true, RotationMode.AUTO, true, Configs.ConfigKey.arMinimapTilt),
+		AR_MINIMAP(true, RotationMode.AUTO, Configs.ConfigKey.arMinimapTilt),
 		/** The node editor: stays on the node being edited instead of following the GPS. */
-		NODE_EDITOR(false, RotationMode.STATIC, false, null),
+		NODE_EDITOR(false, RotationMode.STATIC, null),
 		/** Every other map. */
-		DEFAULT(true, RotationMode.STATIC, false, null);
+		DEFAULT(true, RotationMode.STATIC, null);
 
 		private final boolean followObserver;
 		private final RotationMode rotationMode;
-		private final boolean creditTerrain;
 		// The setting the map keeps its tilt in, which it opens at; null for a map opening flat.
 		private final Configs.ConfigKey tiltKey;
 
-		Profile(boolean followObserver, RotationMode rotationMode, boolean creditTerrain,
-		        Configs.ConfigKey tiltKey) {
+		Profile(boolean followObserver, RotationMode rotationMode, Configs.ConfigKey tiltKey) {
 			this.followObserver = followObserver;
 			this.rotationMode = rotationMode;
-			this.creditTerrain = creditTerrain;
 			this.tiltKey = tiltKey;
 		}
 	}
